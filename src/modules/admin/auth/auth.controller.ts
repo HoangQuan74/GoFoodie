@@ -54,4 +54,11 @@ export class AuthController {
     const { currentPassword, newPassword } = body;
     return this.authService.changePassword(user.id, currentPassword, newPassword);
   }
+
+  @Post('check-otp')
+  @Public()
+  checkOtp(@Body() body: Omit<ResetPasswordDto, 'password'>) {
+    const { email, otp } = body;
+    return this.authService.checkOtp(email, otp);
+  }
 }

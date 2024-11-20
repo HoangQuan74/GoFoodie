@@ -53,7 +53,7 @@ export class AuthService {
     const admin = await this.adminsService.findOne({ where: { email } });
     if (!admin) throw new NotFoundException();
 
-    const isValidOtp = await this.adminsService.validateOtp(admin.id, otp, EAdminOtpType.ForgotPassword);
+    const isValidOtp = await this.adminsService.validateOtp(admin.id, otp);
     if (!isValidOtp) throw new UnauthorizedException();
 
     const hashedPassword = hashPassword(password);
@@ -88,5 +88,13 @@ export class AuthService {
     const { token } = await this.refreshTokensService.createRefreshToken(admin.id);
 
     return { accessToken, refreshToken: token };
+  }
+
+  async checkOtp(email: string, otp: string) {
+    const admin = await this.adminsService.findOne({ where: { email } });
+    if (!admin) throw new NotFoundException();
+
+    const isValidOtp = await this.adminsService.validateOtp(admin.id, otp);
+    if (!isValidOtp) throw new UnauthorizedException();
   }
 }

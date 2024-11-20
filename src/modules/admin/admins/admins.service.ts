@@ -37,9 +37,9 @@ export class AdminsService {
     return this.adminOtpRepository.delete({ adminId, type });
   }
 
-  async validateOtp(adminId: number, otp: string, type: EAdminOtpType) {
+  async validateOtp(adminId: number, otp: string) {
     const otpEntity = await this.adminOtpRepository.findOne({
-      where: { adminId, otp, type, expiredAt: MoreThan(new Date()), isUsed: false },
+      where: { adminId, otp, expiredAt: MoreThan(new Date()), isUsed: false },
     });
     return !!otpEntity;
   }
