@@ -10,6 +10,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtPayload } from 'src/common/interfaces';
+import { CheckOtpDto } from './dto/check-otp.dto';
 
 @Controller('auth')
 @ApiTags('Admin Auth')
@@ -57,8 +58,9 @@ export class AuthController {
 
   @Post('check-otp')
   @Public()
-  checkOtp(@Body() body: Omit<ResetPasswordDto, 'password'>) {
+  checkOtp(@Body() body: CheckOtpDto) {
     const { email, otp } = body;
     return this.authService.checkOtp(email, otp);
   }
 }
+
