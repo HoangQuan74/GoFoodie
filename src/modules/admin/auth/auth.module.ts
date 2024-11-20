@@ -4,10 +4,12 @@ import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { JWT_SECRET } from 'src/common/constants';
 import { AdminsModule } from '../admins/admins.module';
+import { RefreshTokensModule } from '../refresh-tokens/refresh-tokens.module';
 
 @Module({
   imports: [
     AdminsModule,
+    RefreshTokensModule,
     JwtModule.register({
       global: true,
       secret: JWT_SECRET,

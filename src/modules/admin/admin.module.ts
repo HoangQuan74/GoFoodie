@@ -4,6 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { AdminsModule } from './admins/admins.module';
 import { AuthGuard } from './auth/auth.guard';
 import { AdminRolesGuard } from 'src/common/guards';
+import { RefreshTokensModule } from './refresh-tokens/refresh-tokens.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AdminRolesGuard } from 'src/common/guards';
       },
     ]),
     AdminsModule,
+    RefreshTokensModule,
   ],
   providers: [
     {
