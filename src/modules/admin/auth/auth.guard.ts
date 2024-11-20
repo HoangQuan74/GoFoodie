@@ -5,14 +5,14 @@ import { Request } from 'express';
 import { JWT_SECRET } from 'src/common/constants';
 import { IS_PUBLIC_KEY } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
-import { UsersService } from '../users/users.service';
+import { AdminsService } from '../admins/admins.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private reflector: Reflector,
-    private readonly usersService: UsersService,
+    private readonly adminService: AdminsService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -32,15 +32,17 @@ export class AuthGuard implements CanActivate {
       })) as JwtPayload;
 
       const { id } = payload;
-      const user = await this.usersService.findOne({ where: { id } });
-      if (!user.isActivated) throw new UnauthorizedException();
+      const admin = await this.adminService.findOne({ where: { id } });
+      // if (!admin.isActivated) throw new UnauthorizedException();
 
-      delete user.password;
-      this.usersService.update({ id }, { lastLogin: new Date() });
+      admin.lastLogin = new Date();
+      this.adminService.save(admin);
 
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
-      request['user'] = user;
+
+      delete admin.password;
+      request['user'] = admin;
     } catch {
       throw new UnauthorizedException();
     }

@@ -3,13 +3,8 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { dataSourceOptions } from './config/orm-config';
-import { AuthModule } from './modules/auth/auth.module';
-import { UsersModule } from './modules/users/users.module';
-import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from './modules/auth/auth.guard';
-import { UsersController } from './modules/users/users.controller';
-import { RolesGuard } from './common/guards';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -29,20 +24,9 @@ import { MailerModule } from '@nestjs-modules/mailer';
         from: `"No Reply" <${process.env.EMAIL_FROM}>`,
       },
     }),
-    AuthModule,
-    UsersModule,
+    AdminModule,
   ],
-  controllers: [UsersController],
-  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: AuthGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard,
-    },
-  ],
+  controllers: [],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
