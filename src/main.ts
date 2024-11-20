@@ -51,7 +51,7 @@ async function bootstrap() {
       });
     });
 
-    SwaggerModule.setup('document', app, document);
+    SwaggerModule.setup('api/document', app, document);
   }
 
   // start app

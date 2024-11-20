@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { comparePassword, hashPassword } from 'src/utils/bcrypt';
+import { comparePassword } from 'src/utils/bcrypt';
 import { JwtPayload } from 'src/common/interfaces';
 import { JWT_SECRET } from 'src/common/constants';
 import { JwtService } from '@nestjs/jwt';
@@ -28,5 +28,9 @@ export class AuthService {
 
     delete admin.password;
     return { ...admin, accessToken };
+  }
+
+  async forgotPassword(email: string) {
+    // 💡 Implement the forgot password logic here
   }
 }
