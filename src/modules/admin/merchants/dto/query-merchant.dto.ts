@@ -4,7 +4,7 @@ import { EMerchantStatus, ESortMerchant } from 'src/common/enums';
 import { PaginationQuery } from 'src/common/query';
 
 export class QueryMerchantDto extends PaginationQuery {
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ enum: EMerchantStatus })
   @IsOptional()
   @IsEnum(EMerchantStatus)
   status: EMerchantStatus;
