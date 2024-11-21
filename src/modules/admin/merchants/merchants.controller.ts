@@ -5,7 +5,8 @@ import { UpdateMerchantDto } from './dto/update-merchant.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { MerchantEntity } from 'src/database/entities/merchant.entity';
 import { hashPassword } from 'src/utils/bcrypt';
-import { PaginationQuery } from 'src/common/query';
+import { QueryMerchantDto } from './dto/query-merchant.dto';
+import { FindManyOptions, FindOptionsWhere, ILike } from 'typeorm';
 
 @Controller('merchants')
 @ApiTags('Admin Merchants')
@@ -25,9 +26,19 @@ export class MerchantsController {
   }
 
   @Get()
-  async find(@Query() query: PaginationQuery) {
-    const { limit, page } = query;
-    const options = { take: limit, skip: limit * (page - 1) };
+  async find(@Query() query: QueryMerchantDto) {
+    const { limit, page, search, status, sort } = query;
+
+    const where: FindOptionsWhere<MerchantEntity> = {};
+    search && (where.name = ILike(`%${search}%`));
+    status && (where.status = status);
+
+    const options: FindManyOptions<MerchantEntity> = { where, take: limit, skip: limit * (page - 1) };
+
+    if (sort) {
+      const [field, order] = sort.split(':');
+      options.order = { [field]: order };
+    }
 
     const [items, total] = await this.merchantsService.findAndCount(options);
     return { items, total };
