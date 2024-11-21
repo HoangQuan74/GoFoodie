@@ -1,0 +1,36 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { MerchantEntity } from 'src/database/entities/merchant.entity';
+import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+
+@Injectable()
+export class MerchantsService {
+  constructor(
+    @InjectRepository(MerchantEntity)
+    private merchantRepository: Repository<MerchantEntity>,
+  ) {}
+
+  async save(entity: Partial<MerchantEntity>): Promise<MerchantEntity> {
+    return this.merchantRepository.save(entity);
+  }
+
+  async find(options: FindManyOptions<MerchantEntity>): Promise<MerchantEntity[]> {
+    return this.merchantRepository.find(options);
+  }
+
+  async findOne(options: FindOneOptions<MerchantEntity>): Promise<MerchantEntity> {
+    return this.merchantRepository.findOne(options);
+  }
+
+  async findAndCount(options: FindManyOptions<MerchantEntity>): Promise<[MerchantEntity[], number]> {
+    return this.merchantRepository.findAndCount(options);
+  }
+
+  async count(options: FindManyOptions<MerchantEntity>): Promise<number> {
+    return this.merchantRepository.count(options);
+  }
+
+  remove(entity: MerchantEntity): Promise<MerchantEntity> {
+    return this.merchantRepository.softRemove(entity);
+  }
+}

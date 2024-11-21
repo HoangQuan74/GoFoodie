@@ -19,7 +19,10 @@ export class AuthService {
   ) {}
 
   async signIn(username: string, password: string): Promise<Omit<AdminEntity, 'password'> & JwtSign> {
-    const admin = await this.adminsService.findOne({ where: [{ username }, { email: username }] });
+    const admin = await this.adminsService.findOne({
+      where: [{ username }, { email: username }],
+      select: ['id', 'username', 'email', 'password'],
+    });
     if (!admin) throw new UnauthorizedException();
 
     const isPasswordMatching = comparePassword(password, admin.password);
@@ -63,7 +66,7 @@ export class AuthService {
   }
 
   async changePassword(adminId: number, currentPassword: string, newPassword: string) {
-    const admin = await this.adminsService.findOne({ where: { id: adminId } });
+    const admin = await this.adminsService.findOne({ where: { id: adminId }, select: ['id', 'password'] });
     if (!admin) throw new NotFoundException();
 
     const isPasswordMatching = comparePassword(currentPassword, admin.password);

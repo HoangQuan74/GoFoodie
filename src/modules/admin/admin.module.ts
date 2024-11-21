@@ -4,7 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { AdminsModule } from './admins/admins.module';
 import { AuthGuard } from './auth/auth.guard';
 import { AdminRolesGuard } from 'src/common/guards';
-import { RefreshTokensModule } from './refresh-tokens/refresh-tokens.module';
+import { MerchantsModule } from './merchants/merchants.module';
 
 @Module({
   imports: [
@@ -14,9 +14,13 @@ import { RefreshTokensModule } from './refresh-tokens/refresh-tokens.module';
         path: 'admin',
         module: AuthModule,
       },
+      {
+        path: 'admin',
+        module: MerchantsModule,
+      },
     ]),
     AdminsModule,
-    RefreshTokensModule,
+    MerchantsModule,
   ],
   providers: [
     {

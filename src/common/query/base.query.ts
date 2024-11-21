@@ -3,7 +3,7 @@ import { Type } from 'class-transformer';
 import { IsInt, IsPositive, Min } from 'class-validator';
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from '../constants';
 
-export class BaseQueryDto {
+export class PaginationQuery {
   @ApiPropertyOptional({
     name: 'limit',
     description: 'Limit of this query',

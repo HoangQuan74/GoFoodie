@@ -63,4 +63,3 @@ export class AuthController {
     return this.authService.checkOtp(email, otp);
   }
 }
-

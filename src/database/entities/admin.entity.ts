@@ -13,7 +13,7 @@ export class AdminEntity extends BaseEntity {
   @Column()
   email: string;
 
-  @Column()
+  @Column({ select: false })
   password: string;
 
   @Column({ name: 'last_login', nullable: true })
