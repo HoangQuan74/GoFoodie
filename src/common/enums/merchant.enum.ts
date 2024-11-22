@@ -12,4 +12,10 @@ export enum ESortMerchant {
   CreatedAtDesc = 'createdAt:DESC',
   UpdatedAtAsc = 'updatedAt:ASC',
   UpdatedAtDesc = 'updatedAt:DESC',
+  StoreNumberAsc = 'storeNumber:ASC',
+  StoreNumberDesc = 'storeNumber:DESC',
+  ApprovedStoreNumberAsc = 'approvedStoreNumber:ASC',
+  ApprovedStoreNumberDesc = 'approvedStoreNumber:DESC',
+  UnapprovedStoreNumberAsc = 'unapprovedStoreNumber:ASC',
+  UnapprovedStoreNumberDesc = 'unapprovedStoreNumber:DESC',
 }

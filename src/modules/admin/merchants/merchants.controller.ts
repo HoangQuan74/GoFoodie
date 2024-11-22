@@ -19,6 +19,8 @@ import { hashPassword } from 'src/utils/bcrypt';
 import { QueryMerchantDto } from './dto/query-merchant.dto';
 import { FindManyOptions, FindOptionsWhere, ILike, Not } from 'typeorm';
 import { ADMIN_EXCEPTIONS } from 'src/common/constants/admin.constant';
+import { Public } from 'src/common/decorators';
+import { MerchantView } from 'src/database/views/merchant.view';
 
 @Controller('merchants')
 @ApiTags('Admin Merchants')
@@ -45,14 +47,15 @@ export class MerchantsController {
   }
 
   @Get()
+  @Public()
   async find(@Query() query: QueryMerchantDto) {
     const { limit, page, search, status, sort } = query;
 
-    const where: FindOptionsWhere<MerchantEntity> = {};
+    const where: FindOptionsWhere<MerchantView> = {};
     search && (where.name = ILike(`%${search}%`));
     status && (where.status = status);
 
-    const options: FindManyOptions<MerchantEntity> = { where, take: limit, skip: limit * (page - 1) };
+    const options: FindManyOptions<MerchantView> = { where, take: limit, skip: limit * (page - 1) };
 
     if (sort) {
       const [field, order] = sort.split(':');
