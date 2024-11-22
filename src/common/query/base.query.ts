@@ -1,6 +1,6 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsPositive, Min } from 'class-validator';
+import { ArrayMinSize, ArrayUnique, IsArray, IsInt, IsPositive, Min } from 'class-validator';
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from '../constants';
 
 export class PaginationQuery {
@@ -27,4 +27,15 @@ export class PaginationQuery {
   @IsInt()
   @IsPositive()
   page: number = DEFAULT_PAGE;
+}
+
+//
+
+export class IdentityQuery {
+  @ApiProperty({ type: [Number] })
+  @IsArray()
+  @IsInt({ each: true })
+  @ArrayMinSize(1)
+  @ArrayUnique()
+  ids: number[];
 }

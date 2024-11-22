@@ -17,8 +17,9 @@ import { ApiTags } from '@nestjs/swagger';
 import { MerchantEntity } from 'src/database/entities/merchant.entity';
 import { hashPassword } from 'src/utils/bcrypt';
 import { QueryMerchantDto } from './dto/query-merchant.dto';
-import { FindManyOptions, FindOptionsWhere, ILike, Not } from 'typeorm';
+import { FindManyOptions, FindOptionsWhere, ILike, In, Not } from 'typeorm';
 import { ADMIN_EXCEPTIONS } from 'src/common/constants/admin.constant';
+import { IdentityQuery } from 'src/common/query';
 
 @Controller('merchants')
 @ApiTags('Admin Merchants')
@@ -101,5 +102,15 @@ export class MerchantsController {
     if (!merchant) throw new NotFoundException();
 
     return this.merchantsService.remove(merchant);
+  }
+
+  @Delete()
+  async removeMultiple(@Body() query: IdentityQuery) {
+    const { ids } = query;
+    const options = { where: { id: In(ids) } };
+    const merchants = await this.merchantsService.find(options);
+    if (!merchants.length) throw new NotFoundException();
+
+    return this.merchantsService.remove(merchants);
   }
 }

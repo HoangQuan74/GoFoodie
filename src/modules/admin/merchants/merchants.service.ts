@@ -30,7 +30,10 @@ export class MerchantsService {
     return this.merchantRepository.count(options);
   }
 
-  remove(entity: MerchantEntity): Promise<MerchantEntity> {
+  remove(entity: MerchantEntity | MerchantEntity[]): Promise<MerchantEntity | MerchantEntity[]> {
+    if (Array.isArray(entity)) {
+      return this.merchantRepository.softRemove(entity);
+    }
     return this.merchantRepository.softRemove(entity);
   }
 }

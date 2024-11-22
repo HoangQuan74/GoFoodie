@@ -1,6 +1,7 @@
 import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, ValidateIf } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EMerchantStatus } from 'src/common/enums';
+import { MERCHANTS_EXCEPTIONS } from 'src/common/constants/merchant.constant';
 
 export class CreateMerchantDto {
   @ApiProperty()
@@ -9,8 +10,8 @@ export class CreateMerchantDto {
   name: string;
 
   @ApiPropertyOptional()
-  @IsEmail()
-  @ValidateIf((o) => !o.phone && o.email)
+  @IsEmail({}, { message: MERCHANTS_EXCEPTIONS.INVALID_EMAIL })
+  @ValidateIf((o) => !o.phone || o.email)
   email: string;
 
   @ApiPropertyOptional()
@@ -20,9 +21,9 @@ export class CreateMerchantDto {
   password: string;
 
   @ApiPropertyOptional()
-  @IsPhoneNumber()
+  @IsPhoneNumber('VN', { message: MERCHANTS_EXCEPTIONS.INVALID_PHONE })
   @IsNotEmpty()
-  @ValidateIf((o) => !o.email && o.phone)
+  @ValidateIf((o) => !o.email || o.phone)
   phone: string;
 
   @ApiPropertyOptional({ enum: EMerchantStatus })
