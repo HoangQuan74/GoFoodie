@@ -21,4 +21,8 @@ export class MerchantEntity extends BaseEntity {
 
   @Column({ name: 'status', type: 'enum', enum: EMerchantStatus, default: EMerchantStatus.Active })
   status: EMerchantStatus;
+
+  storeNumber: number = 0;
+  approvedStoreNumber: number = 0;
+  unapprovedStoreNumber: number = 0;
 }

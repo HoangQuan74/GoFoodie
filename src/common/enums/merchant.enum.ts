@@ -8,4 +8,8 @@ export enum ESortMerchant {
   NameDesc = 'name:DESC',
   EmailAsc = 'email:ASC',
   EmailDesc = 'email:DESC',
+  CreatedAtAsc = 'createdAt:ASC',
+  CreatedAtDesc = 'createdAt:DESC',
+  UpdatedAtAsc = 'updatedAt:ASC',
+  UpdatedAtDesc = 'updatedAt:DESC',
 }
