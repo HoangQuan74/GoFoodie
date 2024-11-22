@@ -40,6 +40,7 @@ export class MerchantsController {
     email && (newMerchant.emailVerifiedAt = new Date());
     password && (newMerchant.password = hashPassword(password));
 
+    delete newMerchant.password;
     return this.merchantsService.save(newMerchant);
   }
 
