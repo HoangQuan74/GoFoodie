@@ -81,11 +81,15 @@ export class MerchantsController {
     const merchant = await this.merchantsService.findOne(options);
     if (!merchant) throw new NotFoundException();
 
-    const emailConflict = await this.merchantsService.findOne({ where: { email, id: Not(merchant.id) } });
-    if (emailConflict) throw new ConflictException(ADMIN_EXCEPTIONS.EMAIL_CONFLICT);
+    if (email) {
+      const emailConflict = await this.merchantsService.findOne({ where: { email, id: Not(merchant.id) } });
+      if (emailConflict) throw new ConflictException(ADMIN_EXCEPTIONS.EMAIL_CONFLICT);
+    }
 
-    const phoneConflict = await this.merchantsService.findOne({ where: { phone, id: Not(merchant.id) } });
-    if (phoneConflict) throw new ConflictException(ADMIN_EXCEPTIONS.PHONE_CONFLICT);
+    if (phone) {
+      const phoneConflict = await this.merchantsService.findOne({ where: { phone, id: Not(merchant.id) } });
+      if (phoneConflict) throw new ConflictException(ADMIN_EXCEPTIONS.PHONE_CONFLICT);
+    }
 
     Object.assign(merchant, updateMerchantDto);
     password && (merchant.password = hashPassword(password));
