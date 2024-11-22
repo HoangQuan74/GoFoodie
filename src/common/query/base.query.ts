@@ -36,6 +36,5 @@ export class IdentityQuery {
   @IsArray()
   @IsInt({ each: true })
   @ArrayMinSize(1)
-  @ArrayUnique()
   ids: number[];
 }
