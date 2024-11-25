@@ -26,6 +26,10 @@ export class MerchantsService {
     return this.merchantRepository.findAndCount(options);
   }
 
+  createQueryBuilder(alias?: string) {
+    return this.merchantRepository.createQueryBuilder(alias);
+  }
+
   async count(options: FindManyOptions<MerchantEntity>): Promise<number> {
     return this.merchantRepository.count(options);
   }

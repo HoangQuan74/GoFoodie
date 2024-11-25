@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ArrayMinSize, ArrayUnique, IsArray, IsInt, IsPositive, Min } from 'class-validator';
+import { ArrayMinSize, IsArray, IsInt, IsPositive, Min } from 'class-validator';
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from '../constants';
 
 export class PaginationQuery {

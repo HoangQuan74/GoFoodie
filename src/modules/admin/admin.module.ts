@@ -5,6 +5,7 @@ import { AdminsModule } from './admins/admins.module';
 import { AuthGuard } from './auth/auth.guard';
 import { AdminRolesGuard } from 'src/common/guards';
 import { MerchantsModule } from './merchants/merchants.module';
+import { StoresModule } from './stores/stores.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { MerchantsModule } from './merchants/merchants.module';
     ]),
     AdminsModule,
     MerchantsModule,
+    StoresModule,
   ],
   providers: [
     {

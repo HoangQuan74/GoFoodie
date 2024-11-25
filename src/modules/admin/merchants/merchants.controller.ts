@@ -17,7 +17,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { MerchantEntity } from 'src/database/entities/merchant.entity';
 import { hashPassword } from 'src/utils/bcrypt';
 import { QueryMerchantDto } from './dto/query-merchant.dto';
-import { FindManyOptions, FindOptionsWhere, ILike, In, Not } from 'typeorm';
+import { Brackets, In, Not } from 'typeorm';
 import { ADMIN_EXCEPTIONS } from 'src/common/constants/admin.constant';
 import { IdentityQuery } from 'src/common/query';
 
@@ -49,18 +49,26 @@ export class MerchantsController {
   async find(@Query() query: QueryMerchantDto) {
     const { limit, page, search, status, sort } = query;
 
-    const where: FindOptionsWhere<MerchantEntity> = {};
-    search && (where.name = ILike(`%${search}%`));
-    status && (where.status = status);
+    const queryBuilder = this.merchantsService.createQueryBuilder('merchant');
 
-    const options: FindManyOptions<MerchantEntity> = { where, take: limit, skip: limit * (page - 1) };
+    if (search) {
+      queryBuilder.where(
+        new Brackets((qb) => {
+          qb.where('merchant.name ILIKE :search', { search: `%${search}%` })
+            .orWhere('merchant.email ILIKE :search', { search: `%${search}%` })
+            .orWhere('merchant.phone ILIKE :search', { search: `%${search}%` });
+        }),
+      );
+    }
+    status && queryBuilder.andWhere('merchant.status = :status', { status });
+    queryBuilder.take(limit).skip(limit * (page - 1));
 
     if (sort) {
-      const [field, order] = sort.split(':');
-      options.order = { [field]: order };
+      const [field, order] = sort.split(':') as [keyof MerchantEntity, 'ASC' | 'DESC'];
+      queryBuilder.orderBy(field, order);
     }
 
-    const [items, total] = await this.merchantsService.findAndCount(options);
+    const [items, total] = await queryBuilder.getManyAndCount();
     return { items, total };
   }
 
