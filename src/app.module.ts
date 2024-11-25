@@ -10,6 +10,8 @@ import { join } from 'path';
 import { ProvincesModule } from './modules/provinces/provinces.module';
 import { DistrictsModule } from './modules/districts/districts.module';
 import { WardsModule } from './modules/wards/wards.module';
+import { ServiceTypesModule } from './modules/service-types/service-types.module';
+import { ServiceGroupsModule } from './modules/service-groups/service-groups.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { WardsModule } from './modules/wards/wards.module';
     ProvincesModule,
     DistrictsModule,
     WardsModule,
+    ServiceTypesModule,
+    ServiceGroupsModule,
   ],
   controllers: [],
 })

@@ -19,6 +19,10 @@ import { StoresModule } from './stores/stores.module';
         path: 'admin',
         module: MerchantsModule,
       },
+      {
+        path: 'admin',
+        module: StoresModule,
+      },
     ]),
     AdminsModule,
     MerchantsModule,
