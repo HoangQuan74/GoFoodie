@@ -12,6 +12,7 @@ import { DistrictsModule } from './modules/districts/districts.module';
 import { WardsModule } from './modules/wards/wards.module';
 import { ServiceTypesModule } from './modules/service-types/service-types.module';
 import { ServiceGroupsModule } from './modules/service-groups/service-groups.module';
+import { UploadsModule } from './modules/uploads/uploads.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { ServiceGroupsModule } from './modules/service-groups/service-groups.mod
     WardsModule,
     ServiceTypesModule,
     ServiceGroupsModule,
+    UploadsModule,
   ],
   controllers: [],
 })

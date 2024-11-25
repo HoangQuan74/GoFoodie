@@ -38,6 +38,7 @@
     "@nestjs/serve-static": "^4.0.2",
     "@nestjs/swagger": "^7.3.0",
     "@nestjs/typeorm": "^10.0.0",
+    "@types/multer": "^1.4.12",
     "bcrypt": "^5.1.1",
     "class": "^0.1.4",
     "class-transformer": "^0.5.1",
