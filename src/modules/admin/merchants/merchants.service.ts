@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MerchantEntity } from 'src/database/entities/merchant.entity';
+import { MerchantView } from 'src/database/views/merchant.view';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 
 @Injectable()
@@ -8,6 +9,9 @@ export class MerchantsService {
   constructor(
     @InjectRepository(MerchantEntity)
     private merchantRepository: Repository<MerchantEntity>,
+
+    @InjectRepository(MerchantView)
+    private merchantViewRepository: Repository<MerchantView>,
   ) {}
 
   async save(entity: Partial<MerchantEntity>): Promise<MerchantEntity> {
@@ -22,8 +26,8 @@ export class MerchantsService {
     return this.merchantRepository.findOne(options);
   }
 
-  async findAndCount(options: FindManyOptions<MerchantEntity>): Promise<[MerchantEntity[], number]> {
-    return this.merchantRepository.findAndCount(options);
+  async findAndCount(options: FindManyOptions<MerchantView>): Promise<[MerchantView[], number]> {
+    return this.merchantViewRepository.findAndCount(options);
   }
 
   createQueryBuilder(alias?: string) {

@@ -13,6 +13,7 @@ module.exports = {
     jest: true,
   },
   ignorePatterns: ['.eslintrc.js'],
+  ignorePatterns: ['src/database/migrations/*'],
   rules: {
     'no-unused-vars': 'off',
     'unused-imports/no-unused-imports': 'error',

@@ -13,7 +13,7 @@ import { WardsModule } from './modules/wards/wards.module';
 import { ServiceTypesModule } from './modules/service-types/service-types.module';
 import { ServiceGroupsModule } from './modules/service-groups/service-groups.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
-import { FirebaseModule } from './modules/firebase/firebase.module';
+import { BanksModule } from './modules/banks/banks.module';
 
 @Module({
   imports: [
@@ -31,6 +31,7 @@ import { FirebaseModule } from './modules/firebase/firebase.module';
     ServiceTypesModule,
     ServiceGroupsModule,
     UploadsModule,
+    BanksModule,
     // FirebaseModule,
   ],
   controllers: [],

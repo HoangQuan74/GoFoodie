@@ -13,7 +13,10 @@ export const dataSourceOptions: DataSourceOptions = {
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [join(__dirname, '..', 'database', 'entities', '*{.ts,.js}')],
+  entities: [
+    join(__dirname, '..', 'database', 'entities', '*{.ts,.js}'),
+    join(__dirname, '..', 'database', 'views', '*{.ts,.js}'),
+  ],
   migrations: [join(__dirname, '..', 'database', 'migrations', '*{.ts,.js}')],
   synchronize: false,
   maxQueryExecutionTime: 300,
