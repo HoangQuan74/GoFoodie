@@ -59,15 +59,22 @@ export class StoreEntity extends BaseEntity {
   @Column({ name: 'approval_status', type: 'enum', enum: EStoreApprovalStatus, default: EStoreApprovalStatus.Pending })
   approvalStatus: string;
 
-  @Column({ name: 'approved_by_id', nullable: true })
+  @Column({ name: 'approved_by_id', nullable: true, select: false })
   approvedById: number;
 
   @Column({ name: 'approved_at', nullable: true })
   approvedAt: Date;
 
+  @Column({ name: 'created_by_id', nullable: true, select: false })
+  createdById: number;
+
   @ManyToOne(() => AdminEntity, (admin) => admin.id, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'approved_by_id' })
   approvedBy: AdminEntity;
+
+  @ManyToOne(() => AdminEntity, (admin) => admin.id, { nullable: true, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'created_by_id' })
+  createdBy: AdminEntity;
 
   @ManyToOne(() => ServiceGroupEntity, (serviceGroup) => serviceGroup.id, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'service_group_id' })
@@ -105,4 +112,6 @@ export class StoreEntity extends BaseEntity {
   @ManyToOne(() => WardEntity, (ward) => ward.id, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'ward_id' })
   ward: WardEntity;
+
+  productCount: number = 0;
 }

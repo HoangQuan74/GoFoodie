@@ -1,9 +1,14 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Patch, Post, Query } from '@nestjs/common';
 import { StoresService } from './stores.service';
 import { CreateStoreDto } from './dto/create-store.dto';
+import { UpdateStoreDto } from './dto/update-store.dto';
 import { QueryStoreDto } from './dto/query-store.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { StoreEntity } from 'src/database/entities/store.entity';
+import { Brackets, In } from 'typeorm';
+import { CurrentUser } from 'src/common/decorators';
+import { JwtPayload } from 'src/common/interfaces';
+import { IdentityQuery } from 'src/common/query';
 
 @Controller('stores')
 @ApiTags('Stores')
@@ -11,10 +16,11 @@ export class StoresController {
   constructor(private readonly storesService: StoresService) {}
 
   @Post()
-  async create(@Body() body: CreateStoreDto) {
+  async create(@Body() body: CreateStoreDto, @CurrentUser() user: JwtPayload) {
     const newStore = new StoreEntity();
     Object.assign(newStore, body);
-    console.log(newStore);
+    newStore.createdById = user.id;
+
     return this.storesService.save(newStore);
   }
 
@@ -28,11 +34,23 @@ export class StoresController {
       .leftJoinAndSelect('store.province', 'province')
       .leftJoinAndSelect('store.district', 'district')
       .leftJoinAndSelect('store.ward', 'ward')
+      .addSelect(['createdBy.id', 'createdBy.name'])
+      .leftJoin('store.createdBy', 'createdBy')
+      .addSelect(['approvedBy.id', 'approvedBy.name'])
+      .leftJoin('store.approvedBy', 'approvedBy')
       .addSelect(['representative.id', 'representative.name', 'representative.phone'])
       .leftJoin('store.representative', 'representative');
 
     if (search) {
-      queryBuilder.andWhere('store.name ILIKE :search', { search: `%${search}%` });
+      queryBuilder
+        .andWhere(
+          new Brackets((qb) => {
+            qb.where('store.name ILIKE :search');
+            qb.orWhere('store.storeCode ILIKE :search');
+            qb.orWhere('store.phoneNumber ILIKE :search');
+          }),
+        )
+        .setParameters({ search: `%${search}%` });
     }
 
     if (sort) {
@@ -44,5 +62,35 @@ export class StoresController {
 
     const [items, total] = await queryBuilder.getManyAndCount();
     return { items, total };
+  }
+
+  @Get(':id')
+  async findOne(@Query('id') id: number) {
+    const store = await this.storesService.findOne({
+      where: { id },
+      relations: ['representative', 'workingTimes', 'banks'],
+    });
+    if (!store) throw new NotFoundException();
+
+    return store;
+  }
+
+  @Patch(':id')
+  async update(@Query('id') id: number, @Body() body: UpdateStoreDto) {
+    const store = await this.storesService.findOne({ where: { id } });
+    if (!store) throw new NotFoundException();
+
+    Object.assign(store, body);
+    return this.storesService.save(store);
+  }
+
+  @Delete()
+  async delete(@Body() query: IdentityQuery) {
+    const { ids } = query;
+    const options = { where: { id: In(ids) }, relations: { workingTimes: true, banks: true, representative: true } };
+    const stores = await this.storesService.find(options);
+    if (!stores.length) throw new NotFoundException();
+
+    return this.storesService.remove(stores);
   }
 }

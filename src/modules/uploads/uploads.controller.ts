@@ -13,7 +13,6 @@ import { UploadsService } from './uploads.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import * as fs from 'fs';
 import * as path from 'path';
 
 @Controller('uploads')

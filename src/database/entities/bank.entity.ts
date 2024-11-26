@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { BankBranchEntity } from './bank-branch.entity';
 
 @Entity('banks')
 export class BankEntity {
@@ -19,4 +20,7 @@ export class BankEntity {
 
   @Column({ name: 'logo_url' })
   logoUrl: string;
+
+  @OneToMany(() => BankBranchEntity, (branch) => branch.bank)
+  branches: BankBranchEntity[];
 }

@@ -25,4 +25,11 @@ export class StoresService {
   createQueryBuilder(alias: string) {
     return this.storeRepository.createQueryBuilder(alias);
   }
+
+  async remove(entity: StoreEntity | StoreEntity[]) {
+    if (Array.isArray(entity)) {
+      return this.storeRepository.remove(entity);
+    }
+    return this.storeRepository.remove([entity]);
+  }
 }

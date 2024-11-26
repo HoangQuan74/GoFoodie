@@ -119,7 +119,10 @@ export class MerchantsController {
   @Delete()
   async removeMultiple(@Body() query: IdentityQuery) {
     const { ids } = query;
-    const options = { where: { id: In(ids) } };
+    const options = {
+      where: { id: In(ids) },
+      relations: { stores: { workingTimes: true, banks: true, representative: true } },
+    };
     const merchants = await this.merchantsService.find(options);
     if (!merchants.length) throw new NotFoundException();
 
