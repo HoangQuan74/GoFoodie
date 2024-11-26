@@ -12,7 +12,7 @@ export class TasksService {
     private readonly fileRepository: Repository<FileEntity>,
   ) {}
 
-  @Cron(CronExpression.EVERY_SECOND)
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async cleanUpGarbageFiles() {
     const duration = 24 * 60 * 60 * 1000;
     const files = await this.fileRepository.findBy({ createdAt: LessThan(new Date(Date.now() - duration)) });
