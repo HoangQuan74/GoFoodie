@@ -24,8 +24,7 @@
     "migration:create": "npm run typeorm migration:create",
     "migration:revert": "npm run typeorm migration:revert -d ./src/config/orm-config.ts",
     "migration:show": "npm run typeorm -- migration:show -d ./src/config/orm-config.ts",
-    "migration:sync": "npm run typeorm -- schema:sync -d ./src/config/orm-config.ts",
-    "prepare": "husky"
+    "migration:sync": "npm run typeorm -- schema:sync -d ./src/config/orm-config.ts"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^2.0.2",
