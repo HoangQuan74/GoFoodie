@@ -9,6 +9,9 @@ import { ServiceGroupEntity } from './service-group.entity';
 
 @Entity('stores')
 export class StoreEntity extends BaseEntity {
+  @Column({ name: 'merchant_id', select: false })
+  merchantId: number;
+
   @Column({ name: 'store_code' })
   storeCode: string;
 
@@ -24,7 +27,7 @@ export class StoreEntity extends BaseEntity {
   @Column({ name: 'phone_number', nullable: true })
   phoneNumber: string;
 
-  @Column({ name: 'service_group', nullable: true })
+  @Column({ name: 'service_group_id', nullable: true })
   serviceGroupId: number;
 
   @Column({ name: 'business_area', nullable: true })

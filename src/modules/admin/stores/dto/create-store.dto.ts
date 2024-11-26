@@ -139,11 +139,19 @@ export class CreateRepresentativeDto {
 }
 
 export class CreateStoreDto {
-  //Khu vực kinh doanh
+  @ApiProperty()
+  @IsInt()
+  merchantId: number;
+
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  businessAreaId: string;
+  storeCode: string;
+
+  //Khu vực kinh doanh
+  @ApiProperty()
+  @IsInt()
+  businessAreaId: number;
 
   //Loại hình dịch vụ
   @ApiProperty()
@@ -155,7 +163,7 @@ export class CreateStoreDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  storeName: string;
+  name: string;
 
   // món đặc trưng của quán
   @ApiProperty()
@@ -165,9 +173,8 @@ export class CreateStoreDto {
 
   // nhóm dịch vụ
   @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  serviceGroup: string;
+  @IsInt()
+  serviceGroupId: number;
 
   // tỉnh/thành phố
   @ApiProperty()

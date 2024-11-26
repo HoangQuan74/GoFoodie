@@ -19,3 +19,10 @@ export enum EStoreRepresentativeType {
   Business = 'business',
   BusinessHousehold = 'business_household',
 }
+
+export enum ESortStore {
+  NameAsc = 'name:ASC',
+  NameDesc = 'name:DESC',
+  CreatedAtAsc = 'createdAt:ASC',
+  CreatedAtDesc = 'createdAt:DESC',
+}

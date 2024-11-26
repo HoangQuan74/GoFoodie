@@ -65,7 +65,7 @@ export class MerchantsController {
 
     if (sort) {
       const [field, order] = sort.split(':') as [keyof MerchantEntity, 'ASC' | 'DESC'];
-      queryBuilder.orderBy(field, order);
+      queryBuilder.orderBy(`merchant.${field}`, order);
     }
 
     const [items, total] = await queryBuilder.getManyAndCount();
