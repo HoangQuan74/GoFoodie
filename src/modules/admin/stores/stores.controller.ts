@@ -22,7 +22,14 @@ export class StoresController {
   async find(@Query() query: QueryStoreDto) {
     const { search, page, limit, sort } = query;
 
-    const queryBuilder = this.storesService.createQueryBuilder('store');
+    const queryBuilder = this.storesService
+      .createQueryBuilder('store')
+      .leftJoinAndSelect('store.businessArea', 'businessArea')
+      .leftJoinAndSelect('store.province', 'province')
+      .leftJoinAndSelect('store.district', 'district')
+      .leftJoinAndSelect('store.ward', 'ward')
+      .addSelect(['representative.id', 'representative.name', 'representative.phone'])
+      .leftJoin('store.representative', 'representative');
 
     if (search) {
       queryBuilder.andWhere('store.name ILIKE :search', { search: `%${search}%` });

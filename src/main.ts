@@ -5,7 +5,9 @@ import { AllExceptionsFilter } from './common/filters/exception.filter';
 import { TransformInterceptor } from './common/interceptors';
 import { ValidationPipe } from '@nestjs/common';
 import { MyLogger } from './logger/app.logger';
+import { saveFile } from './utils/file';
 
+const a = saveFile;
 const { NODE_ENV = 'development', PORT = 3000 } = process.env;
 
 async function bootstrap() {

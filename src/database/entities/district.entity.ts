@@ -9,7 +9,7 @@ export class DistrictEntity {
   @Column()
   name: string;
 
-  @Column({ name: 'province_id' })
+  @Column({ name: 'province_id', select: false })
   provinceId: number;
 
   @ManyToOne(() => ProvinceEntity, (province) => province.id)

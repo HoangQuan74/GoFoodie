@@ -6,6 +6,11 @@ import { StoreRepresentativeEntity } from './store-representative.entity';
 import { StoreWorkingTimeEntity } from './store-working-time.entity';
 import { StoreBankEntity } from './store-bank.entity';
 import { ServiceGroupEntity } from './service-group.entity';
+import { ProvinceEntity } from './province.entity';
+import { DistrictEntity } from './district.entity';
+import { WardEntity } from './ward.entity';
+import { ServiceTypeEntity } from './service-type.entity';
+import { AdminEntity } from './admin.entity';
 
 @Entity('stores')
 export class StoreEntity extends BaseEntity {
@@ -26,6 +31,9 @@ export class StoreEntity extends BaseEntity {
 
   @Column({ name: 'phone_number', nullable: true })
   phoneNumber: string;
+
+  @Column({ name: 'service_type_id', nullable: true })
+  serviceTypeId: number;
 
   @Column({ name: 'service_group_id', nullable: true })
   serviceGroupId: number;
@@ -51,9 +59,23 @@ export class StoreEntity extends BaseEntity {
   @Column({ name: 'approval_status', type: 'enum', enum: EStoreApprovalStatus, default: EStoreApprovalStatus.Pending })
   approvalStatus: string;
 
+  @Column({ name: 'approved_by_id', nullable: true })
+  approvedById: number;
+
+  @Column({ name: 'approved_at', nullable: true })
+  approvedAt: Date;
+
+  @ManyToOne(() => AdminEntity, (admin) => admin.id, { nullable: true, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'approved_by_id' })
+  approvedBy: AdminEntity;
+
   @ManyToOne(() => ServiceGroupEntity, (serviceGroup) => serviceGroup.id, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'service_group_id' })
   serviceGroup: ServiceGroupEntity;
+
+  @ManyToOne(() => ServiceTypeEntity, (serviceType) => serviceType.id, { nullable: false, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'service_type_id' })
+  serviceType: ServiceTypeEntity;
 
   @ManyToOne(() => MerchantEntity, (merchant) => merchant.id, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'merchant_id' })
@@ -67,4 +89,20 @@ export class StoreEntity extends BaseEntity {
 
   @OneToMany(() => StoreBankEntity, (bank) => bank.store, { cascade: true })
   banks: StoreBankEntity[];
+
+  @ManyToOne(() => ProvinceEntity, (province) => province.id, { nullable: false, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'business_area' })
+  businessArea: ProvinceEntity;
+
+  @ManyToOne(() => ProvinceEntity, (province) => province.id, { nullable: false, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'province_id' })
+  province: ProvinceEntity;
+
+  @ManyToOne(() => DistrictEntity, (district) => district.id, { nullable: false, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'district_id' })
+  district: DistrictEntity;
+
+  @ManyToOne(() => WardEntity, (ward) => ward.id, { nullable: false, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'ward_id' })
+  ward: WardEntity;
 }

@@ -49,7 +49,7 @@ export class MerchantsController {
   async find(@Query() query: QueryMerchantDto) {
     const { limit, page, search, status, sort } = query;
 
-    const queryBuilder = this.merchantsService.createQueryBuilder('merchant');
+    const queryBuilder = this.merchantsService.createViewBuilder('merchant');
 
     if (search) {
       queryBuilder.where(

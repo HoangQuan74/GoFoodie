@@ -46,10 +46,10 @@ export class StoreRepresentativeEntity extends BaseEntity {
   identityCardBackImageId: number;
 
   @Column({ name: 'business_license_image_id', nullable: true })
-  businessLicenseImageId: number;
+  businessLicenseImageId: string;
 
   @Column({ name: 'tax_license_image_id' })
-  taxLicenseImageId: number;
+  taxLicenseImageId: string;
 
   @Column({ name: 'store_id', select: false })
   storeId: number;
