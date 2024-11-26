@@ -149,6 +149,10 @@ export class CreateStoreDto {
   isDraft: boolean;
 
   @ApiProperty()
+  @IsBoolean()
+  isAlcohol: boolean;
+
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   storeCode: string;

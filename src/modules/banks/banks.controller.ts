@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
 import { BanksService } from './banks.service';
 import { Public } from 'src/common/decorators';
 import { ApiTags } from '@nestjs/swagger';
@@ -16,7 +16,10 @@ export class BanksController {
 
   @Get(':id/branches')
   @Public()
-  async getBranches() {
-    return [];
+  async getBranches(@Param('id') id: number) {
+    const bank = await this.banksService.findOne({ where: { id }, relations: ['branches'] });
+    if (!bank) throw new NotFoundException();
+
+    return bank.branches;
   }
 }

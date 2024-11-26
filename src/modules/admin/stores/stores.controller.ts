@@ -27,7 +27,8 @@ export class StoresController {
 
   @Get()
   async find(@Query() query: QueryStoreDto) {
-    const { search, page, limit, sort } = query;
+    const { search, page, limit, sort, serviceTypeId, businessAreaId, approvalStatus, status } = query;
+    const { createdAtFrom, createdAtTo, approvedAtFrom, approvedAtTo } = query;
 
     const queryBuilder = this.storesService
       .createQueryBuilder('store')
@@ -35,6 +36,8 @@ export class StoresController {
       .leftJoinAndSelect('store.province', 'province')
       .leftJoinAndSelect('store.district', 'district')
       .leftJoinAndSelect('store.ward', 'ward')
+      .leftJoinAndSelect('store.serviceType', 'serviceType')
+      .leftJoinAndSelect('store.serviceGroup', 'serviceGroup')
       .addSelect(['createdBy.id', 'createdBy.name'])
       .leftJoin('store.createdBy', 'createdBy')
       .addSelect(['approvedBy.id', 'approvedBy.name'])
@@ -53,6 +56,18 @@ export class StoresController {
         )
         .setParameters({ search: `%${search}%` });
     }
+
+    approvalStatus && queryBuilder.andWhere('store.approvalStatus = :approvalStatus');
+    status && queryBuilder.andWhere('store.status = :status');
+    serviceTypeId && queryBuilder.andWhere('store.serviceTypeId = :serviceTypeId');
+    businessAreaId && queryBuilder.andWhere('store.businessAreaId = :businessAreaId');
+    createdAtFrom && queryBuilder.andWhere('store.createdAt >= :createdAtFrom');
+    createdAtTo && queryBuilder.andWhere('store.createdAt <= :createdAtTo');
+    approvedAtFrom && queryBuilder.andWhere('store.approvedAt >= :approvedAtFrom');
+    approvedAtTo && queryBuilder.andWhere('store.approvedAt <= :approvedAtTo');
+
+    queryBuilder.setParameters({ serviceTypeId, businessAreaId, approvalStatus, status });
+    queryBuilder.setParameters({ createdAtFrom, createdAtTo, approvedAtFrom, approvedAtTo });
 
     if (sort) {
       const [column, order] = sort.split(':') as [string, 'ASC' | 'DESC'];

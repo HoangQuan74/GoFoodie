@@ -1,7 +1,7 @@
 import { BankEntity } from 'src/database/entities/bank.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindManyOptions } from 'typeorm';
+import { Repository, FindManyOptions, FindOneOptions } from 'typeorm';
 
 @Injectable()
 export class BanksService {
@@ -12,5 +12,9 @@ export class BanksService {
 
   async find(options?: FindManyOptions<BankEntity>): Promise<BankEntity[]> {
     return this.bankRepository.find(options);
+  }
+
+  async findOne(options: FindOneOptions<BankEntity>): Promise<BankEntity> {
+    return this.bankRepository.findOne(options);
   }
 }

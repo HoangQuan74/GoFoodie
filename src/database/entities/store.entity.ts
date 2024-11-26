@@ -36,6 +36,9 @@ export class StoreEntity extends BaseEntity {
   @Column({ name: 'service_type_id', nullable: true })
   serviceTypeId: number;
 
+  @Column({ name: 'is_alcohol', default: false })
+  isAlcohol: boolean;
+
   @Column({ name: 'service_group_id', nullable: true })
   serviceGroupId: number;
 

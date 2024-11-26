@@ -1,4 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { IsEnum, IsOptional, ValidateIf } from 'class-validator';
 import { ESortStore, EStoreApprovalStatus, EStoreStatus } from 'src/common/enums';
 import { PaginationQuery } from 'src/common/query';
@@ -7,6 +8,16 @@ export class QueryStoreDto extends PaginationQuery {
   @ApiPropertyOptional()
   @IsOptional()
   search: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  businessAreaId: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  serviceTypeId: number;
 
   @ApiPropertyOptional({ enum: EStoreApprovalStatus })
   @IsOptional()
@@ -25,4 +36,24 @@ export class QueryStoreDto extends PaginationQuery {
   @IsEnum(ESortStore)
   @ValidateIf((o) => o.sort)
   sort: ESortStore = ESortStore.CreatedAtDesc;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Date)
+  createdAtFrom: Date;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Date)
+  createdAtTo: Date;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Date)
+  approvedAtFrom: Date;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Date)
+  approvedAtTo: Date;
 }
