@@ -69,20 +69,36 @@ export class StoreEntity extends BaseEntity {
   @Column({ name: 'created_by_id', nullable: true, select: false })
   createdById: number;
 
-  @Column({ name: 'store_avatar_id' })
+  @Column({ name: 'store_avatar_id', type: 'uuid' })
   storeAvatarId: string;
 
-  @Column({ name: 'store_cover_id' })
+  @Column({ name: 'store_cover_id', type: 'uuid' })
   storeCoverId: string;
 
-  @Column({ name: 'store_front_id' })
+  @Column({ name: 'store_front_id', type: 'uuid' })
   storeFrontId: string;
 
-  @Column({ name: 'store_menu_id' })
+  @Column({ name: 'store_menu_id', type: 'uuid' })
   storeMenuId: string;
 
   @Column({ name: 'is_draft', default: false })
   isDraft: boolean;
+
+  @ManyToOne(() => FileEntity, (file) => file.id, { nullable: false })
+  @JoinColumn({ name: 'store_avatar_id' })
+  storeAvatar: FileEntity;
+
+  @ManyToOne(() => FileEntity, (file) => file.id, { nullable: false })
+  @JoinColumn({ name: 'store_cover_id' })
+  storeCover: FileEntity;
+
+  @ManyToOne(() => FileEntity, (file) => file.id, { nullable: false })
+  @JoinColumn({ name: 'store_front_id' })
+  storeFront: FileEntity;
+
+  @ManyToOne(() => FileEntity, (file) => file.id, { nullable: false })
+  @JoinColumn({ name: 'store_menu_id' })
+  storeMenu: FileEntity;
 
   @ManyToOne(() => AdminEntity, (admin) => admin.id, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'approved_by_id' })

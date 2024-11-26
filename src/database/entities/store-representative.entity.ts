@@ -39,16 +39,16 @@ export class StoreRepresentativeEntity extends BaseEntity {
   @Column({ name: 'identity_card_place', nullable: true })
   identityCardPlace: string;
 
-  @Column({ name: 'identity_card_front_image_id', nullable: true })
-  identityCardFrontImageId: number;
+  @Column({ name: 'identity_card_front_image_id', nullable: true, type: 'uuid' })
+  identityCardFrontImageId: string;
 
-  @Column({ name: 'identity_card_back_image_id', nullable: true })
-  identityCardBackImageId: number;
+  @Column({ name: 'identity_card_back_image_id', nullable: true, type: 'uuid' })
+  identityCardBackImageId: string;
 
-  @Column({ name: 'business_license_image_id', nullable: true })
+  @Column({ name: 'business_license_image_id', nullable: true, type: 'uuid' })
   businessLicenseImageId: string;
 
-  @Column({ name: 'tax_license_image_id' })
+  @Column({ name: 'tax_license_image_id', type: 'uuid' })
   taxLicenseImageId: string;
 
   @Column({ name: 'store_id', select: false })
@@ -58,19 +58,19 @@ export class StoreRepresentativeEntity extends BaseEntity {
   @JoinColumn({ name: 'store_id' })
   store: StoreEntity;
 
-  @ManyToOne(() => FileEntity, (file) => file.id, { onDelete: 'CASCADE' })
+  @ManyToOne(() => FileEntity, (file) => file.id)
   @JoinColumn({ name: 'identity_card_front_image_id' })
   identityCardFrontImage: FileEntity;
 
-  @ManyToOne(() => FileEntity, (file) => file.id, { onDelete: 'CASCADE' })
+  @ManyToOne(() => FileEntity, (file) => file.id)
   @JoinColumn({ name: 'identity_card_back_image_id' })
   identityCardBackImage: FileEntity;
 
-  @ManyToOne(() => FileEntity, (file) => file.id, { onDelete: 'CASCADE' })
+  @ManyToOne(() => FileEntity, (file) => file.id)
   @JoinColumn({ name: 'business_license_image_id' })
   businessLicenseImage: FileEntity;
 
-  @ManyToOne(() => FileEntity, (file) => file.id, { onDelete: 'CASCADE' })
+  @ManyToOne(() => FileEntity, (file) => file.id)
   @JoinColumn({ name: 'tax_license_image_id' })
   taxLicenseImage: FileEntity;
 }
