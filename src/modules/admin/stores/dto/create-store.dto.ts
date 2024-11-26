@@ -12,6 +12,7 @@ import {
   IsEmail,
   IsOptional,
   IsDate,
+  IsBoolean,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -144,51 +145,52 @@ export class CreateStoreDto {
   merchantId: number;
 
   @ApiProperty()
+  @IsBoolean()
+  isDraft: boolean;
+
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   storeCode: string;
 
-  //Khu vực kinh doanh
   @ApiProperty()
   @IsInt()
   businessAreaId: number;
 
-  //Loại hình dịch vụ
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
   serviceType: string;
 
-  //Tên cửa hàng
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  // món đặc trưng của quán
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   specialDish: string;
 
-  // nhóm dịch vụ
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  streetName: string;
+
   @ApiProperty()
   @IsInt()
   serviceGroupId: number;
 
-  // tỉnh/thành phố
   @ApiProperty()
   @IsInt()
   @Type(() => Number)
   provinceId: number;
 
-  // quận/huyện
   @ApiProperty()
   @IsInt()
   @Type(() => Number)
   districtId: number;
 
-  // phường/xã
   @ApiProperty()
   @IsInt()
   @Type(() => Number)
@@ -203,17 +205,25 @@ export class CreateStoreDto {
   @IsPhoneNumber('VN')
   phoneNumber: string;
 
-  // ảnh đại diện của cửa hàng
-  @ApiProperty({ type: 'string', format: 'binary' })
-  @IsString()
-  @IsNotEmpty()
-  storeAvatar: string;
-
-  // ảnh bìa của cửa hàng
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  storeCover: string;
+  storeAvatarId: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  storeCoverId: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  storeFrontId: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  storeMenuId: string;
 
   @ApiProperty({ type: CreateWorkingTimeDto, isArray: true })
   @ValidateNested({ each: true })

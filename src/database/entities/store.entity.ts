@@ -11,6 +11,7 @@ import { DistrictEntity } from './district.entity';
 import { WardEntity } from './ward.entity';
 import { ServiceTypeEntity } from './service-type.entity';
 import { AdminEntity } from './admin.entity';
+import { FileEntity } from './file.entity';
 
 @Entity('stores')
 export class StoreEntity extends BaseEntity {
@@ -67,6 +68,21 @@ export class StoreEntity extends BaseEntity {
 
   @Column({ name: 'created_by_id', nullable: true, select: false })
   createdById: number;
+
+  @Column({ name: 'store_avatar_id' })
+  storeAvatarId: string;
+
+  @Column({ name: 'store_cover_id' })
+  storeCoverId: string;
+
+  @Column({ name: 'store_front_id' })
+  storeFrontId: string;
+
+  @Column({ name: 'store_menu_id' })
+  storeMenuId: string;
+
+  @Column({ name: 'is_draft', default: false })
+  isDraft: boolean;
 
   @ManyToOne(() => AdminEntity, (admin) => admin.id, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'approved_by_id' })

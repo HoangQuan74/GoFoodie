@@ -9,6 +9,7 @@ import { Brackets, In } from 'typeorm';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { IdentityQuery } from 'src/common/query';
+import { EStoreApprovalStatus } from 'src/common/enums';
 
 @Controller('stores')
 @ApiTags('Stores')
@@ -92,5 +93,29 @@ export class StoresController {
     if (!stores.length) throw new NotFoundException();
 
     return this.storesService.remove(stores);
+  }
+
+  @Patch(':id/approve')
+  async approve(@Query('id') id: number, @CurrentUser() user: JwtPayload) {
+    const store = await this.storesService.findOne({ where: { id } });
+    if (!store) throw new NotFoundException();
+
+    store.approvedById = user.id;
+    store.approvedAt = new Date();
+    store.approvalStatus = EStoreApprovalStatus.Approved;
+
+    return this.storesService.save(store);
+  }
+
+  @Patch(':id/reject')
+  async reject(@Query('id') id: number, @CurrentUser() user: JwtPayload) {
+    const store = await this.storesService.findOne({ where: { id } });
+    if (!store) throw new NotFoundException();
+
+    store.approvedById = user.id;
+    store.approvedAt = new Date();
+    store.approvalStatus = EStoreApprovalStatus.Rejected;
+
+    return this.storesService.save(store);
   }
 }
