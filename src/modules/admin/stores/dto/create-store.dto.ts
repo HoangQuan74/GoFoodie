@@ -140,6 +140,12 @@ export class CreateRepresentativeDto {
   @IsString()
   @IsNotEmpty()
   taxLicenseImageId: string;
+
+  @ApiPropertyOptional({ description: 'Hình ảnh liên quan' })
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  relatedImageId: string;
 }
 
 export class CreateStoreDto {

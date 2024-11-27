@@ -51,6 +51,9 @@ export class StoreRepresentativeEntity extends BaseEntity {
   @Column({ name: 'tax_license_image_id', type: 'uuid' })
   taxLicenseImageId: string;
 
+  @Column({ name: 'related_image_id', nullable: true, type: 'uuid' })
+  relatedImageId: string;
+
   @Column({ name: 'store_id', select: false })
   storeId: number;
 
@@ -73,4 +76,8 @@ export class StoreRepresentativeEntity extends BaseEntity {
   @ManyToOne(() => FileEntity, (file) => file.id)
   @JoinColumn({ name: 'tax_license_image_id' })
   taxLicenseImage: FileEntity;
+
+  @ManyToOne(() => FileEntity, (file) => file.id)
+  @JoinColumn({ name: 'related_image_id' })
+  relatedImage: FileEntity;
 }
