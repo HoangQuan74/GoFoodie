@@ -69,12 +69,14 @@ export class CreateRepresentativeDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ description: 'Số điện thoại người đại diện' })
+  @ApiPropertyOptional({ description: 'Số điện thoại người đại diện' })
   @IsPhoneNumber('VN', { message: EXCEPTIONS.INVALID_PHONE })
+  @IsOptional()
   phone: string;
 
   @ApiPropertyOptional({ description: 'Số điện thoại khác' })
   @IsPhoneNumber('VN', { message: EXCEPTIONS.INVALID_PHONE })
+  @IsOptional()
   otherPhone: string;
 
   @ApiPropertyOptional({ description: 'Email người đại diện' })
@@ -87,9 +89,9 @@ export class CreateRepresentativeDto {
   @IsNotEmpty()
   taxCode: string;
 
-  @ApiProperty({ description: 'Địa chỉ' })
+  @ApiPropertyOptional({ description: 'Địa chỉ' })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   address: string;
 
   @ApiPropertyOptional({ description: 'Mã số thuế cá nhân' })
