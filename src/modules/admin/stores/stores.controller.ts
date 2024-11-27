@@ -1,3 +1,4 @@
+import { WardsService } from './../../wards/wards.service';
 import { Body, Controller, Delete, Get, NotFoundException, Patch, Post, Query } from '@nestjs/common';
 import { StoresService } from './stores.service';
 import { CreateStoreDto } from './dto/create-store.dto';
@@ -10,7 +11,8 @@ import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { IdentityQuery } from 'src/common/query';
 import { EStoreApprovalStatus } from 'src/common/enums';
-import * as moment from 'moment';
+import * as moment from 'moment-timezone';
+import { TIMEZONE } from 'src/common/constants';
 
 @Controller('stores')
 @ApiTags('Stores')
@@ -18,22 +20,33 @@ export class StoresController {
   constructor(
     private readonly storesService: StoresService,
     private readonly dataSource: DataSource,
+    private readonly wardsService: WardsService,
   ) {}
 
   @Post()
   async create(@Body() body: CreateStoreDto, @CurrentUser() user: JwtPayload) {
+    const { wardId } = body;
+    const { districtId, provinceId } = await this.wardsService.getProvinceIdAndDistrictId(wardId);
+
+    if (!districtId || !provinceId) throw new NotFoundException();
+
     return this.dataSource.transaction(async (manager) => {
       const newStore = new StoreEntity();
       Object.assign(newStore, body);
       newStore.createdById = user.id;
+      newStore.districtId = districtId;
+      newStore.provinceId = provinceId;
 
-      const today = moment().format('YYYYMMDD');
+      const today = moment().tz(TIMEZONE).format('YYMMDD');
       const latestStore = await manager.findOne(StoreEntity, {
         where: { storeCode: Like(`${today}%`) },
         order: { storeCode: 'DESC' },
+        withDeleted: true,
       });
 
-      newStore.storeCode = `${today}${latestStore ? +latestStore.storeCode.slice(-2) + 1 : '01'}`;
+      const numberStore = latestStore ? +latestStore.storeCode.slice(-2) + 1 : 1;
+      newStore.storeCode = `${today}${numberStore.toString().padStart(2, '0')}`;
+
       return manager.save(newStore);
     });
   }

@@ -183,16 +183,6 @@ export class CreateStoreDto {
   @ApiProperty()
   @IsInt()
   @Type(() => Number)
-  provinceId: number;
-
-  @ApiProperty()
-  @IsInt()
-  @Type(() => Number)
-  districtId: number;
-
-  @ApiProperty()
-  @IsInt()
-  @Type(() => Number)
   wardId: number;
 
   @ApiProperty()

@@ -45,6 +45,7 @@
     "class-validator": "^0.14.1",
     "dotenv": "^16.4.5",
     "firebase-admin": "^13.0.1",
+    "moment-timezone": "^0.5.46",
     "mysql": "^2.18.1",
     "nodemailer": "^6.9.16",
     "pg": "^8.13.1",

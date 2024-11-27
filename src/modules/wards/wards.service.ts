@@ -17,4 +17,14 @@ export class WardsService {
   async findAndCount(options?: FindManyOptions<WardEntity>): Promise<[WardEntity[], number]> {
     return this.wardRepository.findAndCount(options);
   }
+
+  async getProvinceIdAndDistrictId(wardId: number): Promise<{ provinceId: number; districtId: number }> {
+    const ward = await this.wardRepository.findOne({
+      select: { id: true, districtId: true, district: { provinceId: true } },
+      where: { id: wardId },
+      relations: ['district'],
+    });
+
+    return { provinceId: ward?.district?.provinceId, districtId: ward?.districtId };
+  }
 }
