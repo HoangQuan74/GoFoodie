@@ -76,8 +76,9 @@ export class StoresController {
         .andWhere(
           new Brackets((qb) => {
             qb.where('store.name ILIKE :search');
-            qb.orWhere('store.storeCode ILIKE :search');
             qb.orWhere('store.phoneNumber ILIKE :search');
+            qb.orWhere('representative.email ILIKE :search');
+            qb.orWhere('representative.name ILIKE :search');
           }),
         )
         .setParameters({ search: `%${search}%` });
@@ -111,7 +112,7 @@ export class StoresController {
   async findOne(@Query('id') id: number) {
     const store = await this.storesService.findOne({
       where: { id },
-      relations: ['representative', 'workingTimes', 'banks'],
+      relations: ['representative', 'workingTimes', 'banks', 'banks.bank', 'banks.bankBranch'],
     });
     if (!store) throw new NotFoundException();
 

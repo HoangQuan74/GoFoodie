@@ -38,15 +38,13 @@ export class CreateWorkingTimeDto {
 }
 
 export class CreateStoreBankDto {
-  @ApiProperty({ description: 'Tên ngân hàng' })
-  @IsString()
-  @IsNotEmpty()
-  bankName: string;
+  @ApiProperty({ description: 'Id ngân hàng' })
+  @IsInt()
+  bankId: string;
 
-  @ApiProperty({ description: 'Chi nhánh ngân hàng' })
-  @IsString()
-  @IsNotEmpty()
-  bankBranch: string;
+  @ApiProperty({ description: 'Id chi nhánh ngân hàng' })
+  @IsInt()
+  bankBranchId: string;
 
   @ApiProperty({ description: 'Số tài khoản' })
   @IsString()
