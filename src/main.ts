@@ -5,6 +5,7 @@ import { AllExceptionsFilter } from './common/filters/exception.filter';
 import { TransformInterceptor } from './common/interceptors';
 import { ValidationPipe } from '@nestjs/common';
 import { MyLogger } from './logger/app.logger';
+import * as cookieParser from 'cookie-parser';
 
 const { NODE_ENV = 'development', PORT = 3000 } = process.env;
 
@@ -25,6 +26,8 @@ async function bootstrap() {
 
   // transform data
   app.useGlobalInterceptors(new TransformInterceptor());
+
+  app.use(cookieParser());
 
   // set global prefix
   app.setGlobalPrefix('/api/v1');

@@ -1,10 +1,10 @@
-import { Controller, Get, Post, Req } from '@nestjs/common';
+import { Controller, Get, Post, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Body } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 import { CurrentUser, Public } from 'src/common/decorators';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -19,16 +19,16 @@ export class AuthController {
 
   @Post('login')
   @Public()
-  login(@Body() body: LoginDto) {
+  login(@Body() body: LoginDto, @Res({ passthrough: true }) res: Response) {
     const { username, password } = body;
-    return this.authService.signIn(username, password);
+    return this.authService.signIn(username, password, res);
   }
 
   @Post('refresh-token')
   @Public()
-  refreshToken(@Body() body: RefreshTokenDto) {
+  refreshToken(@Body() body: RefreshTokenDto, @Res({ passthrough: true }) res: Response) {
     const { refreshToken } = body;
-    return this.authService.refreshToken(refreshToken);
+    return this.authService.refreshToken(refreshToken, res);
   }
 
   @Get('profile')
@@ -61,5 +61,12 @@ export class AuthController {
   checkOtp(@Body() body: CheckOtpDto) {
     const { email, otp } = body;
     return this.authService.checkOtp(email, otp);
+  }
+
+  @Post('logout')
+  @Public()
+  logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie('token');
+    return { message: 'Logout successfully' };
   }
 }

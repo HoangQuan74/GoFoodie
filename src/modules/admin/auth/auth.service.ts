@@ -8,6 +8,7 @@ import { AdminEntity } from 'src/database/entities/admin.entity';
 import { RefreshTokensService } from '../refresh-tokens/refresh-tokens.service';
 import { MailService } from 'src/modules/mail/mail.service';
 import { EAdminOtpType } from 'src/common/enums';
+import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -18,7 +19,7 @@ export class AuthService {
     private mailService: MailService,
   ) {}
 
-  async signIn(username: string, password: string): Promise<Omit<AdminEntity, 'password'> & JwtSign> {
+  async signIn(username: string, password: string, res: Response): Promise<Omit<AdminEntity, 'password'> & JwtSign> {
     const admin = await this.adminsService.findOne({
       where: [{ username }, { email: username }],
       select: ['id', 'username', 'email', 'password'],
@@ -36,6 +37,7 @@ export class AuthService {
     this.adminsService.save(admin);
 
     delete admin.password;
+    res.cookie('token', accessToken, { httpOnly: true });
     return { ...admin, accessToken, refreshToken: token };
   }
 
@@ -77,7 +79,7 @@ export class AuthService {
     await this.adminsService.save(admin);
   }
 
-  async refreshToken(refreshToken: string) {
+  async refreshToken(refreshToken: string, res: Response): Promise<JwtSign> {
     const refreshTokenEntity = await this.refreshTokensService.findValidToken(refreshToken);
     if (!refreshTokenEntity) throw new UnauthorizedException();
 
@@ -90,6 +92,7 @@ export class AuthService {
     this.refreshTokensService.revokeToken(admin.id, refreshToken);
     const { token } = await this.refreshTokensService.createRefreshToken(admin.id);
 
+    res.cookie('token', token, { httpOnly: true });
     return { accessToken, refreshToken: token };
   }
 
