@@ -37,7 +37,6 @@ async function bootstrap() {
     .setTitle('API Documentation')
     .setDescription('API description')
     .setVersion('1.0')
-    .addTag('API')
     .addBearerAuth()
     .addSecurityRequirements('bearer')
     .build();

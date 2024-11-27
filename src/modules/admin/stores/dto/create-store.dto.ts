@@ -20,17 +20,17 @@ import { EStoreRepresentativeType } from 'src/common/enums';
 import { EXCEPTIONS } from 'src/common/constants';
 
 export class CreateWorkingTimeDto {
-  @ApiProperty()
+  @ApiProperty({ description: 'Thứ trong tuần (0: Chủ nhật, 1: Thứ 2, ..., 6: Thứ 7)' })
   @IsIn([0, 1, 2, 3, 4, 5, 6])
   dayOfWeek: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Giờ mở cửa (phút)' })
   @IsInt()
   @Min(0)
   @Max(24 * 60 - 1)
   openTime: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Giờ đóng cửa (phút)' })
   @IsInt()
   @Min(0)
   @Max(24 * 60 - 1)
@@ -38,110 +38,110 @@ export class CreateWorkingTimeDto {
 }
 
 export class CreateStoreBankDto {
-  @ApiProperty()
+  @ApiProperty({ description: 'Tên ngân hàng' })
   @IsString()
   @IsNotEmpty()
   bankName: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Chi nhánh ngân hàng' })
   @IsString()
   @IsNotEmpty()
   bankBranch: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Số tài khoản' })
   @IsString()
   @IsNotEmpty()
   bankAccountNumber: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Tên chủ tài khoản' })
   @IsString()
   @IsNotEmpty()
   bankAccountName: string;
 }
 
 export class CreateRepresentativeDto {
-  @ApiProperty({ enum: EStoreRepresentativeType })
+  @ApiProperty({ enum: EStoreRepresentativeType, description: 'Loại người đại diện' })
   @IsEnum(EStoreRepresentativeType)
   type: EStoreRepresentativeType;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Tên người đại diện' })
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Số điện thoại người đại diện' })
   @IsPhoneNumber('VN', { message: EXCEPTIONS.INVALID_PHONE })
   phone: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Số điện thoại khác' })
   @IsPhoneNumber('VN', { message: EXCEPTIONS.INVALID_PHONE })
   otherPhone: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Email người đại diện' })
   @IsEmail({}, { message: EXCEPTIONS.INVALID_EMAIL })
   @IsOptional()
   email: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Mã số thuế' })
   @IsString()
   @IsNotEmpty()
   taxCode: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Địa chỉ' })
   @IsString()
   @IsNotEmpty()
   address: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Mã số thuế cá nhân' })
   @IsString()
   @IsNotEmpty()
   @ValidateIf((o) => o.status === EStoreRepresentativeType.Individual)
   personalTaxCode: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Số CMND' })
   @IsString()
   @IsNotEmpty()
   @ValidateIf((o) => o.status === EStoreRepresentativeType.Individual)
   identityCard: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Nơi cấp CMND' })
   @IsString()
   @IsNotEmpty()
   @ValidateIf((o) => o.status === EStoreRepresentativeType.Individual)
   identityCardPlace: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Ngày cấp CMND' })
   @IsDate()
   @Type(() => Date)
   @ValidateIf((o) => o.status === EStoreRepresentativeType.Individual)
   identityCardDate: Date;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Hình ảnh CMND mặt trước' })
   @IsString()
   @IsNotEmpty()
   @ValidateIf((o) => o.status === EStoreRepresentativeType.Individual)
   identityCardFrontImageId: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Hình ảnh CMND mặt sau' })
   @IsString()
   @IsNotEmpty()
   @ValidateIf((o) => o.status === EStoreRepresentativeType.Individual)
   identityCardBackImageId: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Hình ảnh giấy phép kinh doanh' })
   @IsString()
   @IsNotEmpty()
   @ValidateIf((o) => o.status !== EStoreRepresentativeType.Individual)
   businessLicenseImageId: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Hình ảnh mã số thuế' })
   @IsString()
   @IsNotEmpty()
   taxLicenseImageId: string;
 }
 
 export class CreateStoreDto {
-  @ApiProperty()
+  @ApiProperty({ description: 'Id của merchant' })
   @IsInt()
   merchantId: number;
 
@@ -149,67 +149,67 @@ export class CreateStoreDto {
   @IsBoolean()
   isDraft: boolean;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Có kinh doanh rượu không' })
   @IsBoolean()
   isAlcohol: boolean;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Id của khu vực kinh doanh' })
   @IsInt()
   businessAreaId: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Id của loại dịch vụ' })
   @IsInt()
   serviceTypeId: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Tên cửa hàng' })
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Món đặc biệt' })
   @IsString()
   @IsOptional()
   specialDish: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Tên đường' })
   @IsString()
   @IsOptional()
   streetName: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Id của nhóm dịch vụ' })
   @IsInt()
   serviceGroupId: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Id của xã' })
   @IsInt()
   @Type(() => Number)
   wardId: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Địa chỉ' })
   @IsString()
   @IsNotEmpty()
   address: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Số điện thoại' })
   @IsPhoneNumber('VN', { message: EXCEPTIONS.INVALID_PHONE })
   phoneNumber: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Ảnh đại diện cửa hàng' })
   @IsString()
   @IsNotEmpty()
   storeAvatarId: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Ảnh bìa cửa hàng' })
   @IsString()
   @IsNotEmpty()
   storeCoverId: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Ảnh mặt tiền cửa hàng' })
   @IsString()
   @IsNotEmpty()
   storeFrontId: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Ảnh menu cửa hàng' })
   @IsString()
   @IsNotEmpty()
   storeMenuId: string;
