@@ -27,9 +27,9 @@ export class StoresController {
 
   @Get()
   async find(@Query() query: QueryStoreDto) {
-    const { search, page, limit, sort, serviceTypeId, businessAreaId, approvalStatus, status } = query;
+    const { search, page, limit, sort, serviceTypeId, businessAreaId, approvalStatus, status, isDraft } = query;
     const { createdAtFrom, createdAtTo, approvedAtFrom, approvedAtTo } = query;
-
+    console.log('query', query);
     const queryBuilder = this.storesService
       .createQueryBuilder('store')
       .leftJoinAndSelect('store.businessArea', 'businessArea')
@@ -42,7 +42,7 @@ export class StoresController {
       .leftJoin('store.createdBy', 'createdBy')
       .addSelect(['approvedBy.id', 'approvedBy.name'])
       .leftJoin('store.approvedBy', 'approvedBy')
-      .addSelect(['representative.id', 'representative.name', 'representative.phone'])
+      .addSelect(['representative.id', 'representative.name', 'representative.phone', 'representative.type'])
       .leftJoin('store.representative', 'representative');
 
     if (search) {
@@ -65,8 +65,9 @@ export class StoresController {
     createdAtTo && queryBuilder.andWhere('store.createdAt <= :createdAtTo');
     approvedAtFrom && queryBuilder.andWhere('store.approvedAt >= :approvedAtFrom');
     approvedAtTo && queryBuilder.andWhere('store.approvedAt <= :approvedAtTo');
+    typeof isDraft === 'boolean' && queryBuilder.andWhere('store.isDraft = :isDraft');
 
-    queryBuilder.setParameters({ serviceTypeId, businessAreaId, approvalStatus, status });
+    queryBuilder.setParameters({ serviceTypeId, businessAreaId, approvalStatus, status, isDraft });
     queryBuilder.setParameters({ createdAtFrom, createdAtTo, approvedAtFrom, approvedAtTo });
 
     if (sort) {
