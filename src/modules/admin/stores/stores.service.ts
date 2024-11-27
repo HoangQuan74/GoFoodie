@@ -22,6 +22,10 @@ export class StoresService {
     return this.storeRepository.find(options);
   }
 
+  async count(options?: FindManyOptions<StoreEntity>) {
+    return this.storeRepository.count(options);
+  }
+
   createQueryBuilder(alias: string) {
     return this.storeRepository.createQueryBuilder(alias);
   }

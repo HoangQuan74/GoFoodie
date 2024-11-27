@@ -17,6 +17,7 @@ import {
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { EStoreRepresentativeType } from 'src/common/enums';
+import { EXCEPTIONS } from 'src/common/constants';
 
 export class CreateWorkingTimeDto {
   @ApiProperty()
@@ -69,15 +70,15 @@ export class CreateRepresentativeDto {
   name: string;
 
   @ApiProperty()
-  @IsPhoneNumber('VN')
+  @IsPhoneNumber('VN', { message: EXCEPTIONS.INVALID_PHONE })
   phone: string;
 
   @ApiPropertyOptional()
-  @IsPhoneNumber('VN')
+  @IsPhoneNumber('VN', { message: EXCEPTIONS.INVALID_PHONE })
   otherPhone: string;
 
   @ApiPropertyOptional()
-  @IsEmail()
+  @IsEmail({}, { message: EXCEPTIONS.INVALID_EMAIL })
   @IsOptional()
   email: string;
 
@@ -153,18 +154,12 @@ export class CreateStoreDto {
   isAlcohol: boolean;
 
   @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  storeCode: string;
-
-  @ApiProperty()
   @IsInt()
   businessAreaId: number;
 
   @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  serviceType: string;
+  @IsInt()
+  serviceTypeId: number;
 
   @ApiProperty()
   @IsString()
@@ -206,7 +201,7 @@ export class CreateStoreDto {
   address: string;
 
   @ApiProperty()
-  @IsPhoneNumber('VN')
+  @IsPhoneNumber('VN', { message: EXCEPTIONS.INVALID_PHONE })
   phoneNumber: string;
 
   @ApiProperty()

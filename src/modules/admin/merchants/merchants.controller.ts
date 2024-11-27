@@ -18,7 +18,7 @@ import { MerchantEntity } from 'src/database/entities/merchant.entity';
 import { hashPassword } from 'src/utils/bcrypt';
 import { QueryMerchantDto } from './dto/query-merchant.dto';
 import { Brackets, In, Not } from 'typeorm';
-import { ADMIN_EXCEPTIONS } from 'src/common/constants/admin.constant';
+import { EXCEPTIONS } from 'src/common/constants';
 import { IdentityQuery } from 'src/common/query';
 
 @Controller('merchants')
@@ -33,8 +33,8 @@ export class MerchantsController {
     const options = { where: [{ email }, { phone: createMerchantDto.phone }] };
     const merchant = await this.merchantsService.findOne(options);
 
-    if (email && merchant?.email === email) throw new ConflictException(ADMIN_EXCEPTIONS.EMAIL_CONFLICT);
-    if (phone && merchant?.phone === phone) throw new ConflictException(ADMIN_EXCEPTIONS.PHONE_CONFLICT);
+    if (email && merchant?.email === email) throw new ConflictException(EXCEPTIONS.EMAIL_CONFLICT);
+    if (phone && merchant?.phone === phone) throw new ConflictException(EXCEPTIONS.PHONE_CONFLICT);
 
     const newMerchant = new MerchantEntity();
     Object.assign(newMerchant, createMerchantDto);
@@ -91,12 +91,12 @@ export class MerchantsController {
 
     if (email) {
       const emailConflict = await this.merchantsService.findOne({ where: { email, id: Not(merchant.id) } });
-      if (emailConflict) throw new ConflictException(ADMIN_EXCEPTIONS.EMAIL_CONFLICT);
+      if (emailConflict) throw new ConflictException(EXCEPTIONS.EMAIL_CONFLICT);
     }
 
     if (phone) {
       const phoneConflict = await this.merchantsService.findOne({ where: { phone, id: Not(merchant.id) } });
-      if (phoneConflict) throw new ConflictException(ADMIN_EXCEPTIONS.PHONE_CONFLICT);
+      if (phoneConflict) throw new ConflictException(EXCEPTIONS.PHONE_CONFLICT);
     }
 
     Object.assign(merchant, updateMerchantDto);

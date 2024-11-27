@@ -5,24 +5,37 @@ import { UpdateStoreDto } from './dto/update-store.dto';
 import { QueryStoreDto } from './dto/query-store.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { StoreEntity } from 'src/database/entities/store.entity';
-import { Brackets, In } from 'typeorm';
+import { Brackets, DataSource, In, Like } from 'typeorm';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { IdentityQuery } from 'src/common/query';
 import { EStoreApprovalStatus } from 'src/common/enums';
+import * as moment from 'moment';
 
 @Controller('stores')
 @ApiTags('Stores')
 export class StoresController {
-  constructor(private readonly storesService: StoresService) {}
+  constructor(
+    private readonly storesService: StoresService,
+    private readonly dataSource: DataSource,
+  ) {}
 
   @Post()
   async create(@Body() body: CreateStoreDto, @CurrentUser() user: JwtPayload) {
-    const newStore = new StoreEntity();
-    Object.assign(newStore, body);
-    newStore.createdById = user.id;
+    return this.dataSource.transaction(async (manager) => {
+      const newStore = new StoreEntity();
+      Object.assign(newStore, body);
+      newStore.createdById = user.id;
 
-    return this.storesService.save(newStore);
+      const today = moment().format('YYYYMMDD');
+      const latestStore = await manager.findOne(StoreEntity, {
+        where: { storeCode: Like(`${today}%`) },
+        order: { storeCode: 'DESC' },
+      });
+
+      newStore.storeCode = `${today}${latestStore ? +latestStore.storeCode.slice(-2) + 1 : '01'}`;
+      return manager.save(newStore);
+    });
   }
 
   @Get()
@@ -104,7 +117,10 @@ export class StoresController {
   @Delete()
   async delete(@Body() query: IdentityQuery) {
     const { ids } = query;
-    const options = { where: { id: In(ids) }, relations: { workingTimes: true, banks: true, representative: true } };
+    const options = {
+      where: { id: In(ids), isDraft: false },
+      relations: { workingTimes: true, banks: true, representative: true },
+    };
     const stores = await this.storesService.find(options);
     if (!stores.length) throw new NotFoundException();
 
