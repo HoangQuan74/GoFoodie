@@ -92,7 +92,7 @@ export class AuthService {
     this.refreshTokensService.revokeToken(admin.id, refreshToken);
     const { token } = await this.refreshTokensService.createRefreshToken(admin.id);
 
-    res.cookie('token', token, { httpOnly: true });
+    res.cookie('token', accessToken, { httpOnly: true });
     return { accessToken, refreshToken: token };
   }
 
