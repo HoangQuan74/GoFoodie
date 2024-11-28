@@ -16,7 +16,7 @@ export class StoreWorkingTimeEntity extends BaseEntity {
   @Column({ name: 'store_id', select: false })
   storeId: number;
 
-  @ManyToOne(() => StoreEntity, (store) => store.id, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => StoreEntity, (store) => store.id, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
   @JoinColumn({ name: 'store_id' })
   store: StoreEntity;
 }
