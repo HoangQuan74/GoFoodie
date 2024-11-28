@@ -37,7 +37,8 @@ export class AuthService {
     this.adminsService.save(admin);
 
     delete admin.password;
-    res.cookie('token', accessToken, { httpOnly: true, secure: !ENV, sameSite: ENV ? 'none' : 'strict' });
+    const isDev = ENV === 'development';
+    res.cookie('token', accessToken, { httpOnly: true, secure: !isDev, sameSite: isDev ? 'none' : 'strict' });
     return { ...admin, accessToken, refreshToken: token };
   }
 
@@ -92,7 +93,8 @@ export class AuthService {
     this.refreshTokensService.revokeToken(admin.id, refreshToken);
     const { token } = await this.refreshTokensService.createRefreshToken(admin.id);
 
-    res.cookie('token', accessToken, { httpOnly: true, secure: !ENV, sameSite: ENV ? 'none' : 'strict' });
+    const isDev = ENV === 'development';
+    res.cookie('token', accessToken, { httpOnly: true, secure: !isDev, sameSite: isDev ? 'none' : 'strict' });
     return { accessToken, refreshToken: token };
   }
 
