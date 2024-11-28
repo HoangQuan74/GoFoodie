@@ -12,6 +12,7 @@ import { EStoreApprovalStatus } from 'src/common/enums';
       m.status,
       m.created_at,
       m.updated_at,
+      m.store_id,
       sum(case when s.approval_status IN ('${EStoreApprovalStatus.Pending}', '${EStoreApprovalStatus.Approved}') then 1 else 0 end) AS store_number,
       sum(case when s.approval_status = '${EStoreApprovalStatus.Approved}' then 1 else 0 end) AS approved_store_number,
       sum(case when s.approval_status = '${EStoreApprovalStatus.Pending}' then 1 else 0 end) AS unapproved_store_number
@@ -33,6 +34,9 @@ export class MerchantView {
 
   @ViewColumn()
   phone: string;
+
+  @ViewColumn({ name: 'store_id' })
+  storeId: number;
 
   @ViewColumn()
   status: EMerchantStatus;
