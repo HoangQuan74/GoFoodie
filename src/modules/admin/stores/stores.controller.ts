@@ -143,7 +143,7 @@ export class StoresController {
 
   @Patch(':id/approve')
   async approve(@Query('id') id: number, @CurrentUser() user: JwtPayload) {
-    const store = await this.storesService.findOne({ where: { id } });
+    const store = await this.storesService.findOne({ where: { id, approvalStatus: EStoreApprovalStatus.Pending } });
     if (!store) throw new NotFoundException();
 
     store.approvedById = user.id;
@@ -155,7 +155,7 @@ export class StoresController {
 
   @Patch(':id/reject')
   async reject(@Query('id') id: number, @CurrentUser() user: JwtPayload) {
-    const store = await this.storesService.findOne({ where: { id } });
+    const store = await this.storesService.findOne({ where: { id, approvalStatus: EStoreApprovalStatus.Pending } });
     if (!store) throw new NotFoundException();
 
     store.approvedById = user.id;
