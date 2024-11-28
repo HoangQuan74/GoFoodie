@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { comparePassword, generateOTP, hashPassword } from 'src/utils/bcrypt';
 import { JwtPayload, JwtSign } from 'src/common/interfaces';
-import { JWT_EXPIRATION, JWT_SECRET } from 'src/common/constants';
+import { ENV, JWT_EXPIRATION, JWT_SECRET } from 'src/common/constants';
 import { JwtService } from '@nestjs/jwt';
 import { AdminsService } from '../admins/admins.service';
 import { AdminEntity } from 'src/database/entities/admin.entity';
@@ -37,7 +37,7 @@ export class AuthService {
     this.adminsService.save(admin);
 
     delete admin.password;
-    res.cookie('token', accessToken, { httpOnly: true });
+    res.cookie('token', accessToken, { httpOnly: true, secure: !ENV, sameSite: ENV ? 'none' : 'strict' });
     return { ...admin, accessToken, refreshToken: token };
   }
 
@@ -92,7 +92,7 @@ export class AuthService {
     this.refreshTokensService.revokeToken(admin.id, refreshToken);
     const { token } = await this.refreshTokensService.createRefreshToken(admin.id);
 
-    res.cookie('token', accessToken, { httpOnly: true });
+    res.cookie('token', accessToken, { httpOnly: true, secure: !ENV, sameSite: ENV ? 'none' : 'strict' });
     return { accessToken, refreshToken: token };
   }
 

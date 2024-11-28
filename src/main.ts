@@ -6,6 +6,7 @@ import { TransformInterceptor } from './common/interceptors';
 import { ValidationPipe } from '@nestjs/common';
 import { MyLogger } from './logger/app.logger';
 import * as cookieParser from 'cookie-parser';
+import { corsConfig } from './config/cors.config';
 
 const { NODE_ENV = 'development', PORT = 3000 } = process.env;
 
@@ -13,7 +14,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // enable cors
-  app.enableCors();
+  app.enableCors(corsConfig);
 
   // enable logger
   app.useLogger(new MyLogger());
