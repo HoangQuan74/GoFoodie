@@ -12,9 +12,9 @@ import { EStoreApprovalStatus } from 'src/common/enums';
       m.status,
       m.created_at,
       m.updated_at,
-      count(s.id) AS store_number,
+      sum(case when s.approval_status IN ('${EStoreApprovalStatus.Pending}', '${EStoreApprovalStatus.Approved}') then 1 else 0 end) AS store_number,
       sum(case when s.approval_status = '${EStoreApprovalStatus.Approved}' then 1 else 0 end) AS approved_store_number,
-      sum(case when s.approval_status = '${EStoreApprovalStatus.Rejected}' then 1 else 0 end) AS unapproved_store_number
+      sum(case when s.approval_status = '${EStoreApprovalStatus.Pending}' then 1 else 0 end) AS unapproved_store_number
     FROM merchants m
     LEFT JOIN stores s ON s.merchant_id = m.id AND s.deleted_at IS NULL
     WHERE m.deleted_at IS NULL

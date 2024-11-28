@@ -1,4 +1,5 @@
 export enum EStoreApprovalStatus {
+  Draft = 'draft',
   Pending = 'pending',
   Approved = 'approved',
   Rejected = 'rejected',

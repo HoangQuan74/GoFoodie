@@ -7,6 +7,11 @@ import { PaginationQuery } from 'src/common/query';
 export class QueryStoreDto extends PaginationQuery {
   @ApiPropertyOptional()
   @IsOptional()
+  @Type(() => Number)
+  merchantId: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
   search: string;
 
   @ApiPropertyOptional()

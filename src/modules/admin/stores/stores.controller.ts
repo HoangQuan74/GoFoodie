@@ -4,7 +4,7 @@ import { StoresService } from './stores.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import { QueryStoreDto } from './dto/query-store.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { Brackets, DataSource, In, Like } from 'typeorm';
 import { CurrentUser } from 'src/common/decorators';
@@ -25,7 +25,7 @@ export class StoresController {
 
   @Post()
   async create(@Body() body: CreateStoreDto, @CurrentUser() user: JwtPayload) {
-    const { wardId } = body;
+    const { wardId, isDraft } = body;
     const { districtId, provinceId } = await this.wardsService.getProvinceIdAndDistrictId(wardId);
 
     if (!districtId || !provinceId) throw new NotFoundException();
@@ -36,6 +36,7 @@ export class StoresController {
       newStore.createdById = user.id;
       newStore.districtId = districtId;
       newStore.provinceId = provinceId;
+      newStore.status = isDraft ? EStoreApprovalStatus.Draft : EStoreApprovalStatus.Pending;
 
       const today = moment().tz(TIMEZONE).format('YYMMDD');
       const latestStore = await manager.findOne(StoreEntity, {
@@ -53,7 +54,7 @@ export class StoresController {
 
   @Get()
   async find(@Query() query: QueryStoreDto) {
-    const { search, page, limit, sort, serviceTypeId, businessAreaId, approvalStatus, status, isDraft } = query;
+    const { search, page, limit, sort, serviceTypeId, businessAreaId, approvalStatus, status, merchantId } = query;
     const { createdAtFrom, createdAtTo, approvedAtFrom, approvedAtTo } = query;
     console.log('query', query);
     const queryBuilder = this.storesService
@@ -84,6 +85,7 @@ export class StoresController {
         .setParameters({ search: `%${search}%` });
     }
 
+    merchantId && queryBuilder.andWhere('store.merchantId = :merchantId');
     approvalStatus && queryBuilder.andWhere('store.approvalStatus = :approvalStatus');
     status && queryBuilder.andWhere('store.status = :status');
     serviceTypeId && queryBuilder.andWhere('store.serviceTypeId = :serviceTypeId');
@@ -92,9 +94,8 @@ export class StoresController {
     createdAtTo && queryBuilder.andWhere('store.createdAt <= :createdAtTo');
     approvedAtFrom && queryBuilder.andWhere('store.approvedAt >= :approvedAtFrom');
     approvedAtTo && queryBuilder.andWhere('store.approvedAt <= :approvedAtTo');
-    typeof isDraft === 'boolean' && queryBuilder.andWhere('store.isDraft = :isDraft');
 
-    queryBuilder.setParameters({ serviceTypeId, businessAreaId, approvalStatus, status, isDraft });
+    queryBuilder.setParameters({ serviceTypeId, businessAreaId, approvalStatus, status, merchantId });
     queryBuilder.setParameters({ createdAtFrom, createdAtTo, approvedAtFrom, approvedAtTo });
 
     if (sort) {
@@ -154,13 +155,30 @@ export class StoresController {
   }
 
   @Patch(':id/reject')
-  async reject(@Query('id') id: number, @CurrentUser() user: JwtPayload) {
+  @ApiBody({ schema: { type: 'object', properties: { reason: { type: 'string' } } } })
+  async reject(@Query('id') id: number, @CurrentUser() user: JwtPayload, @Body('reason') reason: string) {
     const store = await this.storesService.findOne({ where: { id, approvalStatus: EStoreApprovalStatus.Pending } });
     if (!store) throw new NotFoundException();
 
     store.approvedById = user.id;
     store.approvedAt = new Date();
     store.approvalStatus = EStoreApprovalStatus.Rejected;
+    store.rejectReason = reason;
+
+    return this.storesService.save(store);
+  }
+
+  @Patch(':id/send-approve')
+  async sendApprove(@Query('id') id: number) {
+    const store = await this.storesService.findOne({
+      where: { id, approvalStatus: In([EStoreApprovalStatus.Rejected, EStoreApprovalStatus.Draft]) },
+    });
+    if (!store) throw new NotFoundException();
+
+    store.approvedById = null;
+    store.approvedAt = null;
+    store.approvalStatus = EStoreApprovalStatus.Pending;
+    store.rejectReason = null;
 
     return this.storesService.save(store);
   }

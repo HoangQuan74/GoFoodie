@@ -12,6 +12,6 @@ export class ProvincesController {
   @Get()
   @Public()
   async find(): Promise<ProvinceEntity[]> {
-    return this.provincesService.find();
+    return this.provincesService.find({ order: { name: 'ASC' } });
   }
 }

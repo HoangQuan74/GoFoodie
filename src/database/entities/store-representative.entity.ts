@@ -33,7 +33,7 @@ export class StoreRepresentativeEntity extends BaseEntity {
   @Column({ name: 'identity_card', nullable: true })
   identityCard: string;
 
-  @Column({ name: 'identity_card_date', nullable: true })
+  @Column({ name: 'identity_card_date', type: 'date', nullable: true })
   identityCardDate: string;
 
   @Column({ name: 'identity_card_place', nullable: true })

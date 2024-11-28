@@ -84,9 +84,6 @@ export class StoreEntity extends BaseEntity {
   @Column({ name: 'store_menu_id', type: 'uuid' })
   storeMenuId: string;
 
-  @Column({ name: 'is_draft', default: false })
-  isDraft: boolean;
-
   @ManyToOne(() => FileEntity, (file) => file.id, { nullable: false })
   @JoinColumn({ name: 'store_avatar_id' })
   storeAvatar: FileEntity;
@@ -110,6 +107,9 @@ export class StoreEntity extends BaseEntity {
   @ManyToOne(() => AdminEntity, (admin) => admin.id, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'created_by_id' })
   createdBy: AdminEntity;
+
+  @Column({ name: 'reject_reason', nullable: true })
+  rejectReason: string;
 
   @ManyToOne(() => ServiceGroupEntity, (serviceGroup) => serviceGroup.id, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'service_group_id' })
