@@ -9,7 +9,7 @@ export class StoreRepresentativeEntity extends BaseEntity {
   @Column({ type: 'enum', enum: EStoreRepresentativeType })
   type: EStoreRepresentativeType;
 
-  @Column()
+  @Column({ nullable: true })
   name: string;
 
   @Column({ nullable: true })
@@ -24,7 +24,7 @@ export class StoreRepresentativeEntity extends BaseEntity {
   @Column({ nullable: true })
   address: string;
 
-  @Column({ name: 'tax_code' })
+  @Column({ name: 'tax_code', nullable: true })
   taxCode: string;
 
   @Column({ name: 'personal_tax_code', nullable: true })
@@ -48,7 +48,7 @@ export class StoreRepresentativeEntity extends BaseEntity {
   @Column({ name: 'business_license_image_id', nullable: true, type: 'uuid' })
   businessLicenseImageId: string;
 
-  @Column({ name: 'tax_license_image_id', type: 'uuid' })
+  @Column({ name: 'tax_license_image_id', type: 'uuid', nullable: true })
   taxLicenseImageId: string;
 
   @Column({ name: 'related_image_id', nullable: true, type: 'uuid' })

@@ -157,7 +157,7 @@ export class CreateStoreDto {
 
   @ApiProperty({ description: 'Có kinh doanh rượu không' })
   @IsBoolean()
-  @ValidateIf((o) => !o.isDraft)
+  @IsOptional()
   isAlcohol: boolean;
 
   @ApiProperty({ description: 'Id của khu vực kinh doanh' })

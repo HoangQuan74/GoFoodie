@@ -9,16 +9,16 @@ export class StoreBankEntity extends BaseEntity {
   @Column({ name: 'store_id', select: false })
   storeId: number;
 
-  @Column({ name: 'bank_id' })
+  @Column({ name: 'bank_id', nullable: true })
   bankId: number;
 
-  @Column({ name: 'bank_branch_id' })
+  @Column({ name: 'bank_branch_id', nullable: true })
   bankBranchId: number;
 
-  @Column({ name: 'bank_account_number' })
+  @Column({ name: 'bank_account_number', nullable: true })
   bankAccountNumber: string;
 
-  @Column({ name: 'bank_account_name' })
+  @Column({ name: 'bank_account_name', nullable: true })
   bankAccountName: string;
 
   @ManyToOne(() => StoreEntity, (store) => store.banks, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })

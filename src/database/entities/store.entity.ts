@@ -21,7 +21,7 @@ export class StoreEntity extends BaseEntity {
   @Column({ name: 'store_code' })
   storeCode: string;
 
-  @Column()
+  @Column({ nullable: true })
   name: string;
 
   @Column({ name: 'special_dish', nullable: true })
@@ -45,16 +45,16 @@ export class StoreEntity extends BaseEntity {
   @Column({ name: 'business_area', nullable: true })
   businessAreaId: number;
 
-  @Column({ name: 'province_id' })
+  @Column({ name: 'province_id', nullable: true })
   provinceId: number;
 
-  @Column({ name: 'district_id' })
+  @Column({ name: 'district_id', nullable: true })
   districtId: number;
 
-  @Column({ name: 'ward_id' })
+  @Column({ name: 'ward_id', nullable: true })
   wardId: number;
 
-  @Column()
+  @Column({ nullable: true })
   address: string;
 
   @Column({ name: 'status', type: 'enum', enum: EStoreStatus, default: EStoreStatus.Active })
@@ -72,54 +72,54 @@ export class StoreEntity extends BaseEntity {
   @Column({ name: 'created_by_id', nullable: true, select: false })
   createdById: number;
 
-  @Column({ name: 'store_avatar_id', type: 'uuid' })
+  @Column({ name: 'store_avatar_id', type: 'uuid', nullable: true })
   storeAvatarId: string;
 
-  @Column({ name: 'store_cover_id', type: 'uuid' })
+  @Column({ name: 'store_cover_id', type: 'uuid', nullable: true })
   storeCoverId: string;
 
-  @Column({ name: 'store_front_id', type: 'uuid' })
+  @Column({ name: 'store_front_id', type: 'uuid', nullable: true })
   storeFrontId: string;
 
-  @Column({ name: 'store_menu_id', type: 'uuid' })
+  @Column({ name: 'store_menu_id', type: 'uuid', nullable: true })
   storeMenuId: string;
 
-  @ManyToOne(() => FileEntity, (file) => file.id, { nullable: false })
+  @ManyToOne(() => FileEntity, (file) => file.id)
   @JoinColumn({ name: 'store_avatar_id' })
   storeAvatar: FileEntity;
 
-  @ManyToOne(() => FileEntity, (file) => file.id, { nullable: false })
+  @ManyToOne(() => FileEntity, (file) => file.id)
   @JoinColumn({ name: 'store_cover_id' })
   storeCover: FileEntity;
 
-  @ManyToOne(() => FileEntity, (file) => file.id, { nullable: false })
+  @ManyToOne(() => FileEntity, (file) => file.id)
   @JoinColumn({ name: 'store_front_id' })
   storeFront: FileEntity;
 
-  @ManyToOne(() => FileEntity, (file) => file.id, { nullable: false })
+  @ManyToOne(() => FileEntity, (file) => file.id)
   @JoinColumn({ name: 'store_menu_id' })
   storeMenu: FileEntity;
 
-  @ManyToOne(() => AdminEntity, (admin) => admin.id, { nullable: true, onDelete: 'CASCADE' })
+  @ManyToOne(() => AdminEntity, (admin) => admin.id, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'approved_by_id' })
   approvedBy: AdminEntity;
 
-  @ManyToOne(() => AdminEntity, (admin) => admin.id, { nullable: true, onDelete: 'CASCADE' })
+  @ManyToOne(() => AdminEntity, (admin) => admin.id, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'created_by_id' })
   createdBy: AdminEntity;
 
   @Column({ name: 'reject_reason', nullable: true })
   rejectReason: string;
 
-  @ManyToOne(() => ServiceGroupEntity, (serviceGroup) => serviceGroup.id, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => ServiceGroupEntity, (serviceGroup) => serviceGroup.id, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'service_group_id' })
   serviceGroup: ServiceGroupEntity;
 
-  @ManyToOne(() => ServiceTypeEntity, (serviceType) => serviceType.id, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => ServiceTypeEntity, (serviceType) => serviceType.id, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'service_type_id' })
   serviceType: ServiceTypeEntity;
 
-  @ManyToOne(() => MerchantEntity, (merchant) => merchant.id, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => MerchantEntity, (merchant) => merchant.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'merchant_id' })
   merchant: MerchantEntity;
 
@@ -132,19 +132,19 @@ export class StoreEntity extends BaseEntity {
   @OneToMany(() => StoreBankEntity, (bank) => bank.store, { cascade: true })
   banks: StoreBankEntity[];
 
-  @ManyToOne(() => ProvinceEntity, (province) => province.id, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => ProvinceEntity, (province) => province.id, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'business_area' })
   businessArea: ProvinceEntity;
 
-  @ManyToOne(() => ProvinceEntity, (province) => province.id, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => ProvinceEntity, (province) => province.id, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'province_id' })
   province: ProvinceEntity;
 
-  @ManyToOne(() => DistrictEntity, (district) => district.id, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => DistrictEntity, (district) => district.id, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'district_id' })
   district: DistrictEntity;
 
-  @ManyToOne(() => WardEntity, (ward) => ward.id, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => WardEntity, (ward) => ward.id, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'ward_id' })
   ward: WardEntity;
 
