@@ -14,6 +14,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import * as path from 'path';
+import { Public } from 'src/common/decorators';
 
 @Controller('uploads')
 @ApiTags('Uploads')
@@ -36,6 +37,7 @@ export class UploadsController {
   }
 
   @Get(':id')
+  @Public()
   async download(@Param('id') id: string, @Res() res: Response) {
     const file = await this.uploadsService.findOne({ where: { id } });
     if (!file) throw new NotFoundException();
