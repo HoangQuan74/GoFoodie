@@ -157,19 +157,23 @@ export class CreateStoreDto {
 
   @ApiProperty({ description: 'Có kinh doanh rượu không' })
   @IsBoolean()
+  @ValidateIf((o) => !o.isDraft)
   isAlcohol: boolean;
 
   @ApiProperty({ description: 'Id của khu vực kinh doanh' })
   @IsInt()
+  @ValidateIf((o) => !o.isDraft)
   businessAreaId: number;
 
   @ApiProperty({ description: 'Id của loại dịch vụ' })
   @IsInt()
+  @ValidateIf((o) => !o.isDraft)
   serviceTypeId: number;
 
   @ApiProperty({ description: 'Tên cửa hàng' })
   @IsString()
   @IsNotEmpty()
+  @ValidateIf((o) => !o.isDraft)
   name: string;
 
   @ApiPropertyOptional({ description: 'Món đặc biệt' })
@@ -184,54 +188,65 @@ export class CreateStoreDto {
 
   @ApiProperty({ description: 'Id của nhóm dịch vụ' })
   @IsInt()
+  @ValidateIf((o) => !o.isDraft)
   serviceGroupId: number;
 
   @ApiProperty({ description: 'Id của xã' })
   @IsInt()
   @Type(() => Number)
+  @ValidateIf((o) => !o.isDraft)
   wardId: number;
 
   @ApiProperty({ description: 'Địa chỉ' })
   @IsString()
   @IsNotEmpty()
+  @ValidateIf((o) => !o.isDraft)
   address: string;
 
   @ApiProperty({ description: 'Số điện thoại' })
   @IsPhoneNumber('VN', { message: EXCEPTIONS.INVALID_PHONE })
+  @ValidateIf((o) => !o.isDraft)
   phoneNumber: string;
 
   @ApiProperty({ description: 'Ảnh đại diện cửa hàng' })
   @IsString()
   @IsNotEmpty()
+  @ValidateIf((o) => !o.isDraft)
   storeAvatarId: string;
 
   @ApiProperty({ description: 'Ảnh bìa cửa hàng' })
   @IsString()
   @IsNotEmpty()
+  @ValidateIf((o) => !o.isDraft)
   storeCoverId: string;
 
   @ApiProperty({ description: 'Ảnh mặt tiền cửa hàng' })
   @IsString()
   @IsNotEmpty()
+  @ValidateIf((o) => !o.isDraft)
   storeFrontId: string;
 
   @ApiProperty({ description: 'Ảnh menu cửa hàng' })
   @IsString()
   @IsNotEmpty()
+  @ValidateIf((o) => !o.isDraft)
   storeMenuId: string;
 
   @ApiProperty({ type: CreateWorkingTimeDto, isArray: true })
   @ValidateNested({ each: true })
   @Type(() => CreateWorkingTimeDto)
+  @ValidateIf((o) => !o.isDraft)
   workingTimes: CreateWorkingTimeDto[];
 
   @ApiProperty({ type: CreateRepresentativeDto })
   @ValidateNested()
   @Type(() => CreateRepresentativeDto)
+  @ValidateIf((o) => !o.isDraft)
   representative: CreateRepresentativeDto;
 
   @ApiProperty({ type: CreateStoreBankDto, isArray: true })
   @ValidateNested({ each: true })
   @Type(() => CreateStoreBankDto)
+  @ValidateIf((o) => !o.isDraft)
   banks: CreateStoreBankDto[];
 }

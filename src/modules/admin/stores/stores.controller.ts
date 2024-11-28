@@ -26,17 +26,19 @@ export class StoresController {
   @Post()
   async create(@Body() body: CreateStoreDto, @CurrentUser() user: JwtPayload) {
     const { wardId, isDraft } = body;
-    const { districtId, provinceId } = await this.wardsService.getProvinceIdAndDistrictId(wardId);
-
-    if (!districtId || !provinceId) throw new NotFoundException();
 
     return this.dataSource.transaction(async (manager) => {
       const newStore = new StoreEntity();
       Object.assign(newStore, body);
       newStore.createdById = user.id;
-      newStore.districtId = districtId;
-      newStore.provinceId = provinceId;
       newStore.approvalStatus = isDraft ? EStoreApprovalStatus.Draft : EStoreApprovalStatus.Pending;
+
+      if (wardId) {
+        const { districtId, provinceId } = await this.wardsService.getProvinceIdAndDistrictId(wardId);
+        if (!districtId || !provinceId) throw new NotFoundException();
+        newStore.districtId = districtId;
+        newStore.provinceId = provinceId;
+      }
 
       const today = moment().tz(TIMEZONE).format('YYMMDD');
       const latestStore = await manager.findOne(StoreEntity, {
@@ -135,8 +137,16 @@ export class StoresController {
 
   @Patch(':id')
   async update(@Query('id') id: number, @Body() body: UpdateStoreDto) {
+    const { wardId } = body;
     const store = await this.storesService.findOne({ where: { id } });
     if (!store) throw new NotFoundException();
+
+    if (wardId) {
+      const { districtId, provinceId } = await this.wardsService.getProvinceIdAndDistrictId(wardId);
+      if (!districtId || !provinceId) throw new NotFoundException();
+      store.districtId = districtId;
+      store.provinceId = provinceId;
+    }
 
     Object.assign(store, body);
     return this.storesService.save(store);
