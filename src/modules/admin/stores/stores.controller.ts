@@ -56,7 +56,7 @@ export class StoresController {
   async find(@Query() query: QueryStoreDto) {
     const { search, page, limit, sort, serviceTypeId, businessAreaId, approvalStatus, status, merchantId } = query;
     const { createdAtFrom, createdAtTo, approvedAtFrom, approvedAtTo } = query;
-    console.log('query', query);
+
     const queryBuilder = this.storesService
       .createQueryBuilder('store')
       .leftJoinAndSelect('store.businessArea', 'businessArea')
@@ -112,8 +112,21 @@ export class StoresController {
   @Get(':id')
   async findOne(@Query('id') id: number) {
     const store = await this.storesService.findOne({
+      select: { createdBy: { id: true, name: true }, approvedBy: { id: true, name: true } },
       where: { id },
-      relations: ['representative', 'workingTimes', 'banks', 'banks.bank', 'banks.bankBranch'],
+      relations: {
+        representative: true,
+        workingTimes: true,
+        banks: { bank: true, bankBranch: true },
+        serviceType: true,
+        serviceGroup: true,
+        businessArea: true,
+        province: true,
+        district: true,
+        ward: true,
+        createdBy: true,
+        approvedBy: true,
+      },
     });
     if (!store) throw new NotFoundException();
 

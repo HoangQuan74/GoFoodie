@@ -15,7 +15,7 @@ import { FileEntity } from './file.entity';
 
 @Entity('stores')
 export class StoreEntity extends BaseEntity {
-  @Column({ name: 'merchant_id', select: false })
+  @Column({ name: 'merchant_id' })
   merchantId: number;
 
   @Column({ name: 'store_code' })
