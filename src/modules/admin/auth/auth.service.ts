@@ -9,6 +9,7 @@ import { RefreshTokensService } from '../refresh-tokens/refresh-tokens.service';
 import { MailService } from 'src/modules/mail/mail.service';
 import { EAdminOtpType } from 'src/common/enums';
 import { Response } from 'express';
+import { cookieConfig } from 'src/config/cookie.config';
 
 @Injectable()
 export class AuthService {
@@ -37,8 +38,7 @@ export class AuthService {
     this.adminsService.save(admin);
 
     delete admin.password;
-    const isDev = ENV === 'development';
-    res.cookie('token', accessToken, { httpOnly: true, secure: !isDev, sameSite: isDev ? 'none' : 'strict' });
+    res.cookie('token', accessToken, cookieConfig);
     return { ...admin, accessToken, refreshToken: token };
   }
 
@@ -93,8 +93,7 @@ export class AuthService {
     this.refreshTokensService.revokeToken(admin.id, refreshToken);
     const { token } = await this.refreshTokensService.createRefreshToken(admin.id);
 
-    const isDev = ENV === 'development';
-    res.cookie('token', accessToken, { httpOnly: true, secure: !isDev, sameSite: isDev ? 'none' : 'strict' });
+    res.cookie('token', accessToken, cookieConfig);
     return { accessToken, refreshToken: token };
   }
 
