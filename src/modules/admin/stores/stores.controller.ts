@@ -46,7 +46,7 @@ export class StoresController {
 
       const numberStore = latestStore ? +latestStore.storeCode.slice(-2) + 1 : 1;
       newStore.storeCode = `${today}${numberStore.toString().padStart(2, '0')}`;
-
+      console.log('newStore', newStore);
       return manager.save(newStore);
     });
   }

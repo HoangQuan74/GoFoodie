@@ -95,13 +95,13 @@ export class CreateRepresentativeDto {
   @ApiPropertyOptional({ description: 'Mã số thuế cá nhân' })
   @IsString()
   @IsNotEmpty()
-  @ValidateIf((o) => o.status === EStoreRepresentativeType.Individual)
+  @ValidateIf((o) => o.type === EStoreRepresentativeType.Individual)
   personalTaxCode: string;
 
   @ApiPropertyOptional({ description: 'Số CMND' })
   @IsString()
   @IsNotEmpty()
-  @ValidateIf((o) => o.status === EStoreRepresentativeType.Individual)
+  @ValidateIf((o) => o.type === EStoreRepresentativeType.Individual)
   identityCard: string;
 
   @ApiPropertyOptional({ description: 'Nơi cấp CMND' })
@@ -113,25 +113,25 @@ export class CreateRepresentativeDto {
   @ApiPropertyOptional({ description: 'Ngày cấp CMND' })
   @IsDate()
   @Type(() => Date)
-  @ValidateIf((o) => o.status === EStoreRepresentativeType.Individual)
+  @ValidateIf((o) => o.type === EStoreRepresentativeType.Individual)
   identityCardDate: Date;
 
   @ApiPropertyOptional({ description: 'Hình ảnh CMND mặt trước' })
   @IsString()
   @IsNotEmpty()
-  @ValidateIf((o) => o.status === EStoreRepresentativeType.Individual)
+  @ValidateIf((o) => o.type === EStoreRepresentativeType.Individual)
   identityCardFrontImageId: string;
 
   @ApiPropertyOptional({ description: 'Hình ảnh CMND mặt sau' })
   @IsString()
   @IsNotEmpty()
-  @ValidateIf((o) => o.status === EStoreRepresentativeType.Individual)
+  @ValidateIf((o) => o.type === EStoreRepresentativeType.Individual)
   identityCardBackImageId: string;
 
   @ApiPropertyOptional({ description: 'Hình ảnh giấy phép kinh doanh' })
   @IsString()
   @IsNotEmpty()
-  @ValidateIf((o) => o.status !== EStoreRepresentativeType.Individual)
+  @ValidateIf((o) => o.type !== EStoreRepresentativeType.Individual)
   businessLicenseImageId: string;
 
   @ApiProperty({ description: 'Hình ảnh mã số thuế' })
