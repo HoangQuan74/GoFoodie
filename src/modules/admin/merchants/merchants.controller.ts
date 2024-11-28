@@ -30,7 +30,7 @@ export class MerchantsController {
   async create(@Body() createMerchantDto: CreateMerchantDto) {
     const { password, email, phone } = createMerchantDto;
 
-    const options = { where: [{ email }, { phone: createMerchantDto.phone }] };
+    const options = { where: [{ email }, { phone }] };
     const merchant = await this.merchantsService.findOne(options);
 
     if (email && merchant?.email === email) throw new ConflictException(EXCEPTIONS.EMAIL_CONFLICT);
@@ -41,7 +41,6 @@ export class MerchantsController {
     email && (newMerchant.emailVerifiedAt = new Date());
     password && (newMerchant.password = hashPassword(password));
 
-    delete newMerchant.password;
     return this.merchantsService.save(newMerchant);
   }
 
@@ -49,7 +48,7 @@ export class MerchantsController {
   async find(@Query() query: QueryMerchantDto) {
     const { limit, page, search, status, sort } = query;
 
-    const queryBuilder = this.merchantsService.createViewBuilder('merchant');
+    const queryBuilder = this.merchantsService.createViewBuilder('merchant').where('merchant.storeId IS NULL');
 
     if (search) {
       queryBuilder.where(
@@ -103,7 +102,6 @@ export class MerchantsController {
     password && (merchant.password = hashPassword(password));
     email && !merchant.emailVerifiedAt && (merchant.emailVerifiedAt = new Date());
 
-    delete merchant.password;
     return this.merchantsService.save(merchant);
   }
 

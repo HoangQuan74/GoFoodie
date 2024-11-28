@@ -148,5 +148,8 @@ export class StoreEntity extends BaseEntity {
   @JoinColumn({ name: 'ward_id' })
   ward: WardEntity;
 
+  @OneToMany(() => MerchantEntity, (merchant) => merchant.store, { cascade: true })
+  staffs: MerchantEntity[];
+
   productCount: number = 0;
 }
