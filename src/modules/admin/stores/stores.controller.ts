@@ -36,7 +36,7 @@ export class StoresController {
       newStore.createdById = user.id;
       newStore.districtId = districtId;
       newStore.provinceId = provinceId;
-      newStore.status = isDraft ? EStoreApprovalStatus.Draft : EStoreApprovalStatus.Pending;
+      newStore.approvalStatus = isDraft ? EStoreApprovalStatus.Draft : EStoreApprovalStatus.Pending;
 
       const today = moment().tz(TIMEZONE).format('YYMMDD');
       const latestStore = await manager.findOne(StoreEntity, {
