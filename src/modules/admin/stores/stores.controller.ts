@@ -137,7 +137,7 @@ export class StoresController {
 
   @Patch(':id')
   async update(@Query('id') id: number, @Body() body: UpdateStoreDto) {
-    const { wardId } = body;
+    const { wardId, isDraft } = body;
     const store = await this.storesService.findOne({ where: { id } });
     if (!store) throw new NotFoundException();
 
@@ -149,6 +149,10 @@ export class StoresController {
     }
 
     Object.assign(store, body);
+    if (typeof isDraft === 'boolean' && store.approvalStatus !== EStoreApprovalStatus.Approved) {
+      store.approvalStatus = isDraft ? EStoreApprovalStatus.Draft : EStoreApprovalStatus.Pending;
+    }
+
     return this.storesService.save(store);
   }
 
