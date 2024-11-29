@@ -44,22 +44,18 @@ export class QueryStoreDto extends PaginationQuery {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @Type(() => Date)
   createdAtFrom: Date;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @Type(() => Date)
   createdAtTo: Date;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @Type(() => Date)
   approvedAtFrom: Date;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @Type(() => Date)
   approvedAtTo: Date;
 
   @ApiPropertyOptional({ type: Boolean })

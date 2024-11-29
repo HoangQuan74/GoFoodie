@@ -81,7 +81,9 @@ export class StoresController {
             qb.where('store.name ILIKE :search');
             qb.orWhere('store.phoneNumber ILIKE :search');
             qb.orWhere('representative.email ILIKE :search');
-            qb.orWhere('representative.name ILIKE :search');
+            qb.orWhere('representative.name ILIKE :search')
+            qb.orWhere('store.storeCode ILIKE :search');
+            qb.orWhere('store.address ILIKE :search');
           }),
         )
         .setParameters({ search: `%${search}%` });
@@ -97,6 +99,7 @@ export class StoresController {
     approvedAtFrom && queryBuilder.andWhere('store.approvedAt >= :approvedAtFrom');
     approvedAtTo && queryBuilder.andWhere('store.approvedAt <= :approvedAtTo');
 
+    console.log('approvedAtFrom', approvedAtFrom);
     queryBuilder.setParameters({ serviceTypeId, businessAreaId, approvalStatus, status, merchantId });
     queryBuilder.setParameters({ createdAtFrom, createdAtTo, approvedAtFrom, approvedAtTo });
 
