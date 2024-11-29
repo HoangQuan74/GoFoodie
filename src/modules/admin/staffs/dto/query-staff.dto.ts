@@ -3,7 +3,7 @@ import { IsEnum, IsOptional, ValidateIf } from 'class-validator';
 import { EMerchantStatus, ESortMerchant } from 'src/common/enums';
 import { PaginationQuery } from 'src/common/query';
 
-export class QueryMerchantDto extends PaginationQuery {
+export class QueryStaffDto extends PaginationQuery {
   @ApiPropertyOptional({ enum: EMerchantStatus })
   @IsOptional()
   @IsEnum(EMerchantStatus)

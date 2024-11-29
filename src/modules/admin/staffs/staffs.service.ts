@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { FindManyOptions, Repository } from 'typeorm';
+import { FindManyOptions, Repository, SelectQueryBuilder } from 'typeorm';
 import { MerchantEntity } from 'src/database/entities/merchant.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -12,6 +12,14 @@ export class StaffsService {
 
   async find(options: FindManyOptions<MerchantEntity> = {}): Promise<MerchantEntity[]> {
     return this.staffRepository.find(options);
+  }
+
+  async findAndCount(options: FindManyOptions<MerchantEntity> = {}): Promise<[MerchantEntity[], number]> {
+    return this.staffRepository.findAndCount(options);
+  }
+
+  createQueryBuilder(alias: string): SelectQueryBuilder<MerchantEntity> {
+    return this.staffRepository.createQueryBuilder(alias);
   }
 
   async save(staff: Partial<MerchantEntity>): Promise<MerchantEntity> {

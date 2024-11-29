@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { StaffsService } from './staffs.service';
 import { ApiTags } from '@nestjs/swagger';
@@ -15,8 +16,9 @@ import { CreateStaffDto } from './dto/create-staff.dto';
 import { EXCEPTIONS } from 'src/common/constants';
 import { MerchantEntity } from 'src/database/entities/merchant.entity';
 import { hashPassword } from 'src/utils/bcrypt';
-import { Not } from 'typeorm';
+import { Brackets, Not } from 'typeorm';
 import { UpdateStaffDto } from './dto/update-staff.dto';
+import { QueryStaffDto } from './dto/query-staff.dto';
 
 @Controller('staffs')
 @ApiTags('Admin Staffs')
@@ -24,9 +26,32 @@ export class StaffsController {
   constructor(private readonly staffsService: StaffsService) {}
 
   @Get()
-  async find(@Param('storeId') storeId: number) {
-    const options = { where: { storeId } };
-    return this.staffsService.find(options);
+  async find(@Param('storeId') storeId: number, @Query() query: QueryStaffDto) {
+    const { page, limit, search, sort, status } = query;
+
+    const queryBuilder = this.staffsService
+      .createQueryBuilder('staff')
+      .where('staff.storeId = :storeId', { storeId })
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    if (search) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.where('staff.name ILIKE :search', { search: `%${search}%` })
+            .orWhere('staff.email ILIKE :search', { search: `%${search}%` })
+            .orWhere('staff.phone ILIKE :search', { search: `%${search}%` });
+        }),
+      );
+    }
+
+    status && queryBuilder.andWhere('staff.status = :status', { status });
+
+    const [field, order] = sort.split(':') as [keyof MerchantEntity, 'ASC' | 'DESC'];
+    queryBuilder.orderBy(`staff.${field}`, order);
+
+    const [items, total] = await queryBuilder.getManyAndCount();
+    return { items, total };
   }
 
   @Post()
