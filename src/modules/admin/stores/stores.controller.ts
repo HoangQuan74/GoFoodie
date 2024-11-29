@@ -170,7 +170,7 @@ export class StoresController {
   }
 
   @Patch(':id/approve')
-  async approve(@Query('id') id: number, @CurrentUser() user: JwtPayload) {
+  async approve(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
     const store = await this.storesService.findOne({ where: { id, approvalStatus: EStoreApprovalStatus.Pending } });
     if (!store) throw new NotFoundException();
 
@@ -183,7 +183,7 @@ export class StoresController {
 
   @Patch(':id/reject')
   @ApiBody({ schema: { type: 'object', properties: { reason: { type: 'string' } } } })
-  async reject(@Query('id') id: number, @CurrentUser() user: JwtPayload, @Body('reason') reason: string) {
+  async reject(@Param('id') id: number, @CurrentUser() user: JwtPayload, @Body('reason') reason: string) {
     const store = await this.storesService.findOne({ where: { id, approvalStatus: EStoreApprovalStatus.Pending } });
     if (!store) throw new NotFoundException();
 
@@ -196,7 +196,7 @@ export class StoresController {
   }
 
   @Patch(':id/send-approve')
-  async sendApprove(@Query('id') id: number) {
+  async sendApprove(@Param('id') id: number) {
     const store = await this.storesService.findOne({
       where: { id, approvalStatus: In([EStoreApprovalStatus.Rejected, EStoreApprovalStatus.Draft]) },
     });
