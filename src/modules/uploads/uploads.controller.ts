@@ -45,6 +45,7 @@ export class UploadsController {
     const filePath = path.join(__dirname, `../../../uploads`);
     const fullPath = path.join(filePath, file.path);
 
+    console.log(fullPath);
     res.download(fullPath, file.name);
   }
 }

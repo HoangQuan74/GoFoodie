@@ -1,5 +1,5 @@
 import { WardsService } from './../../wards/wards.service';
-import { Body, Controller, Delete, Get, NotFoundException, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Query } from '@nestjs/common';
 import { StoresService } from './stores.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
@@ -112,7 +112,7 @@ export class StoresController {
   }
 
   @Get(':id')
-  async findOne(@Query('id') id: number) {
+  async findOne(@Param('id') id: number) {
     const store = await this.storesService.findOne({
       select: { createdBy: { id: true, name: true }, approvedBy: { id: true, name: true } },
       where: { id },
