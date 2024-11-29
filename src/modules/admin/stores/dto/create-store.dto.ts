@@ -37,6 +37,34 @@ export class CreateWorkingTimeDto {
   closeTime: number;
 }
 
+export class CreateStoreSpecialWorkingTimeDto {
+  @ApiProperty()
+  @IsDate()
+  date: Date;
+
+  @ApiProperty({ description: 'Giờ mở cửa (phút)' })
+  @IsInt()
+  @Min(0)
+  @Max(24 * 60 - 1)
+  openTime: number;
+
+  @ApiProperty({ description: 'Giờ đóng cửa (phút)' })
+  @IsInt()
+  @Min(0)
+  @Max(24 * 60 - 1)
+  closeTime: number;
+}
+
+export class CreateStoreHolidayDto {
+  @ApiProperty()
+  @IsDate()
+  startTime: Date;
+
+  @ApiProperty()
+  @IsDate()
+  endTime: Date;
+}
+
 export class CreateStoreBankDto {
   @ApiProperty({ description: 'Id ngân hàng' })
   @IsInt()
@@ -249,4 +277,16 @@ export class CreateStoreDto {
   @Type(() => CreateStoreBankDto)
   @ValidateIf((o) => !o.isDraft)
   banks: CreateStoreBankDto[];
+
+  @ApiProperty({ type: CreateStoreSpecialWorkingTimeDto, isArray: true })
+  @ValidateNested({ each: true })
+  @Type(() => CreateStoreSpecialWorkingTimeDto)
+  @IsOptional()
+  specialWorkingTimes: CreateStoreSpecialWorkingTimeDto[];
+
+  @ApiProperty({ type: CreateStoreHolidayDto, isArray: true })
+  @ValidateNested({ each: true })
+  @Type(() => CreateStoreHolidayDto)
+  @IsOptional()
+  holidays: CreateStoreHolidayDto[];
 }

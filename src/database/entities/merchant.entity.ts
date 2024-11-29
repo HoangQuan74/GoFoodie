@@ -1,3 +1,4 @@
+import { EMerchantRole } from './../../common/enums/merchant.enum';
 import { Entity, Column, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { EMerchantStatus } from 'src/common/enums';
@@ -25,6 +26,9 @@ export class MerchantEntity extends BaseEntity {
 
   @Column({ name: 'status', type: 'enum', enum: EMerchantStatus, default: EMerchantStatus.Active })
   status: EMerchantStatus;
+
+  @Column({ name: 'role', type: 'enum', enum: EMerchantRole, default: EMerchantRole.Owner })
+  role: EMerchantRole;
 
   @OneToMany(() => StoreEntity, (store) => store.merchant, { cascade: true })
   stores: StoreEntity[];

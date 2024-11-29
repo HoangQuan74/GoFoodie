@@ -12,6 +12,8 @@ import { WardEntity } from './ward.entity';
 import { ServiceTypeEntity } from './service-type.entity';
 import { AdminEntity } from './admin.entity';
 import { FileEntity } from './file.entity';
+import { StoreSpecialWorkingTimeEntity } from './store-special-working-time.entity';
+import { StoreHolidayEntity } from './store-holiday.entity';
 
 @Entity('stores')
 export class StoreEntity extends BaseEntity {
@@ -50,6 +52,12 @@ export class StoreEntity extends BaseEntity {
 
   @Column({ name: 'district_id', nullable: true })
   districtId: number;
+
+  @Column({ name: 'is_pause', default: false })
+  isPause: boolean;
+
+  @Column({ name: 'is_special_working_time', default: false })
+  isSpecialWorkingTime: boolean;
 
   @Column({ name: 'ward_id', nullable: true })
   wardId: number;
@@ -150,6 +158,12 @@ export class StoreEntity extends BaseEntity {
 
   @OneToMany(() => MerchantEntity, (merchant) => merchant.store, { cascade: true })
   staffs: MerchantEntity[];
+
+  @OneToMany(() => StoreSpecialWorkingTimeEntity, (specialWorkingTime) => specialWorkingTime.store, { cascade: true })
+  specialWorkingTimes: StoreSpecialWorkingTimeEntity[];
+
+  @OneToMany(() => StoreHolidayEntity, (holiday) => holiday.store, { cascade: true })
+  holidays: StoreHolidayEntity[];
 
   productCount: number = 0;
 }

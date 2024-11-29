@@ -21,3 +21,14 @@ export enum ESortMerchant {
   UnapprovedStoreNumberAsc = 'unapprovedStoreNumber:ASC',
   UnapprovedStoreNumberDesc = 'unapprovedStoreNumber:DESC',
 }
+
+export enum EMerchantRole {
+  Owner = 'owner',
+  Manager = 'manager',
+  Staff = 'staff',
+}
+
+export enum EStaffRole {
+  Manager = 'manager',
+  Staff = 'staff',
+}

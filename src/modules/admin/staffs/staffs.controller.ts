@@ -1,4 +1,14 @@
-import { Body, ConflictException, Controller, Delete, Get, NotFoundException, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  ConflictException,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { StaffsService } from './staffs.service';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateStaffDto } from './dto/create-staff.dto';

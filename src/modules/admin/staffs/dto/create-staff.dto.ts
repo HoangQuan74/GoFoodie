@@ -1,3 +1,4 @@
+import { EMerchantRole, EStaffRole } from './../../../../common/enums/merchant.enum';
 import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, ValidateIf } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EMerchantStatus } from 'src/common/enums';
@@ -30,4 +31,8 @@ export class CreateStaffDto {
   @IsEnum(EMerchantStatus)
   @IsOptional()
   status: EMerchantStatus;
+
+  @ApiProperty({ enum: EStaffRole })
+  @IsEnum(EStaffRole)
+  role: EStaffRole;
 }
