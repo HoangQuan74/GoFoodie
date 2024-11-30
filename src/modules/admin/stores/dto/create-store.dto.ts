@@ -261,19 +261,19 @@ export class CreateStoreDto {
   storeMenuId: string;
 
   @ApiProperty({ type: CreateWorkingTimeDto, isArray: true })
-  @ValidateNested({ each: true })
+  // @ValidateNested({ each: true })
   @Type(() => CreateWorkingTimeDto)
   @ValidateIf((o) => !o.isDraft)
   workingTimes: CreateWorkingTimeDto[];
 
   @ApiProperty({ type: CreateRepresentativeDto })
-  @ValidateNested()
+  // @ValidateNested()
   @Type(() => CreateRepresentativeDto)
   @ValidateIf((o) => !o.isDraft)
   representative: CreateRepresentativeDto;
 
   @ApiProperty({ type: CreateStoreBankDto, isArray: true })
-  @ValidateNested({ each: true })
+  // @ValidateNested({ each: true })
   @Type(() => CreateStoreBankDto)
   @ValidateIf((o) => !o.isDraft)
   banks: CreateStoreBankDto[];
