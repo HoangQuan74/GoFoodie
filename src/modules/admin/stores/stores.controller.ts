@@ -81,7 +81,7 @@ export class StoresController {
             qb.where('store.name ILIKE :search');
             qb.orWhere('store.phoneNumber ILIKE :search');
             qb.orWhere('representative.email ILIKE :search');
-            qb.orWhere('representative.name ILIKE :search')
+            qb.orWhere('representative.name ILIKE :search');
             qb.orWhere('store.storeCode ILIKE :search');
             qb.orWhere('store.address ILIKE :search');
           }),
@@ -141,7 +141,7 @@ export class StoresController {
   @Patch(':id')
   async update(@Param('id') id: number, @Body() body: UpdateStoreDto) {
     const { wardId, isDraft } = body;
-    const store = await this.storesService.findOne({ where: { id } });
+    const store = await this.storesService.findOne({ where: { id }, relations: { representative: true } });
     if (!store) throw new NotFoundException();
 
     if (wardId) {
