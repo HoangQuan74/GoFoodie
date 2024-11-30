@@ -140,7 +140,7 @@ export class StoresController {
 
   @Patch(':id')
   async update(@Param('id') id: number, @Body() body: UpdateStoreDto) {
-    const { wardId, isDraft } = body;
+    const { wardId, isDraft, representative, ...rest } = body;
     const store = await this.storesService.findOne({ where: { id }, relations: { representative: true } });
     if (!store) throw new NotFoundException();
 
@@ -149,9 +149,11 @@ export class StoresController {
       if (!districtId || !provinceId) throw new NotFoundException();
       store.districtId = districtId;
       store.provinceId = provinceId;
+      store.wardId = wardId;
     }
 
-    Object.assign(store, body);
+    Object.assign(store, rest);
+    Object.assign(store.representative, representative);
     if (typeof isDraft === 'boolean' && store.approvalStatus !== EStoreApprovalStatus.Approved) {
       store.approvalStatus = isDraft ? EStoreApprovalStatus.Draft : EStoreApprovalStatus.Pending;
     }
