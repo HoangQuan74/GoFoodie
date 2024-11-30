@@ -57,7 +57,7 @@ export class StoreRepresentativeEntity extends BaseEntity {
   @Column({ name: 'store_id', select: false })
   storeId: number;
 
-  @OneToOne(() => StoreEntity, (store) => store.id, { onDelete: 'CASCADE' })
+  @OneToOne(() => StoreEntity, (store) => store.id, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
   @JoinColumn({ name: 'store_id' })
   store: StoreEntity;
 
