@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { StoreEntity } from './store.entity';
 import { FileEntity } from './file.entity';
@@ -57,7 +57,7 @@ export class StoreRepresentativeEntity extends BaseEntity {
   @Column({ name: 'store_id', select: false })
   storeId: number;
 
-  @ManyToOne(() => StoreEntity, (store) => store.id, { onDelete: 'CASCADE' })
+  @OneToOne(() => StoreEntity, (store) => store.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'store_id' })
   store: StoreEntity;
 
