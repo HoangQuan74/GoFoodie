@@ -10,10 +10,6 @@ export class QueryMerchantDto extends PaginationQuery {
   @ValidateIf((o) => o.status)
   status: EMerchantStatus;
 
-  @ApiPropertyOptional()
-  @IsOptional()
-  search: string;
-
   @ApiPropertyOptional({ enum: ESortMerchant })
   @IsOptional()
   @IsEnum(ESortMerchant)

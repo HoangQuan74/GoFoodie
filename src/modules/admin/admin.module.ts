@@ -7,6 +7,7 @@ import { AdminRolesGuard } from 'src/common/guards';
 import { MerchantsModule } from './merchants/merchants.module';
 import { StoresModule } from './stores/stores.module';
 import { StaffsModule } from './staffs/staffs.module';
+import { ServiceGroupsModule } from './service-groups/service-groups.module';
 
 @Module({
   imports: [
@@ -28,11 +29,16 @@ import { StaffsModule } from './staffs/staffs.module';
         path: 'admin/stores/:storeId',
         module: StaffsModule,
       },
+      {
+        path: 'admin',
+        module: ServiceGroupsModule,
+      },
     ]),
     AdminsModule,
     MerchantsModule,
     StoresModule,
     StaffsModule,
+    ServiceGroupsModule,
   ],
   providers: [
     {

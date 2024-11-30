@@ -12,10 +12,6 @@ export class QueryStoreDto extends PaginationQuery {
 
   @ApiPropertyOptional()
   @IsOptional()
-  search: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
   @Type(() => Number)
   businessAreaId: number;
 
