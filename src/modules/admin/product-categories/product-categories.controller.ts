@@ -4,7 +4,6 @@ import { CreateProductCategoryDto } from './dto/create-product-category.dto';
 import { UpdateProductCategoryDto } from './dto/update-product-category.dto';
 import { StoresService } from '../stores/stores.service';
 import { PaginationQuery } from 'src/common/query';
-import { ILike } from 'typeorm';
 import { ApiTags } from '@nestjs/swagger';
 
 @Controller('product-categories')

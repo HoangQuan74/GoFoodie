@@ -40,6 +40,7 @@ export class CreateWorkingTimeDto {
 export class CreateStoreSpecialWorkingTimeDto {
   @ApiProperty()
   @IsDate()
+  @Type(() => Date)
   date: Date;
 
   @ApiProperty({ description: 'Giờ mở cửa (phút)' })
