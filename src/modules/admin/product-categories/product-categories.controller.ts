@@ -3,7 +3,7 @@ import { ProductCategoriesService } from './product-categories.service';
 import { CreateProductCategoryDto } from './dto/create-product-category.dto';
 import { UpdateProductCategoryDto } from './dto/update-product-category.dto';
 import { StoresService } from '../stores/stores.service';
-import { PaginationQuery } from 'src/common/query';
+import { QueryProductCategoryDto } from './dto/query-product-category.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Brackets } from 'typeorm';
 
@@ -21,8 +21,8 @@ export class ProductCategoriesController {
   }
 
   @Get()
-  async find(@Query() query: PaginationQuery, @Query('storeId') storeId?: number) {
-    const { page, limit, search } = query;
+  async find(@Query() query: QueryProductCategoryDto) {
+    const { page, limit, search, storeId } = query;
 
     const queryBuilder = this.productCategoriesService
       .createQueryBuilder('productCategory')
