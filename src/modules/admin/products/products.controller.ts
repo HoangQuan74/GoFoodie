@@ -34,7 +34,7 @@ export class ProductsController {
 
       const newProduct = new ProductEntity();
       Object.assign(newProduct, createProductDto);
-      newProduct.storeId = 111;
+      newProduct.storeId = storeId;
       newProduct.code = productCode;
 
       return manager.save(newProduct);
