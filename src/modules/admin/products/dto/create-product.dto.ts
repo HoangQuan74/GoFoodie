@@ -1,7 +1,31 @@
-import { IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  ValidateNested,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EProductStatus } from 'src/common/enums';
 import { Type } from 'class-transformer';
+
+export class CreateProductWorkingTimeDto {
+  @ApiProperty({ description: 'Thứ trong tuần (0: Chủ nhật, 1: Thứ 2, ..., 6: Thứ 7)' })
+  @IsInt()
+  dayOfWeek: number;
+
+  @ApiProperty({ description: 'Giờ mở cửa (phút)' })
+  @IsInt()
+  openTime: number;
+
+  @ApiProperty({ description: 'Giờ đóng cửa (phút)' })
+  @IsInt()
+  closeTime: number;
+}
 
 export class CreateProductDto {
   @ApiProperty()
@@ -30,4 +54,15 @@ export class CreateProductDto {
   @ApiProperty()
   @IsUUID()
   imageId: string;
+
+  @ApiProperty()
+  @IsBoolean()
+  @Type(() => Boolean)
+  isNormalTime: boolean;
+
+  @ApiPropertyOptional({ type: [CreateProductWorkingTimeDto] })
+  @ValidateNested({ each: true })
+  @IsOptional()
+  @Type(() => CreateProductWorkingTimeDto)
+  productWorkingTimes: CreateProductWorkingTimeDto[];
 }

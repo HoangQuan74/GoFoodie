@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProductEntity } from 'src/database/entities/product.entity';
-import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { DeepPartial, FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 
 @Injectable()
 export class ProductsService {
@@ -10,7 +10,7 @@ export class ProductsService {
     private readonly productRepository: Repository<ProductEntity>,
   ) {}
 
-  async save(entity: Partial<ProductEntity>) {
+  async save(entity: DeepPartial<ProductEntity>) {
     return this.productRepository.save(entity);
   }
 

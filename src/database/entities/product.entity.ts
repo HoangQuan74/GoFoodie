@@ -1,9 +1,10 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { StoreEntity } from './store.entity';
 import { ProductCategoryEntity } from './product-category.entity';
 import { EProductStatus } from 'src/common/enums';
 import { FileEntity } from './file.entity';
+import { ProductWorkingTimeEntity } from './product-working-time.entity';
 
 @Entity('products')
 export class ProductEntity extends BaseEntity {
@@ -31,6 +32,9 @@ export class ProductEntity extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   description: string;
 
+  @Column({ name: 'is_normal_time', default: true })
+  isNormalTime: boolean;
+
   @ManyToOne(() => ProductCategoryEntity, (productCategory) => productCategory.product)
   @JoinColumn({ name: 'product_category_id' })
   productCategory: ProductCategoryEntity;
@@ -42,4 +46,7 @@ export class ProductEntity extends BaseEntity {
   @ManyToOne(() => FileEntity, (file) => file.id)
   @JoinColumn({ name: 'image_id' })
   image: FileEntity;
+
+  @OneToMany(() => ProductWorkingTimeEntity, (productWorkingTime) => productWorkingTime.product)
+  productWorkingTimes: ProductWorkingTimeEntity[];
 }
