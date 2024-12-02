@@ -8,9 +8,6 @@ export class ProductCategoryEntity extends BaseEntity {
   @Column()
   name: string;
 
-  @Column({ name: 'is_global', default: false })
-  isGlobal: boolean;
-
   @Column({ name: 'store_id', nullable: true })
   storeId: number;
 

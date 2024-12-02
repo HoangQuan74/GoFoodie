@@ -40,7 +40,7 @@ import { ProductCategoriesModule } from './product-categories/product-categories
         module: ProductsModule,
       },
       {
-        path: 'admin/stores/:storeId',
+        path: 'admin',
         module: ProductCategoriesModule,
       },
     ]),

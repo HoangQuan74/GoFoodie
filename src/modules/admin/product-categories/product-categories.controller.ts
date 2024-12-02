@@ -5,6 +5,7 @@ import { UpdateProductCategoryDto } from './dto/update-product-category.dto';
 import { StoresService } from '../stores/stores.service';
 import { PaginationQuery } from 'src/common/query';
 import { ApiTags } from '@nestjs/swagger';
+import { Brackets } from 'typeorm';
 
 @Controller('product-categories')
 @ApiTags('Quản lý danh mục sản phẩm')
@@ -15,15 +16,12 @@ export class ProductCategoriesController {
   ) {}
 
   @Post()
-  async create(@Body() createProductCategoryDto: CreateProductCategoryDto, @Param('storeId') storeId: number) {
-    const store = await this.storesService.findOne({ where: { id: storeId } });
-    if (!store) throw new NotFoundException();
-
-    return this.productCategoriesService.save({ ...createProductCategoryDto, store });
+  async create(@Body() createProductCategoryDto: CreateProductCategoryDto) {
+    return this.productCategoriesService.save(createProductCategoryDto);
   }
 
   @Get()
-  async find(@Query() query: PaginationQuery, @Param('storeId') storeId: number) {
+  async find(@Query() query: PaginationQuery, @Query('storeId') storeId?: number) {
     const { page, limit, search } = query;
 
     const queryBuilder = this.productCategoriesService
@@ -34,7 +32,12 @@ export class ProductCategoriesController {
           .from('products', 'product')
           .where('product.productCategoryId = productCategory.id');
       }, 'totalProducts')
-      .where('productCategory.storeId = :storeId', { storeId });
+      .where(
+        new Brackets((qb) => {
+          qb.where('productCategory.storeId IS NULL');
+          storeId && qb.orWhere('productCategory.storeId = :storeId', { storeId });
+        }),
+      );
 
     if (search) {
       queryBuilder.andWhere('productCategory.name ILIKE :search', { search: `%${search}%` });
