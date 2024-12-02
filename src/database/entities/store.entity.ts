@@ -13,7 +13,6 @@ import { ServiceTypeEntity } from './service-type.entity';
 import { AdminEntity } from './admin.entity';
 import { FileEntity } from './file.entity';
 import { StoreSpecialWorkingTimeEntity } from './store-special-working-time.entity';
-import { StoreHolidayEntity } from './store-holiday.entity';
 
 @Entity('stores')
 export class StoreEntity extends BaseEntity {
@@ -161,9 +160,6 @@ export class StoreEntity extends BaseEntity {
 
   @OneToMany(() => StoreSpecialWorkingTimeEntity, (specialWorkingTime) => specialWorkingTime.store, { cascade: true })
   specialWorkingTimes: StoreSpecialWorkingTimeEntity[];
-
-  @OneToMany(() => StoreHolidayEntity, (holiday) => holiday.store, { cascade: true })
-  holidays: StoreHolidayEntity[];
 
   productCount: number = 0;
 }

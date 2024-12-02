@@ -10,13 +10,13 @@ export class StoreSpecialWorkingTimeEntity extends BaseEntity {
   @Column({ name: 'date', type: 'date' })
   date: string;
 
-  @Column({ name: 'open_time' })
-  openTime: number;
+  @Column({ name: 'start_time' })
+  startTime: number;
 
-  @Column({ name: 'close_time' })
-  closeTime: number;
+  @Column({ name: 'end_time' })
+  endTime: number;
 
-  @Column({ name: 'is_open', default: true })
+  @Column({ name: 'is_open', default: false })
   isOpen: boolean;
 
   @ManyToOne(() => StoreEntity, (store) => store.specialWorkingTimes, {
