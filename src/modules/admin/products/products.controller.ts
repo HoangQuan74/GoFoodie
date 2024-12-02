@@ -5,7 +5,8 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { StoresService } from '../stores/stores.service';
 import { PaginationQuery } from 'src/common/query';
-import { ILike } from 'typeorm';
+import { FindManyOptions, ILike } from 'typeorm';
+import { ProductEntity } from 'src/database/entities/product.entity';
 
 @Controller('products')
 @ApiTags('Quản lý sản phẩm')
@@ -27,7 +28,14 @@ export class ProductsController {
   async find(@Query() query: PaginationQuery) {
     const { page, limit, search } = query;
     const where = search ? { name: ILike(`%${search}%`) } : {};
-    const options = { skip: (page - 1) * limit, take: limit, where };
+    const options: FindManyOptions<ProductEntity> = {
+      select: { productCategory: { id: true, name: true } },
+      skip: (page - 1) * limit,
+      take: limit,
+      where,
+      relations: { productCategory: true },
+      order: { createdAt: 'DESC' },
+    };
 
     const [items, total] = await this.productsService.findAndCount(options);
     return { items, total };
