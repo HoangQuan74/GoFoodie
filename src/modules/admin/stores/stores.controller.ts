@@ -130,6 +130,7 @@ export class StoresController {
         ward: true,
         createdBy: true,
         approvedBy: true,
+        specialWorkingTimes: true,
       },
     });
     if (!store) throw new NotFoundException();
