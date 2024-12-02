@@ -33,8 +33,6 @@ export class PaginationQuery {
   search: string;
 }
 
-//
-
 export class IdentityQuery {
   @ApiProperty({ type: [Number] })
   @IsArray()

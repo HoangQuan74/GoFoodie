@@ -8,6 +8,8 @@ import { MerchantsModule } from './merchants/merchants.module';
 import { StoresModule } from './stores/stores.module';
 import { StaffsModule } from './staffs/staffs.module';
 import { ServiceGroupsModule } from './service-groups/service-groups.module';
+import { ProductsModule } from './products/products.module';
+import { ProductCategoriesModule } from './product-categories/product-categories.module';
 
 @Module({
   imports: [
@@ -33,12 +35,22 @@ import { ServiceGroupsModule } from './service-groups/service-groups.module';
         path: 'admin',
         module: ServiceGroupsModule,
       },
+      {
+        path: 'admin/stores/:storeId',
+        module: ProductsModule,
+      },
+      {
+        path: 'admin/stores/:storeId',
+        module: ProductCategoriesModule,
+      },
     ]),
     AdminsModule,
     MerchantsModule,
     StoresModule,
     StaffsModule,
     ServiceGroupsModule,
+    ProductsModule,
+    ProductCategoriesModule,
   ],
   providers: [
     {

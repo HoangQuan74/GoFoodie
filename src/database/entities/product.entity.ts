@@ -1,0 +1,45 @@
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { BaseEntity } from './base.entity';
+import { StoreEntity } from './store.entity';
+import { ProductCategoryEntity } from './product-category.entity';
+import { EProductStatus } from 'src/common/enums';
+import { FileEntity } from './file.entity';
+
+@Entity('products')
+export class ProductEntity extends BaseEntity {
+  @Column()
+  name: string;
+
+  @Column()
+  code: string;
+
+  @Column({ type: 'float' })
+  price: number;
+
+  @Column({ type: 'enum', enum: EProductStatus, default: EProductStatus.Active })
+  status: EProductStatus;
+
+  @Column({ name: 'store_id', select: false })
+  storeId: number;
+
+  @Column({ name: 'product_category_id', select: false })
+  productCategoryId: number;
+
+  @Column({ name: 'image_id' })
+  imageId: string;
+
+  @Column({ type: 'text', nullable: true })
+  description: string;
+
+  @ManyToOne(() => ProductCategoryEntity, (productCategory) => productCategory.product)
+  @JoinColumn({ name: 'product_category_id' })
+  productCategory: ProductCategoryEntity;
+
+  @ManyToOne(() => StoreEntity, (store) => store.id, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'store_id' })
+  store: StoreEntity;
+
+  @ManyToOne(() => FileEntity, (file) => file.id)
+  @JoinColumn({ name: 'image_id' })
+  image: FileEntity;
+}
