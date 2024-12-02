@@ -16,6 +16,9 @@ export class StoreSpecialWorkingTimeEntity extends BaseEntity {
   @Column({ name: 'close_time' })
   closeTime: number;
 
+  @Column({ name: 'is_open', default: true })
+  isOpen: boolean;
+
   @ManyToOne(() => StoreEntity, (store) => store.specialWorkingTimes, {
     onDelete: 'CASCADE',
     orphanedRowAction: 'delete',

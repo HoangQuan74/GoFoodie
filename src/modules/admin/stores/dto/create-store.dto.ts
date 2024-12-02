@@ -53,6 +53,10 @@ export class CreateStoreSpecialWorkingTimeDto {
   @Min(0)
   @Max(24 * 60 - 1)
   closeTime: number;
+
+  @ApiProperty({ description: 'Cửa hàng mở cửa hay không' })
+  @IsBoolean()
+  isOpen: boolean;
 }
 
 export class CreateStoreHolidayDto {

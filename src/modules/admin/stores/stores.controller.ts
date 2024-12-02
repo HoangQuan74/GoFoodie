@@ -99,7 +99,6 @@ export class StoresController {
     approvedAtFrom && queryBuilder.andWhere('store.approvedAt >= :approvedAtFrom');
     approvedAtTo && queryBuilder.andWhere('store.approvedAt <= :approvedAtTo');
 
-    console.log('approvedAtFrom', approvedAtFrom);
     queryBuilder.setParameters({ serviceTypeId, businessAreaId, approvalStatus, status, merchantId });
     queryBuilder.setParameters({ createdAtFrom, createdAtTo, approvedAtFrom, approvedAtTo });
 

@@ -8,7 +8,10 @@ export class ProductCategoryEntity extends BaseEntity {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ name: 'is_global', default: false })
+  isGlobal: boolean;
+
+  @Column({ name: 'store_id', nullable: true })
   storeId: number;
 
   @ManyToOne(() => StoreEntity, (store) => store.id, { onDelete: 'CASCADE' })
