@@ -3,3 +3,4 @@ export * from './admin.enum';
 export * from './merchant.enum';
 export * from './store.enum';
 export * from './product.enum';
+export * from './product-category.enum';
