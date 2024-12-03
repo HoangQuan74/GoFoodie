@@ -10,6 +10,7 @@ import { StaffsModule } from './staffs/staffs.module';
 import { ServiceGroupsModule } from './service-groups/service-groups.module';
 import { ProductsModule } from './products/products.module';
 import { ProductCategoriesModule } from './product-categories/product-categories.module';
+import { OptionGroupsModule } from './option-groups/option-groups.module';
 
 @Module({
   imports: [
@@ -43,6 +44,10 @@ import { ProductCategoriesModule } from './product-categories/product-categories
         path: 'admin',
         module: ProductCategoriesModule,
       },
+      {
+        path: 'admin',
+        module: OptionGroupsModule,
+      },
     ]),
     AdminsModule,
     MerchantsModule,
@@ -51,6 +56,7 @@ import { ProductCategoriesModule } from './product-categories/product-categories
     ServiceGroupsModule,
     ProductsModule,
     ProductCategoriesModule,
+    OptionGroupsModule,
   ],
   providers: [
     {

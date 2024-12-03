@@ -46,7 +46,7 @@ export class MerchantsController {
 
   @Get()
   async find(@Query() query: QueryMerchantDto) {
-    const { limit, page, search, status, sort } = query;
+    const { limit, page, search, status, sort, createdAtFrom, createdAtTo } = query;
 
     const queryBuilder = this.merchantsService.createViewBuilder('merchant').where('merchant.storeId IS NULL');
 
@@ -60,6 +60,8 @@ export class MerchantsController {
       );
     }
     status && queryBuilder.andWhere('merchant.status = :status', { status });
+    createdAtFrom && queryBuilder.andWhere('merchant.createdAt >= :createdAtFrom', { createdAtFrom });
+    createdAtTo && queryBuilder.andWhere('merchant.createdAt <= :createdAtTo', { createdAtTo });
     queryBuilder.take(limit).skip(limit * (page - 1));
 
     if (sort) {

@@ -15,4 +15,12 @@ export class QueryMerchantDto extends PaginationQuery {
   @IsEnum(ESortMerchant)
   @ValidateIf((o) => o.sort)
   sort: ESortMerchant = ESortMerchant.CreatedAtDesc;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  createdAtFrom: Date;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  createdAtTo: Date;
 }
