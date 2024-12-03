@@ -20,6 +20,7 @@ import { Brackets, DataSource } from 'typeorm';
 import { ProductCategoryEntity } from 'src/database/entities/product-category.entity';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { EXCEPTIONS } from 'src/common/constants';
+import { EProductCategoryStatus } from 'src/common/enums';
 
 @Controller('product-categories')
 @ApiTags('Quản lý danh mục sản phẩm')
@@ -43,40 +44,40 @@ export class ProductCategoriesController {
     const { page, limit, search, storeId, status } = query;
 
     const queryBuilder = this.productCategoriesService
-      .createQueryBuilder('productCategory')
+      .createQueryBuilder('category')
+      .select([
+        'category.id as id',
+        'category.code as code',
+        'category.name as name',
+        'category.description as description',
+        'category.status as status',
+        'category.createdAt as createdAt',
+        'category.updatedAt as updatedAt',
+      ])
       .addSelect((subQuery) => {
         return subQuery
           .select('COUNT(product.id)', 'totalProducts')
           .from('products', 'product')
-          .where('product.productCategoryId = productCategory.id');
+          .where('product.productCategoryId = category.id');
       }, 'totalProducts')
       .where(
         new Brackets((qb) => {
-          qb.where('productCategory.storeId IS NULL');
-          storeId && qb.orWhere('productCategory.storeId = :storeId', { storeId });
+          qb.where('category.storeId IS NULL');
+          storeId && qb.orWhere('category.storeId = :storeId', { storeId });
         }),
       );
 
-    if (search) {
-      queryBuilder.andWhere('productCategory.name ILIKE :search', { search: `%${search}%` });
-    }
+    search && queryBuilder.andWhere('category.name ILIKE :search', { search: `%${search}%` });
+    status && queryBuilder.andWhere('category.status = :status', { status });
 
-    status && queryBuilder.andWhere('productCategory.status = :status', { status });
-
-    const { raw, entities } = await queryBuilder
-      .orderBy('productCategory.id', 'DESC')
+    const items = await queryBuilder
+      .orderBy('category.id', 'DESC')
       .skip((page - 1) * limit)
       .take(limit)
-      .getRawAndEntities();
+      .getRawMany();
 
     const total = await queryBuilder.getCount();
-
-    entities.forEach((entity) => {
-      const totalProducts = raw.find((item) => item.productCategory_id === entity.id).totalProducts;
-      entity.totalProducts = totalProducts;
-    });
-
-    return { items: entities, total };
+    return { items, total };
   }
 
   @Patch(':id')
@@ -88,10 +89,10 @@ export class ProductCategoriesController {
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id') id: number) {
     return this.dataSource.transaction(async (manager) => {
-      const productCategory = await manager.findOne(ProductCategoryEntity, { where: { id: +id } });
-      if (!productCategory) throw new NotFoundException();
+      const category = await manager.findOneBy(ProductCategoryEntity, { id, status: EProductCategoryStatus.Inactive });
+      if (!category) throw new NotFoundException();
 
       const totalProducts = await manager.count(ProductEntity, { where: { id: +id } });
       if (totalProducts > 0) throw new ConflictException(EXCEPTIONS.CATEGORY_HAS_PRODUCTS);
