@@ -37,7 +37,7 @@ export class ProductEntity extends BaseEntity {
   @Column({ name: 'is_normal_time', default: true })
   isNormalTime: boolean;
 
-  @ManyToOne(() => ProductCategoryEntity, (productCategory) => productCategory.product)
+  @ManyToOne(() => ProductCategoryEntity, (productCategory) => productCategory.products)
   @JoinColumn({ name: 'product_category_id' })
   productCategory: ProductCategoryEntity;
 

@@ -27,7 +27,7 @@ export class ProductCategoryEntity extends BaseEntity {
   store: StoreEntity;
 
   @OneToMany(() => ProductEntity, (product) => product.productCategory)
-  product: ProductEntity[];
+  products: ProductEntity[];
 
   totalProducts: number;
 }

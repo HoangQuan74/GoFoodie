@@ -9,6 +9,7 @@ import {
   NotFoundException,
   Query,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { ProductCategoriesService } from './product-categories.service';
 import { CreateProductCategoryDto } from './dto/create-product-category.dto';
@@ -16,11 +17,11 @@ import { UpdateProductCategoryDto } from './dto/update-product-category.dto';
 import { StoresService } from '../stores/stores.service';
 import { QueryProductCategoryDto } from './dto/query-product-category.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { Brackets, DataSource } from 'typeorm';
+import { Brackets, DataSource, IsNull } from 'typeorm';
 import { ProductCategoryEntity } from 'src/database/entities/product-category.entity';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { EXCEPTIONS } from 'src/common/constants';
-import { EProductCategoryStatus } from 'src/common/enums';
+import { EProductCategoryStatus, EProductStatus } from 'src/common/enums';
 
 @Controller('product-categories')
 @ApiTags('Quản lý danh mục sản phẩm')
@@ -37,6 +38,28 @@ export class ProductCategoriesController {
     const productCategoryCode = `${productCategory.id.toString().padStart(4, '0')}`;
     productCategory.code = productCategoryCode;
     return this.productCategoriesService.save(productCategory);
+  }
+
+  @Get('list')
+  async list(@Query() query: QueryProductCategoryDto) {
+    const { storeId, status, search } = query;
+    if (!storeId) throw new BadRequestException(EXCEPTIONS.STORE_ID_REQUIRED);
+
+    const queryBuilder = this.productCategoriesService
+      .createQueryBuilder('category')
+      .select(['category.id', 'category.name', 'category.status'])
+      .addSelect(['products.id', 'products.name'])
+      .where(
+        new Brackets((qb) => {
+          qb.where('category.storeId = :storeId', { storeId }).orWhere('category.storeId IS NULL');
+        }),
+      )
+      .leftJoin('category.products', 'products', 'products.status = :status', { status: EProductStatus.Active });
+
+    status && queryBuilder.andWhere('category.status = :status', { status });
+    search && queryBuilder.andWhere('products.name ILIKE :search', { search: `%${search}%` });
+
+    return queryBuilder.getMany();
   }
 
   @Get()
