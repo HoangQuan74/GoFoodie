@@ -1,14 +1,15 @@
-import { DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
 import { ProductEntity } from './product.entity';
 import { OptionGroupEntity } from './option-group.entity';
-import { ProductOptionEntity } from './product-option.entity';
+import { OptionEntity } from './option.entity';
+import { BaseEntity } from './base.entity';
 
 @Entity('product_option_groups')
-export class ProductOptionGroupEntity {
-  @PrimaryColumn({ name: 'product_id' })
+export class ProductOptionGroupEntity extends BaseEntity {
+  @Column({ name: 'product_id' })
   productId: number;
 
-  @PrimaryColumn({ name: 'option_group_id' })
+  @Column({ name: 'option_group_id' })
   optionGroupId: number;
 
   @ManyToOne(() => ProductEntity, (product) => product.optionGroups)
@@ -19,9 +20,12 @@ export class ProductOptionGroupEntity {
   @JoinColumn({ name: 'option_group_id' })
   optionGroup: OptionGroupEntity;
 
-  @OneToMany(() => ProductOptionEntity, (productOption) => productOption.productOptionGroup)
-  productOptions: ProductOptionEntity[];
-
-  @DeleteDateColumn({ name: 'deleted_at' })
-  deletedAt: Date;
+  @ManyToMany(() => OptionEntity, (option) => option.id, { cascade: true })
+  @JoinTable({
+    name: 'product_options',
+    joinColumn: { name: 'product_option_group_id' },
+    inverseJoinColumn: { name: 'option_id' },
+    synchronize: false,
+  })
+  options: OptionEntity[];
 }

@@ -61,7 +61,10 @@ export class ProductsController {
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    const product = await this.productsService.findOne({ where: { id: +id } });
+    const product = await this.productsService.findOne({
+      where: { id: +id },
+      relations: { productOptionGroups: { options: true, optionGroup: true } },
+    });
     if (!product) throw new NotFoundException();
 
     return product;

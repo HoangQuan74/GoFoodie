@@ -6,6 +6,7 @@ import { EProductStatus } from 'src/common/enums';
 import { FileEntity } from './file.entity';
 import { ProductWorkingTimeEntity } from './product-working-time.entity';
 import { OptionGroupEntity } from './option-group.entity';
+import { ProductOptionGroupEntity } from './product-option-group.entity';
 
 @Entity('products')
 export class ProductEntity extends BaseEntity {
@@ -59,4 +60,7 @@ export class ProductEntity extends BaseEntity {
     synchronize: false,
   })
   optionGroups: OptionGroupEntity[];
+
+  @OneToMany(() => ProductOptionGroupEntity, (productOptionGroup) => productOptionGroup.product)
+  productOptionGroups: ProductOptionGroupEntity[];
 }

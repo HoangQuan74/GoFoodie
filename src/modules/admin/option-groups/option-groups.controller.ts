@@ -6,11 +6,16 @@ import { QueryOptionGroupDto } from './dto/query-option-group.dto';
 import { FindManyOptions, ILike } from 'typeorm';
 import { ApiTags } from '@nestjs/swagger';
 import { OptionGroupEntity } from 'src/database/entities/option-group.entity';
+import { ProductOptionGroupEntity } from 'src/database/entities/product-option-group.entity';
+import { ProductOptionGroupsService } from 'src/modules/product-option-groups/product-option-groups.service';
 
 @Controller('option-groups')
 @ApiTags('Quản lý nhóm tùy chọn sản phẩm')
 export class OptionGroupsController {
-  constructor(private readonly optionGroupsService: OptionGroupsService) {}
+  constructor(
+    private readonly optionGroupsService: OptionGroupsService,
+    private readonly productOptionGroupsService: ProductOptionGroupsService,
+  ) {}
 
   @Post()
   create(@Body() createOptionGroupDto: CreateOptionGroupDto) {
@@ -36,7 +41,14 @@ export class OptionGroupsController {
 
   @Get(':id')
   async findOne(@Param('id') id: number) {
-    const optionGroup = await this.optionGroupsService.findOne({ where: { id }, relations: ['options'] });
+    const optionGroup = await this.optionGroupsService.findOne({
+      select: { productOptionGroups: { id: true, product: { id: true, name: true } } },
+      where: { id },
+      relations: {
+        options: true,
+        productOptionGroups: { product: true, options: true },
+      },
+    });
     if (!optionGroup) throw new NotFoundException();
 
     return optionGroup;
@@ -44,10 +56,23 @@ export class OptionGroupsController {
 
   @Patch(':id')
   async update(@Param('id') id: number, @Body() updateOptionGroupDto: UpdateOptionGroupDto) {
-    const optionGroup = await this.optionGroupsService.findOne({ where: { id } });
+    let optionGroup = await this.optionGroupsService.findOne({ where: { id }, relations: ['options'] });
     if (!optionGroup) throw new NotFoundException();
 
-    return this.optionGroupsService.save({ ...optionGroup, ...updateOptionGroupDto });
+    optionGroup = await this.optionGroupsService.save({ ...optionGroup, ...updateOptionGroupDto });
+
+    const { products = [] } = updateOptionGroupDto;
+    const productOptionGroups = products.map((product) => {
+      const productOptionGroup = new ProductOptionGroupEntity();
+      productOptionGroup.productId = product.id;
+      productOptionGroup.optionGroupId = id;
+      productOptionGroup.options = optionGroup.options;
+      return productOptionGroup;
+    });
+
+    await this.productOptionGroupsService.removeAllProduct(id);
+    await this.productOptionGroupsService.save(productOptionGroups);
+    return optionGroup;
   }
 
   @Delete(':id')

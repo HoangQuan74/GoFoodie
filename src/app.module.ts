@@ -16,6 +16,7 @@ import { ServiceGroupsModule } from './modules/service-groups/service-groups.mod
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { BanksModule } from './modules/banks/banks.module';
 import { TasksModule } from './modules/tasks/tasks.module';
+import { ProductOptionGroupsModule } from './modules/product-option-groups/product-option-groups.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { TasksModule } from './modules/tasks/tasks.module';
     UploadsModule,
     BanksModule,
     TasksModule,
+    ProductOptionGroupsModule,
     // FirebaseModule,
   ],
   controllers: [],

@@ -4,6 +4,8 @@ import { StoreEntity } from './store.entity';
 import { EOptionGroupStatus } from 'src/common/enums';
 import { OptionEntity } from './option.entity';
 import { ProductEntity } from './product.entity';
+import { ProductOptionEntity } from './product-option.entity';
+import { ProductOptionGroupEntity } from './product-option-group.entity';
 
 @Entity('option_groups')
 export class OptionGroupEntity extends BaseEntity {
@@ -40,4 +42,7 @@ export class OptionGroupEntity extends BaseEntity {
     synchronize: false,
   })
   products: ProductEntity[];
+
+  @OneToMany(() => ProductOptionGroupEntity, (productOptionGroup) => productOptionGroup.optionGroup)
+  productOptionGroups: ProductOptionGroupEntity[];
 }
