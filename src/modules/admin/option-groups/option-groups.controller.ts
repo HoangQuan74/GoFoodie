@@ -35,8 +35,8 @@ export class OptionGroupsController {
       skip: (page - 1) * limit,
       order: { id: 'DESC' },
     };
-    const [item, total] = await this.optionGroupsService.findAndCount(options);
-    return { item, total };
+    const [items, total] = await this.optionGroupsService.findAndCount(options);
+    return { items, total };
   }
 
   @Get(':id')
