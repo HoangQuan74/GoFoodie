@@ -1,4 +1,4 @@
-import { EMerchantRole, EStaffRole } from './../../../../common/enums/merchant.enum';
+import { EStaffRole } from './../../../../common/enums/merchant.enum';
 import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, ValidateIf } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EMerchantStatus } from 'src/common/enums';

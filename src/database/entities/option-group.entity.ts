@@ -1,8 +1,9 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { StoreEntity } from './store.entity';
 import { EOptionGroupStatus } from 'src/common/enums';
 import { OptionEntity } from './option.entity';
+import { ProductEntity } from './product.entity';
 
 @Entity('option_groups')
 export class OptionGroupEntity extends BaseEntity {
@@ -30,4 +31,13 @@ export class OptionGroupEntity extends BaseEntity {
 
   @OneToMany(() => OptionEntity, (option) => option.optionGroup, { cascade: true })
   options: OptionEntity[];
+
+  @ManyToMany(() => ProductEntity, (product) => product.optionGroups)
+  @JoinTable({
+    name: 'product_option_groups',
+    joinColumn: { name: 'option_group_id' },
+    inverseJoinColumn: { name: 'product_id' },
+    synchronize: false,
+  })
+  products: ProductEntity[];
 }

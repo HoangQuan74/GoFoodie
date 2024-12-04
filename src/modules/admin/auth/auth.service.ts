@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { comparePassword, generateOTP, hashPassword } from 'src/utils/bcrypt';
 import { JwtPayload, JwtSign } from 'src/common/interfaces';
-import { ENV, JWT_EXPIRATION, JWT_SECRET } from 'src/common/constants';
+import { JWT_EXPIRATION, JWT_SECRET } from 'src/common/constants';
 import { JwtService } from '@nestjs/jwt';
 import { AdminsService } from '../admins/admins.service';
 import { AdminEntity } from 'src/database/entities/admin.entity';

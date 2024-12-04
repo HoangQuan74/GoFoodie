@@ -1,10 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { StoreEntity } from './store.entity';
 import { ProductCategoryEntity } from './product-category.entity';
 import { EProductStatus } from 'src/common/enums';
 import { FileEntity } from './file.entity';
 import { ProductWorkingTimeEntity } from './product-working-time.entity';
+import { OptionGroupEntity } from './option-group.entity';
 
 @Entity('products')
 export class ProductEntity extends BaseEntity {
@@ -49,4 +50,13 @@ export class ProductEntity extends BaseEntity {
 
   @OneToMany(() => ProductWorkingTimeEntity, (productWorkingTime) => productWorkingTime.product)
   productWorkingTimes: ProductWorkingTimeEntity[];
+
+  @ManyToMany(() => OptionGroupEntity, (optionGroup) => optionGroup.products)
+  @JoinTable({
+    name: 'product_option_groups',
+    joinColumn: { name: 'product_id' },
+    inverseJoinColumn: { name: 'option_group_id' },
+    synchronize: false,
+  })
+  optionGroups: OptionGroupEntity[];
 }

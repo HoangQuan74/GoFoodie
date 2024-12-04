@@ -6,7 +6,6 @@ import {
   IsIn,
   Max,
   Min,
-  ValidateNested,
   IsEnum,
   ValidateIf,
   IsEmail,
@@ -268,10 +267,4 @@ export class CreateStoreDto {
   @Type(() => CreateStoreBankDto)
   @ValidateIf((o) => !o.isDraft)
   banks: CreateStoreBankDto[];
-
-  @ApiProperty({ type: CreateStoreSpecialWorkingTimeDto, isArray: true })
-  @ValidateNested({ each: true })
-  @Type(() => CreateStoreSpecialWorkingTimeDto)
-  @IsOptional()
-  specialWorkingTimes: CreateStoreSpecialWorkingTimeDto[];
 }
