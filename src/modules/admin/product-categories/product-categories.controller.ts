@@ -54,7 +54,8 @@ export class ProductCategoriesController {
           qb.where('category.storeId = :storeId', { storeId }).orWhere('category.storeId IS NULL');
         }),
       )
-      .leftJoin('category.products', 'products', 'products.status = :status', { status: EProductStatus.Active });
+      .leftJoin('category.products', 'products', 'products.status = :productStatus')
+      .setParameter('productStatus', EProductStatus.Active);
 
     status && queryBuilder.andWhere('category.status = :status', { status });
     search && queryBuilder.andWhere('products.name ILIKE :search', { search: `%${search}%` });
