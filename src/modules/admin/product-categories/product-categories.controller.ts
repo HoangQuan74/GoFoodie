@@ -79,6 +79,8 @@ export class ProductCategoriesController {
         'category.status as status',
         'category.createdAt as createdAt',
         'category.updatedAt as updatedAt',
+        'category.serviceGroupId as "serviceGroupId"',
+        'serviceGroup.name as "serviceGroupName"',
       ])
       .addSelect((subQuery) => {
         return subQuery
@@ -86,6 +88,7 @@ export class ProductCategoriesController {
           .from('products', 'product')
           .where('product.productCategoryId = category.id');
       }, 'totalProducts')
+      .leftJoin('category.serviceGroup', 'serviceGroup')
       .where(
         new Brackets((qb) => {
           qb.where('category.storeId IS NULL');

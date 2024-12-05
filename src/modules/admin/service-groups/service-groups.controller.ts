@@ -52,11 +52,11 @@ export class ServiceGroupsController {
     return this.serviceGroupsService.save({ ...serviceGroup, ...updateServiceGroupDto });
   }
 
-  @Delete(':id')
-  async remove(@Param('id') id: string) {
-    const serviceGroup = await this.serviceGroupsService.findOne({ where: { id: +id } });
-    if (!serviceGroup) throw new NotFoundException();
+  // @Delete(':id')
+  // async remove(@Param('id') id: string) {
+  //   const serviceGroup = await this.serviceGroupsService.findOne({ where: { id: +id } });
+  //   if (!serviceGroup) throw new NotFoundException();
 
-    return this.serviceGroupsService.remove(serviceGroup);
-  }
+  //   return this.serviceGroupsService.remove(serviceGroup);
+  // }
 }
