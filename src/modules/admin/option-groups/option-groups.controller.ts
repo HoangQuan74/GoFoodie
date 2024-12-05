@@ -59,9 +59,9 @@ export class OptionGroupsController {
     let optionGroup = await this.optionGroupsService.findOne({ where: { id }, relations: ['options'] });
     if (!optionGroup) throw new NotFoundException();
 
-    optionGroup = await this.optionGroupsService.save({ ...optionGroup, ...updateOptionGroupDto });
+    const { products = [], ...rest } = updateOptionGroupDto;
+    optionGroup = await this.optionGroupsService.save({ ...optionGroup, ...rest });
 
-    const { products = [] } = updateOptionGroupDto;
     const productOptionGroups = products.map((product) => {
       const productOptionGroup = new ProductOptionGroupEntity();
       productOptionGroup.productId = product.id;
