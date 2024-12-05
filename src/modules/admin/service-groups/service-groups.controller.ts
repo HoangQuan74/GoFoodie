@@ -3,7 +3,7 @@ import { ServiceGroupsService } from './service-groups.service';
 import { CreateServiceGroupDto } from './dto/create-service-group.dto';
 import { UpdateServiceGroupDto } from './dto/update-service-group.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { PaginationQuery } from 'src/common/query';
+import { QueryServiceGroupDto } from './dto/query-service-group.dto';
 import { ILike } from 'typeorm';
 
 @Controller('service-groups')
@@ -17,9 +17,10 @@ export class ServiceGroupsController {
   }
 
   @Get()
-  async find(@Query() query: PaginationQuery) {
-    const { page, limit, search } = query;
+  async find(@Query() query: QueryServiceGroupDto) {
+    const { page, limit, search, status } = query;
     const where = search ? { name: ILike(`%${search}%`) } : {};
+    status && (where['status'] = status);
     const options = { skip: (page - 1) * limit, take: limit, where };
 
     const [items, total] = await this.serviceGroupsService.findAndCount(options);

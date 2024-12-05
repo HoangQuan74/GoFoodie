@@ -42,7 +42,7 @@ export class ProductCategoriesController {
 
   @Get('list')
   async list(@Query() query: QueryProductCategoryDto) {
-    const { storeId, status, search } = query;
+    const { storeId, status, search, serviceGroupId } = query;
     if (!storeId) throw new BadRequestException(EXCEPTIONS.STORE_ID_REQUIRED);
 
     const queryBuilder = this.productCategoriesService
@@ -60,13 +60,14 @@ export class ProductCategoriesController {
 
     status && queryBuilder.andWhere('category.status = :status', { status });
     search && queryBuilder.andWhere('products.name ILIKE :search', { search: `%${search}%` });
+    serviceGroupId && queryBuilder.andWhere('category.serviceGroupId = :serviceGroupId', { serviceGroupId });
 
     return queryBuilder.getMany();
   }
 
   @Get()
   async find(@Query() query: QueryProductCategoryDto) {
-    const { page, limit, search, storeId, status } = query;
+    const { page, limit, search, storeId, status, serviceGroupId } = query;
 
     const queryBuilder = this.productCategoriesService
       .createQueryBuilder('category')
@@ -94,6 +95,7 @@ export class ProductCategoriesController {
 
     search && queryBuilder.andWhere('category.name ILIKE :search', { search: `%${search}%` });
     status && queryBuilder.andWhere('category.status = :status', { status });
+    serviceGroupId && queryBuilder.andWhere('category.serviceGroupId = :serviceGroupId', { serviceGroupId });
 
     const items = await queryBuilder
       .orderBy('category.id', 'DESC')

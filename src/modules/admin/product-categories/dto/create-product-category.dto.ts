@@ -22,4 +22,8 @@ export class CreateProductCategoryDto {
   @IsEnum(EProductCategoryStatus)
   @IsOptional()
   status: EProductCategoryStatus;
+
+  @ApiProperty()
+  @IsInt()
+  serviceGroupId: number;
 }

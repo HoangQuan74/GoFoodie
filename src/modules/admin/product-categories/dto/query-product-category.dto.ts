@@ -11,6 +11,12 @@ export class QueryProductCategoryDto extends PaginationQuery {
   @Type(() => Number)
   storeId: number;
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
+  serviceGroupId: number;
+
   @ApiPropertyOptional({ type: 'enum', enum: EProductCategoryStatus })
   @IsEnum(EProductCategoryStatus)
   @IsOptional()
