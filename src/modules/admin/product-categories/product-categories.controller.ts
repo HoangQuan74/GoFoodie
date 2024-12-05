@@ -51,11 +51,12 @@ export class ProductCategoriesController {
       .addSelect(['products.id', 'products.name'])
       .where(
         new Brackets((qb) => {
-          qb.where('category.storeId = :storeId', { storeId }).orWhere('category.storeId IS NULL');
+          qb.where('category.storeId = :storeId').orWhere('category.storeId IS NULL');
         }),
       )
-      .leftJoin('category.products', 'products', 'products.status = :productStatus')
-      .setParameter('productStatus', EProductStatus.Active);
+      .leftJoin('category.products', 'products', 'products.status = :productStatus AND products.storeId = :storeId')
+      .setParameter('productStatus', EProductStatus.Active)
+      .setParameter('storeId', storeId);
 
     status && queryBuilder.andWhere('category.status = :status', { status });
     search && queryBuilder.andWhere('products.name ILIKE :search', { search: `%${search}%` });
