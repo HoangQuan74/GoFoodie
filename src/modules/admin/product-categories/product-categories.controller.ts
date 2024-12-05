@@ -17,7 +17,7 @@ import { UpdateProductCategoryDto } from './dto/update-product-category.dto';
 import { StoresService } from '../stores/stores.service';
 import { QueryProductCategoryDto } from './dto/query-product-category.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { Brackets, DataSource, IsNull } from 'typeorm';
+import { Brackets, DataSource } from 'typeorm';
 import { ProductCategoryEntity } from 'src/database/entities/product-category.entity';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { EXCEPTIONS } from 'src/common/constants';

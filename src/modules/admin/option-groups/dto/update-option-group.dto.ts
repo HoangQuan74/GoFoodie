@@ -1,7 +1,6 @@
-import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { CreateOptionGroupDto } from './create-option-group.dto';
-import { IsArray, IsInt, IsOptional, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsInt } from 'class-validator';
 
 export class UpdateProductOptionGroupDto {
   @ApiProperty()
@@ -9,11 +8,4 @@ export class UpdateProductOptionGroupDto {
   id: number;
 }
 
-export class UpdateOptionGroupDto extends PartialType(CreateOptionGroupDto) {
-  @ApiPropertyOptional({ type: [UpdateProductOptionGroupDto] })
-  @ValidateNested({ each: true })
-  @Type(() => UpdateProductOptionGroupDto)
-  @IsArray()
-  @IsOptional()
-  products: UpdateProductOptionGroupDto[];
-}
+export class UpdateOptionGroupDto extends PartialType(CreateOptionGroupDto) {}

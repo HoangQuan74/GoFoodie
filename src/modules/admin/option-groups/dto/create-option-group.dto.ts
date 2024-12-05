@@ -14,6 +14,12 @@ import {
 } from 'class-validator';
 import { EOptionGroupStatus, EOptionStatus } from 'src/common/enums';
 
+export class UpdateProductOptionGroupDto {
+  @ApiProperty()
+  @IsInt()
+  id: number;
+}
+
 export class CreateOptionDto {
   @ApiProperty()
   @IsString()
@@ -54,4 +60,11 @@ export class CreateOptionGroupDto {
   @IsArray()
   @Type(() => CreateOptionDto)
   options: CreateOptionDto[];
+
+  @ApiPropertyOptional({ type: [UpdateProductOptionGroupDto] })
+  @ValidateNested({ each: true })
+  @Type(() => UpdateProductOptionGroupDto)
+  @IsArray()
+  @IsOptional()
+  products: UpdateProductOptionGroupDto[];
 }
