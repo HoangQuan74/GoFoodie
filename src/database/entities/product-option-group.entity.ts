@@ -12,7 +12,10 @@ export class ProductOptionGroupEntity extends BaseEntity {
   @Column({ name: 'option_group_id' })
   optionGroupId: number;
 
-  @ManyToOne(() => ProductEntity, (product) => product.optionGroups)
+  @ManyToOne(() => ProductEntity, (product) => product.optionGroups, {
+    onDelete: 'CASCADE',
+    orphanedRowAction: 'delete',
+  })
   @JoinColumn({ name: 'product_id' })
   product: ProductEntity;
 
