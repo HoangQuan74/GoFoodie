@@ -53,12 +53,6 @@ export class ProductEntity extends BaseEntity {
   productWorkingTimes: ProductWorkingTimeEntity[];
 
   @ManyToMany(() => OptionGroupEntity, (optionGroup) => optionGroup.products)
-  @JoinTable({
-    name: 'product_option_groups',
-    joinColumn: { name: 'product_id' },
-    inverseJoinColumn: { name: 'option_group_id' },
-    synchronize: false,
-  })
   optionGroups: OptionGroupEntity[];
 
   @OneToMany(() => ProductOptionGroupEntity, (productOptionGroup) => productOptionGroup.product)

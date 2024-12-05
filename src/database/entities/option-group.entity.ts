@@ -33,7 +33,7 @@ export class OptionGroupEntity extends BaseEntity {
   @OneToMany(() => OptionEntity, (option) => option.optionGroup, { cascade: true })
   options: OptionEntity[];
 
-  @ManyToMany(() => ProductEntity, (product) => product.optionGroups)
+  @ManyToMany(() => ProductEntity, (product) => product.optionGroups, { cascade: true })
   @JoinTable({
     name: 'product_option_groups',
     joinColumn: { name: 'option_group_id' },
