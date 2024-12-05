@@ -42,11 +42,11 @@ export class OptionGroupsController {
   @Get(':id')
   async findOne(@Param('id') id: number) {
     const optionGroup = await this.optionGroupsService.findOne({
-      select: { productOptionGroups: { id: true, product: { id: true, name: true } } },
+      select: { products: { id: true, name: true } },
       where: { id },
       relations: {
         options: true,
-        productOptionGroups: { product: true, options: true },
+        products: true,
       },
     });
     if (!optionGroup) throw new NotFoundException();
