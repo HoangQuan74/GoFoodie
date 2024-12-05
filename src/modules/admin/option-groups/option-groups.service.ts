@@ -22,6 +22,10 @@ export class OptionGroupsService {
     return this.optionGroupRepository.findOne(options);
   }
 
+  async count(options?: FindManyOptions<OptionGroupEntity>): Promise<number> {
+    return this.optionGroupRepository.count(options);
+  }
+
   async findAndCount(options?: FindManyOptions<OptionGroupEntity>): Promise<[OptionGroupEntity[], number]> {
     return this.optionGroupRepository.findAndCount(options);
   }

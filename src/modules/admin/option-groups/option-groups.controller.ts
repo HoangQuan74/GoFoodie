@@ -1,13 +1,25 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { OptionGroupsService } from './option-groups.service';
 import { CreateOptionGroupDto } from './dto/create-option-group.dto';
 import { UpdateOptionGroupDto } from './dto/update-option-group.dto';
 import { QueryOptionGroupDto } from './dto/query-option-group.dto';
-import { FindManyOptions, ILike } from 'typeorm';
+import { FindManyOptions, ILike, Not } from 'typeorm';
 import { ApiTags } from '@nestjs/swagger';
 import { OptionGroupEntity } from 'src/database/entities/option-group.entity';
 import { ProductOptionGroupEntity } from 'src/database/entities/product-option-group.entity';
 import { ProductOptionGroupsService } from 'src/modules/product-option-groups/product-option-groups.service';
+import { EXCEPTIONS } from 'src/common/constants';
 
 @Controller('option-groups')
 @ApiTags('Quản lý nhóm tùy chọn sản phẩm')
@@ -18,7 +30,11 @@ export class OptionGroupsController {
   ) {}
 
   @Post()
-  create(@Body() createOptionGroupDto: CreateOptionGroupDto) {
+  async create(@Body() createOptionGroupDto: CreateOptionGroupDto) {
+    const { name, storeId } = createOptionGroupDto;
+    const isExist = await this.optionGroupsService.findOne({ where: { name, storeId } });
+    if (isExist) throw new BadRequestException(EXCEPTIONS.NAME_EXISTED);
+
     return this.optionGroupsService.save(createOptionGroupDto);
   }
 
@@ -56,10 +72,16 @@ export class OptionGroupsController {
 
   @Patch(':id')
   async update(@Param('id') id: number, @Body() updateOptionGroupDto: UpdateOptionGroupDto) {
+    const { products = [], ...rest } = updateOptionGroupDto;
+
+    const isExist = await this.optionGroupsService.count({
+      where: { name: rest.name, id: Not(id), storeId: rest.storeId },
+    });
+    if (isExist) throw new BadRequestException(EXCEPTIONS.NAME_EXISTED);
+
     let optionGroup = await this.optionGroupsService.findOne({ where: { id }, relations: ['options'] });
     if (!optionGroup) throw new NotFoundException();
 
-    const { products = [], ...rest } = updateOptionGroupDto;
     optionGroup = await this.optionGroupsService.save({ ...optionGroup, ...rest });
 
     const productOptionGroups = products.map((product) => {
