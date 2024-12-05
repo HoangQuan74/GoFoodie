@@ -1,4 +1,6 @@
 import {
+  ArrayMinSize,
+  IsArray,
   IsBoolean,
   IsEnum,
   IsInt,
@@ -12,6 +14,24 @@ import {
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EProductStatus } from 'src/common/enums';
 import { Type } from 'class-transformer';
+
+export class CreateOptionDto {
+  @ApiProperty()
+  @IsInt()
+  id: number;
+}
+
+export class CreateOptionGroupsDto {
+  @ApiProperty()
+  @IsInt()
+  optionGroupId: number;
+
+  @ApiProperty({ type: [CreateOptionDto] })
+  @ValidateNested({ each: true })
+  @ArrayMinSize(1)
+  @Type(() => CreateOptionDto)
+  options: CreateOptionDto[];
+}
 
 export class CreateProductWorkingTimeDto {
   @ApiProperty({ description: 'Thứ trong tuần (0: Chủ nhật, 1: Thứ 2, ..., 6: Thứ 7)' })
@@ -65,4 +85,11 @@ export class CreateProductDto {
   @IsOptional()
   @Type(() => CreateProductWorkingTimeDto)
   productWorkingTimes: CreateProductWorkingTimeDto[];
+
+  @ApiPropertyOptional({ type: [CreateOptionGroupsDto] })
+  @ValidateNested({ each: true })
+  @IsArray()
+  @IsOptional()
+  @Type(() => CreateOptionGroupsDto)
+  productOptionGroups: CreateOptionGroupsDto[];
 }
