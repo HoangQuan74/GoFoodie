@@ -4,7 +4,6 @@ import { EServiceGroupStatus } from '../../common/enums';
 
 @Entity('service_groups')
 export class ServiceGroupEntity extends BaseEntity {
-  @Generated('increment')
   @Column()
   code: string;
 
