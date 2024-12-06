@@ -49,7 +49,7 @@ export class ProductEntity extends BaseEntity {
   @JoinColumn({ name: 'image_id' })
   image: FileEntity;
 
-  @OneToMany(() => ProductWorkingTimeEntity, (productWorkingTime) => productWorkingTime.product)
+  @OneToMany(() => ProductWorkingTimeEntity, (productWorkingTime) => productWorkingTime.product, { cascade: true })
   productWorkingTimes: ProductWorkingTimeEntity[];
 
   @ManyToMany(() => OptionGroupEntity, (optionGroup) => optionGroup.products)

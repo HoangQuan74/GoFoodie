@@ -7,6 +7,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { MyLogger } from './logger/app.logger';
 import * as cookieParser from 'cookie-parser';
 import { corsConfig } from './config/cors.config';
+import { Request, Response } from 'express';
 
 const { NODE_ENV = 'development', PORT = 3000 } = process.env;
 
