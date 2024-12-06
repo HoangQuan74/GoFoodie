@@ -42,6 +42,6 @@ export class OptionGroupEntity extends BaseEntity {
   })
   products: ProductEntity[];
 
-  @OneToMany(() => ProductOptionGroupEntity, (productOptionGroup) => productOptionGroup.optionGroup)
+  @OneToMany(() => ProductOptionGroupEntity, (productOptionGroup) => productOptionGroup.optionGroup, { cascade: true })
   productOptionGroups: ProductOptionGroupEntity[];
 }
