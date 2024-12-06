@@ -5,9 +5,10 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { StoresService } from '../stores/stores.service';
 import { PaginationQuery } from 'src/common/query';
-import { DataSource, FindManyOptions, ILike } from 'typeorm';
+import { DataSource, FindManyOptions, ILike, In } from 'typeorm';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { StoreEntity } from 'src/database/entities/store.entity';
+import { OptionEntity } from 'src/database/entities/option.entity';
 
 @Controller('products')
 @ApiTags('Quản lý sản phẩm')
@@ -21,10 +22,11 @@ export class ProductsController {
   @Post()
   async create(@Body() createProductDto: CreateProductDto, @Param('storeId') storeId: number) {
     return this.dataSource.transaction(async (manager) => {
+      const { optionIds = [] } = createProductDto;
       const store = await manager.findOne(StoreEntity, { where: { id: storeId } });
       if (!store) throw new NotFoundException();
 
-      const lastProduct = await this.productsService.findOne({
+      const lastProduct = await manager.findOne(ProductEntity, {
         where: { storeId },
         order: { code: 'DESC' },
         withDeleted: true,
@@ -36,7 +38,23 @@ export class ProductsController {
       Object.assign(newProduct, createProductDto);
       newProduct.storeId = storeId;
       newProduct.code = productCode;
+      const productOptionGroups = [];
 
+      if (optionIds.length) {
+        const options = await manager.find(OptionEntity, { where: { id: In(optionIds) } });
+        if (options.length !== optionIds.length) throw new NotFoundException();
+
+        options.forEach((option) => {
+          const isExist = productOptionGroups.find((item) => item.optionGroupId === option.optionGroupId);
+          if (isExist) {
+            isExist.options.push(option);
+          } else {
+            productOptionGroups.push({ optionGroupId: option.optionGroupId, options: [option] });
+          }
+        });
+      }
+
+      newProduct.productOptionGroups = productOptionGroups;
       return manager.save(newProduct);
     });
   }

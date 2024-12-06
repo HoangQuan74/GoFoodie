@@ -86,10 +86,10 @@ export class CreateProductDto {
   @Type(() => CreateProductWorkingTimeDto)
   productWorkingTimes: CreateProductWorkingTimeDto[];
 
-  @ApiPropertyOptional({ type: [CreateOptionGroupsDto] })
-  @ValidateNested({ each: true })
+  @ApiPropertyOptional({ type: [Number] })
   @IsArray()
+  @IsInt({ each: true })
   @IsOptional()
-  @Type(() => CreateOptionGroupsDto)
-  productOptionGroups: CreateOptionGroupsDto[];
+  @Type(() => Number)
+  optionIds: number[];
 }
