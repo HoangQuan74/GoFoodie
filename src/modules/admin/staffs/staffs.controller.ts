@@ -57,12 +57,16 @@ export class StaffsController {
   @Post()
   async create(@Body() createStaffDto: CreateStaffDto, @Param('storeId') storeId: number) {
     const { password, email, phone } = createStaffDto;
-    console.log('createStaffDto', storeId);
-    const options = { where: [{ email }, { phone: phone }] };
-    const merchant = await this.staffsService.findOne(options);
 
-    if (email && merchant?.email === email) throw new ConflictException(EXCEPTIONS.EMAIL_CONFLICT);
-    if (phone && merchant?.phone === phone) throw new ConflictException(EXCEPTIONS.PHONE_CONFLICT);
+    if (phone) {
+      const phoneConflict = await this.staffsService.findOne({ where: { phone } });
+      if (phoneConflict) throw new ConflictException(EXCEPTIONS.PHONE_CONFLICT);
+    }
+
+    if (email) {
+      const emailConflict = await this.staffsService.findOne({ where: { email } });
+      if (emailConflict) throw new ConflictException(EXCEPTIONS.EMAIL_CONFLICT);
+    }
 
     const newStaff = new MerchantEntity();
     newStaff.storeId = +storeId;
