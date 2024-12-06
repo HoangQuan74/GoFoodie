@@ -18,7 +18,7 @@ export class ServiceGroupsController {
   @Post()
   async create(@Body() createServiceGroupDto: CreateServiceGroupDto) {
     return this.dataSource.transaction(async (manager) => {
-      const lastServiceGroup = await manager.findOne(ServiceGroupEntity, { order: { id: 'DESC' } });
+      const lastServiceGroup = await manager.findOne(ServiceGroupEntity, { order: { id: 'DESC' }, where: {} });
 
       const code = lastServiceGroup ? `${(lastServiceGroup.id + 1).toString().padStart(4, '0')}` : '0001';
       return manager.save(ServiceGroupEntity, { ...createServiceGroupDto, code });
