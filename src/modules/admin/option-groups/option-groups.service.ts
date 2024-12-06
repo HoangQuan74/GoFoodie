@@ -2,12 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { DeepPartial, FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OptionGroupEntity } from 'src/database/entities/option-group.entity';
+import { OptionEntity } from 'src/database/entities/option.entity';
 
 @Injectable()
 export class OptionGroupsService {
   constructor(
     @InjectRepository(OptionGroupEntity)
     private optionGroupRepository: Repository<OptionGroupEntity>,
+
+    @InjectRepository(OptionEntity)
+    private optionRepository: Repository<OptionEntity>,
   ) {}
 
   async save(entity?: DeepPartial<OptionGroupEntity>): Promise<OptionGroupEntity> {
@@ -32,5 +36,9 @@ export class OptionGroupsService {
 
   async remove(entity: OptionGroupEntity): Promise<OptionGroupEntity> {
     return this.optionGroupRepository.softRemove(entity);
+  }
+
+  async findOptions(options?: FindManyOptions<OptionEntity>): Promise<OptionEntity[]> {
+    return this.optionRepository.find(options);
   }
 }

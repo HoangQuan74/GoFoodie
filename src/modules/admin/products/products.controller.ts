@@ -9,13 +9,14 @@ import { DataSource, FindManyOptions, ILike, In } from 'typeorm';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { OptionEntity } from 'src/database/entities/option.entity';
+import { OptionGroupsService } from '../option-groups/option-groups.service';
 
 @Controller('products')
 @ApiTags('Quản lý sản phẩm')
 export class ProductsController {
   constructor(
     private readonly productsService: ProductsService,
-    private readonly storesService: StoresService,
+    private readonly optionGroupsService: OptionGroupsService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -95,8 +96,25 @@ export class ProductsController {
 
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+    const { optionIds = [] } = updateProductDto;
     const product = await this.productsService.findOne({ where: { id: +id } });
     if (!product) throw new NotFoundException();
+
+    const productOptionGroups = [];
+    if (optionIds.length) {
+      const options = await this.optionGroupsService.findOptions({ where: { id: In(optionIds) } });
+      if (options.length !== optionIds.length) throw new NotFoundException();
+
+      options.forEach((option) => {
+        const isExist = productOptionGroups.find((item) => item.optionGroupId === option.optionGroupId);
+        if (isExist) {
+          isExist.options.push(option);
+        } else {
+          productOptionGroups.push({ optionGroupId: option.optionGroupId, options: [option] });
+        }
+      });
+      product.productOptionGroups = productOptionGroups;
+    }
 
     return this.productsService.save({ ...product, ...updateProductDto });
   }
