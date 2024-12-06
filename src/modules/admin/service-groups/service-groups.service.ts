@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ServiceGroupEntity } from 'src/database/entities/service-group.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindManyOptions, Repository } from 'typeorm';
+import { FindManyOptions, Repository, SelectQueryBuilder } from 'typeorm';
 
 @Injectable()
 export class ServiceGroupsService {
@@ -32,5 +32,9 @@ export class ServiceGroupsService {
 
   async count(options: FindManyOptions<ServiceGroupEntity>): Promise<number> {
     return this.serviceGroupRepository.count(options);
+  }
+
+  createQueryBuilder(alias: string): SelectQueryBuilder<ServiceGroupEntity> {
+    return this.serviceGroupRepository.createQueryBuilder(alias);
   }
 }

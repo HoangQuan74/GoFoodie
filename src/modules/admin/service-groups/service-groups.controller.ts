@@ -15,7 +15,7 @@ import { CreateServiceGroupDto } from './dto/create-service-group.dto';
 import { UpdateServiceGroupDto } from './dto/update-service-group.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { QueryServiceGroupDto } from './dto/query-service-group.dto';
-import { DataSource, ILike, Not } from 'typeorm';
+import { Brackets, DataSource, ILike, Not } from 'typeorm';
 import { ServiceGroupEntity } from 'src/database/entities/service-group.entity';
 import { EXCEPTIONS } from 'src/common/constants';
 
@@ -44,11 +44,24 @@ export class ServiceGroupsController {
   @Get()
   async find(@Query() query: QueryServiceGroupDto) {
     const { page, limit, search, status } = query;
-    const where = search ? { name: ILike(`%${search}%`) } : {};
-    status && (where['status'] = status);
-    const options = { skip: (page - 1) * limit, take: limit, where };
 
-    const [items, total] = await this.serviceGroupsService.findAndCount(options);
+    const queryBuilder = this.serviceGroupsService
+      .createQueryBuilder('serviceGroup')
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    status && queryBuilder.andWhere('serviceGroup.status = :status', { status });
+
+    if (search) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.where('serviceGroup.name ILIKE :search', { search: `%${search}%` });
+          qb.orWhere('serviceGroup.code ILIKE :search', { search: `%${search}%` });
+        }),
+      );
+    }
+
+    const [items, total] = await queryBuilder.getManyAndCount();
     return { items, total };
   }
 
