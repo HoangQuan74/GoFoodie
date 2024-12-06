@@ -30,11 +30,15 @@ export class MerchantsController {
   async create(@Body() createMerchantDto: CreateMerchantDto) {
     const { password, email, phone } = createMerchantDto;
 
-    const options = { where: [{ email }, { phone }] };
-    const merchant = await this.merchantsService.findOne(options);
+    if (phone) {
+      const phoneConflict = await this.merchantsService.count({ where: { phone } });
+      if (phoneConflict) throw new ConflictException(EXCEPTIONS.PHONE_CONFLICT);
+    }
 
-    if (email && merchant?.email === email) throw new ConflictException(EXCEPTIONS.EMAIL_CONFLICT);
-    if (phone && merchant?.phone === phone) throw new ConflictException(EXCEPTIONS.PHONE_CONFLICT);
+    if (email) {
+      const emailConflict = await this.merchantsService.count({ where: { email } });
+      if (emailConflict) throw new ConflictException(EXCEPTIONS.EMAIL_CONFLICT);
+    }
 
     const newMerchant = new MerchantEntity();
     Object.assign(newMerchant, createMerchantDto);
