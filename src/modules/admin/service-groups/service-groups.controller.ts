@@ -1,11 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  NotFoundException,
+  Query,
+  ConflictException,
+} from '@nestjs/common';
 import { ServiceGroupsService } from './service-groups.service';
 import { CreateServiceGroupDto } from './dto/create-service-group.dto';
 import { UpdateServiceGroupDto } from './dto/update-service-group.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { QueryServiceGroupDto } from './dto/query-service-group.dto';
-import { DataSource, ILike } from 'typeorm';
+import { DataSource, ILike, Not } from 'typeorm';
 import { ServiceGroupEntity } from 'src/database/entities/service-group.entity';
+import { EXCEPTIONS } from 'src/common/constants';
 
 @Controller('service-groups')
 @ApiTags('Quản lý nhóm dịch vụ')
@@ -18,6 +30,10 @@ export class ServiceGroupsController {
   @Post()
   async create(@Body() createServiceGroupDto: CreateServiceGroupDto) {
     return this.dataSource.transaction(async (manager) => {
+      const { name } = createServiceGroupDto;
+      const serviceGroupExist = await manager.count(ServiceGroupEntity, { where: { name: name } });
+      if (serviceGroupExist) throw new ConflictException(EXCEPTIONS.NAME_EXISTED);
+
       const lastServiceGroup = await manager.findOne(ServiceGroupEntity, { order: { id: 'DESC' }, where: {} });
 
       const code = lastServiceGroup ? `${(lastServiceGroup.id + 1).toString().padStart(4, '0')}` : '0001';
@@ -46,6 +62,10 @@ export class ServiceGroupsController {
 
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateServiceGroupDto: UpdateServiceGroupDto) {
+    const { name } = updateServiceGroupDto;
+    const serviceGroupExist = await this.serviceGroupsService.count({ where: { name, id: Not(+id) } });
+    if (serviceGroupExist) throw new ConflictException(EXCEPTIONS.NAME_EXISTED);
+
     const serviceGroup = await this.serviceGroupsService.findOne({ where: { id: +id } });
     if (!serviceGroup) throw new NotFoundException();
 

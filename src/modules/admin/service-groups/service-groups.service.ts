@@ -29,4 +29,8 @@ export class ServiceGroupsService {
   remove(entity: ServiceGroupEntity): Promise<ServiceGroupEntity> {
     return this.serviceGroupRepository.remove(entity);
   }
+
+  async count(options: FindManyOptions<ServiceGroupEntity>): Promise<number> {
+    return this.serviceGroupRepository.count(options);
+  }
 }
