@@ -32,10 +32,23 @@ export class OptionGroupsController {
   @Post()
   async create(@Body() createOptionGroupDto: CreateOptionGroupDto) {
     const { name, storeId } = createOptionGroupDto;
+    const { products = [], ...rest } = createOptionGroupDto;
+
     const isExist = await this.optionGroupsService.findOne({ where: { name, storeId } });
     if (isExist) throw new BadRequestException(EXCEPTIONS.NAME_EXISTED);
 
-    return this.optionGroupsService.save(createOptionGroupDto);
+    const optionGroup = await this.optionGroupsService.save(rest);
+
+    const productOptionGroups = products.map((product) => {
+      const productOptionGroup = new ProductOptionGroupEntity();
+      productOptionGroup.productId = product.id;
+      productOptionGroup.optionGroupId = optionGroup.id;
+      productOptionGroup.options = optionGroup.options;
+      return productOptionGroup;
+    });
+
+    await this.productOptionGroupsService.save(productOptionGroups);
+    return optionGroup;
   }
 
   @Get()
