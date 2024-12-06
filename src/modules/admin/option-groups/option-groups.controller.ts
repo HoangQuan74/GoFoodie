@@ -49,6 +49,7 @@ export class OptionGroupsController {
       where,
       take: limit,
       skip: (page - 1) * limit,
+      relations: ['options'],
       order: { id: 'DESC' },
     };
     const [items, total] = await this.optionGroupsService.findAndCount(options);
