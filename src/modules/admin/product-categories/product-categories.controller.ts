@@ -96,9 +96,17 @@ export class ProductCategoriesController {
         }),
       );
 
-    search && queryBuilder.andWhere('category.name ILIKE :search', { search: `%${search}%` });
     status && queryBuilder.andWhere('category.status = :status', { status });
     serviceGroupId && queryBuilder.andWhere('category.serviceGroupId = :serviceGroupId', { serviceGroupId });
+
+    if (search) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.where('category.name ILIKE :search', { search: `%${search}%` });
+          qb.orWhere('category.code ILIKE :search', { search: `%${search}%` });
+        }),
+      );
+    }
 
     const items = await queryBuilder
       .orderBy('category.id', 'DESC')

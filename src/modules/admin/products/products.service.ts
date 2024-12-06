@@ -29,4 +29,8 @@ export class ProductsService {
   async remove(entity: ProductEntity) {
     return this.productRepository.softRemove(entity);
   }
+
+  async createQueryBuilder(alias?: string) {
+    return this.productRepository.createQueryBuilder(alias);
+  }
 }
