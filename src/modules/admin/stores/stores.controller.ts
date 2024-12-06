@@ -13,6 +13,7 @@ import { IdentityQuery } from 'src/common/query';
 import { EStoreApprovalStatus } from 'src/common/enums';
 import * as moment from 'moment-timezone';
 import { TIMEZONE } from 'src/common/constants';
+import { ProductEntity } from 'src/database/entities/product.entity';
 
 @Controller('stores')
 @ApiTags('Stores')
@@ -61,6 +62,12 @@ export class StoresController {
 
     const queryBuilder = this.storesService
       .createQueryBuilder('store')
+      .addSelect((subQuery) => {
+        return subQuery
+          .select('COUNT(product.id)', 'productCount')
+          .from(ProductEntity, 'product')
+          .where('product.storeId = store.id');
+      }, 'productCount')
       .leftJoinAndSelect('store.businessArea', 'businessArea')
       .leftJoinAndSelect('store.province', 'province')
       .leftJoinAndSelect('store.district', 'district')
@@ -109,7 +116,15 @@ export class StoresController {
 
     queryBuilder.skip((page - 1) * limit);
 
-    const [items, total] = await queryBuilder.getManyAndCount();
+    const { raw, entities } = await queryBuilder.getRawAndEntities();
+    const total = await queryBuilder.getCount();
+
+    const items = entities.map((entity) => {
+      const item = entity as any;
+      item.productCount = raw.find((r) => r.store_id === entity.id).productCount;
+      return item;
+    });
+
     return { items, total };
   }
 
