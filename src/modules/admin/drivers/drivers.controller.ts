@@ -27,11 +27,15 @@ export class DriversController {
 
   @Get()
   async find(@Query() query: QueryDriverDto) {
-    const { page, limit, search } = query;
+    const { page, limit, search, status, approvalStatus } = query;
 
     const queryBuilder = this.driversService
       .createQueryBuilder('driver')
-      .leftJoinAndSelect('driver.serviceTypes', 'serviceTypes');
+      .addSelect(['createdBy.id', 'createdBy.name'])
+      .addSelect(['approvedBy.id', 'approvedBy.name'])
+      .leftJoinAndSelect('driver.serviceTypes', 'serviceTypes')
+      .leftJoin('driver.createdBy', 'createdBy')
+      .leftJoin('driver.approvedBy', 'approvedBy');
 
     if (search) {
       queryBuilder
@@ -45,11 +49,14 @@ export class DriversController {
         .setParameters({ search: `%${search}%` });
     }
 
+    status && queryBuilder.andWhere('driver.status = :status', { status });
+    approvalStatus && queryBuilder.andWhere('driver.approvalStatus = :approvalStatus', { approvalStatus });
+
     queryBuilder.orderBy('driver.id', 'DESC');
     queryBuilder.skip((page - 1) * limit).take(limit);
 
-    const [drivers, total] = await queryBuilder.getManyAndCount();
-    return { drivers, total };
+    const [items, total] = await queryBuilder.getManyAndCount();
+    return { items, total };
   }
 
   @Get(':id')
