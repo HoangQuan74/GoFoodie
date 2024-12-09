@@ -17,6 +17,7 @@ import { UploadsModule } from './modules/uploads/uploads.module';
 import { BanksModule } from './modules/banks/banks.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { ProductOptionGroupsModule } from './modules/product-option-groups/product-option-groups.module';
+import { RelationshipsModule } from './modules/relationships/relationships.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ProductOptionGroupsModule } from './modules/product-option-groups/produ
     BanksModule,
     TasksModule,
     ProductOptionGroupsModule,
+    RelationshipsModule,
     // FirebaseModule,
   ],
   controllers: [],

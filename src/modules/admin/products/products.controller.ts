@@ -3,7 +3,6 @@ import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { StoresService } from '../stores/stores.service';
 import { PaginationQuery } from 'src/common/query';
 import { DataSource, FindManyOptions, ILike, In } from 'typeorm';
 import { ProductEntity } from 'src/database/entities/product.entity';

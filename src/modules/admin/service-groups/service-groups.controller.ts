@@ -1,21 +1,10 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  NotFoundException,
-  Query,
-  ConflictException,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, NotFoundException, Query, ConflictException } from '@nestjs/common';
 import { ServiceGroupsService } from './service-groups.service';
 import { CreateServiceGroupDto } from './dto/create-service-group.dto';
 import { UpdateServiceGroupDto } from './dto/update-service-group.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { QueryServiceGroupDto } from './dto/query-service-group.dto';
-import { Brackets, DataSource, ILike, Not } from 'typeorm';
+import { Brackets, DataSource, Not } from 'typeorm';
 import { ServiceGroupEntity } from 'src/database/entities/service-group.entity';
 import { EXCEPTIONS } from 'src/common/constants';
 

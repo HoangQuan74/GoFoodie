@@ -1,4 +1,4 @@
-import { Entity, Column, Generated } from 'typeorm';
+import { Entity, Column } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { EServiceGroupStatus } from '../../common/enums';
 

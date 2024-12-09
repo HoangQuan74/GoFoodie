@@ -11,6 +11,7 @@ import { ServiceGroupsModule } from './service-groups/service-groups.module';
 import { ProductsModule } from './products/products.module';
 import { ProductCategoriesModule } from './product-categories/product-categories.module';
 import { OptionGroupsModule } from './option-groups/option-groups.module';
+import { DriversModule } from './drivers/drivers.module';
 
 @Module({
   imports: [
@@ -48,6 +49,10 @@ import { OptionGroupsModule } from './option-groups/option-groups.module';
         path: 'admin',
         module: OptionGroupsModule,
       },
+      {
+        path: 'admin',
+        module: DriversModule,
+      },
     ]),
     AdminsModule,
     MerchantsModule,
@@ -57,6 +62,7 @@ import { OptionGroupsModule } from './option-groups/option-groups.module';
     ProductsModule,
     ProductCategoriesModule,
     OptionGroupsModule,
+    DriversModule,
   ],
   providers: [
     {
