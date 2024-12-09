@@ -6,6 +6,7 @@ import { ServiceTypeEntity } from './service-type.entity';
 import { DriverEmergencyContactEntity } from './driver-emergency-contact.entity';
 import { DriverVehicleEntity } from './driver-vehicle.entity';
 import { AdminEntity } from './admin.entity';
+import { ProvinceEntity } from './province.entity';
 
 @Entity('drivers')
 export class DriverEntity extends BaseEntity {
@@ -78,4 +79,8 @@ export class DriverEntity extends BaseEntity {
   @ManyToOne(() => AdminEntity, (admin) => admin.id)
   @JoinColumn({ name: 'created_by_id' })
   createdBy: AdminEntity;
+
+  @ManyToOne(() => ProvinceEntity, (province) => province.id)
+  @JoinColumn({ name: 'active_area_id' })
+  activeArea: ProvinceEntity;
 }

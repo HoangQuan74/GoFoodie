@@ -33,9 +33,11 @@ export class DriversController {
       .createQueryBuilder('driver')
       .addSelect(['createdBy.id', 'createdBy.name'])
       .addSelect(['approvedBy.id', 'approvedBy.name'])
+      .addSelect(['activeArea.id', 'activeArea.name'])
       .leftJoinAndSelect('driver.serviceTypes', 'serviceTypes')
       .leftJoin('driver.createdBy', 'createdBy')
-      .leftJoin('driver.approvedBy', 'approvedBy');
+      .leftJoin('driver.approvedBy', 'approvedBy')
+      .leftJoin('driver.activeArea', 'activeArea');
 
     if (search) {
       queryBuilder
