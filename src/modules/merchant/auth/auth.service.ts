@@ -18,7 +18,11 @@ export class AuthService {
     private mailService: MailService,
   ) {}
 
-  async signIn(username: string, password: string): Promise<Omit<MerchantEntity, 'password'> & JwtSign> {
+  async signIn(
+    username: string,
+    password: string,
+    deviceToken: string,
+  ): Promise<Omit<MerchantEntity, 'password'> & JwtSign> {
     const merchant = await this.merchantsService.findOne({
       where: [{ phone: username }, { email: username }],
       select: ['id', 'phone', 'email', 'password', 'status'],
@@ -30,8 +34,12 @@ export class AuthService {
 
     if (merchant.status !== EMerchantStatus.Active) throw new UnauthorizedException(EXCEPTIONS.ACCOUNT_NOT_ACTIVE);
 
-    const payload: JwtPayload = { id: merchant.id };
-    const accessToken = this.jwtService.sign(payload, { secret: JWT_SECRET, expiresIn: JWT_EXPIRATION });
+    const payload: JwtPayload = { id: merchant.id, deviceToken };
+    const accessToken = this.jwtService.sign(payload, { expiresIn: JWT_EXPIRATION });
+
+    merchant.lastLogin = new Date();
+    merchant.deviceToken = deviceToken;
+    this.merchantsService.save(merchant);
 
     delete merchant.password;
     return { ...merchant, accessToken, refreshToken: accessToken };

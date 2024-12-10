@@ -19,6 +19,7 @@ import { TasksModule } from './modules/tasks/tasks.module';
 import { ProductOptionGroupsModule } from './modules/product-option-groups/product-option-groups.module';
 import { RelationshipsModule } from './modules/relationships/relationships.module';
 import { MerchantModule } from './modules/merchant/merchant.module';
+import { FirebaseModule } from './modules/firebase/firebase.module';
 
 @Module({
   imports: [
@@ -42,7 +43,7 @@ import { MerchantModule } from './modules/merchant/merchant.module';
     ProductOptionGroupsModule,
     RelationshipsModule,
     MerchantModule,
-    // FirebaseModule,
+    FirebaseModule,
   ],
   controllers: [],
   providers: [],

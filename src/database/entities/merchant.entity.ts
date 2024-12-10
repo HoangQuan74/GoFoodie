@@ -24,6 +24,12 @@ export class MerchantEntity extends BaseEntity {
   @Column({ name: 'store_id', nullable: true })
   storeId: number;
 
+  @Column({ name: 'device_token', nullable: true })
+  deviceToken: string;
+
+  @Column({ name: 'last_login', nullable: true })
+  lastLogin: Date;
+
   @Column({ name: 'status', type: 'enum', enum: EMerchantStatus, default: EMerchantStatus.Active })
   status: EMerchantStatus;
 

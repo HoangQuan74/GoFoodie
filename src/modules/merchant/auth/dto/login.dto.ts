@@ -11,10 +11,20 @@ export class LoginDto {
   @IsString()
   @IsNotEmpty()
   password: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  deviceToken: string;
 }
 
 export class LoginSmsDto {
   @ApiProperty()
   @IsPhoneNumber('VN')
   phone: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  deviceToken: string;
 }

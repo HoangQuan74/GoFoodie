@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { JWT_SECRET } from 'src/common/constants';
+import { EXCEPTIONS, JWT_SECRET } from 'src/common/constants';
 import { IS_PUBLIC_KEY } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { MerchantsService } from '../merchants/merchants.service';
@@ -31,12 +31,13 @@ export class AuthGuard implements CanActivate {
         secret: JWT_SECRET,
       })) as JwtPayload;
 
-      const { id } = payload;
+      const { id, deviceToken } = payload;
       const merchant = await this.merchantService.findOne({ where: { id } });
       if (!merchant || merchant.status !== EMerchantStatus.Active) throw new UnauthorizedException();
+      if (deviceToken !== merchant.deviceToken) throw new UnauthorizedException(EXCEPTIONS.INVALID_DEVICE_TOKEN);
 
-      // admin.lastLogin = new Date();
-      // this.adminService.save(admin);
+      merchant.lastLogin = new Date();
+      this.merchantService.save(merchant);
 
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers

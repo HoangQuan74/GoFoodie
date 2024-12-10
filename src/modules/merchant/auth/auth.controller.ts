@@ -18,8 +18,8 @@ export class AuthController {
   @Post('login')
   @Public()
   login(@Body() body: LoginDto) {
-    const { username, password } = body;
-    return this.authService.signIn(username, password);
+    const { username, password, deviceToken } = body;
+    return this.authService.signIn(username, password, deviceToken);
   }
 
   @Post('login/sms')
