@@ -53,7 +53,8 @@ export class DriversController {
 
   @Get()
   async find(@Query() query: QueryDriverDto) {
-    const { page, limit, search, status, approvalStatus } = query;
+    const { page, limit, search, status, approvalStatus, serviceTypeId } = query;
+    const { createdAtFrom, createdAtTo, approvedAtFrom, approvedAtTo, activeAreaId } = query;
 
     const queryBuilder = this.driversService
       .createQueryBuilder('driver')
@@ -64,6 +65,15 @@ export class DriversController {
       .leftJoin('driver.createdBy', 'createdBy')
       .leftJoin('driver.approvedBy', 'approvedBy')
       .leftJoin('driver.activeArea', 'activeArea');
+
+    status && queryBuilder.andWhere('driver.status = :status', { status });
+    approvalStatus && queryBuilder.andWhere('driver.approvalStatus = :approvalStatus', { approvalStatus });
+    createdAtFrom && queryBuilder.andWhere('driver.createdAt >= :createdAtFrom', { createdAtFrom });
+    createdAtTo && queryBuilder.andWhere('driver.createdAt <= :createdAtTo', { createdAtTo });
+    approvedAtFrom && queryBuilder.andWhere('driver.approvedAt >= :approvedAtFrom', { approvedAtFrom });
+    approvedAtTo && queryBuilder.andWhere('driver.approvedAt <= :approvedAtTo', { approvedAtTo });
+    activeAreaId && queryBuilder.andWhere('driver.activeAreaId = :activeAreaId', { activeAreaId });
+    serviceTypeId && queryBuilder.andWhere('serviceTypes.id = :serviceTypeId', { serviceTypeId });
 
     if (search) {
       queryBuilder
