@@ -10,6 +10,7 @@ import {
   Query,
   ConflictException,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import { ProductCategoriesService } from './product-categories.service';
 import { CreateProductCategoryDto } from './dto/create-product-category.dto';
@@ -22,9 +23,11 @@ import { ProductCategoryEntity } from 'src/database/entities/product-category.en
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { EXCEPTIONS } from 'src/common/constants';
 import { EProductCategoryStatus, EProductStatus } from 'src/common/enums';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('product-categories')
 @ApiTags('Quản lý danh mục sản phẩm')
+@UseGuards(AuthGuard)
 export class ProductCategoriesController {
   constructor(
     private readonly productCategoriesService: ProductCategoriesService,

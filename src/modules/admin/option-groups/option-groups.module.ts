@@ -5,9 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { OptionGroupEntity } from 'src/database/entities/option-group.entity';
 import { ProductOptionGroupsModule } from 'src/modules/product-option-groups/product-option-groups.module';
 import { OptionEntity } from 'src/database/entities/option.entity';
+import { AdminsModule } from '../admins/admins.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([OptionGroupEntity, OptionEntity]), ProductOptionGroupsModule],
+  imports: [TypeOrmModule.forFeature([OptionGroupEntity, OptionEntity]), ProductOptionGroupsModule, AdminsModule],
   controllers: [OptionGroupsController],
   providers: [OptionGroupsService],
   exports: [OptionGroupsService],

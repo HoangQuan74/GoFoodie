@@ -9,6 +9,7 @@ import {
   Query,
   NotFoundException,
   ConflictException,
+  UseGuards,
 } from '@nestjs/common';
 import { MerchantsService } from './merchants.service';
 import { CreateMerchantDto } from './dto/create-merchant.dto';
@@ -20,9 +21,11 @@ import { QueryMerchantDto } from './dto/query-merchant.dto';
 import { Brackets, In, Not } from 'typeorm';
 import { EXCEPTIONS } from 'src/common/constants';
 import { IdentityQuery } from 'src/common/query';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('merchants')
 @ApiTags('Admin Merchants')
+@UseGuards(AuthGuard)
 export class MerchantsController {
   constructor(private readonly merchantsService: MerchantsService) {}
 

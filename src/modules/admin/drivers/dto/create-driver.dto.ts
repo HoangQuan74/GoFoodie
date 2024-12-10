@@ -8,6 +8,7 @@ import {
   IsInt,
   IsOptional,
   ValidateNested,
+  ArrayMaxSize,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -148,6 +149,7 @@ export class CreateDriverDto {
   @Type(() => CreateDriverBankDto)
   @IsNotEmpty()
   @ValidateIf((o) => !o.isDraft)
+  @ArrayMaxSize(1)
   banks: CreateDriverBankDto[];
 
   @ApiProperty({ type: [CreateDriverServiceTypeDto] })
@@ -162,6 +164,7 @@ export class CreateDriverDto {
   @Type(() => CreateDriverEmergencyContactDto)
   @IsNotEmpty()
   @ValidateIf((o) => !o.isDraft)
+  @ArrayMaxSize(1)
   emergencyContacts: CreateDriverEmergencyContactDto[];
 
   @ApiProperty({ type: CreateDriverVehicleDto })

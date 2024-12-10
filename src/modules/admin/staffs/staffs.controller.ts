@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { StaffsService } from './staffs.service';
 import { ApiTags } from '@nestjs/swagger';
@@ -19,9 +20,11 @@ import { hashPassword } from 'src/utils/bcrypt';
 import { Brackets, Not } from 'typeorm';
 import { UpdateStaffDto } from './dto/update-staff.dto';
 import { QueryStaffDto } from './dto/query-staff.dto';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('staffs')
 @ApiTags('Admin Staffs')
+@UseGuards(AuthGuard)
 export class StaffsController {
   constructor(private readonly staffsService: StaffsService) {}
 

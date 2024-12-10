@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, Query, UseGuards } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -9,9 +9,11 @@ import { ProductEntity } from 'src/database/entities/product.entity';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { OptionEntity } from 'src/database/entities/option.entity';
 import { OptionGroupsService } from '../option-groups/option-groups.service';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('products')
 @ApiTags('Quản lý sản phẩm')
+@UseGuards(AuthGuard)
 export class ProductsController {
   constructor(
     private readonly productsService: ProductsService,

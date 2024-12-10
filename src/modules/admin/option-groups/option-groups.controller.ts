@@ -9,6 +9,7 @@ import {
   Query,
   NotFoundException,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import { OptionGroupsService } from './option-groups.service';
 import { CreateOptionGroupDto } from './dto/create-option-group.dto';
@@ -20,9 +21,11 @@ import { OptionGroupEntity } from 'src/database/entities/option-group.entity';
 import { ProductOptionGroupEntity } from 'src/database/entities/product-option-group.entity';
 import { ProductOptionGroupsService } from 'src/modules/product-option-groups/product-option-groups.service';
 import { EXCEPTIONS } from 'src/common/constants';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('option-groups')
 @ApiTags('Quản lý nhóm tùy chọn sản phẩm')
+@UseGuards(AuthGuard)
 export class OptionGroupsController {
   constructor(
     private readonly optionGroupsService: OptionGroupsService,

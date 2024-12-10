@@ -6,7 +6,7 @@ import { StoreEntity } from './store.entity';
 
 @Entity('merchants')
 export class MerchantEntity extends BaseEntity {
-  @Column()
+  @Column({ nullable: true })
   name: string;
 
   @Column({ nullable: true })

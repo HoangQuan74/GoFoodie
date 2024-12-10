@@ -66,13 +66,13 @@ import { DriversModule } from './drivers/drivers.module';
   ],
   providers: [
     {
-      provide: APP_GUARD,
+      provide: 'ADMIN_GUARD',
       useClass: AuthGuard,
     },
-    {
-      provide: APP_GUARD,
-      useClass: AdminRolesGuard,
-    },
+    // {
+    //   provide: 'ADMIN_ROLES_GUARD',
+    //   useClass: AdminRolesGuard,
+    // },
   ],
 })
 export class AdminModule {}

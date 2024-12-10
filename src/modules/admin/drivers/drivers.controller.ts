@@ -9,6 +9,7 @@ import {
   NotFoundException,
   Query,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import { DriversService } from './drivers.service';
 import { CreateDriverDto } from './dto/create-driver.dto';
@@ -21,8 +22,10 @@ import { QueryDriverDto } from './dto/query-driver.dto';
 import { Brackets } from 'typeorm';
 import { ApiBody } from '@nestjs/swagger';
 import { EXCEPTIONS } from 'src/common/constants';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('drivers')
+@UseGuards(AuthGuard)
 export class DriversController {
   constructor(private readonly driversService: DriversService) {}
 

@@ -6,6 +6,7 @@ import { JWT_SECRET } from 'src/common/constants';
 import { IS_PUBLIC_KEY } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { MerchantsService } from '../merchants/merchants.service';
+import { EMerchantStatus } from 'src/common/enums';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -23,7 +24,7 @@ export class AuthGuard implements CanActivate {
     if (isPublic) return true;
 
     const request = context.switchToHttp().getRequest();
-    const token = this.extractToken(request);
+    const token = request.headers.authorization?.split(' ')[1];
     if (!token) throw new UnauthorizedException();
 
     try {
@@ -33,7 +34,7 @@ export class AuthGuard implements CanActivate {
 
       const { id } = payload;
       const merchant = await this.merchantService.findOne({ where: { id } });
-      // if (!admin.isActivated) throw new UnauthorizedException();
+      if (!merchant || merchant.status !== EMerchantStatus.Active) throw new UnauthorizedException();
 
       // admin.lastLogin = new Date();
       // this.adminService.save(admin);
@@ -46,12 +47,5 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException();
     }
     return true;
-  }
-
-  private extractToken(request: Request): string | undefined {
-    const token = request.headers.authorization?.split(' ')[1];
-    if (token) return token;
-
-    return request.cookies.token;
   }
 }

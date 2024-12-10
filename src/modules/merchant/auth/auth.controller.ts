@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Req, Res } from '@nestjs/common';
+import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Body } from '@nestjs/common';
 import { LoginDto, LoginSmsDto } from './dto/login.dto';
@@ -11,9 +11,11 @@ import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtPayload } from 'src/common/interfaces';
 import { CheckOtpDto } from './dto/check-otp.dto';
+import { AuthGuard } from './auth.guard';
 
 @Controller('auth')
 @ApiTags('Merchant Auth')
+@UseGuards(AuthGuard)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 

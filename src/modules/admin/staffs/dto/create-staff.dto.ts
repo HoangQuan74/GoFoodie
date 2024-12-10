@@ -1,13 +1,13 @@
 import { EStaffRole } from './../../../../common/enums/merchant.enum';
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, ValidateIf } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, IsStrongPassword, ValidateIf } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EMerchantStatus } from 'src/common/enums';
 import { EXCEPTIONS } from 'src/common/constants';
 
 export class CreateStaffDto {
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   name: string;
 
   @ApiPropertyOptional()
@@ -16,20 +16,17 @@ export class CreateStaffDto {
   email: string;
 
   @ApiPropertyOptional()
-  @IsString()
-  @IsNotEmpty()
+  @IsStrongPassword()
   @ValidateIf((o) => !o.phone)
   password: string;
 
   @ApiPropertyOptional()
   @IsPhoneNumber('VN', { message: EXCEPTIONS.INVALID_PHONE })
-  @IsNotEmpty()
   @ValidateIf((o) => !o.email || o.phone)
   phone: string;
 
-  @ApiPropertyOptional({ enum: EMerchantStatus })
+  @ApiProperty({ enum: EMerchantStatus })
   @IsEnum(EMerchantStatus)
-  @IsOptional()
   status: EMerchantStatus;
 
   @ApiProperty({ enum: EStaffRole })
