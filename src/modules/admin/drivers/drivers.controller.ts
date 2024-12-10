@@ -91,7 +91,7 @@ export class DriversController {
   async findOne(@Param('id') id: number) {
     const driver = await this.driversService.findOne({
       where: { id },
-      relations: ['banks', 'serviceTypes', 'emergencyContacts', 'vehicle'],
+      relations: ['banks', 'serviceTypes', 'emergencyContacts', 'vehicle', 'vehicle.vehicleImages'],
     });
     if (!driver) throw new NotFoundException();
 
