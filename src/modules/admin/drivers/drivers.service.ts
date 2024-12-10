@@ -29,4 +29,8 @@ export class DriversService {
   createQueryBuilder(alias: string) {
     return this.driverRepository.createQueryBuilder(alias);
   }
+
+  merge(entity: DriverEntity, data: DeepPartial<DriverEntity>) {
+    return this.driverRepository.merge(entity, data);
+  }
 }

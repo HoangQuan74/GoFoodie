@@ -13,7 +13,6 @@ import {
 } from '@nestjs/common';
 import { DriversService } from './drivers.service';
 import { CreateDriverDto } from './dto/create-driver.dto';
-import { UpdateDriverDto } from './dto/update-driver.dto';
 import { DriverEntity } from 'src/database/entities/driver.entity';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
@@ -23,6 +22,7 @@ import { Brackets } from 'typeorm';
 import { ApiBody } from '@nestjs/swagger';
 import { EXCEPTIONS } from 'src/common/constants';
 import { AuthGuard } from '../auth/auth.guard';
+import { UpdateDriverDto } from './dto/update-driver.dto';
 
 @Controller('drivers')
 @UseGuards(AuthGuard)
@@ -98,10 +98,20 @@ export class DriversController {
     return driver;
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateDriverDto: UpdateDriverDto) {
-  //   return this.driversService.update(+id, updateDriverDto);
-  // }
+  @Patch(':id')
+  async update(@Param('id') id: number, @Body() updateDriverDto: UpdateDriverDto) {
+    const { isDraft } = updateDriverDto;
+    const driver = await this.driversService.findOne({ where: { id }, relations: { vehicle: true } });
+    if (!driver) throw new NotFoundException();
+
+    this.driversService.merge(driver, updateDriverDto);
+
+    if (typeof isDraft === 'boolean' && driver.approvalStatus !== EDriverApprovalStatus.Approved) {
+      driver.approvalStatus = isDraft ? EDriverApprovalStatus.Draft : EDriverApprovalStatus.Pending;
+    }
+
+    return this.driversService.save(driver);
+  }
 
   @Delete(':id')
   async remove(@Param('id') id: number) {

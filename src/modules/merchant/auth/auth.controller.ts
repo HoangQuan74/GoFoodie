@@ -1,16 +1,12 @@
-import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Body } from '@nestjs/common';
 import { LoginDto, LoginSmsDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 import { CurrentUser, Public } from 'src/common/decorators';
-import { Request, Response } from 'express';
-import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { ResetPasswordDto } from './dto/reset-password.dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { Request } from 'express';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtPayload } from 'src/common/interfaces';
-import { CheckOtpDto } from './dto/check-otp.dto';
 import { AuthGuard } from './auth.guard';
 
 @Controller('auth')

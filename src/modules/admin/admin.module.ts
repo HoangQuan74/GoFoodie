@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD, RouterModule } from '@nestjs/core';
+import { RouterModule } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
 import { AdminsModule } from './admins/admins.module';
 import { AuthGuard } from './auth/auth.guard';
-import { AdminRolesGuard } from 'src/common/guards';
 import { MerchantsModule } from './merchants/merchants.module';
 import { StoresModule } from './stores/stores.module';
 import { StaffsModule } from './staffs/staffs.module';

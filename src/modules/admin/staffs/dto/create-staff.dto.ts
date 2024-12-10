@@ -1,5 +1,5 @@
 import { EStaffRole } from './../../../../common/enums/merchant.enum';
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, IsStrongPassword, ValidateIf } from 'class-validator';
+import { IsEmail, IsEnum, IsOptional, IsPhoneNumber, IsString, IsStrongPassword, ValidateIf } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EMerchantStatus } from 'src/common/enums';
 import { EXCEPTIONS } from 'src/common/constants';

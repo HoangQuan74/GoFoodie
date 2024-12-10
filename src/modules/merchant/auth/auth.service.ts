@@ -1,14 +1,11 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { comparePassword, generateOTP, hashPassword } from 'src/utils/bcrypt';
+import { comparePassword, hashPassword } from 'src/utils/bcrypt';
 import { JwtPayload, JwtSign } from 'src/common/interfaces';
 import { EXCEPTIONS, JWT_EXPIRATION, JWT_SECRET } from 'src/common/constants';
 import { JwtService } from '@nestjs/jwt';
-import { AdminEntity } from 'src/database/entities/admin.entity';
 // import { RefreshTokensService } from '../refresh-tokens/refresh-tokens.service';
 import { MailService } from 'src/modules/mail/mail.service';
-import { EAdminOtpType, EMerchantStatus } from 'src/common/enums';
-import { Response } from 'express';
-import { cookieConfig } from 'src/config/cookie.config';
+import { EMerchantStatus } from 'src/common/enums';
 import { MerchantsService } from '../merchants/merchants.service';
 import { MerchantEntity } from 'src/database/entities/merchant.entity';
 
