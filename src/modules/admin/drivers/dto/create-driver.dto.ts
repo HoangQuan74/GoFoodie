@@ -145,7 +145,7 @@ export class CreateDriverDto {
   identityCardBackId: string;
 
   @ApiProperty({ type: [CreateDriverBankDto] })
-  @ValidateNested({ each: true })
+  // @ValidateNested({ each: true })
   @Type(() => CreateDriverBankDto)
   @IsNotEmpty()
   @ValidateIf((o) => !o.isDraft)
@@ -160,7 +160,7 @@ export class CreateDriverDto {
   serviceTypes: CreateDriverServiceTypeDto[];
 
   @ApiProperty({ type: [CreateDriverEmergencyContactDto] })
-  @ValidateNested({ each: true })
+  // @ValidateNested({ each: true })
   @Type(() => CreateDriverEmergencyContactDto)
   @IsNotEmpty()
   @ValidateIf((o) => !o.isDraft)
@@ -168,7 +168,7 @@ export class CreateDriverDto {
   emergencyContacts: CreateDriverEmergencyContactDto[];
 
   @ApiProperty({ type: CreateDriverVehicleDto })
-  @ValidateNested()
+  // @ValidateNested()
   @Type(() => CreateDriverVehicleDto)
   @IsNotEmpty()
   @ValidateIf((o) => !o.isDraft)

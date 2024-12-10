@@ -12,6 +12,9 @@ export class StoreRepresentativeEntity extends BaseEntity {
   @Column({ nullable: true })
   name: string;
 
+  @Column({ name: 'business_name', nullable: true })
+  businessName: string;
+
   @Column({ nullable: true })
   phone: string;
 

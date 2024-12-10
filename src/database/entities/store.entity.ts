@@ -111,6 +111,9 @@ export class StoreEntity extends BaseEntity {
   @JoinColumn({ name: 'approved_by_id' })
   approvedBy: AdminEntity;
 
+  @Column({ name: 'parking_fee', nullable: true })
+  parkingFee: number;
+
   @ManyToOne(() => AdminEntity, (admin) => admin.id, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'created_by_id' })
   createdBy: AdminEntity;

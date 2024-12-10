@@ -12,6 +12,7 @@ import {
   IsOptional,
   IsDate,
   IsBoolean,
+  IsNumber,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -85,6 +86,11 @@ export class CreateRepresentativeDto {
   @IsNotEmpty()
   name: string;
 
+  @ApiPropertyOptional({ description: 'Tên doanh nghiệp' })
+  @IsString()
+  @IsOptional()
+  businessName: string;
+
   @ApiPropertyOptional({ description: 'Số điện thoại người đại diện' })
   @IsPhoneNumber('VN', { message: EXCEPTIONS.INVALID_PHONE })
   @IsOptional()
@@ -152,10 +158,10 @@ export class CreateRepresentativeDto {
   @ValidateIf((o) => o.type !== EStoreRepresentativeType.Individual)
   businessLicenseImageId: string;
 
-  @ApiProperty({ description: 'Hình ảnh mã số thuế' })
-  @IsString()
-  @IsNotEmpty()
-  taxLicenseImageId: string;
+  // @ApiProperty({ description: 'Hình ảnh mã số thuế' })
+  // @IsString()
+  // @IsNotEmpty()
+  // taxLicenseImageId: string;
 
   @ApiPropertyOptional({ description: 'Hình ảnh liên quan' })
   @IsString()
@@ -193,6 +199,11 @@ export class CreateStoreDto {
   @IsNotEmpty()
   @ValidateIf((o) => !o.isDraft)
   name: string;
+
+  @ApiPropertyOptional({ description: 'Phí đỗ xe' })
+  @IsNumber()
+  @IsOptional()
+  parkingFee: number;
 
   @ApiPropertyOptional({ description: 'Món đặc biệt' })
   @IsString()
