@@ -18,6 +18,7 @@ import { BanksModule } from './modules/banks/banks.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { ProductOptionGroupsModule } from './modules/product-option-groups/product-option-groups.module';
 import { RelationshipsModule } from './modules/relationships/relationships.module';
+import { MerchantModule } from './modules/merchant/merchant.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { RelationshipsModule } from './modules/relationships/relationships.modul
     TasksModule,
     ProductOptionGroupsModule,
     RelationshipsModule,
+    MerchantModule,
     // FirebaseModule,
   ],
   controllers: [],

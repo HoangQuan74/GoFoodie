@@ -80,6 +80,7 @@ export class StaffsController {
   @Patch(':id')
   async update(@Param('id') id: number, @Body() updateStaffDto: UpdateStaffDto) {
     const { password, email, phone } = updateStaffDto;
+    delete updateStaffDto.password;
 
     const options = { where: { id: +id } };
     const staff = await this.staffsService.findOne(options);

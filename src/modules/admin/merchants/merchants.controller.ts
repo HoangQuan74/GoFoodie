@@ -89,6 +89,7 @@ export class MerchantsController {
   @Patch(':id')
   async update(@Param('id') id: number, @Body() updateMerchantDto: UpdateMerchantDto) {
     const { password, email, phone } = updateMerchantDto;
+    delete updateMerchantDto.password;
 
     const options = { where: { id: +id } };
     const merchant = await this.merchantsService.findOne(options);
