@@ -32,7 +32,7 @@ export class AuthGuard implements CanActivate {
       })) as JwtPayload;
 
       const { id } = payload;
-      const admin = await this.merchantService.findOne({ where: { id } });
+      const merchant = await this.merchantService.findOne({ where: { id } });
       // if (!admin.isActivated) throw new UnauthorizedException();
 
       // admin.lastLogin = new Date();
@@ -41,7 +41,7 @@ export class AuthGuard implements CanActivate {
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
 
-      request['user'] = admin;
+      request['user'] = merchant;
     } catch {
       throw new UnauthorizedException();
     }

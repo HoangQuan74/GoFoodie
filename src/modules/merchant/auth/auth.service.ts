@@ -24,7 +24,7 @@ export class AuthService {
   async signIn(username: string, password: string): Promise<Omit<MerchantEntity, 'password'> & JwtSign> {
     const merchant = await this.merchantsService.findOne({
       where: [{ phone: username }, { email: username }],
-      select: ['id', 'phone', 'email', 'password'],
+      select: ['id', 'phone', 'email', 'password', 'status'],
     });
     if (!merchant) throw new UnauthorizedException();
 
@@ -66,15 +66,15 @@ export class AuthService {
   //   await this.adminsService.deleteOtp(admin.id, EAdminOtpType.ForgotPassword);
   // }
 
-  // async changePassword(adminId: number, currentPassword: string, newPassword: string) {
-  //   const admin = await this.adminsService.findOne({ where: { id: adminId }, select: ['id', 'password'] });
-  //   if (!admin) throw new NotFoundException();
+  async changePassword(adminId: number, currentPassword: string, newPassword: string) {
+    const merchant = await this.merchantsService.findOne({ where: { id: adminId }, select: ['id', 'password'] });
+    if (!merchant) throw new NotFoundException();
 
-  //   const isPasswordMatching = comparePassword(currentPassword, admin.password);
-  //   if (!isPasswordMatching) throw new UnauthorizedException();
+    const isPasswordMatching = comparePassword(currentPassword, merchant.password);
+    if (!isPasswordMatching) throw new UnauthorizedException();
 
-  //   const hashedPassword = hashPassword(newPassword);
-  //   admin.password = hashedPassword;
-  //   await this.adminsService.save(admin);
-  // }
+    const hashedPassword = hashPassword(newPassword);
+    merchant.password = hashedPassword;
+    await this.merchantsService.save(merchant);
+  }
 }

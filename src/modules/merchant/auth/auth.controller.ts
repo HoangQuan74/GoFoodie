@@ -38,10 +38,10 @@ export class AuthController {
   //   return this.authService.refreshToken(refreshToken, res);
   // }
 
-  // @Get('profile')
-  // async me(@Req() req: Request) {
-  //   return req['user'];
-  // }
+  @Get('profile')
+  async me(@Req() req: Request) {
+    return req['user'];
+  }
 
   // @Post('forgot-password')
   // @Public()
@@ -57,11 +57,11 @@ export class AuthController {
   //   return this.authService.resetPassword(otp, email, password);
   // }
 
-  // @Post('change-password')
-  // changePassword(@Body() body: ChangePasswordDto, @CurrentUser() user: JwtPayload) {
-  //   const { currentPassword, newPassword } = body;
-  //   return this.authService.changePassword(user.id, currentPassword, newPassword);
-  // }
+  @Post('change-password')
+  changePassword(@Body() body: ChangePasswordDto, @CurrentUser() user: JwtPayload) {
+    const { currentPassword, newPassword } = body;
+    return this.authService.changePassword(user.id, currentPassword, newPassword);
+  }
 
   // @Post('logout')
   // @Public()

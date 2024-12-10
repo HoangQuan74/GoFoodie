@@ -10,6 +10,10 @@ export class MerchantsService {
     private merchantsRepository: Repository<MerchantEntity>,
   ) {}
 
+  async save(merchant: MerchantEntity) {
+    return this.merchantsRepository.save(merchant);
+  }
+
   async find(options: FindManyOptions<MerchantEntity>) {
     return this.merchantsRepository.find(options);
   }

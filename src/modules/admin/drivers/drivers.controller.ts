@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  NotFoundException,
+  Query,
+  BadRequestException,
+} from '@nestjs/common';
 import { DriversService } from './drivers.service';
 import { CreateDriverDto } from './dto/create-driver.dto';
 import { UpdateDriverDto } from './dto/update-driver.dto';
@@ -9,14 +20,26 @@ import { EDriverApprovalStatus } from 'src/common/enums/driver.enum';
 import { QueryDriverDto } from './dto/query-driver.dto';
 import { Brackets } from 'typeorm';
 import { ApiBody } from '@nestjs/swagger';
+import { EXCEPTIONS } from 'src/common/constants';
 
 @Controller('drivers')
 export class DriversController {
   constructor(private readonly driversService: DriversService) {}
 
   @Post()
-  create(@Body() createDriverDto: CreateDriverDto, @CurrentUser() user: JwtPayload) {
-    const { isDraft } = createDriverDto;
+  async create(@Body() createDriverDto: CreateDriverDto, @CurrentUser() user: JwtPayload) {
+    const { isDraft, phoneNumber, email } = createDriverDto;
+
+    if (phoneNumber) {
+      const existingDriver = await this.driversService.findOne({ where: { phoneNumber } });
+      if (existingDriver) throw new BadRequestException(EXCEPTIONS.PHONE_CONFLICT);
+    }
+
+    if (email) {
+      const existingDriver = await this.driversService.findOne({ where: { email } });
+      if (existingDriver) throw new BadRequestException(EXCEPTIONS.EMAIL_CONFLICT);
+    }
+
     const newDriver = new DriverEntity();
     newDriver.createdById = user.id;
     newDriver.approvalStatus = isDraft ? EDriverApprovalStatus.Draft : EDriverApprovalStatus.Pending;

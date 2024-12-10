@@ -10,10 +10,10 @@ import { MerchantsModule } from '../merchants/merchants.module';
   imports: [
     // RefreshTokensModule,
     MerchantsModule,
-    JwtModule.register({
-      global: true,
-      secret: JWT_SECRET,
-    }),
+    // JwtModule.register({
+    //   global: true,
+    //   secret: JWT_SECRET,
+    // }),
   ],
   controllers: [AuthController],
   providers: [AuthService],
