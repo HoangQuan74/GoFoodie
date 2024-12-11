@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Body } from '@nestjs/common';
 import { LoginDto, LoginSmsDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
@@ -11,6 +11,8 @@ import { AuthGuard } from './auth.guard';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { StoresService } from 'src/modules/admin/stores/stores.service';
 import { EStoreApprovalStatus, EStoreStatus } from 'src/common/enums';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordByEmailDto } from './dto/reset-password.dto';
 
 @Controller('auth')
 @ApiTags('Merchant Auth')
@@ -23,6 +25,7 @@ export class AuthController {
 
   @Post('login')
   @Public()
+  @ApiOperation({ summary: 'Đăng nhập bằng tài khoản' })
   login(@Body() body: LoginDto) {
     const { username, password, deviceToken } = body;
     return this.authService.signIn(username, password, deviceToken);
@@ -30,6 +33,7 @@ export class AuthController {
 
   @Post('login/sms')
   @Public()
+  @ApiOperation({ summary: 'Đăng nhập bằng mã OTP' })
   loginSms(@Body() body: LoginSmsDto) {
     const { idToken, deviceToken } = body;
     return this.authService.signInWithSms(idToken, deviceToken);
@@ -39,8 +43,6 @@ export class AuthController {
   @Public()
   refreshToken(@Body() body: RefreshTokenDto, @Req() req: Request) {
     const { refreshToken } = body;
-    // const jwt = req.headers['authorization']?.split(' ')[1];
-    // console.log(jwt);
     return this.authService.refreshToken(refreshToken, req);
   }
 
@@ -48,32 +50,42 @@ export class AuthController {
   async me(@Req() req: Request) {
     const merchant = req['user'];
 
+    const select = {
+      id: true,
+      name: true,
+      status: true,
+      approvalStatus: true,
+      storeAvatarId: true,
+      address: true,
+      province: { id: true, name: true },
+      district: { id: true, name: true },
+      ward: { id: true, name: true },
+    };
+    const relations = ['province', 'district', 'ward'];
+
     if (merchant.storeId) {
-      const store = await this.storesService.findOne({ where: { id: merchant.storeId }, select: ['id', 'name'] });
+      const store = await this.storesService.findOne({ where: { id: merchant.storeId }, select, relations });
       merchant.stores = [store];
     } else {
-      merchant.stores = await this.storesService.find({
-        where: { merchantId: merchant.id, status: EStoreStatus.Active, approvalStatus: EStoreApprovalStatus.Approved },
-        select: ['id', 'name'],
-      });
+      merchant.stores = await this.storesService.find({ where: { merchantId: merchant.id }, select, relations });
     }
 
     return merchant;
   }
 
-  // @Post('forgot-password')
-  // @Public()
-  // forgotPassword(@Body() body: ForgotPasswordDto) {
-  //   const { email } = body;
-  //   return this.authService.forgotPassword(email);
-  // }
+  @Post('forgot-password')
+  @Public()
+  forgotPassword(@Body() body: ForgotPasswordDto) {
+    const { email } = body;
+    return this.authService.forgotPassword(email);
+  }
 
-  // @Post('reset-password')
-  // @Public()
-  // resetPassword(@Body() body: ResetPasswordDto) {
-  //   const { otp, email, password } = body;
-  //   return this.authService.resetPassword(otp, email, password);
-  // }
+  @Post('reset-password-by-email')
+  @Public()
+  resetPassword(@Body() body: ResetPasswordByEmailDto) {
+    const { otp, email, password } = body;
+    return this.authService.resetPassword(otp, email, password);
+  }
 
   @Post('change-password')
   changePassword(@Body() body: ChangePasswordDto, @CurrentUser() user: JwtPayload) {
@@ -86,5 +98,12 @@ export class AuthController {
   async logout(@Req() req: Request) {
     await this.authService.logout(req);
     return { message: 'Logout successfully' };
+  }
+
+  @Post('login-store')
+  @ApiOperation({ summary: 'Đăng nhập vào cửa hàng, thay đổi cửa hàng hiện tại' })
+  @ApiBody({ schema: { type: 'object', properties: { storeId: { type: 'number' } } } })
+  loginStore(@Body() { storeId }: { storeId: number }, @CurrentUser() user: JwtPayload) {
+    return this.authService.loginStore(user.id, user.deviceToken, storeId);
   }
 }

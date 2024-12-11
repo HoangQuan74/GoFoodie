@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { EXCEPTIONS, JWT_SECRET } from 'src/common/constants';
+import { EXCEPTIONS } from 'src/common/constants';
 import { IS_PUBLIC_KEY } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { MerchantsService } from '../merchants/merchants.service';

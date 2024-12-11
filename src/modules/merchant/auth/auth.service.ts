@@ -1,15 +1,16 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { comparePassword, hashPassword } from 'src/utils/bcrypt';
+import { comparePassword, generateOTP, hashPassword } from 'src/utils/bcrypt';
 import { JwtPayload, JwtSign } from 'src/common/interfaces';
-import { EXCEPTIONS, JWT_EXPIRATION, JWT_SECRET } from 'src/common/constants';
+import { EXCEPTIONS, JWT_EXPIRATION } from 'src/common/constants';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshTokensService } from '../refresh-tokens/refresh-tokens.service';
 import { MailService } from 'src/modules/mail/mail.service';
-import { EMerchantStatus, EStoreApprovalStatus, EStoreStatus } from 'src/common/enums';
+import { EAdminOtpType, EMerchantStatus, EStoreApprovalStatus, EStoreStatus } from 'src/common/enums';
 import { MerchantsService } from '../merchants/merchants.service';
 import { MerchantEntity } from 'src/database/entities/merchant.entity';
 import { FirebaseService } from 'src/modules/firebase/firebase.service';
 import { Request } from 'express';
+import { Brackets } from 'typeorm';
 
 @Injectable()
 export class AuthService {
@@ -45,18 +46,19 @@ export class AuthService {
 
     if (merchant.status !== EMerchantStatus.Active) throw new UnauthorizedException(EXCEPTIONS.ACCOUNT_NOT_ACTIVE);
 
+    const stores = merchant.store ? [merchant.store, ...merchant.stores] : merchant.stores;
     const payload: JwtPayload = { id: merchant.id, deviceToken };
     const accessToken = this.jwtService.sign(payload, { expiresIn: JWT_EXPIRATION });
     const { token: refreshToken } = await this.refreshTokensService.createRefreshToken(merchant.id, deviceToken);
 
     merchant.lastLogin = new Date();
     merchant.deviceToken = deviceToken;
-    this.merchantsService.save(merchant);
-    merchant.store && merchant.stores.push(merchant.store);
+    delete merchant.stores;
+    await this.merchantsService.save(merchant);
 
     delete merchant.password;
     delete merchant.store;
-    return { ...merchant, accessToken, refreshToken };
+    return { ...merchant, stores, accessToken, refreshToken };
   }
 
   async signInWithSms(idToken: string, deviceToken: string): Promise<Omit<MerchantEntity, 'password'> & JwtSign> {
@@ -83,45 +85,48 @@ export class AuthService {
 
       if (merchant.status !== EMerchantStatus.Active) throw new UnauthorizedException(EXCEPTIONS.ACCOUNT_NOT_ACTIVE);
 
+      const stores = merchant.store ? [merchant.store, ...merchant.stores] : merchant.stores;
       const payload: JwtPayload = { id: merchant.id, deviceToken };
       const accessToken = this.jwtService.sign(payload, { expiresIn: JWT_EXPIRATION });
       const { token: refreshToken } = await this.refreshTokensService.createRefreshToken(merchant.id, deviceToken);
 
       merchant.lastLogin = new Date();
       merchant.deviceToken = deviceToken;
-      this.merchantsService.save(merchant);
-      merchant.store && merchant.stores.push(merchant.store);
+      delete merchant.stores;
+      await this.merchantsService.save(merchant);
 
       delete merchant.store;
-      return { ...merchant, accessToken, refreshToken };
-    } catch (error) {}
+      return { ...merchant, stores, accessToken, refreshToken };
+    } catch (error) {
+      throw new UnauthorizedException();
+    }
   }
 
-  // async forgotPassword(email: string) {
-  //   const admin = await this.merchantsService.findOne({ where: { email } });
-  //   if (!admin) throw new NotFoundException();
+  async forgotPassword(email: string) {
+    const merchant = await this.merchantsService.findOne({ where: { email } });
+    if (!merchant) throw new NotFoundException();
 
-  //   const otp = generateOTP();
-  //   const otpType = EAdminOtpType.ForgotPassword;
-  //   await this.adminsService.deleteOtp(admin.id, otpType);
-  //   await this.adminsService.saveOtp({ adminId: admin.id, otp, type: otpType });
-  //   this.mailService.sendForgotPasswordForAdmin(admin.email, otp, admin.name);
+    const otp = generateOTP();
+    const otpType = EAdminOtpType.ForgotPassword;
+    await this.merchantsService.deleteOtp(merchant.id, otpType);
+    await this.merchantsService.saveOtp({ merchantId: merchant.id, otp, type: otpType });
+    this.mailService.sendForgotPassword(email, otp, merchant.name);
 
-  //   return { message: 'OTP has been sent to your email' };
-  // }
+    return { message: 'OTP has been sent to your email' };
+  }
 
-  // async resetPassword(otp: string, email: string, password: string) {
-  //   const admin = await this.adminsService.findOne({ where: { email } });
-  //   if (!admin) throw new NotFoundException();
+  async resetPassword(otp: string, email: string, password: string) {
+    const admin = await this.merchantsService.findOne({ where: { email } });
+    if (!admin) throw new NotFoundException();
 
-  //   const isValidOtp = await this.adminsService.validateOtp(admin.id, otp);
-  //   if (!isValidOtp) throw new UnauthorizedException();
+    const isValidOtp = await this.merchantsService.validateOtp(admin.id, otp);
+    if (!isValidOtp) throw new UnauthorizedException();
 
-  //   const hashedPassword = hashPassword(password);
-  //   admin.password = hashedPassword;
-  //   await this.adminsService.save(admin);
-  //   await this.adminsService.deleteOtp(admin.id, EAdminOtpType.ForgotPassword);
-  // }
+    const hashedPassword = hashPassword(password);
+    admin.password = hashedPassword;
+    await this.merchantsService.save(admin);
+    await this.merchantsService.deleteOtp(admin.id, EAdminOtpType.ForgotPassword);
+  }
 
   async changePassword(adminId: number, currentPassword: string, newPassword: string) {
     const merchant = await this.merchantsService.findOne({ where: { id: adminId }, select: ['id', 'password'] });
@@ -138,13 +143,13 @@ export class AuthService {
   async refreshToken(refreshToken: string, req: Request): Promise<JwtSign> {
     try {
       const accessToken = req.headers['authorization']?.split(' ')[1];
-      const { id } = this.jwtService.verify(accessToken, { ignoreExpiration: true });
+      const { id, storeId } = this.jwtService.verify(accessToken, { ignoreExpiration: true });
 
       const { deviceToken } = await this.refreshTokensService.findValidToken(refreshToken, id);
       const merchant = await this.merchantsService.findOne({ where: { id } });
       if (!merchant) throw new UnauthorizedException();
 
-      const newPayload: JwtPayload = { id: merchant.id, deviceToken: deviceToken };
+      const newPayload: JwtPayload = { id: merchant.id, deviceToken, storeId };
       const newAccessToken = this.jwtService.sign(newPayload, { expiresIn: JWT_EXPIRATION });
 
       await this.refreshTokensService.revokeToken(merchant.id, refreshToken);
@@ -165,5 +170,30 @@ export class AuthService {
     } catch (error) {
       return;
     }
+  }
+
+  async loginStore(merchantId: number, deviceToken: string, storeId: number): Promise<JwtSign> {
+    const merchant = await this.merchantsService
+      .createQueryBuilder('merchant')
+      .leftJoin('merchant.store', 'store')
+      .leftJoin('merchant.stores', 'stores')
+      .where('merchant.id = :id', { id: merchantId })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('merchant.storeId = :storeId AND store.status = :status AND store.approvalStatus = :approvalStatus');
+          qb.orWhere('stores.id = :storeId AND stores.status = :status AND stores.approvalStatus = :approvalStatus');
+        }),
+      )
+      .setParameter('storeId', storeId)
+      .setParameter('status', EStoreStatus.Active)
+      .setParameter('approvalStatus', EStoreApprovalStatus.Approved)
+      .getOne();
+    if (!merchant) throw new NotFoundException();
+
+    const payload: JwtPayload = { id: merchantId, deviceToken, storeId };
+    const accessToken = this.jwtService.sign(payload, { expiresIn: JWT_EXPIRATION });
+    const { token: refreshToken } = await this.refreshTokensService.createRefreshToken(merchantId, deviceToken);
+
+    return { accessToken, refreshToken };
   }
 }

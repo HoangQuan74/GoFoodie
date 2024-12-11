@@ -12,6 +12,7 @@ export class RefreshTokensService {
   ) {}
 
   async createRefreshToken(userId: number, deviceToken: string): Promise<MerchantRefreshTokenEntity> {
+    await this.revokeAllTokens(userId);
     const refreshToken = new MerchantRefreshTokenEntity();
     refreshToken.merchantId = userId;
     refreshToken.deviceToken = deviceToken;
@@ -21,7 +22,7 @@ export class RefreshTokensService {
   }
 
   async revokeAllTokens(userId: number) {
-    await this.adminRefreshTokenRepository.update({ merchantId: userId }, { isRevoked: true });
+    await this.adminRefreshTokenRepository.delete({ merchantId: userId });
   }
 
   async revokeToken(userId: number, token: string) {

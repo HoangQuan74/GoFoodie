@@ -19,12 +19,13 @@ import { JwtPayload } from 'src/common/interfaces';
 import { EDriverApprovalStatus } from 'src/common/enums/driver.enum';
 import { QueryDriverDto } from './dto/query-driver.dto';
 import { Brackets } from 'typeorm';
-import { ApiBody } from '@nestjs/swagger';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { EXCEPTIONS } from 'src/common/constants';
 import { AuthGuard } from '../auth/auth.guard';
 import { UpdateDriverDto } from './dto/update-driver.dto';
 
 @Controller('drivers')
+@ApiTags('Drivers')
 @UseGuards(AuthGuard)
 export class DriversController {
   constructor(private readonly driversService: DriversService) {}

@@ -129,7 +129,7 @@ export class StoreEntity extends BaseEntity {
   @JoinColumn({ name: 'service_type_id' })
   serviceType: ServiceTypeEntity;
 
-  @ManyToOne(() => MerchantEntity, (merchant) => merchant.id, { onDelete: 'CASCADE' })
+  @ManyToOne(() => MerchantEntity, (merchant) => merchant.stores)
   @JoinColumn({ name: 'merchant_id' })
   merchant: MerchantEntity;
 

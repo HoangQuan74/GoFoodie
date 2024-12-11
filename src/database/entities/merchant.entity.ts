@@ -36,10 +36,10 @@ export class MerchantEntity extends BaseEntity {
   @Column({ name: 'role', type: 'enum', enum: EMerchantRole, default: EMerchantRole.Owner })
   role: EMerchantRole;
 
-  @OneToMany(() => StoreEntity, (store) => store.merchant)
+  @OneToMany(() => StoreEntity, (store) => store.merchant, { cascade: false })
   stores: StoreEntity[];
 
-  @ManyToOne(() => StoreEntity, (store) => store.merchant, { onDelete: 'CASCADE' })
+  @ManyToOne(() => StoreEntity, (store) => store.id)
   @JoinColumn({ name: 'store_id' })
   store: StoreEntity;
 }

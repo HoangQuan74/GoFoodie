@@ -1,11 +1,12 @@
-// reset-password.dto
-
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, IsStrongPassword, MaxLength, MinLength } from 'class-validator';
 
-export class ResetPasswordDto {
+export class ResetPasswordByEmailDto {
   @ApiProperty()
   @IsString()
+  @IsNotEmpty()
+  @MaxLength(6)
+  @MinLength(6)
   otp: string;
 
   @ApiProperty()
@@ -13,6 +14,6 @@ export class ResetPasswordDto {
   email: string;
 
   @ApiProperty()
-  @IsString()
+  @IsStrongPassword()
   password: string;
 }

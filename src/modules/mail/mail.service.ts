@@ -6,7 +6,7 @@ import { BASE_URL } from 'src/common/constants';
 export class MailService {
   constructor(private readonly mailerService: MailerService) {}
 
-  async sendForgotPasswordForAdmin(email: string, otp: string, name: string) {
+  async sendForgotPassword(email: string, otp: string, name: string) {
     try {
       const logo = BASE_URL + '/public/logo.png';
       const headerBg = BASE_URL + '/public/header-bg.png';
