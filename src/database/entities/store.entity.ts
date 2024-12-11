@@ -164,5 +164,5 @@ export class StoreEntity extends BaseEntity {
   @OneToMany(() => StoreSpecialWorkingTimeEntity, (specialWorkingTime) => specialWorkingTime.store, { cascade: true })
   specialWorkingTimes: StoreSpecialWorkingTimeEntity[];
 
-  productCount: number = 0;
+  productCount: number;
 }

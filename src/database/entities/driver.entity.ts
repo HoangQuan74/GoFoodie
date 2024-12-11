@@ -40,7 +40,7 @@ export class DriverEntity extends BaseEntity {
   @Column({ enum: EDriverStatus, default: EDriverStatus.Active })
   status: EDriverStatus;
 
-  @Column({ enum: EDriverApprovalStatus, default: EDriverApprovalStatus.Draft })
+  @Column({ name: 'approval_status', enum: EDriverApprovalStatus, default: EDriverApprovalStatus.Draft })
   approvalStatus: EDriverApprovalStatus;
 
   @Column({ name: 'approved_at', nullable: true })

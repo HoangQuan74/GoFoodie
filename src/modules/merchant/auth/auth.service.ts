@@ -3,18 +3,21 @@ import { comparePassword, hashPassword } from 'src/utils/bcrypt';
 import { JwtPayload, JwtSign } from 'src/common/interfaces';
 import { EXCEPTIONS, JWT_EXPIRATION, JWT_SECRET } from 'src/common/constants';
 import { JwtService } from '@nestjs/jwt';
-// import { RefreshTokensService } from '../refresh-tokens/refresh-tokens.service';
+import { RefreshTokensService } from '../refresh-tokens/refresh-tokens.service';
 import { MailService } from 'src/modules/mail/mail.service';
-import { EMerchantStatus } from 'src/common/enums';
+import { EMerchantStatus, EStoreApprovalStatus, EStoreStatus } from 'src/common/enums';
 import { MerchantsService } from '../merchants/merchants.service';
 import { MerchantEntity } from 'src/database/entities/merchant.entity';
+import { FirebaseService } from 'src/modules/firebase/firebase.service';
+import { Request } from 'express';
 
 @Injectable()
 export class AuthService {
   constructor(
     private merchantsService: MerchantsService,
     private jwtService: JwtService,
-    // private refreshTokensService: RefreshTokensService,
+    private refreshTokensService: RefreshTokensService,
+    private firebaseService: FirebaseService,
     private mailService: MailService,
   ) {}
 
@@ -23,10 +26,18 @@ export class AuthService {
     password: string,
     deviceToken: string,
   ): Promise<Omit<MerchantEntity, 'password'> & JwtSign> {
-    const merchant = await this.merchantsService.findOne({
-      where: [{ phone: username }, { email: username }],
-      select: ['id', 'phone', 'email', 'password', 'status'],
-    });
+    const merchant = await this.merchantsService
+      .createQueryBuilder('merchant')
+      .where('merchant.phone = :phone OR merchant.email = :email', { phone: username, email: username })
+      .select(['merchant.id', 'merchant.phone', 'merchant.email', 'merchant.password', 'merchant.status'])
+      .addSelect(['store.id', 'store.name'])
+      .addSelect(['stores.id', 'stores.name'])
+      .leftJoin('merchant.store', 'store', 'store.status = :status AND store.approvalStatus = :approvalStatus')
+      .leftJoin('merchant.stores', 'stores', 'stores.status = :status AND stores.approvalStatus = :approvalStatus')
+      .setParameter('status', EStoreStatus.Active)
+      .setParameter('approvalStatus', EStoreApprovalStatus.Approved)
+      .getOne();
+
     if (!merchant) throw new UnauthorizedException();
 
     const isPasswordMatching = comparePassword(password, merchant.password);
@@ -36,13 +47,54 @@ export class AuthService {
 
     const payload: JwtPayload = { id: merchant.id, deviceToken };
     const accessToken = this.jwtService.sign(payload, { expiresIn: JWT_EXPIRATION });
+    const { token: refreshToken } = await this.refreshTokensService.createRefreshToken(merchant.id, deviceToken);
 
     merchant.lastLogin = new Date();
     merchant.deviceToken = deviceToken;
     this.merchantsService.save(merchant);
+    merchant.store && merchant.stores.push(merchant.store);
 
     delete merchant.password;
-    return { ...merchant, accessToken, refreshToken: accessToken };
+    delete merchant.store;
+    return { ...merchant, accessToken, refreshToken };
+  }
+
+  async signInWithSms(idToken: string, deviceToken: string): Promise<Omit<MerchantEntity, 'password'> & JwtSign> {
+    try {
+      const { phone_number } = await this.firebaseService.verifyIdToken(idToken);
+      const phone = phone_number.replace('+', '');
+
+      let merchant = await this.merchantsService
+        .createQueryBuilder('merchant')
+        .where('merchant.phone = :phone', { phone })
+        .addSelect(['store.id', 'store.name'])
+        .addSelect(['stores.id', 'stores.name'])
+        .leftJoin('merchant.store', 'store', 'store.status = :status AND store.approvalStatus = :approvalStatus')
+        .leftJoin('merchant.stores', 'stores', 'stores.status = :status AND stores.approvalStatus = :approvalStatus')
+        .setParameter('status', EStoreStatus.Active)
+        .setParameter('approvalStatus', EStoreApprovalStatus.Approved)
+        .getOne();
+
+      if (!merchant) {
+        merchant = new MerchantEntity();
+        merchant.phone = phone;
+        merchant = await this.merchantsService.save(merchant);
+      }
+
+      if (merchant.status !== EMerchantStatus.Active) throw new UnauthorizedException(EXCEPTIONS.ACCOUNT_NOT_ACTIVE);
+
+      const payload: JwtPayload = { id: merchant.id, deviceToken };
+      const accessToken = this.jwtService.sign(payload, { expiresIn: JWT_EXPIRATION });
+      const { token: refreshToken } = await this.refreshTokensService.createRefreshToken(merchant.id, deviceToken);
+
+      merchant.lastLogin = new Date();
+      merchant.deviceToken = deviceToken;
+      this.merchantsService.save(merchant);
+      merchant.store && merchant.stores.push(merchant.store);
+
+      delete merchant.store;
+      return { ...merchant, accessToken, refreshToken };
+    } catch (error) {}
   }
 
   // async forgotPassword(email: string) {
@@ -81,5 +133,37 @@ export class AuthService {
     const hashedPassword = hashPassword(newPassword);
     merchant.password = hashedPassword;
     await this.merchantsService.save(merchant);
+  }
+
+  async refreshToken(refreshToken: string, req: Request): Promise<JwtSign> {
+    try {
+      const accessToken = req.headers['authorization']?.split(' ')[1];
+      const { id } = this.jwtService.verify(accessToken, { ignoreExpiration: true });
+
+      const { deviceToken } = await this.refreshTokensService.findValidToken(refreshToken, id);
+      const merchant = await this.merchantsService.findOne({ where: { id } });
+      if (!merchant) throw new UnauthorizedException();
+
+      const newPayload: JwtPayload = { id: merchant.id, deviceToken: deviceToken };
+      const newAccessToken = this.jwtService.sign(newPayload, { expiresIn: JWT_EXPIRATION });
+
+      await this.refreshTokensService.revokeToken(merchant.id, refreshToken);
+      const { token } = await this.refreshTokensService.createRefreshToken(merchant.id, deviceToken);
+
+      return { accessToken: newAccessToken, refreshToken: token };
+    } catch (error) {
+      throw new UnauthorizedException();
+    }
+  }
+
+  async logout(req: Request) {
+    try {
+      const accessToken = req.headers['authorization']?.split(' ')[1];
+
+      const { id } = this.jwtService.verify(accessToken, { ignoreExpiration: true });
+      return this.refreshTokensService.revokeAllTokens(id);
+    } catch (error) {
+      return;
+    }
   }
 }

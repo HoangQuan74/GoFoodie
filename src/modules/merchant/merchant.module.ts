@@ -2,8 +2,14 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { RouterModule } from '@nestjs/core';
 import { MerchantsModule } from './merchants/merchants.module';
+import { RefreshTokensModule } from './refresh-tokens/refresh-tokens.module';
 
 @Module({
-  imports: [AuthModule, MerchantsModule, RouterModule.register([{ path: 'merchant', module: AuthModule }])],
+  imports: [
+    AuthModule,
+    RefreshTokensModule,
+    MerchantsModule,
+    RouterModule.register([{ path: 'merchant', module: AuthModule }]),
+  ],
 })
 export class MerchantModule {}

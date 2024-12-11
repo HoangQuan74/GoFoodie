@@ -8,12 +8,18 @@ import { Request } from 'express';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtPayload } from 'src/common/interfaces';
 import { AuthGuard } from './auth.guard';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { StoresService } from 'src/modules/admin/stores/stores.service';
+import { EStoreApprovalStatus, EStoreStatus } from 'src/common/enums';
 
 @Controller('auth')
 @ApiTags('Merchant Auth')
 @UseGuards(AuthGuard)
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly storesService: StoresService,
+  ) {}
 
   @Post('login')
   @Public()
@@ -25,20 +31,34 @@ export class AuthController {
   @Post('login/sms')
   @Public()
   loginSms(@Body() body: LoginSmsDto) {
-    // const { username, password } = body;
-    // return this.authService.signIn(username, password);
+    const { idToken, deviceToken } = body;
+    return this.authService.signInWithSms(idToken, deviceToken);
   }
 
-  // @Post('refresh-token')
-  // @Public()
-  // refreshToken(@Body() body: RefreshTokenDto, @Res({ passthrough: true }) res: Response) {
-  //   const { refreshToken } = body;
-  //   return this.authService.refreshToken(refreshToken, res);
-  // }
+  @Post('refresh-token')
+  @Public()
+  refreshToken(@Body() body: RefreshTokenDto, @Req() req: Request) {
+    const { refreshToken } = body;
+    // const jwt = req.headers['authorization']?.split(' ')[1];
+    // console.log(jwt);
+    return this.authService.refreshToken(refreshToken, req);
+  }
 
   @Get('profile')
   async me(@Req() req: Request) {
-    return req['user'];
+    const merchant = req['user'];
+
+    if (merchant.storeId) {
+      const store = await this.storesService.findOne({ where: { id: merchant.storeId }, select: ['id', 'name'] });
+      merchant.stores = [store];
+    } else {
+      merchant.stores = await this.storesService.find({
+        where: { merchantId: merchant.id, status: EStoreStatus.Active, approvalStatus: EStoreApprovalStatus.Approved },
+        select: ['id', 'name'],
+      });
+    }
+
+    return merchant;
   }
 
   // @Post('forgot-password')
@@ -61,10 +81,10 @@ export class AuthController {
     return this.authService.changePassword(user.id, currentPassword, newPassword);
   }
 
-  // @Post('logout')
-  // @Public()
-  // logout(@Res({ passthrough: true }) res: Response) {
-  //   res.clearCookie('token');
-  //   return { message: 'Logout successfully' };
-  // }
+  @Post('logout')
+  @Public()
+  async logout(@Req() req: Request) {
+    await this.authService.logout(req);
+    return { message: 'Logout successfully' };
+  }
 }

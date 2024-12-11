@@ -20,8 +20,9 @@ export class LoginDto {
 
 export class LoginSmsDto {
   @ApiProperty()
-  @IsPhoneNumber('VN')
-  phone: string;
+  @IsString()
+  @IsNotEmpty()
+  idToken: string;
 
   @ApiProperty()
   @IsString()

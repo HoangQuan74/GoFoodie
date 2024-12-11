@@ -1,5 +1,5 @@
 import { WardsService } from './../../wards/wards.service';
-import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { StoresService } from './stores.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
@@ -14,9 +14,11 @@ import { EStoreApprovalStatus } from 'src/common/enums';
 import * as moment from 'moment-timezone';
 import { TIMEZONE } from 'src/common/constants';
 import { ProductEntity } from 'src/database/entities/product.entity';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('stores')
 @ApiTags('Stores')
+@UseGuards(AuthGuard)
 export class StoresController {
   constructor(
     private readonly storesService: StoresService,

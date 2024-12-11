@@ -27,11 +27,9 @@ export class AuthGuard implements CanActivate {
     if (!token) throw new UnauthorizedException();
 
     try {
-      const payload = (await this.jwtService.verifyAsync(token, {
-        secret: JWT_SECRET,
-      })) as JwtPayload;
+      const payload = (await this.jwtService.verifyAsync(token)) as JwtPayload;
 
-      const { id, deviceToken } = payload;
+      const { id, deviceToken, storeId } = payload;
       const merchant = await this.merchantService.findOne({ where: { id } });
       if (!merchant || merchant.status !== EMerchantStatus.Active) throw new UnauthorizedException();
       if (deviceToken !== merchant.deviceToken) throw new UnauthorizedException(EXCEPTIONS.INVALID_DEVICE_TOKEN);
@@ -43,6 +41,7 @@ export class AuthGuard implements CanActivate {
       // so that we can access it in our route handlers
 
       request['user'] = merchant;
+      request['storeId'] = storeId;
     } catch {
       throw new UnauthorizedException();
     }

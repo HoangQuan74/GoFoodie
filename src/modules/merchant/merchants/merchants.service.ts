@@ -21,4 +21,8 @@ export class MerchantsService {
   async findOne(options: FindOneOptions<MerchantEntity>) {
     return this.merchantsRepository.findOne(options);
   }
+
+  createQueryBuilder(alias: string) {
+    return this.merchantsRepository.createQueryBuilder(alias);
+  }
 }
