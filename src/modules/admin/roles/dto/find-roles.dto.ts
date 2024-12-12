@@ -4,7 +4,7 @@ import { ERoleStatus } from 'src/common/enums';
 import { PaginationQuery } from 'src/common/query';
 
 export class FindRolesDto extends PaginationQuery {
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ enum: ERoleStatus })
   @IsEnum(ERoleStatus)
   @IsOptional()
   @ValidateIf((o) => o.status)

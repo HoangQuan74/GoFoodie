@@ -21,6 +21,8 @@ export class AdminsController {
 
     const queryBuilder = this.adminsService
       .createQueryBuilder('admin')
+      .addSelect(['role.id', 'role.name'])
+      .leftJoin('admin.role', 'role')
       .orderBy('admin.id', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
