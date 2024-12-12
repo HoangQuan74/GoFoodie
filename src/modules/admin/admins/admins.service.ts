@@ -20,12 +20,16 @@ export class AdminsService {
     return this.adminsRepository.save(entity);
   }
 
-  find(options: FindManyOptions<AdminEntity>) {
+  find(options?: FindManyOptions<AdminEntity>) {
     return this.adminsRepository.find(options);
   }
 
   findOne(options: FindOneOptions<AdminEntity>) {
     return this.adminsRepository.findOne(options);
+  }
+
+  createQueryBuilder(alias: string) {
+    return this.adminsRepository.createQueryBuilder(alias);
   }
 
   saveOtp(entity: Partial<AdminOtpEntity>) {

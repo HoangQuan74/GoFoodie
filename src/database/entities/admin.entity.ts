@@ -5,13 +5,13 @@ import { EAdminStatus } from 'src/common/enums';
 @Entity('admins')
 export class AdminEntity extends BaseEntity {
   @Column()
-  username: string;
-
-  @Column()
   name: string;
 
   @Column()
   email: string;
+
+  @Column({ nullable: true })
+  phone: string;
 
   @Column({ select: false })
   password: string;

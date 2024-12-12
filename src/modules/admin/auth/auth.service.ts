@@ -22,8 +22,8 @@ export class AuthService {
 
   async signIn(username: string, password: string, res: Response): Promise<Omit<AdminEntity, 'password'> & JwtSign> {
     const admin = await this.adminsService.findOne({
-      where: [{ username }, { email: username }],
-      select: ['id', 'username', 'email', 'password'],
+      where: { email: username },
+      select: ['id', 'email', 'password'],
     });
     if (!admin) throw new UnauthorizedException();
 

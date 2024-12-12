@@ -18,6 +18,10 @@ import { DriversModule } from './drivers/drivers.module';
     RouterModule.register([
       {
         path: 'admin',
+        module: AdminsModule,
+      },
+      {
+        path: 'admin',
         module: AuthModule,
       },
       {
