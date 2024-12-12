@@ -71,7 +71,7 @@ export class AdminsController {
       body.password = hashedPassword;
     }
 
-    return this.adminsService.save({ id, ...body });
+    return this.adminsService.save({ ...admin, ...body });
   }
 
   @Get(':id')
