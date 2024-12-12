@@ -4,6 +4,7 @@ import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { EXCEPTIONS } from 'src/common/constants';
 import { PaginationQuery } from 'src/common/query';
+import { ILike } from 'typeorm';
 
 @Controller('roles')
 export class RolesController {
@@ -21,9 +22,10 @@ export class RolesController {
 
   @Get()
   async find(@Query() query: PaginationQuery) {
-    const { page, limit } = query;
+    const { page, limit, search } = query;
 
-    const options = { skip: (page - 1) * limit, take: limit };
+    const where = search ? { name: ILike(`%${search}%`) } : {};
+    const options = { skip: (page - 1) * limit, take: limit, where };
     const [items, total] = await this.rolesService.findAndCount(options);
 
     return { items, total };
