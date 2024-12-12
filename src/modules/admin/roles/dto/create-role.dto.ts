@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { ERoleStatus } from 'src/common/enums';
 
 export class CreateRoleOperationDto {
   @ApiProperty()
@@ -19,6 +20,10 @@ export class CreateRoleDto {
   @IsString()
   @IsOptional()
   description: string;
+
+  @ApiProperty()
+  @IsEnum(ERoleStatus)
+  status: ERoleStatus;
 
   @ApiPropertyOptional({ type: [CreateRoleOperationDto] })
   @IsArray()
