@@ -34,4 +34,8 @@ export class CreateAdminDto {
   @IsOptional()
   @ValidateIf((o) => o.phone)
   phone: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  roleId: number;
 }

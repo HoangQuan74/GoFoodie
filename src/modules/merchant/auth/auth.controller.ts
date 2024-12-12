@@ -10,7 +10,6 @@ import { JwtPayload } from 'src/common/interfaces';
 import { AuthGuard } from './auth.guard';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { StoresService } from 'src/modules/admin/stores/stores.service';
-import { EStoreApprovalStatus, EStoreStatus } from 'src/common/enums';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordByEmailDto } from './dto/reset-password.dto';
 

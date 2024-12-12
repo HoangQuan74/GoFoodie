@@ -11,6 +11,8 @@ import { ProductsModule } from './products/products.module';
 import { ProductCategoriesModule } from './product-categories/product-categories.module';
 import { OptionGroupsModule } from './option-groups/option-groups.module';
 import { DriversModule } from './drivers/drivers.module';
+import { OperationsModule } from './operations/operations.module';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [
@@ -66,6 +68,8 @@ import { DriversModule } from './drivers/drivers.module';
     ProductCategoriesModule,
     OptionGroupsModule,
     DriversModule,
+    OperationsModule,
+    RolesModule,
   ],
   providers: [
     {

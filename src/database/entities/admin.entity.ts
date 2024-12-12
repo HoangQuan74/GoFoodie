@@ -1,6 +1,7 @@
-import { Entity, Column } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { EAdminStatus } from 'src/common/enums';
+import { RoleEntity } from './role.entity';
 
 @Entity('admins')
 export class AdminEntity extends BaseEntity {
@@ -22,6 +23,13 @@ export class AdminEntity extends BaseEntity {
   @Column({ name: 'email_verified_at', nullable: true })
   emailVerifiedAt: Date;
 
+  @Column({ name: 'role_id', nullable: true })
+  roleId: number;
+
   @Column({ name: 'status', type: 'enum', enum: EAdminStatus, default: EAdminStatus.Active })
   status: EAdminStatus;
+
+  @ManyToOne(() => RoleEntity, (role) => role.id, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'role_id' })
+  role: RoleEntity;
 }
