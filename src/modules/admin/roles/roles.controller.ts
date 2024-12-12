@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException, Query } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { EXCEPTIONS } from 'src/common/constants';
+import { PaginationQuery } from 'src/common/query';
 
 @Controller('roles')
 export class RolesController {
@@ -19,22 +20,36 @@ export class RolesController {
   }
 
   @Get()
-  find() {
-    return this.rolesService.find();
+  async find(@Query() query: PaginationQuery) {
+    const { page, limit } = query;
+
+    const options = { skip: (page - 1) * limit, take: limit };
+    const [items, total] = await this.rolesService.findAndCount(options);
+
+    return { items, total };
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.rolesService.findOne(+id);
-  // }
+  @Get(':id')
+  async findOne(@Param('id') id: number) {
+    const role = await this.rolesService.findOne({ where: { id }, relations: ['operations'] });
+    if (!role) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateRoleDto: UpdateRoleDto) {
-  //   return this.rolesService.update(+id, updateRoleDto);
-  // }
+    return role;
+  }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.rolesService.remove(+id);
-  // }
+  @Patch(':id')
+  async update(@Param('id') id: number, @Body() updateRoleDto: UpdateRoleDto) {
+    const role = await this.rolesService.findOne({ where: { id } });
+    if (!role) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
+
+    return this.rolesService.save({ ...role, ...updateRoleDto });
+  }
+
+  @Delete(':id')
+  async remove(@Param('id') id: number) {
+    const role = await this.rolesService.findOne({ where: { id } });
+    if (!role) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
+
+    return this.rolesService.remove(role);
+  }
 }

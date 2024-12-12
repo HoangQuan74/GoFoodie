@@ -23,6 +23,9 @@ export class AdminEntity extends BaseEntity {
   @Column({ name: 'email_verified_at', nullable: true })
   emailVerifiedAt: Date;
 
+  @Column({ name: 'is_root', default: false })
+  isRoot: boolean;
+
   @Column({ name: 'role_id', nullable: true })
   roleId: number;
 

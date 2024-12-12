@@ -54,7 +54,7 @@ export class AdminsController {
 
   @Patch(':id')
   async update(@Param('id') id: number, @Body() body: UpdateAdminDto) {
-    const admin = await this.adminsService.findOne({ where: { id } });
+    const admin = await this.adminsService.findOne({ where: { id, isRoot: false } });
     if (!admin) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
 
     const { email, password } = body;
@@ -70,5 +70,13 @@ export class AdminsController {
     }
 
     return this.adminsService.save({ id, ...body });
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: number) {
+    const admin = await this.adminsService.findOne({ where: { id }, relations: ['role'] });
+    if (!admin) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
+
+    return admin;
   }
 }

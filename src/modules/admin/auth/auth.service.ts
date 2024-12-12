@@ -104,4 +104,8 @@ export class AuthService {
     const isValidOtp = await this.adminsService.validateOtp(admin.id, otp);
     if (!isValidOtp) throw new UnauthorizedException();
   }
+
+  async getPermissions(adminId: number) {
+    
+  }
 }

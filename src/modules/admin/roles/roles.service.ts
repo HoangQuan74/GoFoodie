@@ -22,7 +22,11 @@ export class RolesService {
     return this.roleRepository.findOne(options);
   }
 
-  // remove(id: number) {
-  //   return `This action removes a #${id} role`;
-  // }
+  async findAndCount(options?: FindManyOptions<RoleEntity>): Promise<[RoleEntity[], number]> {
+    return this.roleRepository.findAndCount(options);
+  }
+
+  async remove(entity: RoleEntity): Promise<RoleEntity> {
+    return this.roleRepository.remove(entity);
+  }
 }

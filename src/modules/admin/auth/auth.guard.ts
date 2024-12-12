@@ -32,7 +32,7 @@ export class AuthGuard implements CanActivate {
       })) as JwtPayload;
 
       const { id } = payload;
-      const admin = await this.adminService.findOne({ where: { id } });
+      const admin = await this.adminService.findOne({ where: { id }, relations: ['role', 'role.operations'] });
       // if (!admin.isActivated) throw new UnauthorizedException();
 
       admin.lastLogin = new Date();

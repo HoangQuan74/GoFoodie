@@ -12,12 +12,16 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtPayload } from 'src/common/interfaces';
 import { CheckOtpDto } from './dto/check-otp.dto';
 import { AuthGuard } from './auth.guard';
+import { OperationsService } from '../operations/operations.service';
 
 @Controller('auth')
 @ApiTags('Admin Auth')
 @UseGuards(AuthGuard)
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly operationService: OperationsService,
+  ) {}
 
   @Post('login')
   @Public()
@@ -70,5 +74,19 @@ export class AuthController {
   logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie('token');
     return { message: 'Logout successfully' };
+  }
+
+  @Get('permissions')
+  async permissions(@Req() req: Request) {
+    const user = req['user'];
+    const isRoot = user.isRoot;
+
+    const operations = await this.operationService.find();
+    const userOperations = user?.role.operations.map((operation) => operation.id);
+
+    return operations.map((operation) => ({
+      ...operation,
+      isGranted: isRoot || userOperations.includes(operation.id),
+    }));
   }
 }
