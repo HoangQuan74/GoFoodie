@@ -9,4 +9,12 @@ export class FindRolesDto extends PaginationQuery {
   @IsOptional()
   @ValidateIf((o) => o.status)
   status: ERoleStatus;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  createdAtFrom: Date;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  createdAtTo: Date;
 }

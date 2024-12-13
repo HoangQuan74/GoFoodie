@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { RoleEntity } from 'src/database/entities/role.entity';
-import { DeepPartial, FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { DeepPartial, FindManyOptions, FindOneOptions, Repository, SelectQueryBuilder } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
@@ -28,5 +28,9 @@ export class RolesService {
 
   async remove(entity: RoleEntity): Promise<RoleEntity> {
     return this.roleRepository.remove(entity);
+  }
+
+  createQueryBuilder(alias: string): SelectQueryBuilder<RoleEntity> {
+    return this.roleRepository.createQueryBuilder(alias);
   }
 }

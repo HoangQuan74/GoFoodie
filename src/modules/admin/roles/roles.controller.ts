@@ -15,11 +15,12 @@ import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { FindRolesDto } from './dto/find-roles.dto';
 import { EXCEPTIONS } from 'src/common/constants';
-import { ILike } from 'typeorm';
+import { FindManyOptions, ILike, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import { Roles } from 'src/common/decorators';
 import { AuthGuard } from '../auth/auth.guard';
 import { AdminRolesGuard } from 'src/common/guards';
 import { OPERATIONS } from 'src/common/constants/operation.constant';
+import { RoleEntity } from 'src/database/entities/role.entity';
 
 @Controller('roles')
 @UseGuards(AuthGuard, AdminRolesGuard)
@@ -40,13 +41,20 @@ export class RolesController {
   @Get()
   // @Roles(OPERATIONS.ROLE.READ)
   async find(@Query() query: FindRolesDto) {
-    const { page, limit, search, status } = query;
+    const { page, limit, search, status, createdAtFrom, createdAtTo } = query;
 
-    const where = search ? { name: ILike(`%${search}%`) } : {};
-    status && (where['status'] = status);
+    const queryBuilder = this.rolesService
+      .createQueryBuilder('role')
+      .orderBy('role.id', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
 
-    const options = { skip: (page - 1) * limit, take: limit, where };
-    const [items, total] = await this.rolesService.findAndCount(options);
+    search && queryBuilder.andWhere('role.name ILIKE :search', { search: `%${search}%` });
+    status && queryBuilder.andWhere('role.status = :status', { status });
+    createdAtFrom && queryBuilder.andWhere('role.createdAt >= :createdAtFrom', { createdAtFrom });
+    createdAtTo && queryBuilder.andWhere('role.createdAt <= :createdAtTo', { createdAtTo });
+
+    const [items, total] = await queryBuilder.getManyAndCount();
 
     return { items, total };
   }
