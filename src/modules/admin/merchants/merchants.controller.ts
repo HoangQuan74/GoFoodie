@@ -22,14 +22,18 @@ import { Brackets, In, Not } from 'typeorm';
 import { EXCEPTIONS } from 'src/common/constants';
 import { IdentityQuery } from 'src/common/query';
 import { AuthGuard } from '../auth/auth.guard';
+import { AdminRolesGuard } from 'src/common/guards';
+import { Roles } from 'src/common/decorators';
+import { OPERATIONS } from 'src/common/constants/operation.constant';
 
 @Controller('merchants')
 @ApiTags('Admin Merchants')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, AdminRolesGuard)
 export class MerchantsController {
   constructor(private readonly merchantsService: MerchantsService) {}
 
   @Post()
+  @Roles(OPERATIONS.MERCHANT.CREATE)
   async create(@Body() createMerchantDto: CreateMerchantDto) {
     const { password, email, phone } = createMerchantDto;
 
@@ -90,6 +94,7 @@ export class MerchantsController {
   }
 
   @Patch(':id')
+  @Roles(OPERATIONS.MERCHANT.UPDATE)
   async update(@Param('id') id: number, @Body() updateMerchantDto: UpdateMerchantDto) {
     const { password, email, phone } = updateMerchantDto;
     delete updateMerchantDto.password;
@@ -116,6 +121,7 @@ export class MerchantsController {
   }
 
   @Delete(':id')
+  @Roles(OPERATIONS.MERCHANT.DELETE)
   async remove(@Param('id') id: number) {
     const options = { where: { id } };
     const merchant = await this.merchantsService.findOne(options);
@@ -125,6 +131,7 @@ export class MerchantsController {
   }
 
   @Delete()
+  @Roles(OPERATIONS.MERCHANT.DELETE)
   async removeMultiple(@Body() query: IdentityQuery) {
     const { ids } = query;
     const options = {

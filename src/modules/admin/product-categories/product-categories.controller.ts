@@ -24,10 +24,13 @@ import { ProductEntity } from 'src/database/entities/product.entity';
 import { EXCEPTIONS } from 'src/common/constants';
 import { EProductCategoryStatus, EProductStatus } from 'src/common/enums';
 import { AuthGuard } from '../auth/auth.guard';
+import { AdminRolesGuard } from 'src/common/guards';
+import { Roles } from 'src/common/decorators';
+import { OPERATIONS } from 'src/common/constants/operation.constant';
 
 @Controller('product-categories')
 @ApiTags('Quản lý danh mục sản phẩm')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, AdminRolesGuard)
 export class ProductCategoriesController {
   constructor(
     private readonly productCategoriesService: ProductCategoriesService,
@@ -36,6 +39,7 @@ export class ProductCategoriesController {
   ) {}
 
   @Post()
+  @Roles(OPERATIONS.PRODUCT_CATEGORY.CREATE)
   async create(@Body() createProductCategoryDto: CreateProductCategoryDto) {
     const productCategory = await this.productCategoriesService.save(createProductCategoryDto);
     const productCategoryCode = `${productCategory.id.toString().padStart(4, '0')}`;
@@ -122,6 +126,7 @@ export class ProductCategoriesController {
   }
 
   @Patch(':id')
+  @Roles(OPERATIONS.PRODUCT_CATEGORY.UPDATE)
   async update(@Param('id') id: string, @Body() updateProductCategoryDto: UpdateProductCategoryDto) {
     const productCategory = await this.productCategoriesService.findOne({ where: { id: +id } });
     if (!productCategory) throw new NotFoundException();
@@ -130,6 +135,7 @@ export class ProductCategoriesController {
   }
 
   @Delete(':id')
+  @Roles(OPERATIONS.PRODUCT_CATEGORY.DELETE)
   async remove(@Param('id') id: number) {
     return this.dataSource.transaction(async (manager) => {
       const category = await manager.findOneBy(ProductCategoryEntity, { id, status: EProductCategoryStatus.Inactive });

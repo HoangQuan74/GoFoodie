@@ -38,7 +38,7 @@ export class RolesController {
   }
 
   @Get()
-  @Roles(OPERATIONS.ROLE.READ)
+  // @Roles(OPERATIONS.ROLE.READ)
   async find(@Query() query: FindRolesDto) {
     const { page, limit, search, status } = query;
 

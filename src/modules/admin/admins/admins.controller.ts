@@ -8,10 +8,13 @@ import { hashPassword } from 'src/utils/bcrypt';
 import { Brackets, Not } from 'typeorm';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiTags } from '@nestjs/swagger';
+import { AdminRolesGuard } from 'src/common/guards';
+import { Roles } from 'src/common/decorators';
+import { OPERATIONS } from 'src/common/constants/operation.constant';
 
 @Controller('admins')
 @ApiTags('Admins')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, AdminRolesGuard)
 export class AdminsController {
   constructor(private readonly adminsService: AdminsService) {}
 
@@ -23,12 +26,13 @@ export class AdminsController {
       .createQueryBuilder('admin')
       .addSelect(['role.id', 'role.name'])
       .leftJoin('admin.role', 'role')
+      .where('admin.isRoot = false')
       .orderBy('admin.id', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
 
     if (search) {
-      queryBuilder.where(
+      queryBuilder.andWhere(
         new Brackets((qb) => {
           qb.where('admin.email ILIKE :search', { search: `%${search}%` });
           qb.orWhere('admin.name ILIKE :search', { search: `%${search}%` });
@@ -42,6 +46,7 @@ export class AdminsController {
   }
 
   @Post()
+  @Roles(OPERATIONS.ADMIN.CREATE)
   async save(@Body() body: CreateAdminDto) {
     const { email, password } = body;
 
@@ -55,6 +60,7 @@ export class AdminsController {
   }
 
   @Patch(':id')
+  @Roles(OPERATIONS.ADMIN.UPDATE)
   async update(@Param('id') id: number, @Body() body: UpdateAdminDto) {
     const admin = await this.adminsService.findOne({ where: { id, isRoot: false } });
     if (!admin) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);

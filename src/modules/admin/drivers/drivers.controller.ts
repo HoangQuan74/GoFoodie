@@ -14,7 +14,7 @@ import {
 import { DriversService } from './drivers.service';
 import { CreateDriverDto } from './dto/create-driver.dto';
 import { DriverEntity } from 'src/database/entities/driver.entity';
-import { CurrentUser } from 'src/common/decorators';
+import { CurrentUser, Roles } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { EDriverApprovalStatus } from 'src/common/enums/driver.enum';
 import { QueryDriverDto } from './dto/query-driver.dto';
@@ -23,14 +23,17 @@ import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { EXCEPTIONS } from 'src/common/constants';
 import { AuthGuard } from '../auth/auth.guard';
 import { UpdateDriverDto } from './dto/update-driver.dto';
+import { AdminRolesGuard } from 'src/common/guards';
+import { OPERATIONS } from 'src/common/constants/operation.constant';
 
 @Controller('drivers')
 @ApiTags('Drivers')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, AdminRolesGuard)
 export class DriversController {
   constructor(private readonly driversService: DriversService) {}
 
   @Post()
+  @Roles(OPERATIONS.DRIVER.CREATE)
   async create(@Body() createDriverDto: CreateDriverDto, @CurrentUser() user: JwtPayload) {
     const { isDraft, phoneNumber, email } = createDriverDto;
 
@@ -110,6 +113,7 @@ export class DriversController {
   }
 
   @Patch(':id')
+  @Roles(OPERATIONS.DRIVER.UPDATE)
   async update(@Param('id') id: number, @Body() updateDriverDto: UpdateDriverDto) {
     const { isDraft } = updateDriverDto;
     const driver = await this.driversService.findOne({ where: { id }, relations: { vehicle: true } });
@@ -125,6 +129,7 @@ export class DriversController {
   }
 
   @Delete(':id')
+  @Roles(OPERATIONS.DRIVER.DELETE)
   async remove(@Param('id') id: number) {
     const driver = await this.driversService.findOne({ where: { id } });
     if (!driver) throw new NotFoundException();
@@ -133,6 +138,7 @@ export class DriversController {
   }
 
   @Patch(':id/approve')
+  @Roles(OPERATIONS.DRIVER.APPROVE)
   async approve(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
     const store = await this.driversService.findOne({ where: { id, approvalStatus: EDriverApprovalStatus.Pending } });
     if (!store) throw new NotFoundException();
@@ -145,6 +151,7 @@ export class DriversController {
   }
 
   @Patch(':id/reject')
+  @Roles(OPERATIONS.DRIVER.APPROVE)
   @ApiBody({ schema: { type: 'object', properties: { approvedNote: { type: 'string' } } } })
   async reject(@Param('id') id: number, @CurrentUser() user: JwtPayload, @Body('reason') approvedNote: string) {
     const store = await this.driversService.findOne({ where: { id, approvalStatus: EDriverApprovalStatus.Pending } });

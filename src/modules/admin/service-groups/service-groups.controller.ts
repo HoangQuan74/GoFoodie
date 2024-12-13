@@ -19,10 +19,13 @@ import { Brackets, DataSource, Not } from 'typeorm';
 import { ServiceGroupEntity } from 'src/database/entities/service-group.entity';
 import { EXCEPTIONS } from 'src/common/constants';
 import { AuthGuard } from '../auth/auth.guard';
+import { AdminRolesGuard } from 'src/common/guards';
+import { Roles } from 'src/common/decorators';
+import { OPERATIONS } from 'src/common/constants/operation.constant';
 
 @Controller('service-groups')
 @ApiTags('Quản lý nhóm dịch vụ')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, AdminRolesGuard)
 export class ServiceGroupsController {
   constructor(
     private readonly serviceGroupsService: ServiceGroupsService,
@@ -30,6 +33,7 @@ export class ServiceGroupsController {
   ) {}
 
   @Post()
+  @Roles(OPERATIONS.SERVICE_GROUP.CREATE)
   async create(@Body() createServiceGroupDto: CreateServiceGroupDto) {
     return this.dataSource.transaction(async (manager) => {
       const { name } = createServiceGroupDto;
@@ -44,6 +48,7 @@ export class ServiceGroupsController {
   }
 
   @Get()
+  @Roles(OPERATIONS.SERVICE_GROUP.READ)
   async find(@Query() query: QueryServiceGroupDto) {
     const { page, limit, search, status } = query;
 
@@ -76,6 +81,7 @@ export class ServiceGroupsController {
   }
 
   @Patch(':id')
+  @Roles(OPERATIONS.SERVICE_GROUP.UPDATE)
   async update(@Param('id') id: string, @Body() updateServiceGroupDto: UpdateServiceGroupDto) {
     const { name } = updateServiceGroupDto;
     const serviceGroupExist = await this.serviceGroupsService.count({ where: { name, id: Not(+id) } });

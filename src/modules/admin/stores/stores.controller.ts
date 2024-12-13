@@ -7,7 +7,7 @@ import { QueryStoreDto } from './dto/query-store.dto';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { Brackets, DataSource, In, Like } from 'typeorm';
-import { CurrentUser } from 'src/common/decorators';
+import { CurrentUser, Roles } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { IdentityQuery } from 'src/common/query';
 import { EStoreApprovalStatus } from 'src/common/enums';
@@ -15,10 +15,12 @@ import * as moment from 'moment-timezone';
 import { TIMEZONE } from 'src/common/constants';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { AuthGuard } from '../auth/auth.guard';
+import { AdminRolesGuard } from 'src/common/guards';
+import { OPERATIONS } from 'src/common/constants/operation.constant';
 
 @Controller('stores')
 @ApiTags('Stores')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, AdminRolesGuard)
 export class StoresController {
   constructor(
     private readonly storesService: StoresService,
@@ -27,6 +29,7 @@ export class StoresController {
   ) {}
 
   @Post()
+  @Roles(OPERATIONS.STORE.CREATE)
   async create(@Body() body: CreateStoreDto, @CurrentUser() user: JwtPayload) {
     const { wardId, isDraft } = body;
 
@@ -156,6 +159,7 @@ export class StoresController {
   }
 
   @Patch(':id')
+  @Roles(OPERATIONS.STORE.UPDATE)
   async update(@Param('id') id: number, @Body() body: UpdateStoreDto) {
     const { wardId, isDraft } = body;
     const store = await this.storesService.findOne({ where: { id }, relations: { representative: true } });
@@ -179,6 +183,7 @@ export class StoresController {
   }
 
   @Delete()
+  @Roles(OPERATIONS.STORE.DELETE)
   async delete(@Body() query: IdentityQuery) {
     const { ids } = query;
     const options = {
@@ -192,6 +197,7 @@ export class StoresController {
   }
 
   @Patch(':id/approve')
+  @Roles(OPERATIONS.STORE.APPROVE)
   async approve(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
     const store = await this.storesService.findOne({ where: { id, approvalStatus: EStoreApprovalStatus.Pending } });
     if (!store) throw new NotFoundException();
@@ -204,6 +210,7 @@ export class StoresController {
   }
 
   @Patch(':id/reject')
+  @Roles(OPERATIONS.STORE.APPROVE)
   @ApiBody({ schema: { type: 'object', properties: { reason: { type: 'string' } } } })
   async reject(@Param('id') id: number, @CurrentUser() user: JwtPayload, @Body('reason') reason: string) {
     const store = await this.storesService.findOne({ where: { id, approvalStatus: EStoreApprovalStatus.Pending } });
