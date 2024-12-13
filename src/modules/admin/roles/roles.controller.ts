@@ -1,26 +1,44 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  BadRequestException,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { FindRolesDto } from './dto/find-roles.dto';
 import { EXCEPTIONS } from 'src/common/constants';
 import { ILike } from 'typeorm';
+import { Roles } from 'src/common/decorators';
+import { AuthGuard } from '../auth/auth.guard';
+import { AdminRolesGuard } from 'src/common/guards';
+import { OPERATIONS } from 'src/common/constants/operation.constant';
 
 @Controller('roles')
+@UseGuards(AuthGuard, AdminRolesGuard)
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
   @Post()
-  create(@Body() createRoleDto: CreateRoleDto) {
+  @Roles(OPERATIONS.ROLE.CREATE)
+  async create(@Body() createRoleDto: CreateRoleDto) {
     const { name } = createRoleDto;
 
-    const role = this.rolesService.findOne({ where: { name } });
+    const role = await this.rolesService.findOne({ where: { name } });
     if (role) throw new BadRequestException(EXCEPTIONS.NAME_EXISTED);
 
     return this.rolesService.save(createRoleDto);
   }
 
   @Get()
+  @Roles(OPERATIONS.ROLE.READ)
   async find(@Query() query: FindRolesDto) {
     const { page, limit, search, status } = query;
 
@@ -42,6 +60,7 @@ export class RolesController {
   }
 
   @Patch(':id')
+  @Roles(OPERATIONS.ROLE.UPDATE)
   async update(@Param('id') id: number, @Body() updateRoleDto: UpdateRoleDto) {
     const role = await this.rolesService.findOne({ where: { id } });
     if (!role) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
@@ -50,6 +69,7 @@ export class RolesController {
   }
 
   @Delete(':id')
+  @Roles(OPERATIONS.ROLE.DELETE)
   async remove(@Param('id') id: number) {
     const role = await this.rolesService.findOne({ where: { id } });
     if (!role) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);

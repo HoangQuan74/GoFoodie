@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
@@ -6,6 +6,7 @@ import { JWT_SECRET } from 'src/common/constants';
 import { IS_PUBLIC_KEY } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { AdminsService } from '../admins/admins.service';
+import { EAdminStatus } from 'src/common/enums';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -33,7 +34,7 @@ export class AuthGuard implements CanActivate {
 
       const { id } = payload;
       const admin = await this.adminService.findOne({ where: { id }, relations: ['role', 'role.operations'] });
-      // if (!admin.isActivated) throw new UnauthorizedException();
+      if (admin.status === EAdminStatus.Inactive) throw new ForbiddenException();
 
       admin.lastLogin = new Date();
       this.adminService.save(admin);

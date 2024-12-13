@@ -21,7 +21,7 @@ export class CreateRoleDto {
   @IsOptional()
   description: string;
 
-  @ApiProperty()
+  @ApiProperty({ enum: ERoleStatus })
   @IsEnum(ERoleStatus)
   status: ERoleStatus;
 
