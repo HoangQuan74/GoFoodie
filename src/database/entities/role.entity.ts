@@ -8,7 +8,7 @@ export class RoleEntity extends BaseEntity {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ nullable: true })
   description: string;
 
   @Column({ name: 'status', type: 'enum', enum: ERoleStatus, default: ERoleStatus.Active })

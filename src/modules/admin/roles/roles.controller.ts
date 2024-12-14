@@ -15,7 +15,7 @@ import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { FindRolesDto } from './dto/find-roles.dto';
 import { EXCEPTIONS } from 'src/common/constants';
-import { FindManyOptions, ILike, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
+import { FindManyOptions, ILike, LessThanOrEqual, MoreThanOrEqual, Not } from 'typeorm';
 import { Roles } from 'src/common/decorators';
 import { AuthGuard } from '../auth/auth.guard';
 import { AdminRolesGuard } from 'src/common/guards';
@@ -72,6 +72,12 @@ export class RolesController {
   async update(@Param('id') id: number, @Body() updateRoleDto: UpdateRoleDto) {
     const role = await this.rolesService.findOne({ where: { id } });
     if (!role) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
+
+    const { name } = updateRoleDto;
+    if (name) {
+      const existedRole = await this.rolesService.findOne({ where: { name, id: Not(id) } });
+      if (existedRole) throw new BadRequestException(EXCEPTIONS.NAME_EXISTED);
+    }
 
     return this.rolesService.save({ ...role, ...updateRoleDto });
   }

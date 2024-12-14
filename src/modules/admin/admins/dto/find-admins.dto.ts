@@ -9,4 +9,12 @@ export class FindAdminsDto extends PaginationQuery {
   @IsEnum(EAdminStatus)
   @ValidateIf((o) => o.status)
   status: EAdminStatus;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  createdAtFrom: Date;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  createdAtTo: Date;
 }

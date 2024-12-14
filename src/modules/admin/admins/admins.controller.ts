@@ -20,7 +20,7 @@ export class AdminsController {
 
   @Get()
   async find(@Query() query: FindAdminsDto) {
-    const { page, limit, search, status } = query;
+    const { page, limit, search, status, createdAtFrom, createdAtTo } = query;
 
     const queryBuilder = this.adminsService
       .createQueryBuilder('admin')
@@ -40,6 +40,8 @@ export class AdminsController {
       );
     }
     status && queryBuilder.andWhere('admin.status = :status', { status });
+    createdAtFrom && queryBuilder.andWhere('admin.createdAt >= :createdAtFrom', { createdAtFrom });
+    createdAtTo && queryBuilder.andWhere('admin.createdAt <= :createdAtTo', { createdAtTo });
 
     const [items, total] = await queryBuilder.getManyAndCount();
     return { items, total };
