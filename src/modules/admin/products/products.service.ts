@@ -30,7 +30,7 @@ export class ProductsService {
     return this.productRepository.softRemove(entity);
   }
 
-  async createQueryBuilder(alias?: string) {
+  createQueryBuilder(alias?: string) {
     return this.productRepository.createQueryBuilder(alias);
   }
 }

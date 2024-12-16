@@ -4,12 +4,13 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { QueryProductDto } from './dto/query-product.dto';
-import { DataSource, FindManyOptions, FindOptionsWhere, ILike, In } from 'typeorm';
+import { Brackets, DataSource, FindManyOptions, FindOptionsWhere, ILike, In } from 'typeorm';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { OptionEntity } from 'src/database/entities/option.entity';
 import { OptionGroupsService } from '../option-groups/option-groups.service';
 import { AuthGuard } from '../auth/auth.guard';
+import { EProductApprovalStatus, EProductStatus } from 'src/common/enums';
 
 @Controller('products')
 @ApiTags('Quản lý sản phẩm')
@@ -63,23 +64,31 @@ export class ProductsController {
 
   @Get()
   async find(@Query() query: QueryProductDto, @Param('storeId') storeId: number) {
-    const { page, limit, search, approvalStatus, status } = query;
+    const { page, limit, search, approvalStatus, status, isDisplay } = query;
 
-    const where: FindOptionsWhere<ProductEntity> = { storeId };
-    search && (where.name = ILike(`%${search}%`));
-    approvalStatus && (where.approvalStatus = approvalStatus);
-    status && (where.status = status);
+    const queryBuilder = this.productsService
+      .createQueryBuilder('product')
+      .addSelect(['productCategory.id', 'productCategory.name'])
+      .where('product.storeId = :storeId', { storeId })
+      .leftJoin('product.productCategory', 'productCategory')
+      .orderBy('product.id', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
 
-    const options: FindManyOptions<ProductEntity> = {
-      select: { productCategory: { id: true, name: true } },
-      skip: (page - 1) * limit,
-      take: limit,
-      where,
-      relations: { productCategory: true },
-      order: { id: 'DESC' },
-    };
+    search && queryBuilder.andWhere('product.name ILIKE :search', { search: `%${search}%` });
+    approvalStatus && queryBuilder.andWhere('product.approvalStatus = :approvalStatus', { approvalStatus });
+    status && queryBuilder.andWhere('product.status = :status', { status });
 
-    const [items, total] = await this.productsService.findAndCount(options);
+    if (typeof isDisplay === 'boolean' && isDisplay === false) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.where(`product.approvalStatus = '${EProductApprovalStatus.Rejected}'`);
+          qb.orWhere(`product.status = '${EProductStatus.Inactive}'`);
+        }),
+      );
+    }
+
+    const [items, total] = await queryBuilder.getManyAndCount();
     return { items, total };
   }
 
