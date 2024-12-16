@@ -227,4 +227,12 @@ export class AuthService {
     await this.merchantsService.save(merchant);
     await this.merchantsService.deleteOtp(merchant.id, EAdminOtpType.VerifyEmail);
   }
+
+  async checkOtp(email: string, otp: string) {
+    const merchant = await this.merchantsService.findOne({ where: { email } });
+    if (!merchant) throw new NotFoundException();
+
+    const isValidOtp = await this.merchantsService.validateOtp(merchant.id, otp);
+    if (!isValidOtp) throw new UnauthorizedException();
+  }
 }

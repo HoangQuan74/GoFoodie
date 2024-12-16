@@ -13,6 +13,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordByEmailDto } from './dto/reset-password.dto';
 import { RegisterEmailCompletedDto } from './dto/register.dto';
 import { JwtPayload } from 'src/common/interfaces';
+import { CheckOtpDto } from './dto/check-otp.dto';
 
 @Controller('auth')
 @ApiTags('Merchant Auth')
@@ -29,6 +30,13 @@ export class AuthController {
   login(@Body() body: LoginDto) {
     const { username, password, deviceToken } = body;
     return this.authService.signIn(username, password, deviceToken);
+  }
+
+  @Post('check-otp')
+  @Public()
+  checkOtp(@Body() body: CheckOtpDto) {
+    const { email, otp } = body;
+    return this.authService.checkOtp(email, otp);
   }
 
   @Post('login/sms')
