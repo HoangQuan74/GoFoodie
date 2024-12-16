@@ -11,7 +11,7 @@ export class MailService {
       const logo = BASE_URL + '/public/logo.png';
       const headerBg = BASE_URL + '/public/header-bg.png';
       console.log('Sending OTP to', email);
-      return this.mailerService.sendMail({
+      await this.mailerService.sendMail({
         to: email,
         subject: 'Goo++: Mã OTP để xác nhận tài khoản',
         template: 'forgot-password',

@@ -6,12 +6,13 @@ import { AuthService } from './auth.service';
 import { CurrentUser, Public } from 'src/common/decorators';
 import { Request } from 'express';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { JwtPayload } from 'src/common/interfaces';
 import { AuthGuard } from './auth.guard';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { StoresService } from 'src/modules/admin/stores/stores.service';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordByEmailDto } from './dto/reset-password.dto';
+import { RegisterEmailCompletedDto } from './dto/register.dto';
+import { JwtPayload } from 'src/common/interfaces';
 
 @Controller('auth')
 @ApiTags('Merchant Auth')
@@ -51,6 +52,14 @@ export class AuthController {
   @ApiBody({ schema: { type: 'object', properties: { email: { type: 'string' } } } })
   registerEmail(@Body() { email }: { email: string }) {
     return this.authService.registerEmail(email);
+  }
+
+  @Post('register/email/completed')
+  @Public()
+  @ApiOperation({ summary: 'Hoàn tất đăng ký tài khoản bằng email' })
+  registerEmailCompleted(@Body() body: RegisterEmailCompletedDto) {
+    const { otp, email, password } = body;
+    return this.authService.registerEmailCompleted(otp, email, password);
   }
 
   @Get('profile')

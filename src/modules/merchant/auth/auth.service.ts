@@ -132,8 +132,10 @@ export class AuthService {
     const merchant = await this.merchantsService.findOne({ where: { id: adminId }, select: ['id', 'password'] });
     if (!merchant) throw new NotFoundException();
 
-    const isPasswordMatching = comparePassword(currentPassword, merchant.password);
-    if (!isPasswordMatching) throw new UnauthorizedException();
+    if (merchant.password) {
+      const isPasswordMatching = comparePassword(currentPassword, merchant.password);
+      if (!isPasswordMatching) throw new UnauthorizedException();
+    }
 
     const hashedPassword = hashPassword(newPassword);
     merchant.password = hashedPassword;
@@ -210,5 +212,19 @@ export class AuthService {
     await this.merchantsService.deleteOtp(merchant.id, EAdminOtpType.VerifyEmail);
     await this.merchantsService.saveOtp({ merchantId: merchant.id, otp, type: EAdminOtpType.VerifyEmail });
     this.mailService.sendOtp(email, otp, email);
+  }
+
+  async registerEmailCompleted(otp: string, email: string, password: string) {
+    const merchant = await this.merchantsService.findOne({ where: { email } });
+    if (!merchant) throw new NotFoundException();
+
+    const isValidOtp = await this.merchantsService.validateOtp(merchant.id, otp);
+    if (!isValidOtp) throw new UnauthorizedException();
+
+    const hashedPassword = hashPassword(password);
+    merchant.password = hashedPassword;
+    merchant.emailVerifiedAt = new Date();
+    await this.merchantsService.save(merchant);
+    await this.merchantsService.deleteOtp(merchant.id, EAdminOtpType.VerifyEmail);
   }
 }
