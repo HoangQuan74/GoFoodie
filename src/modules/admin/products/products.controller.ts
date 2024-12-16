@@ -3,8 +3,8 @@ import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { PaginationQuery } from 'src/common/query';
-import { DataSource, FindManyOptions, ILike, In } from 'typeorm';
+import { QueryProductDto } from './dto/query-product.dto';
+import { DataSource, FindManyOptions, FindOptionsWhere, ILike, In } from 'typeorm';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { OptionEntity } from 'src/database/entities/option.entity';
@@ -62,9 +62,13 @@ export class ProductsController {
   }
 
   @Get()
-  async find(@Query() query: PaginationQuery, @Param('storeId') storeId: number) {
-    const { page, limit, search } = query;
-    const where = search ? { name: ILike(`%${search}%`), storeId } : { storeId };
+  async find(@Query() query: QueryProductDto, @Param('storeId') storeId: number) {
+    const { page, limit, search, approvalStatus, status } = query;
+
+    const where: FindOptionsWhere<ProductEntity> = { storeId };
+    search && (where.name = ILike(`%${search}%`));
+    approvalStatus && (where.approvalStatus = approvalStatus);
+    status && (where.status = status);
 
     const options: FindManyOptions<ProductEntity> = {
       select: { productCategory: { id: true, name: true } },
@@ -72,7 +76,7 @@ export class ProductsController {
       take: limit,
       where,
       relations: { productCategory: true },
-      order: { createdAt: 'DESC' },
+      order: { id: 'DESC' },
     };
 
     const [items, total] = await this.productsService.findAndCount(options);

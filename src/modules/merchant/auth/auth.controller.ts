@@ -45,6 +45,14 @@ export class AuthController {
     return this.authService.refreshToken(refreshToken, req);
   }
 
+  @Post('register/email')
+  @Public()
+  @ApiOperation({ summary: 'Đăng ký tài khoản bằng email' })
+  @ApiBody({ schema: { type: 'object', properties: { email: { type: 'string' } } } })
+  registerEmail(@Body() { email }: { email: string }) {
+    return this.authService.registerEmail(email);
+  }
+
   @Get('profile')
   async me(@Req() req: Request) {
     const merchant = req['user'];

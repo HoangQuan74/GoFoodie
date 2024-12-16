@@ -110,7 +110,7 @@ export class AuthService {
     const otpType = EAdminOtpType.ForgotPassword;
     await this.merchantsService.deleteOtp(merchant.id, otpType);
     await this.merchantsService.saveOtp({ merchantId: merchant.id, otp, type: otpType });
-    this.mailService.sendForgotPassword(email, otp, merchant.name);
+    this.mailService.sendOtp(email, otp, merchant.name);
 
     return { message: 'OTP has been sent to your email' };
   }
@@ -195,5 +195,20 @@ export class AuthService {
     const { token: refreshToken } = await this.refreshTokensService.createRefreshToken(merchantId, deviceToken);
 
     return { accessToken, refreshToken };
+  }
+
+  async registerEmail(email: string) {
+    let merchant = await this.merchantsService.findOne({ where: { email } });
+
+    if (!merchant) {
+      merchant = await this.merchantsService.save({ email });
+    }
+
+    if (merchant.emailVerifiedAt) throw new UnauthorizedException(EXCEPTIONS.EMAIL_CONFLICT);
+
+    const otp = generateOTP();
+    await this.merchantsService.deleteOtp(merchant.id, EAdminOtpType.VerifyEmail);
+    await this.merchantsService.saveOtp({ merchantId: merchant.id, otp, type: EAdminOtpType.VerifyEmail });
+    this.mailService.sendOtp(email, otp, email);
   }
 }

@@ -3,6 +3,13 @@ export enum EProductStatus {
   Inactive = 'inactive',
 }
 
+export enum EProductApprovalStatus {
+  Draft = 'draft',
+  Pending = 'pending',
+  Approved = 'approved',
+  Rejected = 'rejected',
+}
+
 export enum EOptionGroupStatus {
   Active = 'active',
   Inactive = 'inactive',

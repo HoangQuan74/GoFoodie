@@ -15,12 +15,11 @@ import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { FindRolesDto } from './dto/find-roles.dto';
 import { EXCEPTIONS } from 'src/common/constants';
-import { FindManyOptions, ILike, LessThanOrEqual, MoreThanOrEqual, Not } from 'typeorm';
+import { Not } from 'typeorm';
 import { Roles } from 'src/common/decorators';
 import { AuthGuard } from '../auth/auth.guard';
 import { AdminRolesGuard } from 'src/common/guards';
 import { OPERATIONS } from 'src/common/constants/operation.constant';
-import { RoleEntity } from 'src/database/entities/role.entity';
 
 @Controller('roles')
 @UseGuards(AuthGuard, AdminRolesGuard)

@@ -7,6 +7,7 @@ import { FileEntity } from './file.entity';
 import { ProductWorkingTimeEntity } from './product-working-time.entity';
 import { OptionGroupEntity } from './option-group.entity';
 import { ProductOptionGroupEntity } from './product-option-group.entity';
+import { EProductApprovalStatus } from 'src/common/enums/product.enum';
 
 @Entity('products')
 export class ProductEntity extends BaseEntity {
@@ -21,6 +22,14 @@ export class ProductEntity extends BaseEntity {
 
   @Column({ type: 'enum', enum: EProductStatus, default: EProductStatus.Active })
   status: EProductStatus;
+
+  @Column({
+    name: 'approval_status',
+    type: 'enum',
+    enum: EProductApprovalStatus,
+    default: EProductApprovalStatus.Approved,
+  })
+  approvalStatus: EProductApprovalStatus;
 
   @Column({ name: 'store_id', select: false })
   storeId: number;

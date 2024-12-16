@@ -50,7 +50,7 @@ export class AuthService {
     const otpType = EAdminOtpType.ForgotPassword;
     await this.adminsService.deleteOtp(admin.id, otpType);
     await this.adminsService.saveOtp({ adminId: admin.id, otp, type: otpType });
-    this.mailService.sendForgotPassword(admin.email, otp, admin.name);
+    this.mailService.sendOtp(admin.email, otp, admin.name);
 
     return { message: 'OTP has been sent to your email' };
   }
@@ -103,9 +103,5 @@ export class AuthService {
 
     const isValidOtp = await this.adminsService.validateOtp(admin.id, otp);
     if (!isValidOtp) throw new UnauthorizedException();
-  }
-
-  async getPermissions(adminId: number) {
-    
   }
 }
