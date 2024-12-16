@@ -11,6 +11,7 @@ import { MerchantEntity } from 'src/database/entities/merchant.entity';
 import { FirebaseService } from 'src/modules/firebase/firebase.service';
 import { Request } from 'express';
 import { Brackets } from 'typeorm';
+import { RegisterSmsDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
@@ -100,6 +101,29 @@ export class AuthService {
     } catch (error) {
       throw new UnauthorizedException();
     }
+  }
+
+  async registerSms(body: RegisterSmsDto): Promise<Omit<MerchantEntity, 'password'> & JwtSign> {
+    const { idToken, deviceToken, password } = body;
+    const { phone_number } = await this.firebaseService.verifyIdToken(idToken);
+    const phone = phone_number.replace('+', '');
+
+    let merchant = await this.merchantsService.findOne({ where: { phone } });
+    if (merchant) throw new UnauthorizedException(EXCEPTIONS.PHONE_CONFLICT);
+
+    merchant = new MerchantEntity();
+    merchant.phone = phone;
+    merchant.password = hashPassword(password);
+    merchant.lastLogin = new Date();
+    merchant.deviceToken = deviceToken;
+    merchant = await this.merchantsService.save(merchant);
+
+    const payload: JwtPayload = { id: merchant.id, deviceToken };
+    const accessToken = this.jwtService.sign(payload, { expiresIn: JWT_EXPIRATION });
+    const { token: refreshToken } = await this.refreshTokensService.createRefreshToken(merchant.id, deviceToken);
+
+    delete merchant.password;
+    return { ...merchant, accessToken, refreshToken };
   }
 
   async forgotPassword(email: string) {

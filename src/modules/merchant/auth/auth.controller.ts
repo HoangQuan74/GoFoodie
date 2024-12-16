@@ -11,7 +11,7 @@ import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { StoresService } from 'src/modules/admin/stores/stores.service';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordByEmailDto } from './dto/reset-password.dto';
-import { RegisterEmailCompletedDto } from './dto/register.dto';
+import { RegisterEmailCompletedDto, RegisterSmsDto } from './dto/register.dto';
 import { JwtPayload } from 'src/common/interfaces';
 import { CheckOtpDto } from './dto/check-otp.dto';
 
@@ -60,6 +60,13 @@ export class AuthController {
   @ApiBody({ schema: { type: 'object', properties: { email: { type: 'string' } } } })
   registerEmail(@Body() { email }: { email: string }) {
     return this.authService.registerEmail(email);
+  }
+
+  @Post('register/sms')
+  @Public()
+  @ApiOperation({ summary: 'Đăng ký tài khoản bằng số điện thoại' })
+  registerSms(@Body() body: RegisterSmsDto) {
+    return this.authService.registerSms(body);
   }
 
   @Post('register/email/completed')
