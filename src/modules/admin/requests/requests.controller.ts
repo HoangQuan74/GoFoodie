@@ -1,4 +1,4 @@
-import { Controller, Get, Body, Patch, Query, NotFoundException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Query, NotFoundException, UseGuards, Param } from '@nestjs/common';
 import { RequestsService } from './requests.service';
 import { IdentityQuery } from 'src/common/query';
 import { CurrentUser } from 'src/common/decorators';
@@ -125,6 +125,23 @@ export class RequestsController {
     const [items, total] = await Promise.all([itemsPromise, totalPromise]);
 
     return { items, total };
+  }
+
+  @Get('drivers/:id')
+  async getDetailDriverRequest(@Param('id') id: number) {
+    const options = {
+      select: {
+        driver: { id: true, fullName: true, phoneNumber: true },
+        files: { id: true, path: true },
+        processedBy: { id: true, name: true },
+      },
+      where: { id },
+      relations: ['files', 'driver', 'processedBy'],
+    };
+    const request = await this.requestsService.findOneDriverRequest(options);
+    if (!request) throw new NotFoundException();
+
+    return request;
   }
 
   @Patch('drivers/approval')
