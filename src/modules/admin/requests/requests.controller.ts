@@ -1,12 +1,13 @@
 import { Controller, Get, Body, Patch, Param, Query, NotFoundException, UseGuards } from '@nestjs/common';
 import { RequestsService } from './requests.service';
-import { PaginationQuery } from 'src/common/query';
+import { IdentityQuery, PaginationQuery } from 'src/common/query';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../auth/auth.guard';
 import { ERequestStatus } from 'src/common/enums';
 import { QueryRequestDto } from './dto/query-request.dto';
+import { In } from 'typeorm';
 
 @Controller('requests')
 @ApiTags('Quản lý yêu cầu')
@@ -54,23 +55,28 @@ export class RequestsController {
     return { items, total };
   }
 
-  @Patch('products/:id')
-  @ApiOperation({ summary: 'Cập nhật trạng thái yêu cầu duyệt sản phẩm' })
-  @ApiBody({ type: 'object', schema: { properties: { status: { type: 'string', enum: ['approved', 'rejected'] } } } })
-  async updateProductApproval(
-    @Param('id') id: number,
-    @Body() { status }: { status: ERequestStatus.Approved | ERequestStatus.Rejected },
-    @CurrentUser() user: JwtPayload,
-  ) {
-    const request = await this.requestsService.findOneProductApproval({
-      where: { id: id, status: ERequestStatus.Pending },
+  @Patch('products/approval')
+  @ApiOperation({ summary: 'Duyệt yêu cầu duyệt sản phẩm' })
+  async productApproval(@Body() { ids }: IdentityQuery, @CurrentUser() user: JwtPayload) {
+    const requests = await this.requestsService.findProductApprovals({
+      where: { id: In(ids), status: ERequestStatus.Pending },
     });
-    if (!request) throw new NotFoundException();
+    if (requests.length !== ids.length) throw new NotFoundException();
 
-    request.status = status;
-    request.processedById = user.id;
-    request.processedAt = new Date();
-    await this.requestsService.saveProductApproval(request);
+    const data = { processedById: user.id, status: ERequestStatus.Approved, processedAt: new Date() };
+    await this.requestsService.updateProductApproval({ id: In(ids) }, data);
+  }
+
+  @Patch('products/reject')
+  @ApiOperation({ summary: 'Từ chối yêu cầu duyệt sản phẩm' })
+  async productReject(@Body() { ids }: IdentityQuery, @CurrentUser() user: JwtPayload) {
+    const requests = await this.requestsService.findProductApprovals({
+      where: { id: In(ids), status: ERequestStatus.Pending },
+    });
+    if (requests.length !== ids.length) throw new NotFoundException();
+
+    const data = { processedById: user.id, status: ERequestStatus.Rejected, processedAt: new Date() };
+    await this.requestsService.updateProductApproval({ id: In(ids) }, data);
   }
 
   // @Get(':id')

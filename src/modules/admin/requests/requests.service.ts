@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ProductApprovalEntity } from 'src/database/entities/product-approval.entity';
-import { FindOneOptions, Repository } from 'typeorm';
+import { FindManyOptions, FindOneOptions, FindOptionsWhere, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
@@ -20,5 +20,16 @@ export class RequestsService {
 
   async findOneProductApproval(options: FindOneOptions<ProductApprovalEntity>) {
     return this.productApprovalRepository.findOne(options);
+  }
+
+  async findProductApprovals(options: FindManyOptions<ProductApprovalEntity>) {
+    return this.productApprovalRepository.find(options);
+  }
+
+  async updateProductApproval(
+    criteria: FindOptionsWhere<ProductApprovalEntity>,
+    partialEntity: Partial<ProductApprovalEntity>,
+  ) {
+    return this.productApprovalRepository.update(criteria, partialEntity);
   }
 }
