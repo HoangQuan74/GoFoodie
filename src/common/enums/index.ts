@@ -5,3 +5,4 @@ export * from './store.enum';
 export * from './product.enum';
 export * from './product-category.enum';
 export * from './service-group.enum';
+export * from './request.enum';

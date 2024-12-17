@@ -1,12 +1,15 @@
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { MerchantEntity } from 'src/database/entities/merchant.entity';
 import { AdminEntity } from 'src/database/entities/admin.entity';
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, Generated } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { ERequestStatus, ERequestType } from 'src/common/enums';
 
 @Entity('product_approvals')
 export class ProductApprovalEntity extends BaseEntity {
+  @Column()
+  code: string;
+
   @Column({ name: 'product_id' })
   productId: number;
 
