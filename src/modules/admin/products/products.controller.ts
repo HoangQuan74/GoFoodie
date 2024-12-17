@@ -4,7 +4,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { QueryProductDto } from './dto/query-product.dto';
-import { Brackets, DataSource, FindManyOptions, FindOptionsWhere, ILike, In } from 'typeorm';
+import { Brackets, DataSource, In } from 'typeorm';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { OptionEntity } from 'src/database/entities/option.entity';

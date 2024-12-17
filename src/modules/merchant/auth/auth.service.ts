@@ -65,7 +65,7 @@ export class AuthService {
   async signInWithSms(idToken: string, deviceToken: string): Promise<Omit<MerchantEntity, 'password'> & JwtSign> {
     try {
       const { phone_number } = await this.firebaseService.verifyIdToken(idToken);
-      const phone = phone_number.replace('+', '');
+      const phone = phone_number.replace('+84', '0');
 
       let merchant = await this.merchantsService
         .createQueryBuilder('merchant')
@@ -106,7 +106,7 @@ export class AuthService {
   async registerSms(body: RegisterSmsDto): Promise<Omit<MerchantEntity, 'password'> & JwtSign> {
     const { idToken, deviceToken, password } = body;
     const { phone_number } = await this.firebaseService.verifyIdToken(idToken);
-    const phone = phone_number.replace('+', '');
+    const phone = phone_number.replace('+84', '0');
 
     let merchant = await this.merchantsService.findOne({ where: { phone } });
     if (merchant) throw new UnauthorizedException(EXCEPTIONS.PHONE_CONFLICT);

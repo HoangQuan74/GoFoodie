@@ -13,6 +13,7 @@ import { OptionGroupsModule } from './option-groups/option-groups.module';
 import { DriversModule } from './drivers/drivers.module';
 import { OperationsModule } from './operations/operations.module';
 import { RolesModule } from './roles/roles.module';
+import { RequestsModule } from './requests/requests.module';
 
 @Module({
   imports: [
@@ -58,6 +59,10 @@ import { RolesModule } from './roles/roles.module';
         path: 'admin',
         module: DriversModule,
       },
+      {
+        path: 'admin',
+        module: RequestsModule,
+      },
     ]),
     AdminsModule,
     MerchantsModule,
@@ -70,6 +75,7 @@ import { RolesModule } from './roles/roles.module';
     DriversModule,
     OperationsModule,
     RolesModule,
+    RequestsModule,
   ],
   providers: [
     {

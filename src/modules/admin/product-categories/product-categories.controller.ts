@@ -117,8 +117,8 @@ export class ProductCategoriesController {
 
     const items = await queryBuilder
       .orderBy('category.id', 'DESC')
-      .skip((page - 1) * limit)
-      .take(limit)
+      .limit(limit)
+      .offset((page - 1) * limit)
       .getRawMany();
 
     const total = await queryBuilder.getCount();
