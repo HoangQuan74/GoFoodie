@@ -9,6 +9,7 @@ export const hashPassword = (password: string): string => {
 };
 
 export const comparePassword = (password: string, hash: string): boolean => {
+  if (!password || !hash) return false;
   return compareSync(password, hash);
 };
 

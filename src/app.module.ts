@@ -20,6 +20,7 @@ import { ProductOptionGroupsModule } from './modules/product-option-groups/produ
 import { RelationshipsModule } from './modules/relationships/relationships.module';
 import { MerchantModule } from './modules/merchant/merchant.module';
 import { FirebaseModule } from './modules/firebase/firebase.module';
+import { DriversModule } from './modules/drivers/drivers.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { FirebaseModule } from './modules/firebase/firebase.module';
     RelationshipsModule,
     MerchantModule,
     FirebaseModule,
+    DriversModule,
   ],
   controllers: [],
   providers: [],

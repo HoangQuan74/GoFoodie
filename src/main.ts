@@ -8,6 +8,7 @@ import { MyLogger } from './logger/app.logger';
 import * as cookieParser from 'cookie-parser';
 import { corsConfig } from './config/cors.config';
 import { MerchantModule } from './modules/merchant/merchant.module';
+import { DriversModule } from './modules/drivers/drivers.module';
 
 const { NODE_ENV = 'development', PORT = 3000 } = process.env;
 
@@ -72,6 +73,22 @@ async function bootstrap() {
     });
 
     SwaggerModule.setup('api/merchant/document', app, documentMerchant);
+
+    config.setTitle('API Driver Documentation');
+    const documentDriver = SwaggerModule.createDocument(app, config.build(), {
+      include: [DriversModule],
+      deepScanRoutes: true,
+    });
+
+    Object.values((documentDriver as OpenAPIObject).paths).forEach((path: any) => {
+      Object.values(path).forEach((method: any) => {
+        if (Array.isArray(method.security) && method.security.includes('public')) {
+          method.security = [];
+        }
+      });
+    });
+
+    SwaggerModule.setup('api/driver/document', app, documentDriver);
   }
 
   // start app

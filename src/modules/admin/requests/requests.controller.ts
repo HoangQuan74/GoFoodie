@@ -1,9 +1,9 @@
-import { Controller, Get, Body, Patch, Param, Query, NotFoundException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Query, NotFoundException, UseGuards } from '@nestjs/common';
 import { RequestsService } from './requests.service';
-import { IdentityQuery, PaginationQuery } from 'src/common/query';
+import { IdentityQuery } from 'src/common/query';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../auth/auth.guard';
 import { ERequestStatus } from 'src/common/enums';
 import { QueryRequestDto } from './dto/query-request.dto';
@@ -78,19 +78,4 @@ export class RequestsController {
     const data = { processedById: user.id, status: ERequestStatus.Rejected, processedAt: new Date() };
     await this.requestsService.updateProductApproval({ id: In(ids) }, data);
   }
-
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.requestsService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateRequestDto: UpdateRequestDto) {
-  //   return this.requestsService.update(+id, updateRequestDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.requestsService.remove(+id);
-  // }
 }

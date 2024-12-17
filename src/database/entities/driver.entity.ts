@@ -19,6 +19,15 @@ export class DriverEntity extends BaseEntity {
   @Column({ name: 'email', nullable: true })
   email: string;
 
+  @Column({ name: 'password', nullable: true, select: false })
+  password: string;
+
+  @Column({ name: 'device_token', nullable: true })
+  deviceToken: string;
+
+  @Column({ name: 'last_login', nullable: true })
+  lastLogin: Date;
+
   @Column({ name: 'email_verified_at', nullable: true })
   emailVerifiedAt: Date;
 
