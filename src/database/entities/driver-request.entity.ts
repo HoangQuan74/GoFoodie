@@ -28,6 +28,9 @@ export class DriverRequestEntity extends BaseEntity {
   @Column({ name: 'processed_by_id', nullable: true })
   processedById: number;
 
+  @Column({ name: 'processed_at', nullable: true })
+  processedAt: Date;
+
   @ManyToOne(() => DriverEntity, (driver) => driver.id)
   @JoinColumn({ name: 'driver_id' })
   driver: DriverEntity;
