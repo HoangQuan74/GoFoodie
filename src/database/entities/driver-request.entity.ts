@@ -22,6 +22,9 @@ export class DriverRequestEntity extends BaseEntity {
   @Column({ type: 'enum', enum: ERequestStatus, default: ERequestStatus.Pending })
   status: ERequestStatus;
 
+  @Column({ name: 'reject_reason', nullable: true })
+  rejectReason: string;
+
   @Column({ name: 'driver_id' })
   driverId: number;
 

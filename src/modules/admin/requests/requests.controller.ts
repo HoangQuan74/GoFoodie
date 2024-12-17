@@ -3,7 +3,7 @@ import { RequestsService } from './requests.service';
 import { IdentityQuery } from 'src/common/query';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../auth/auth.guard';
 import { ERequestStatus } from 'src/common/enums';
 import { QueryRequestDto } from './dto/query-request.dto';
@@ -158,7 +158,13 @@ export class RequestsController {
 
   @Patch('drivers/reject')
   @ApiOperation({ summary: 'Từ chối yêu cầu tài xế' })
-  async driverReject(@Body() { ids }: IdentityQuery, @CurrentUser() user: JwtPayload) {
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { ids: { type: 'array', items: { type: 'number' } }, rejectReason: { type: 'string' } },
+    },
+  })
+  async driverReject(@Body() { ids }: IdentityQuery & { rejectReason: string }, @CurrentUser() user: JwtPayload) {
     const requests = await this.requestsService.findDriverRequests({
       where: { id: In(ids), status: ERequestStatus.Pending },
     });
