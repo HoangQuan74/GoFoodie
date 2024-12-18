@@ -31,7 +31,7 @@ export class ProductEntity extends BaseEntity {
   })
   approvalStatus: EProductApprovalStatus;
 
-  @Column({ name: 'store_id', select: false })
+  @Column({ name: 'store_id' })
   storeId: number;
 
   @Column({ name: 'product_category_id', select: false })
