@@ -27,4 +27,12 @@ export class QueryRequestDto extends PaginationQuery {
   @ApiPropertyOptional()
   @IsOptional()
   createdAtTo: Date;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  approvedAtFrom: Date;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  approvedAtTo: Date;
 }

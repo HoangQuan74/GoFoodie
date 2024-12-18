@@ -18,7 +18,8 @@ export class RequestsController {
   @Get('products')
   @ApiOperation({ summary: 'Danh sách yêu cầu duyệt sản phẩm' })
   async getProducts(@Query() query: QueryRequestDto) {
-    const { page, limit, status, type, productCategoryId, createdAtFrom, createdAtTo, search } = query;
+    const { page, limit, status, type, productCategoryId, search } = query;
+    const { createdAtFrom, createdAtTo, approvedAtFrom, approvedAtTo } = query;
 
     const queryBuilder = this.requestsService
       .createProductApprovalQueryBuilder('approval')
@@ -43,6 +44,8 @@ export class RequestsController {
     productCategoryId && queryBuilder.andWhere('product.productCategoryId = :productCategoryId', { productCategoryId });
     createdAtFrom && queryBuilder.andWhere('approval.createdAt >= :createdAtFrom', { createdAtFrom });
     createdAtTo && queryBuilder.andWhere('approval.createdAt <= :createdAtTo', { createdAtTo });
+    approvedAtFrom && queryBuilder.andWhere('approval.processedAt >= :approvedAtFrom', { approvedAtFrom });
+    approvedAtTo && queryBuilder.andWhere('approval.processedAt <= :approvedAtTo', { approvedAtTo });
 
     if (search) {
       queryBuilder.andWhere(
