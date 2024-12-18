@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DriverEntity } from 'src/database/entities/driver.entity';
-import { Repository } from 'typeorm';
+import { DeepPartial, FindOneOptions, Repository } from 'typeorm';
 
 @Injectable()
 export class DriversService {
@@ -16,5 +16,13 @@ export class DriversService {
 
   async save(entity: DriverEntity): Promise<DriverEntity> {
     return this.driversRepository.save(entity);
+  }
+
+  async findOne(options: FindOneOptions<DriverEntity>): Promise<DriverEntity> {
+    return this.driversRepository.findOne(options);
+  }
+
+  merge(entity: DriverEntity, update: DeepPartial<DriverEntity>): DriverEntity {
+    return this.driversRepository.merge(entity, update);
   }
 }

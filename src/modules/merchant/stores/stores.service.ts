@@ -23,4 +23,8 @@ export class StoresService {
   async findAndCount(options?: FindManyOptions<StoreEntity>) {
     return this.storeRepository.findAndCount(options);
   }
+
+  async remove(entity: StoreEntity) {
+    return this.storeRepository.remove(entity);
+  }
 }

@@ -4,7 +4,7 @@ import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import { TIMEZONE } from 'src/common/constants';
 import * as moment from 'moment-timezone';
-import { DataSource, Like } from 'typeorm';
+import { DataSource, FindOptionsWhere, Like, Not } from 'typeorm';
 import { WardsService } from 'src/modules/wards/wards.service';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { EStoreApprovalStatus } from 'src/common/enums';
@@ -54,9 +54,13 @@ export class StoresController {
   }
 
   @Get()
-  async find(@Query() query: PaginationQuery) {
+  async find(@Query() query: PaginationQuery, @CurrentUser() user: JwtPayload) {
     const { page, limit } = query;
-    const options = { skip: (page - 1) * limit, take: limit };
+
+    const where: FindOptionsWhere<StoreEntity>[] = [{ merchantId: user.id }];
+    user.storeId && where.push({ id: user.storeId });
+
+    const options = { skip: (page - 1) * limit, take: limit, where };
     const [items, total] = await this.storesService.findAndCount(options);
 
     return { items, total };
@@ -72,8 +76,15 @@ export class StoresController {
   //   return this.storesService.update(+id, updateStoreDto);
   // }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.storesService.remove(+id);
-  // }
+  @Delete(':id')
+  async delete(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
+    const options = {
+      where: { id, merchantId: user.id, approvalStatus: Not(EStoreApprovalStatus.Approved) },
+      relations: { workingTimes: true, banks: true, representative: true },
+    };
+    const store = await this.storesService.findOne(options);
+    if (!store) throw new NotFoundException();
+
+    return this.storesService.remove(store);
+  }
 }

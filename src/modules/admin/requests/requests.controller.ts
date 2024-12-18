@@ -23,7 +23,7 @@ export class RequestsController {
     const queryBuilder = this.requestsService
       .createProductApprovalQueryBuilder('approval')
       .select(['approval.id as id', 'approval.code as code', 'approval.status as status', 'approval.type as type'])
-      .addSelect(['approval.createdAt as "createdAt"'])
+      .addSelect(['approval.createdAt as "createdAt"', 'approval.reason as "reason"'])
       .addSelect(['product.code as "productCode"', 'product.name as "productName"', 'product.price as "productPrice"'])
       .addSelect(['product.description as "productDescription"', 'product.imageId as "productImageId"'])
       .addSelect(['store.storeCode as "storeCode"', 'store.name as "storeName"'])
