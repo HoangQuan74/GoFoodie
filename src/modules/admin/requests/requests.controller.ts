@@ -64,6 +64,31 @@ export class RequestsController {
     return { items, total };
   }
 
+  @Get('products/:id')
+  @ApiOperation({ summary: 'Chi tiết yêu cầu duyệt sản phẩm' })
+  async getDetailProductApproval(@Param('id') id: number) {
+    const options = {
+      select: {
+        merchant: { id: true, name: true },
+        processedBy: { id: true, name: true },
+      },
+      where: { id },
+      relations: {
+        product: {
+          productOptionGroups: { options: true, optionGroup: true },
+          productWorkingTimes: true,
+          productCategory: true,
+        },
+        merchant: true,
+        processedBy: true,
+      },
+    };
+    const request = await this.requestsService.findOneProductApproval(options);
+    if (!request) throw new NotFoundException();
+
+    return request;
+  }
+
   @Patch('products/approval')
   @ApiOperation({ summary: 'Duyệt yêu cầu duyệt sản phẩm' })
   async productApproval(@Body() { ids }: IdentityQuery, @CurrentUser() user: JwtPayload) {
