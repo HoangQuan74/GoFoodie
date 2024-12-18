@@ -103,13 +103,19 @@ export class RequestsController {
 
   @Patch('products/reject')
   @ApiOperation({ summary: 'Từ chối yêu cầu duyệt sản phẩm' })
-  async productReject(@Body() { ids }: IdentityQuery, @CurrentUser() user: JwtPayload) {
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { ids: { type: 'array', items: { type: 'number' } }, reason: { type: 'string' } },
+    },
+  })
+  async productReject(@Body() { ids, reason }: IdentityQuery & { reason: string }, @CurrentUser() user: JwtPayload) {
     const requests = await this.requestsService.findProductApprovals({
       where: { id: In(ids), status: ERequestStatus.Pending },
     });
     if (requests.length !== ids.length) throw new NotFoundException();
 
-    const data = { processedById: user.id, status: ERequestStatus.Rejected, processedAt: new Date() };
+    const data = { processedById: user.id, status: ERequestStatus.Rejected, processedAt: new Date(), reason };
     await this.requestsService.updateProductApproval({ id: In(ids) }, data);
   }
 
