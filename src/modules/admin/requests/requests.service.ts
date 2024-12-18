@@ -3,6 +3,8 @@ import { ProductApprovalEntity } from 'src/database/entities/product-approval.en
 import { FindManyOptions, FindOneOptions, FindOptionsWhere, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DriverRequestEntity } from 'src/database/entities/driver-request.entity';
+import { ProductsService } from '../products/products.service';
+import { EProductApprovalStatus, ERequestStatus, ERequestType } from 'src/common/enums';
 
 @Injectable()
 export class RequestsService {
@@ -12,6 +14,8 @@ export class RequestsService {
 
     @InjectRepository(DriverRequestEntity)
     private readonly driverRequestRepository: Repository<DriverRequestEntity>,
+
+    private readonly productsService: ProductsService,
   ) {}
 
   createProductApprovalQueryBuilder(alias?: string) {
@@ -34,6 +38,26 @@ export class RequestsService {
     criteria: FindOptionsWhere<ProductApprovalEntity>,
     partialEntity: Partial<ProductApprovalEntity>,
   ) {
+    const productApprovals = await this.productApprovalRepository.find({ where: criteria });
+
+    for (const productApproval of productApprovals) {
+      const product = await this.productsService.findOne({ where: { id: productApproval.productId } });
+      if (!product) continue;
+
+      if (productApproval.type === ERequestType.Create) {
+        product.approvalStatus = partialEntity.status as unknown as EProductApprovalStatus;
+        await this.productsService.save(product);
+        continue;
+      }
+
+      if (partialEntity.status === ERequestStatus.Approved) {
+        product.name = productApproval.name;
+        product.description = productApproval.description;
+        product.imageId = productApproval.imageId;
+        await this.productsService.save(product);
+      }
+    }
+
     return this.productApprovalRepository.update(criteria, partialEntity);
   }
 
