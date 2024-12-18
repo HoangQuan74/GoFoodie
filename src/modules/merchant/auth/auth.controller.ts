@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Body } from '@nestjs/common';
 import { LoginDto, LoginSmsDto } from './dto/login.dto';
@@ -137,4 +137,8 @@ export class AuthController {
   loginStore(@Body() { storeId }: { storeId: number }, @CurrentUser() user: JwtPayload) {
     return this.authService.loginStore(user.id, user.deviceToken, storeId);
   }
+
+  // update profile
+  // @Patch('profile')
+  // @ApiOperation({ summary: 'Cập nhật thông tin cá nhân' })
 }

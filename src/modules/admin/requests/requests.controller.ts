@@ -67,23 +67,24 @@ export class RequestsController {
   @Get('products/:id')
   @ApiOperation({ summary: 'Chi tiết yêu cầu duyệt sản phẩm' })
   async getDetailProductApproval(@Param('id') id: number) {
-    const options = {
-      select: {
-        merchant: { id: true, name: true },
-        processedBy: { id: true, name: true },
-      },
-      where: { id },
-      relations: {
-        product: {
-          productOptionGroups: { options: true, optionGroup: true },
-          productWorkingTimes: true,
-          productCategory: true,
-        },
-        merchant: true,
-        processedBy: true,
-      },
-    };
-    const request = await this.requestsService.findOneProductApproval(options);
+    const queryBuilder = this.requestsService
+      .createProductApprovalQueryBuilder('approval')
+      .addSelect(['merchant.id', 'merchant.name'])
+      .addSelect(['processedBy.id', 'processedBy.name'])
+      .addSelect(['store.id', 'store.storeCode', 'store.name'])
+      .addSelect(['category.name'])
+      .leftJoin('approval.merchant', 'merchant')
+      .leftJoin('approval.processedBy', 'processedBy')
+      .leftJoinAndSelect('approval.product', 'product')
+      .leftJoin('product.store', 'store')
+      .leftJoin('product.productCategory', 'category')
+      .leftJoinAndSelect('product.productOptionGroups', 'productOptionGroups')
+      .leftJoinAndSelect('product.productWorkingTimes', 'productWorkingTimes')
+      .leftJoinAndSelect('productOptionGroups.optionGroup', 'optionGroup')
+      .leftJoinAndSelect('productOptionGroups.options', 'options')
+      .where('approval.id = :id', { id });
+
+    const request = await queryBuilder.getOne();
     if (!request) throw new NotFoundException();
 
     return request;
