@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, UseGuards, Patch, NotFoundException } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Patch, NotFoundException, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CurrentUser, Public } from 'src/common/decorators';
 import { LoginDto, LoginSmsDto } from './dto/login.dto';
@@ -8,6 +8,8 @@ import { AuthGuard } from './auth.guard';
 import { UpdateDriverProfileDto } from './dto/update-profile.dto';
 import { DriversService } from '../drivers.service';
 import { EDriverApprovalStatus } from 'src/common/enums/driver.enum';
+import { RefreshTokenDto } from './refresh-token.dto';
+import { Request } from 'express';
 
 @Controller('auth')
 @UseGuards(AuthGuard)
@@ -31,6 +33,13 @@ export class AuthController {
   loginSms(@Body() body: LoginSmsDto) {
     const { idToken, deviceToken } = body;
     return this.authService.signInWithSms(idToken, deviceToken);
+  }
+
+  @Post('refresh-token')
+  @Public()
+  refreshToken(@Body() body: RefreshTokenDto, @Req() req: Request) {
+    const { refreshToken } = body;
+    return this.authService.refreshToken(refreshToken, req);
   }
 
   @Get('profile')

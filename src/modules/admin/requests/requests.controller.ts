@@ -62,9 +62,24 @@ export class RequestsController {
 
     const itemsPromise = queryBuilder.getRawMany();
     const totalPromise = queryBuilder.getCount();
-    const [items, total] = await Promise.all([itemsPromise, totalPromise]);
 
-    return { items, total };
+    const countQuery = this.requestsService
+      .createProductApprovalQueryBuilder('approval')
+      .innerJoin('approval.product', 'product');
+
+    const pendingPromise = countQuery.where(`approval.status = '${ERequestStatus.Pending}'`).getCount();
+    const approvedPromise = countQuery.where(`approval.status = '${ERequestStatus.Approved}'`).getCount();
+    const rejectedPromise = countQuery.where(`approval.status = '${ERequestStatus.Rejected}'`).getCount();
+
+    const [items, total, pending, approved, rejected] = await Promise.all([
+      itemsPromise,
+      totalPromise,
+      pendingPromise,
+      approvedPromise,
+      rejectedPromise,
+    ]);
+
+    return { items, total, pending, approved, rejected };
   }
 
   @Get('products/:id')

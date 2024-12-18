@@ -8,6 +8,7 @@ import { EXCEPTIONS, JWT_EXPIRATION } from 'src/common/constants';
 import { JwtService } from '@nestjs/jwt';
 import { FirebaseService } from 'src/modules/firebase/firebase.service';
 import { RefreshTokensService } from '../refresh-tokens/refresh-tokens.service';
+import { Request } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -82,6 +83,27 @@ export class AuthService {
       return { ...driver, accessToken, refreshToken };
     } catch (error) {
       console.log(error);
+      throw new UnauthorizedException();
+    }
+  }
+
+  async refreshToken(refreshToken: string, req: Request): Promise<JwtSign> {
+    try {
+      const accessToken = req.headers['authorization']?.split(' ')[1];
+      const { id } = this.jwtService.verify(accessToken, { ignoreExpiration: true });
+
+      const { deviceToken } = await this.refreshTokensService.findValidToken(refreshToken, id);
+      const driver = await this.driversService.findOne({ where: { id } });
+      if (!driver) throw new UnauthorizedException();
+
+      const newPayload: JwtPayload = { id: driver.id, deviceToken };
+      const newAccessToken = this.jwtService.sign(newPayload, { expiresIn: JWT_EXPIRATION });
+
+      await this.refreshTokensService.revokeToken(driver.id, refreshToken);
+      const { token } = await this.refreshTokensService.createRefreshToken(driver.id, deviceToken);
+
+      return { accessToken: newAccessToken, refreshToken: token };
+    } catch (error) {
       throw new UnauthorizedException();
     }
   }
