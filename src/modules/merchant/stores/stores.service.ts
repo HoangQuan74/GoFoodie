@@ -1,26 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
+import { StoreEntity } from 'src/database/entities/store.entity';
+import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class StoresService {
-  create(createStoreDto: CreateStoreDto) {
-    return 'This action adds a new store';
+  constructor(
+    @InjectRepository(StoreEntity)
+    private storeRepository: Repository<StoreEntity>,
+  ) {}
+
+  async find(options?: FindManyOptions<StoreEntity>) {
+    return this.storeRepository.find(options);
   }
 
-  findAll() {
-    return `This action returns all stores`;
+  async findOne(options: FindOneOptions<StoreEntity>) {
+    return this.storeRepository.findOne(options);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} store`;
-  }
-
-  update(id: number, updateStoreDto: UpdateStoreDto) {
-    return `This action updates a #${id} store`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} store`;
+  async findAndCount(options?: FindManyOptions<StoreEntity>) {
+    return this.storeRepository.findAndCount(options);
   }
 }
