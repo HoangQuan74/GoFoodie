@@ -117,7 +117,7 @@ export class StoresController {
   @Patch(':id')
   async update(@Param('id') id: number, @Body() updateStoreDto: UpdateStoreDto, @CurrentUser() user: JwtPayload) {
     const { wardId, isDraft } = updateStoreDto;
-    // const store = await this.storesService.findOne({ where: { id }, relations: { representative: true } });
+
     const store = await this.storesService
       .createQueryBuilder('store')
       .where('store.id = :id', { id })

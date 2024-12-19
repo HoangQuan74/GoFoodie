@@ -40,7 +40,6 @@ export class UploadsController {
   }
 
   @Get(':id')
-  @Public()
   async download(@Param('id') id: string, @Res() res: Response) {
     const file = await this.uploadsService.findOne({ where: { id } });
     if (!file) throw new NotFoundException();
