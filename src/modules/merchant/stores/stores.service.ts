@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { StoreEntity } from 'src/database/entities/store.entity';
-import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { DeepPartial, FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
@@ -9,6 +9,10 @@ export class StoresService {
     @InjectRepository(StoreEntity)
     private storeRepository: Repository<StoreEntity>,
   ) {}
+
+  async save(store: DeepPartial<StoreEntity>) {
+    return this.storeRepository.save(store);
+  }
 
   async find(options?: FindManyOptions<StoreEntity>) {
     return this.storeRepository.find(options);
@@ -28,5 +32,9 @@ export class StoresService {
 
   createQueryBuilder(alias: string) {
     return this.storeRepository.createQueryBuilder(alias);
+  }
+
+  merge(entity: StoreEntity, data: any) {
+    return this.storeRepository.merge(entity, data);
   }
 }

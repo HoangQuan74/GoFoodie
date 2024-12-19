@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, NotFoundException, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, NotFoundException, UseGuards, Query, Patch } from '@nestjs/common';
 import { StoresService } from './stores.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { Brackets, DataSource, FindOptionsWhere, Not } from 'typeorm';
@@ -10,6 +10,7 @@ import { JwtPayload } from 'src/common/interfaces';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiTags } from '@nestjs/swagger';
 import { QueryStoreDto } from './dto/query-store.dto';
+import { UpdateStoreDto } from './dto/update-store.dto';
 
 @Controller('stores')
 @ApiTags('Merchant Stores')
@@ -83,15 +84,69 @@ export class StoresController {
     return { items, total };
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.storesService.findOne(+id);
-  // }
+  @Get(':id')
+  async findOne(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
+    const queryBuilder = this.storesService
+      .createQueryBuilder('store')
+      .where('store.id = :id', { id })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('store.merchantId = :merchantId', { merchantId: user.id });
+          user.storeId && qb.orWhere('store.id = :storeId', { storeId: user.storeId });
+        }),
+      )
+      .leftJoinAndSelect('store.representative', 'representative')
+      .leftJoinAndSelect('store.workingTimes', 'workingTimes')
+      .leftJoinAndSelect('store.banks', 'banks')
+      .leftJoinAndSelect('banks.bank', 'bank')
+      .leftJoinAndSelect('banks.bankBranch', 'bankBranch')
+      .leftJoinAndSelect('store.serviceType', 'serviceType')
+      .leftJoinAndSelect('store.serviceGroup', 'serviceGroup')
+      .leftJoinAndSelect('store.businessArea', 'businessArea')
+      .leftJoinAndSelect('store.province', 'province')
+      .leftJoinAndSelect('store.district', 'district')
+      .leftJoinAndSelect('store.ward', 'ward')
+      .leftJoinAndSelect('store.specialWorkingTimes', 'specialWorkingTimes');
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateStoreDto: UpdateStoreDto) {
-  //   return this.storesService.update(+id, updateStoreDto);
-  // }
+    const store = await queryBuilder.getOne();
+    if (!store) throw new NotFoundException();
+
+    return store;
+  }
+
+  @Patch(':id')
+  async update(@Param('id') id: number, @Body() updateStoreDto: UpdateStoreDto, @CurrentUser() user: JwtPayload) {
+    const { wardId, isDraft } = updateStoreDto;
+    // const store = await this.storesService.findOne({ where: { id }, relations: { representative: true } });
+    const store = await this.storesService
+      .createQueryBuilder('store')
+      .where('store.id = :id', { id })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('store.merchantId = :merchantId', { merchantId: user.id });
+          user.storeId && qb.orWhere('store.id = :storeId', { storeId: user.storeId });
+        }),
+      )
+      .leftJoinAndSelect('store.representative', 'representative')
+      .getOne();
+    if (!store) throw new NotFoundException();
+
+    if (wardId) {
+      const { districtId, provinceId } = await this.wardsService.getProvinceIdAndDistrictId(wardId);
+      if (!districtId || !provinceId) throw new NotFoundException();
+      store.districtId = districtId;
+      store.provinceId = provinceId;
+      store.wardId = wardId;
+    }
+
+    this.storesService.merge(store, updateStoreDto);
+
+    if (typeof isDraft === 'boolean' && store.approvalStatus !== EStoreApprovalStatus.Approved) {
+      store.approvalStatus = isDraft ? EStoreApprovalStatus.Draft : EStoreApprovalStatus.Pending;
+    }
+
+    return this.storesService.save(store);
+  }
 
   @Delete(':id')
   async delete(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
