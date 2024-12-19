@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { comparePassword, generateOTP, hashPassword } from 'src/utils/bcrypt';
 import { JwtPayload, JwtSign } from 'src/common/interfaces';
 import { EXCEPTIONS, JWT_EXPIRATION } from 'src/common/constants';
@@ -6,17 +6,19 @@ import { JwtService } from '@nestjs/jwt';
 import { RefreshTokensService } from '../refresh-tokens/refresh-tokens.service';
 import { MailService } from 'src/modules/mail/mail.service';
 import { EAdminOtpType, EMerchantStatus, EStoreApprovalStatus, EStoreStatus } from 'src/common/enums';
-import { MerchantsService } from '../merchants/merchants.service';
 import { MerchantEntity } from 'src/database/entities/merchant.entity';
 import { FirebaseService } from 'src/modules/firebase/firebase.service';
 import { Request } from 'express';
 import { Brackets } from 'typeorm';
 import { RegisterSmsDto } from './dto/register.dto';
+import { MerchantsService } from '../merchants.service';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject(forwardRef(() => MerchantsService))
     private merchantsService: MerchantsService,
+    
     private jwtService: JwtService,
     private refreshTokensService: RefreshTokensService,
     private firebaseService: FirebaseService,

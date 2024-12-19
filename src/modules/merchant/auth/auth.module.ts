@@ -1,16 +1,16 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { MerchantsModule } from '../merchants/merchants.module';
 import { FirebaseModule } from 'src/modules/firebase/firebase.module';
 import { RefreshTokensModule } from '../refresh-tokens/refresh-tokens.module';
 import { StoresModule } from 'src/modules/admin/stores/stores.module';
+import { MerchantModule } from '../merchant.module';
 
 @Module({
   imports: [
     FirebaseModule,
     RefreshTokensModule,
-    MerchantsModule,
+    forwardRef(() => MerchantModule),
     StoresModule,
     // JwtModule.register({
     //   global: true,
