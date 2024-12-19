@@ -7,6 +7,7 @@ import {
   Post,
   Res,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { UploadsService } from './uploads.service';
@@ -14,10 +15,12 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import * as path from 'path';
+import { AppGuard } from 'src/app.gaurd';
+import { Public } from 'src/common/decorators';
 
 @Controller('uploads')
 @ApiTags('Uploads')
-// @UseGuards(AuthGuard)
+@UseGuards(AppGuard)
 export class UploadsController {
   constructor(private readonly uploadsService: UploadsService) {}
 
@@ -37,7 +40,7 @@ export class UploadsController {
   }
 
   @Get(':id')
-  // @Public()
+  @Public()
   async download(@Param('id') id: string, @Res() res: Response) {
     const file = await this.uploadsService.findOne({ where: { id } });
     if (!file) throw new NotFoundException();

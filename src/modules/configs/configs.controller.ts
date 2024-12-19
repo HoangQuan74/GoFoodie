@@ -1,10 +1,11 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ConfigsService } from './configs.service';
 import { Public } from 'src/common/decorators';
-import { ApiQuery } from '@nestjs/swagger';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { EConfigType } from 'src/common/enums/config.enum';
 
 @Controller('configs')
+@ApiTags('Configs')
 export class ConfigsController {
   constructor(private readonly configsService: ConfigsService) {}
 
