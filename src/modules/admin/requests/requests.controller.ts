@@ -27,7 +27,7 @@ export class RequestsController {
       .addSelect(['approval.createdAt as "createdAt"', 'approval.reason as "reason"'])
       .addSelect(['product.code as "productCode"', 'product.name as "productName"', 'product.price as "productPrice"'])
       .addSelect(['product.description as "productDescription"', 'product.imageId as "productImageId"'])
-      .addSelect(['store.storeCode as "storeCode"', 'store.name as "storeName"'])
+      .addSelect(['store.storeCode as "storeCode"', 'store.name as "storeName"', 'store.id as "storeId"'])
       .addSelect(['category.name as "categoryName"', 'merchant.name as "merchantName"'])
       .addSelect(['processedBy.name as "processedByName"', 'approval.processedAt as "processedAt"'])
       .innerJoin('approval.product', 'product')
