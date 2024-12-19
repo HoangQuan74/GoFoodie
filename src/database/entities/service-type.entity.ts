@@ -7,4 +7,7 @@ export class ServiceTypeEntity {
 
   @Column()
   name: string;
+
+  @Column({ default: '' })
+  code: string;
 }

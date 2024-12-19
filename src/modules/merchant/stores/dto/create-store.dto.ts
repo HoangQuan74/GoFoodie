@@ -182,12 +182,10 @@ export class CreateStoreDto {
 
   @ApiProperty({ description: 'Id của khu vực kinh doanh' })
   @IsInt()
-  @ValidateIf((o) => !o.isDraft)
   businessAreaId: number;
 
   @ApiProperty({ description: 'Id của loại dịch vụ' })
   @IsInt()
-  @ValidateIf((o) => !o.isDraft)
   serviceTypeId: number;
 
   @ApiProperty({ description: 'Tên cửa hàng' })

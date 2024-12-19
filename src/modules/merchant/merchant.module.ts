@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { RouterModule } from '@nestjs/core';
 import { RefreshTokensModule } from './refresh-tokens/refresh-tokens.module';
@@ -11,7 +11,7 @@ import { MerchantOtpEntity } from 'src/database/entities/merchant-otp.entity';
 
 @Module({
   imports: [
-    forwardRef(() => AuthModule),
+    AuthModule,
     TypeOrmModule.forFeature([MerchantEntity, MerchantOtpEntity]),
     RefreshTokensModule,
     RouterModule.register([

@@ -13,6 +13,8 @@ import { JwtPayload } from 'src/common/interfaces';
 import { AuthGuard } from '../auth/auth.guard';
 import { PaginationQuery } from 'src/common/query';
 import { ApiTags } from '@nestjs/swagger';
+import { ServiceTypeEntity } from 'src/database/entities/service-type.entity';
+import { ProvinceEntity } from 'src/database/entities/province.entity';
 
 @Controller('stores')
 @ApiTags('Merchant Stores')
@@ -26,13 +28,19 @@ export class StoresController {
 
   @Post()
   create(@Body() createStoreDto: CreateStoreDto, @CurrentUser() user: JwtPayload) {
-    const { wardId, isDraft } = createStoreDto;
+    const { wardId, isDraft, serviceTypeId, businessAreaId } = createStoreDto;
 
     return this.dataSource.transaction(async (manager) => {
       const newStore = new StoreEntity();
       newStore.merchantId = user.id;
       Object.assign(newStore, createStoreDto);
       newStore.approvalStatus = isDraft ? EStoreApprovalStatus.Draft : EStoreApprovalStatus.Pending;
+
+      const serviceType = await manager.findOne(ServiceTypeEntity, { where: { id: serviceTypeId } });
+      if (!serviceType) throw new NotFoundException();
+
+      const businessArea = await manager.findOne(ProvinceEntity, { where: { id: businessAreaId } });
+      if (!businessArea) throw new NotFoundException();
 
       if (wardId) {
         const { districtId, provinceId } = await this.wardsService.getProvinceIdAndDistrictId(wardId);
@@ -41,15 +49,15 @@ export class StoresController {
         newStore.provinceId = provinceId;
       }
 
-      const today = moment().tz(TIMEZONE).format('YYMMDD');
+      const preCode = businessArea.shortName + serviceType.code;
       const latestStore = await manager.findOne(StoreEntity, {
-        where: { storeCode: Like(`${today}%`) },
+        where: { storeCode: Like(`${preCode}%`) },
         order: { storeCode: 'DESC' },
         withDeleted: true,
       });
 
-      const numberStore = latestStore ? +latestStore.storeCode.slice(-2) + 1 : 1;
-      newStore.storeCode = `${today}${numberStore.toString().padStart(2, '0')}`;
+      const numberStore = latestStore ? +latestStore.storeCode.slice(-3) + 1 : 1;
+      newStore.storeCode = `${preCode}${numberStore.toString().padStart(3, '0')}`;
 
       return manager.save(newStore);
     });

@@ -8,7 +8,7 @@ import { CurrentStore } from 'src/common/decorators/current-store.decorator';
 
 @Controller('products')
 @ApiTags('Products')
-// @UseGuards(AuthGuard)
+@UseGuards(AuthGuard)
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 

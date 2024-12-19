@@ -7,4 +7,7 @@ export class ProvinceEntity {
 
   @Column()
   name: string;
+
+  @Column({ name: 'short_name', default: '' })
+  shortName: string;
 }

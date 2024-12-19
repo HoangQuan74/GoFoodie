@@ -13,7 +13,6 @@ import { Request } from 'express';
 @Injectable()
 export class AuthService {
   constructor(
-    // @Inject(forwardRef(() => DriversService))
     private driversService: DriversService,
 
     private jwtService: JwtService,

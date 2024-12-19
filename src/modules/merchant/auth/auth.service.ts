@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { comparePassword, generateOTP, hashPassword } from 'src/utils/bcrypt';
 import { JwtPayload, JwtSign } from 'src/common/interfaces';
 import { EXCEPTIONS, JWT_EXPIRATION } from 'src/common/constants';
@@ -16,9 +16,8 @@ import { MerchantsService } from '../merchants.service';
 @Injectable()
 export class AuthService {
   constructor(
-    @Inject(forwardRef(() => MerchantsService))
     private merchantsService: MerchantsService,
-    
+
     private jwtService: JwtService,
     private refreshTokensService: RefreshTokensService,
     private firebaseService: FirebaseService,
