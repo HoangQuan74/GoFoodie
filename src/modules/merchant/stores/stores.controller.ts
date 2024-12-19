@@ -60,6 +60,7 @@ export class StoresController {
         'store.approvalStatus',
         'store.createdAt',
         'store.storeAvatarId',
+        'store.rejectReason',
       ])
       .leftJoinAndSelect('store.province', 'province')
       .leftJoinAndSelect('store.district', 'district')

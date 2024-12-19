@@ -17,6 +17,7 @@ import { MerchantOtpEntity } from 'src/database/entities/merchant-otp.entity';
     RouterModule.register([
       { path: 'merchant', module: AuthModule },
       { path: 'merchant', module: ProductsModule },
+      { path: 'merchant', module: StoresModule },
     ]),
     ProductsModule,
     StoresModule,
