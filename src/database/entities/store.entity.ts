@@ -19,7 +19,7 @@ export class StoreEntity extends BaseEntity {
   @Column({ name: 'merchant_id' })
   merchantId: number;
 
-  @Column({ name: 'store_code' })
+  @Column({ name: 'store_code', nullable: true })
   storeCode: string;
 
   @Column({ nullable: true })

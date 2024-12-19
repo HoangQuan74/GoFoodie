@@ -46,16 +46,6 @@ export class StoresController {
         newStore.provinceId = provinceId;
       }
 
-      const today = moment().tz(TIMEZONE).format('YYMMDD');
-      const latestStore = await manager.findOne(StoreEntity, {
-        where: { storeCode: Like(`${today}%`) },
-        order: { storeCode: 'DESC' },
-        withDeleted: true,
-      });
-
-      const numberStore = latestStore ? +latestStore.storeCode.slice(-2) + 1 : 1;
-      newStore.storeCode = `${today}${numberStore.toString().padStart(2, '0')}`;
-
       return manager.save(newStore);
     });
   }
@@ -199,14 +189,28 @@ export class StoresController {
   @Patch(':id/approve')
   @Roles(OPERATIONS.STORE.APPROVE)
   async approve(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
-    const store = await this.storesService.findOne({ where: { id, approvalStatus: EStoreApprovalStatus.Pending } });
-    if (!store) throw new NotFoundException();
+    return this.dataSource.transaction(async (manager) => {
+      const store = await manager.findOne(StoreEntity, {
+        where: { id, approvalStatus: EStoreApprovalStatus.Pending },
+        relations: { serviceType: true, businessArea: true },
+      });
+      if (!store) throw new NotFoundException();
 
-    store.approvedById = user.id;
-    store.approvedAt = new Date();
-    store.approvalStatus = EStoreApprovalStatus.Approved;
+      const preCode = store.businessArea.shortName + store.serviceType.code;
+      const latestStore = await manager.findOne(StoreEntity, {
+        where: { storeCode: Like(`${preCode}%`) },
+        order: { storeCode: 'DESC' },
+        withDeleted: true,
+      });
 
-    return this.storesService.save(store);
+      store.approvedById = user.id;
+      store.approvedAt = new Date();
+      store.approvalStatus = EStoreApprovalStatus.Approved;
+      const numberStore = latestStore ? +latestStore.storeCode.slice(-3) + 1 : 1;
+      store.storeCode = `${preCode}${numberStore.toString().padStart(3, '0')}`;
+
+      return manager.save(store);
+    });
   }
 
   @Patch(':id/reject')

@@ -28,7 +28,7 @@ export class StoresController {
 
   @Post()
   create(@Body() createStoreDto: CreateStoreDto, @CurrentUser() user: JwtPayload) {
-    const { wardId, isDraft, serviceTypeId, businessAreaId } = createStoreDto;
+    const { wardId, isDraft } = createStoreDto;
 
     return this.dataSource.transaction(async (manager) => {
       const newStore = new StoreEntity();
@@ -36,28 +36,12 @@ export class StoresController {
       Object.assign(newStore, createStoreDto);
       newStore.approvalStatus = isDraft ? EStoreApprovalStatus.Draft : EStoreApprovalStatus.Pending;
 
-      const serviceType = await manager.findOne(ServiceTypeEntity, { where: { id: serviceTypeId } });
-      if (!serviceType) throw new NotFoundException();
-
-      const businessArea = await manager.findOne(ProvinceEntity, { where: { id: businessAreaId } });
-      if (!businessArea) throw new NotFoundException();
-
       if (wardId) {
         const { districtId, provinceId } = await this.wardsService.getProvinceIdAndDistrictId(wardId);
         if (!districtId || !provinceId) throw new NotFoundException();
         newStore.districtId = districtId;
         newStore.provinceId = provinceId;
       }
-
-      const preCode = businessArea.shortName + serviceType.code;
-      const latestStore = await manager.findOne(StoreEntity, {
-        where: { storeCode: Like(`${preCode}%`) },
-        order: { storeCode: 'DESC' },
-        withDeleted: true,
-      });
-
-      const numberStore = latestStore ? +latestStore.storeCode.slice(-3) + 1 : 1;
-      newStore.storeCode = `${preCode}${numberStore.toString().padStart(3, '0')}`;
 
       return manager.save(newStore);
     });
@@ -70,9 +54,12 @@ export class StoresController {
     const where: FindOptionsWhere<StoreEntity>[] = [{ merchantId: user.id }];
     user.storeId && where.push({ id: user.storeId });
 
-    const options = { 
+    const options = {
       // select: ['id', 'name', 'storeCode', 'approvalStatus', 'createdAt', 'updatedAt'],
-      skip: (page - 1) * limit, take: limit, where };
+      skip: (page - 1) * limit,
+      take: limit,
+      where,
+    };
     const [items, total] = await this.storesService.findAndCount(options);
 
     return { items, total };
