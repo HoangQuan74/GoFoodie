@@ -46,6 +46,7 @@ export class RequestsService {
 
       if (productApproval.type === ERequestType.Create) {
         product.approvalStatus = partialEntity.status as unknown as EProductApprovalStatus;
+        product.reason = partialEntity.reason;
         await this.productsService.save(product);
         continue;
       }

@@ -31,6 +31,9 @@ export class ProductEntity extends BaseEntity {
   })
   approvalStatus: EProductApprovalStatus;
 
+  @Column({ name: 'reason', type: 'text', nullable: true })
+  reason: string;
+
   @Column({ name: 'store_id' })
   storeId: number;
 
