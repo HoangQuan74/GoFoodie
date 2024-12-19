@@ -52,13 +52,15 @@ export class AuthController {
   @ApiOperation({ summary: 'Cập nhật thông tin tài khoản' })
   async updateProfile(@CurrentUser() user: JwtPayload, @Body() body: UpdateDriverProfileDto) {
     const { id } = user;
+    const { isDraft } = body;
+
     const driver = await this.driversService.findOne({ where: { id }, relations: { vehicle: true } });
     if (!driver) throw new NotFoundException();
 
     this.driversService.merge(driver, body);
 
-    if (driver.approvalStatus !== EDriverApprovalStatus.Approved) {
-      driver.approvalStatus = EDriverApprovalStatus.Pending;
+    if (typeof isDraft === 'boolean' && driver.approvalStatus !== EDriverApprovalStatus.Approved) {
+      driver.approvalStatus = isDraft ? EDriverApprovalStatus.Draft : EDriverApprovalStatus.Pending;
     }
 
     return this.driversService.save(driver);
