@@ -11,8 +11,6 @@ import { CurrentUser, Roles } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { IdentityQuery } from 'src/common/query';
 import { EStoreApprovalStatus } from 'src/common/enums';
-import * as moment from 'moment-timezone';
-import { TIMEZONE } from 'src/common/constants';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { AuthGuard } from '../auth/auth.guard';
 import { AdminRolesGuard } from 'src/common/guards';

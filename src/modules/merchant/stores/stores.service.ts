@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { CreateStoreDto } from './dto/create-store.dto';
-import { UpdateStoreDto } from './dto/update-store.dto';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -26,5 +24,9 @@ export class StoresService {
 
   async remove(entity: StoreEntity) {
     return this.storeRepository.remove(entity);
+  }
+
+  createQueryBuilder(alias: string) {
+    return this.storeRepository.createQueryBuilder(alias);
   }
 }
