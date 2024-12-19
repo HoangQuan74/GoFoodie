@@ -21,6 +21,7 @@ import { RelationshipsModule } from './modules/relationships/relationships.modul
 import { MerchantModule } from './modules/merchant/merchant.module';
 import { FirebaseModule } from './modules/firebase/firebase.module';
 import { DriversModule } from './modules/drivers/drivers.module';
+import { ConfigsModule } from './modules/configs/configs.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { DriversModule } from './modules/drivers/drivers.module';
     MerchantModule,
     FirebaseModule,
     DriversModule,
+    ConfigsModule,
   ],
   controllers: [],
   providers: [],

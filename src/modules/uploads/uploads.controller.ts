@@ -18,6 +18,7 @@ import { Public } from 'src/common/decorators';
 
 @Controller('uploads')
 @ApiTags('Uploads')
+// @UseGuards(AuthGuard)
 export class UploadsController {
   constructor(private readonly uploadsService: UploadsService) {}
 
@@ -37,7 +38,7 @@ export class UploadsController {
   }
 
   @Get(':id')
-  @Public()
+  // @Public()
   async download(@Param('id') id: string, @Res() res: Response) {
     const file = await this.uploadsService.findOne({ where: { id } });
     if (!file) throw new NotFoundException();
@@ -45,7 +46,6 @@ export class UploadsController {
     const filePath = path.join(__dirname, `../../../uploads`);
     const fullPath = path.join(filePath, file.path);
 
-    console.log(fullPath);
     res.download(fullPath, file.name);
   }
 }

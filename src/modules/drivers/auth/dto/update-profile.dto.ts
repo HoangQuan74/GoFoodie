@@ -3,8 +3,6 @@ import {
   IsNotEmpty,
   IsEmail,
   IsPhoneNumber,
-  IsBoolean,
-  ValidateIf,
   IsInt,
   IsOptional,
   ValidateNested,
@@ -97,23 +95,16 @@ export class CreateDriverVehicleDto {
 
 export class UpdateDriverProfileDto {
   @ApiProperty()
-  @IsPhoneNumber('VN', { message: EXCEPTIONS.INVALID_PHONE })
-  phoneNumber: string;
-
-  @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  @ValidateIf((o) => !o.isDraft)
   fullName: string;
 
   @ApiProperty()
   @IsEmail({}, { message: EXCEPTIONS.INVALID_EMAIL })
-  @ValidateIf((o) => !o.isDraft)
   email: string;
 
   @ApiProperty()
   @IsInt()
-  @ValidateIf((o) => !o.isDraft)
   activeAreaId: number;
 
   @ApiPropertyOptional()
@@ -124,26 +115,22 @@ export class UpdateDriverProfileDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  @ValidateIf((o) => !o.isDraft)
   avatar: string;
 
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  @ValidateIf((o) => !o.isDraft)
   identityCardFrontId: string;
 
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  @ValidateIf((o) => !o.isDraft)
   identityCardBackId: string;
 
   @ApiProperty({ type: [CreateDriverBankDto] })
   // @ValidateNested({ each: true })
   @Type(() => CreateDriverBankDto)
   @IsNotEmpty()
-  @ValidateIf((o) => !o.isDraft)
   @ArrayMaxSize(1)
   banks: CreateDriverBankDto[];
 
@@ -151,14 +138,12 @@ export class UpdateDriverProfileDto {
   @ValidateNested({ each: true })
   @Type(() => CreateDriverServiceTypeDto)
   @IsNotEmpty()
-  @ValidateIf((o) => !o.isDraft)
   serviceTypes: CreateDriverServiceTypeDto[];
 
   @ApiProperty({ type: [CreateDriverEmergencyContactDto] })
   // @ValidateNested({ each: true })
   @Type(() => CreateDriverEmergencyContactDto)
   @IsNotEmpty()
-  @ValidateIf((o) => !o.isDraft)
   @ArrayMaxSize(1)
   emergencyContacts: CreateDriverEmergencyContactDto[];
 
@@ -166,6 +151,5 @@ export class UpdateDriverProfileDto {
   // @ValidateNested()
   @Type(() => CreateDriverVehicleDto)
   @IsNotEmpty()
-  @ValidateIf((o) => !o.isDraft)
   vehicle: CreateDriverVehicleDto;
 }
