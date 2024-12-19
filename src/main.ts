@@ -9,6 +9,16 @@ import * as cookieParser from 'cookie-parser';
 import { corsConfig } from './config/cors.config';
 import { MerchantModule } from './modules/merchant/merchant.module';
 import { DriversModule } from './modules/drivers/drivers.module';
+import { UploadsModule } from './modules/uploads/uploads.module';
+import { BanksModule } from './modules/banks/banks.module';
+import { ConfigsModule } from './modules/configs/configs.module';
+import { RelationshipsModule } from './modules/relationships/relationships.module';
+import { ProvincesModule } from './modules/provinces/provinces.module';
+import { DistrictsModule } from './modules/districts/districts.module';
+import { WardsModule } from './modules/wards/wards.module';
+import { ServiceTypesModule } from './modules/service-types/service-types.module';
+import { ServiceGroupsModule } from './modules/service-groups/service-groups.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 const { NODE_ENV = 'development', PORT = 3000 } = process.env;
 
@@ -45,7 +55,22 @@ async function bootstrap() {
 
   // show swagger only development
   if (NODE_ENV === 'development') {
-    const document = SwaggerModule.createDocument(app, config.build());
+    const commonModules = [
+      UploadsModule,
+      BanksModule,
+      ConfigsModule,
+      RelationshipsModule,
+      ProvincesModule,
+      DistrictsModule,
+      WardsModule,
+      ServiceTypesModule,
+      ServiceGroupsModule,
+    ];
+
+    const document = SwaggerModule.createDocument(app, config.build(), {
+      include: [AdminModule, ...commonModules],
+      deepScanRoutes: true,
+    });
 
     Object.values((document as OpenAPIObject).paths).forEach((path: any) => {
       Object.values(path).forEach((method: any) => {
@@ -60,7 +85,7 @@ async function bootstrap() {
     // show swagger for merchant
     config.setTitle('API Merchant Documentation');
     const documentMerchant = SwaggerModule.createDocument(app, config.build(), {
-      include: [MerchantModule],
+      include: [MerchantModule, ...commonModules],
       deepScanRoutes: true,
     });
 
@@ -76,7 +101,7 @@ async function bootstrap() {
 
     config.setTitle('API Driver Documentation');
     const documentDriver = SwaggerModule.createDocument(app, config.build(), {
-      include: [DriversModule],
+      include: [DriversModule, ...commonModules],
       deepScanRoutes: true,
     });
 

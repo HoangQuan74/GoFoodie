@@ -12,8 +12,10 @@ import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { AuthGuard } from '../auth/auth.guard';
 import { PaginationQuery } from 'src/common/query';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('stores')
+@ApiTags('Merchant Stores')
 @UseGuards(AuthGuard)
 export class StoresController {
   constructor(
@@ -60,7 +62,9 @@ export class StoresController {
     const where: FindOptionsWhere<StoreEntity>[] = [{ merchantId: user.id }];
     user.storeId && where.push({ id: user.storeId });
 
-    const options = { skip: (page - 1) * limit, take: limit, where };
+    const options = { 
+      // select: ['id', 'name', 'storeCode', 'approvalStatus', 'createdAt', 'updatedAt'],
+      skip: (page - 1) * limit, take: limit, where };
     const [items, total] = await this.storesService.findAndCount(options);
 
     return { items, total };
