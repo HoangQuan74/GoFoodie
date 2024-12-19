@@ -9,10 +9,15 @@ export class ConfigsController {
   constructor(private readonly configsService: ConfigsService) {}
 
   @Get()
-  @ApiQuery({ name: 'type', type: 'enum', enum: EConfigType, required: false })
+  @ApiQuery({ name: 'type', type: 'enum', enum: EConfigType, required: true })
   @Public()
-  find(@Query() { type }: { type: EConfigType }) {
-    const options = type ? { where: { type } } : {};
-    return this.configsService.find(options);
+  async find(@Query() { type }: { type: EConfigType }) {
+    const options = { where: { type } };
+    const configs = await this.configsService.find(options);
+
+    return configs.reduce((acc, config) => {
+      acc[config.key] = config.value;
+      return acc;
+    }, {});
   }
 }

@@ -14,7 +14,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import * as path from 'path';
-import { Public } from 'src/common/decorators';
 
 @Controller('uploads')
 @ApiTags('Uploads')
