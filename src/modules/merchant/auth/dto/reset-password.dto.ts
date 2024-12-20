@@ -17,3 +17,14 @@ export class ResetPasswordByEmailDto {
   @IsStrongPassword()
   password: string;
 }
+
+export class ResetPasswordBySmsDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  idToken: string;
+
+  @ApiProperty()
+  @IsStrongPassword()
+  password: string;
+}

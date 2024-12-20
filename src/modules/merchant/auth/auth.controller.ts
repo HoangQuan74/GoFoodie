@@ -10,7 +10,7 @@ import { AuthGuard } from './auth.guard';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { StoresService } from 'src/modules/admin/stores/stores.service';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { ResetPasswordByEmailDto } from './dto/reset-password.dto';
+import { ResetPasswordByEmailDto, ResetPasswordBySmsDto } from './dto/reset-password.dto';
 import { RegisterEmailCompletedDto, RegisterSmsDto } from './dto/register.dto';
 import { JwtPayload } from 'src/common/interfaces';
 import { CheckOtpDto } from './dto/check-otp.dto';
@@ -116,6 +116,13 @@ export class AuthController {
   resetPassword(@Body() body: ResetPasswordByEmailDto) {
     const { otp, email, password } = body;
     return this.authService.resetPassword(otp, email, password);
+  }
+
+  @Post('reset-password-by-sms')
+  @Public()
+  resetPasswordBySms(@Body() body: ResetPasswordBySmsDto) {
+    const { idToken, password } = body;
+    return this.authService.resetPasswordBySms(idToken, password);
   }
 
   @Post('change-password')

@@ -153,6 +153,22 @@ export class AuthService {
     await this.merchantsService.deleteOtp(admin.id, EAdminOtpType.ForgotPassword);
   }
 
+  async resetPasswordBySms(idToken: string, password: string) {
+    try {
+      const { phone_number } = await this.firebaseService.verifyIdToken(idToken);
+      const phone = phone_number.replace('+84', '0');
+
+      const merchant = await this.merchantsService.findOne({ where: { phone } });
+      if (!merchant) throw new NotFoundException();
+
+      const hashedPassword = hashPassword(password);
+      merchant.password = hashedPassword;
+      await this.merchantsService.save(merchant);
+    } catch (error) {
+      throw new UnauthorizedException();
+    }
+  }
+
   async changePassword(adminId: number, currentPassword: string, newPassword: string) {
     const merchant = await this.merchantsService.findOne({ where: { id: adminId }, select: ['id', 'password'] });
     if (!merchant) throw new NotFoundException();
