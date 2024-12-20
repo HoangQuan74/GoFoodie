@@ -79,7 +79,12 @@ export class AuthService {
         .setParameter('approvalStatus', EStoreApprovalStatus.Approved)
         .getOne();
 
-      if (!merchant) throw new UnauthorizedException(EXCEPTIONS.NOT_FOUND);
+      if (!merchant) {
+        merchant = new MerchantEntity();
+        merchant.phone = phone;
+        merchant = await this.merchantsService.save(merchant);
+      }
+
       if (merchant.status !== EMerchantStatus.Active) throw new UnauthorizedException(EXCEPTIONS.ACCOUNT_NOT_ACTIVE);
 
       const stores = merchant.store ? [merchant.store, ...merchant.stores] : merchant.stores;
