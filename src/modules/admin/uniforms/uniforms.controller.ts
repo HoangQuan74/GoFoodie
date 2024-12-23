@@ -20,7 +20,7 @@ export class UniformsController {
 
   @Get()
   async find() {
-    const options = { where: {}, relations: ['sizes', 'uniformImages'] };
+    const options = { where: {}, relations: ['sizes', 'uniformImages', 'contractFile'] };
     return this.uniformsService.findOne(options);
   }
 }
