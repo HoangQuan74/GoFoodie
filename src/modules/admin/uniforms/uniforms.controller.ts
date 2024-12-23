@@ -7,7 +7,7 @@ import { ApiTags } from '@nestjs/swagger';
 @Controller('driver-uniforms')
 @ApiTags('Driver Uniforms')
 @UseGuards(AuthGuard)
-export class DriverUniformsController {
+export class UniformsController {
   constructor(private readonly uniformsService: UniformsService) {}
 
   @Post()

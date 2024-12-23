@@ -3,10 +3,9 @@ import { UniformsService } from './uniforms.service';
 import { UniformsController } from './uniforms.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UniformEntity } from 'src/database/entities/uniform.entity';
-import { AdminsModule } from '../admins/admins.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UniformEntity]), AdminsModule],
+  imports: [TypeOrmModule.forFeature([UniformEntity])],
   controllers: [UniformsController],
   providers: [UniformsService],
   exports: [UniformsService],
