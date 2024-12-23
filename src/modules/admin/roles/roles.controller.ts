@@ -20,8 +20,10 @@ import { Roles } from 'src/common/decorators';
 import { AuthGuard } from '../auth/auth.guard';
 import { AdminRolesGuard } from 'src/common/guards';
 import { OPERATIONS } from 'src/common/constants/operation.constant';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('roles')
+@ApiTags('Roles')
 @UseGuards(AuthGuard, AdminRolesGuard)
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}

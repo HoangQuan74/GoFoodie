@@ -1,6 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ArrayMinSize, IsArray, IsInt, IsOptional, IsPositive, Min } from 'class-validator';
+import {
+  ArrayMinSize,
+  IsArray,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsPositive,
+  IsString,
+  IsUUID,
+  Min,
+} from 'class-validator';
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from '../constants';
 
 export class PaginationQuery {
@@ -39,4 +49,16 @@ export class IdentityQuery {
   @IsInt({ each: true })
   @ArrayMinSize(1)
   ids: number[];
+}
+
+export class IdDto {
+  @ApiProperty()
+  @IsInt()
+  id: number;
+}
+
+export class IdUuidDto {
+  @ApiProperty()
+  @IsUUID()
+  id: string;
 }

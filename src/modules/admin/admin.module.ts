@@ -14,6 +14,7 @@ import { DriversModule } from './drivers/drivers.module';
 import { OperationsModule } from './operations/operations.module';
 import { RolesModule } from './roles/roles.module';
 import { RequestsModule } from './requests/requests.module';
+import { DriverUniformsModule } from './driver-uniforms/driver-uniforms.module';
 
 @Module({
   imports: [
@@ -76,6 +77,7 @@ import { RequestsModule } from './requests/requests.module';
     OperationsModule,
     RolesModule,
     RequestsModule,
+    DriverUniformsModule,
   ],
   providers: [
     {
