@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
-import { DriverUniformsService } from './driver-uniforms.service';
+import { UniformsService } from './uniforms.service';
 import { CreateDriverUniformDto } from './dto/create-driver-uniform.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiTags } from '@nestjs/swagger';
@@ -8,19 +8,19 @@ import { ApiTags } from '@nestjs/swagger';
 @ApiTags('Driver Uniforms')
 @UseGuards(AuthGuard)
 export class DriverUniformsController {
-  constructor(private readonly driverUniformsService: DriverUniformsService) {}
+  constructor(private readonly uniformsService: UniformsService) {}
 
   @Post()
   async create(@Body() createDriverUniformDto: CreateDriverUniformDto) {
-    const uniform = await this.driverUniformsService.findOne({ where: {} });
+    const uniform = await this.uniformsService.findOne({ where: {} });
     Object.assign(createDriverUniformDto, { id: uniform?.id });
 
-    return this.driverUniformsService.save(createDriverUniformDto);
+    return this.uniformsService.save(createDriverUniformDto);
   }
 
   @Get()
   async find() {
     const options = { where: {}, relations: ['sizes', 'uniformImages'] };
-    return this.driverUniformsService.findOne(options);
+    return this.uniformsService.findOne(options);
   }
 }

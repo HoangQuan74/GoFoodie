@@ -14,7 +14,7 @@ import { DriversModule } from './drivers/drivers.module';
 import { OperationsModule } from './operations/operations.module';
 import { RolesModule } from './roles/roles.module';
 import { RequestsModule } from './requests/requests.module';
-import { DriverUniformsModule } from './driver-uniforms/driver-uniforms.module';
+import { UniformsModule } from './uniforms/uniforms.module';
 
 @Module({
   imports: [
@@ -66,7 +66,7 @@ import { DriverUniformsModule } from './driver-uniforms/driver-uniforms.module';
       },
       {
         path: 'admin',
-        module: DriverUniformsModule,
+        module: UniformsModule,
       },
     ]),
     AdminsModule,
@@ -81,7 +81,7 @@ import { DriverUniformsModule } from './driver-uniforms/driver-uniforms.module';
     OperationsModule,
     RolesModule,
     RequestsModule,
-    DriverUniformsModule,
+    UniformsModule,
   ],
   providers: [
     {

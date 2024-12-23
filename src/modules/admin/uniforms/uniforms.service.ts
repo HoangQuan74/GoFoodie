@@ -4,21 +4,21 @@ import { DeepPartial, FindManyOptions, FindOneOptions, Repository } from 'typeor
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
-export class DriverUniformsService {
+export class UniformsService {
   constructor(
     @InjectRepository(UniformEntity)
-    private driverUniformRepository: Repository<UniformEntity>,
+    private uniformRepository: Repository<UniformEntity>,
   ) {}
 
   async save(driverUniform: DeepPartial<UniformEntity>) {
-    return this.driverUniformRepository.save(driverUniform);
+    return this.uniformRepository.save(driverUniform);
   }
 
   async find(options?: FindManyOptions<UniformEntity>) {
-    return this.driverUniformRepository.find(options);
+    return this.uniformRepository.find(options);
   }
 
   async findOne(options: FindOneOptions<UniformEntity>) {
-    return this.driverUniformRepository.findOne(options);
+    return this.uniformRepository.findOne(options);
   }
 }

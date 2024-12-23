@@ -5,10 +5,12 @@ import { DriversService } from './drivers.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DriverEntity } from 'src/database/entities/driver.entity';
 import { DriversController } from './drivers.controller';
+import { UniformsModule } from '../admin/uniforms/uniforms.module';
 
 @Module({
   imports: [
     AuthModule,
+    UniformsModule,
     TypeOrmModule.forFeature([DriverEntity]),
     RouterModule.register([{ path: 'driver', module: AuthModule }]),
   ],

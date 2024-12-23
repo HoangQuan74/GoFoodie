@@ -13,6 +13,10 @@ export class RegisterUniformDto {
   @IsNotEmpty()
   address: string;
 
+  @ApiProperty()
+  @IsInt()
+  sizeId: number;
+
   @ApiProperty({ enum: EDriverUniformPaymentMethod })
   @IsEnum(EDriverUniformPaymentMethod)
   paymentMethod: EDriverUniformPaymentMethod;
