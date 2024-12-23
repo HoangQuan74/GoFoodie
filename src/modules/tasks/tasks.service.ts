@@ -12,7 +12,10 @@ export class TasksService {
     private readonly fileRepository: Repository<FileEntity>,
   ) {}
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    disabled: true,
+  })
   async cleanUpGarbageFiles() {
     const duration = 24 * 60 * 60 * 1000;
     const files = await this.fileRepository.findBy({ createdAt: LessThan(new Date(Date.now() - duration)) });
@@ -20,7 +23,7 @@ export class TasksService {
     for (const file of files) {
       await this.fileRepository
         .remove(file)
-        .then(() => deleteFile(file.name))
+        .then(() => deleteFile(file.path))
         .catch(() => {});
     }
   }

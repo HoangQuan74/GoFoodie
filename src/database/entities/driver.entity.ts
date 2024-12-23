@@ -7,6 +7,7 @@ import { DriverEmergencyContactEntity } from './driver-emergency-contact.entity'
 import { DriverVehicleEntity } from './driver-vehicle.entity';
 import { AdminEntity } from './admin.entity';
 import { ProvinceEntity } from './province.entity';
+import { FileEntity } from './file.entity';
 
 @Entity('drivers')
 export class DriverEntity extends BaseEntity {
@@ -92,4 +93,16 @@ export class DriverEntity extends BaseEntity {
   @ManyToOne(() => ProvinceEntity, (province) => province.id)
   @JoinColumn({ name: 'active_area_id' })
   activeArea: ProvinceEntity;
+
+  @ManyToOne(() => FileEntity, (file) => file.id)
+  @JoinColumn({ name: 'identity_card_front_id' })
+  identityCardFront: FileEntity;
+
+  @ManyToOne(() => FileEntity, (file) => file.id)
+  @JoinColumn({ name: 'identity_card_back_id' })
+  identityCardBack: FileEntity;
+
+  @ManyToOne(() => FileEntity, (file) => file.id)
+  @JoinColumn({ name: 'avatar' })
+  avatarFile: FileEntity;
 }
