@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
 import { FileEntity } from './file.entity';
 import { BaseEntity } from './base.entity';
-import { DriverUniformSizeEntity } from './uniform-size.entity';
+import { UniformSizeEntity } from './uniform-size.entity';
 
 @Entity('driver_uniforms')
 export class DriverUniformEntity extends BaseEntity {
@@ -25,13 +25,13 @@ export class DriverUniformEntity extends BaseEntity {
   @Column({ name: 'contract_file_id', nullable: true })
   contractFileId: string;
 
-  @ManyToMany(() => DriverUniformSizeEntity, (size) => size.id)
+  @ManyToMany(() => UniformSizeEntity, (size) => size.id)
   @JoinTable({
     name: 'driver_uniform_sizes',
     joinColumn: { name: 'driver_uniform_id' },
     inverseJoinColumn: { name: 'driver_uniform_size_id' },
   })
-  sizes: DriverUniformSizeEntity[];
+  sizes: UniformSizeEntity[];
 
   @ManyToOne(() => FileEntity, (file) => file.id)
   @JoinColumn({ name: 'contract_file_id' })

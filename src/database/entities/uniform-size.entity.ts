@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('uniform_sizes')
-export class DriverUniformSizeEntity {
+export class UniformSizeEntity {
   @PrimaryGeneratedColumn()
   id: number;
 

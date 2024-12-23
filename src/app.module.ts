@@ -22,6 +22,7 @@ import { MerchantModule } from './modules/merchant/merchant.module';
 import { FirebaseModule } from './modules/firebase/firebase.module';
 import { DriversModule } from './modules/drivers/drivers.module';
 import { ConfigsModule } from './modules/configs/configs.module';
+import { UniformSizesModule } from './modules/uniform-sizes/uniform-sizes.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { ConfigsModule } from './modules/configs/configs.module';
     FirebaseModule,
     DriversModule,
     ConfigsModule,
+    UniformSizesModule,
   ],
   controllers: [],
   providers: [],
