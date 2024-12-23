@@ -8,6 +8,8 @@ import { DriverVehicleEntity } from './driver-vehicle.entity';
 import { AdminEntity } from './admin.entity';
 import { ProvinceEntity } from './province.entity';
 import { FileEntity } from './file.entity';
+import { DriverSignatureEntity } from './driver-signature.entity';
+import { DriverUniformEntity } from './driver-uniform.entity';
 
 @Entity('drivers')
 export class DriverEntity extends BaseEntity {
@@ -105,4 +107,10 @@ export class DriverEntity extends BaseEntity {
   @ManyToOne(() => FileEntity, (file) => file.id)
   @JoinColumn({ name: 'avatar' })
   avatarFile: FileEntity;
+
+  @OneToOne(() => DriverSignatureEntity, (signature) => signature.driver, { cascade: true })
+  signature: DriverSignatureEntity;
+
+  @OneToMany(() => DriverUniformEntity, (uniform) => uniform.driver, { cascade: true })
+  uniforms: DriverUniformEntity[];
 }

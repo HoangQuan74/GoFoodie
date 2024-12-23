@@ -4,6 +4,7 @@ import { RouterModule } from '@nestjs/core';
 import { DriversService } from './drivers.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DriverEntity } from 'src/database/entities/driver.entity';
+import { DriversController } from './drivers.controller';
 
 @Module({
   imports: [
@@ -11,7 +12,7 @@ import { DriverEntity } from 'src/database/entities/driver.entity';
     TypeOrmModule.forFeature([DriverEntity]),
     RouterModule.register([{ path: 'driver', module: AuthModule }]),
   ],
-  controllers: [],
+  controllers: [DriversController],
   providers: [DriversService],
   exports: [DriversService],
 })

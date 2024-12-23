@@ -64,6 +64,10 @@ import { DriverUniformsModule } from './driver-uniforms/driver-uniforms.module';
         path: 'admin',
         module: RequestsModule,
       },
+      {
+        path: 'admin',
+        module: DriverUniformsModule,
+      },
     ]),
     AdminsModule,
     MerchantsModule,

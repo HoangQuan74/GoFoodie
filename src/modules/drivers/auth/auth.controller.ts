@@ -2,7 +2,7 @@ import { Controller, Post, Body, Get, UseGuards, Patch, NotFoundException, Req }
 import { AuthService } from './auth.service';
 import { CurrentUser, Public } from 'src/common/decorators';
 import { LoginDto, LoginSmsDto } from './dto/login.dto';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtPayload } from 'src/common/interfaces';
 import { AuthGuard } from './auth.guard';
 import { UpdateDriverProfileDto } from './dto/update-profile.dto';
@@ -12,6 +12,7 @@ import { RefreshTokenDto } from './refresh-token.dto';
 import { Request } from 'express';
 
 @Controller('auth')
+@ApiTags('Auth')
 @UseGuards(AuthGuard)
 export class AuthController {
   constructor(
@@ -45,7 +46,19 @@ export class AuthController {
   @Get('profile')
   @ApiOperation({ summary: 'Thông tin tài khoản' })
   getProfile(@CurrentUser() user: JwtPayload) {
-    return user;
+    const { id } = user;
+    return this.driversService.findOne({
+      where: { id },
+      relations: {
+        vehicle: true,
+        signature: true,
+        banks: {
+          bank: true,
+          bankBranch: true,
+        },
+        emergencyContacts: { relationship: true },
+      },
+    });
   }
 
   @Patch('profile')

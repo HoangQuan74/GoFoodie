@@ -1,24 +1,24 @@
 import { Injectable } from '@nestjs/common';
-import { DriverUniformEntity } from 'src/database/entities/driver-uniform.entity';
+import { UniformEntity } from 'src/database/entities/uniform.entity';
 import { DeepPartial, FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class DriverUniformsService {
   constructor(
-    @InjectRepository(DriverUniformEntity)
-    private driverUniformRepository: Repository<DriverUniformEntity>,
+    @InjectRepository(UniformEntity)
+    private driverUniformRepository: Repository<UniformEntity>,
   ) {}
 
-  async save(driverUniform: DeepPartial<DriverUniformEntity>) {
+  async save(driverUniform: DeepPartial<UniformEntity>) {
     return this.driverUniformRepository.save(driverUniform);
   }
 
-  async find(options?: FindManyOptions<DriverUniformEntity>) {
+  async find(options?: FindManyOptions<UniformEntity>) {
     return this.driverUniformRepository.find(options);
   }
 
-  async findOne(options: FindOneOptions<DriverUniformEntity>) {
+  async findOne(options: FindOneOptions<UniformEntity>) {
     return this.driverUniformRepository.findOne(options);
   }
 }
