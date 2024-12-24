@@ -52,6 +52,6 @@ export class UploadsController {
     const filePath = path.join(__dirname, `../../../uploads`);
     const fullPath = path.join(filePath, file.path);
 
-    res.download(fullPath, file.name);
+    return res.status(200).contentType(file.mimetype).sendFile(fullPath);
   }
 }

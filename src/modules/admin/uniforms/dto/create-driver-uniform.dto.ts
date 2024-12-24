@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsNumber, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsNumber, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
 import { IdDto, IdUuidDto } from 'src/common/query';
 
 export class CreateDriverUniformDto {
@@ -16,6 +16,10 @@ export class CreateDriverUniformDto {
   @IsNumber()
   price: number;
 
+  @ApiProperty()
+  @IsNumber()
+  deliveryFee: number;
+
   @ApiProperty({ type: [IdDto] })
   @ValidateNested({ each: true })
   @IsArray()
@@ -26,6 +30,7 @@ export class CreateDriverUniformDto {
   @ValidateNested({ each: true })
   @IsArray()
   @Type(() => IdUuidDto)
+  @ArrayMaxSize(5)
   uniformImages: IdUuidDto[];
 
   @ApiProperty()
