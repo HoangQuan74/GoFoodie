@@ -11,7 +11,7 @@ export class UploadsService {
     private readonly fileRepository: Repository<FileEntity>,
   ) {}
 
-  async upload(file: Express.Multer.File): Promise<FileEntity> {
+  async upload(file: Express.Multer.File, isPublic = false): Promise<FileEntity> {
     file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8');
     const path = await saveFile(file);
 
@@ -20,6 +20,7 @@ export class UploadsService {
     newFile.size = file.size;
     newFile.mimetype = file.mimetype;
     newFile.path = path;
+    newFile.isPublic = isPublic;
 
     return this.fileRepository.save(newFile);
   }

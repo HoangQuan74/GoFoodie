@@ -17,4 +17,8 @@ export class ProvincesService {
   async findAndCount(options?: FindManyOptions<ProvinceEntity>): Promise<[ProvinceEntity[], number]> {
     return this.provinceRepository.findAndCount(options);
   }
+
+  createQueryBuilder(alias: string) {
+    return this.provinceRepository.createQueryBuilder(alias);
+  }
 }

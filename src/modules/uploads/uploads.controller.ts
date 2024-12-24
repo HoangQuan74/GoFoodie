@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -27,11 +28,14 @@ export class UploadsController {
   @Post()
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-    schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } },
+    schema: {
+      type: 'object',
+      properties: { file: { type: 'string', format: 'binary' }, isPublic: { type: 'boolean' } },
+    },
   })
   @UseInterceptors(FileInterceptor('file'))
-  async upload(@UploadedFile() file: Express.Multer.File) {
-    return this.uploadsService.upload(file);
+  async upload(@UploadedFile() file: Express.Multer.File, @Body('isPublic') isPublic: boolean) {
+    return this.uploadsService.upload(file, isPublic);
   }
 
   @Delete(':id')

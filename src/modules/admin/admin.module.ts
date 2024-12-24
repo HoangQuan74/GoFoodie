@@ -15,6 +15,8 @@ import { OperationsModule } from './operations/operations.module';
 import { RolesModule } from './roles/roles.module';
 import { RequestsModule } from './requests/requests.module';
 import { UniformsModule } from './uniforms/uniforms.module';
+import { BannersModule } from './banners/banners.module';
+import { OptionsModule } from './options/options.module';
 
 @Module({
   imports: [
@@ -68,6 +70,14 @@ import { UniformsModule } from './uniforms/uniforms.module';
         path: 'admin',
         module: UniformsModule,
       },
+      {
+        path: 'admin',
+        module: BannersModule,
+      },
+      {
+        path: 'admin',
+        module: OptionsModule,
+      },
     ]),
     AdminsModule,
     MerchantsModule,
@@ -82,6 +92,8 @@ import { UniformsModule } from './uniforms/uniforms.module';
     RolesModule,
     RequestsModule,
     UniformsModule,
+    BannersModule,
+    OptionsModule,
   ],
   providers: [
     {

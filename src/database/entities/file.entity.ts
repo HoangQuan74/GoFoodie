@@ -17,6 +17,9 @@ export class FileEntity {
   @Column()
   path: string;
 
+  @Column({ name: 'is_public', default: false })
+  isPublic: boolean;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }
