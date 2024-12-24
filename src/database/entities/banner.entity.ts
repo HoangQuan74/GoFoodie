@@ -1,9 +1,10 @@
-import { Column, Entity, OneToMany } from 'typeorm';
+import { AfterLoad, Column, Entity, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { EBannerDisplayType, EBannerPosition, EBannerType } from 'src/common/enums';
 import { EAppType } from 'src/common/enums/config.enum';
 import { BannerImageEntity } from './banner-image.entity';
 import { BannerCriteriaEntity } from './banner-criteria.entity';
+import { APP_TYPES, BANNER_DISPLAY_TYPES, BANNER_POSITIONS } from 'src/common/constants';
 
 @Entity('banners')
 export class BannerEntity extends BaseEntity {
@@ -36,4 +37,15 @@ export class BannerEntity extends BaseEntity {
 
   @OneToMany(() => BannerCriteriaEntity, (criteria) => criteria.banner, { cascade: true })
   criteria: BannerCriteriaEntity[];
+
+  appTypeLabel: string;
+  displayTypeLabel: string;
+  positionLabel: string;
+
+  @AfterLoad()
+  afterLoad() {
+    this.appTypeLabel = APP_TYPES.find((type) => type.value === this.appType)?.label;
+    this.displayTypeLabel = BANNER_DISPLAY_TYPES.find((type) => type.value === this.displayType)?.label;
+    this.positionLabel = BANNER_POSITIONS.find((position) => position.value === this.position)?.label;
+  }
 }

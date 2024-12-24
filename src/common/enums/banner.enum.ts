@@ -5,9 +5,10 @@ export enum EBannerType {
 }
 
 export enum EBannerPosition {
-  Home = 'home',
-  Category = 'category',
-  Product = 'product',
+  MerchantOnboarding = 'merchant-onboarding',
+  MerchantHome1 = 'merchant-home-1',
+  MerchantHome2 = 'merchant-home-2',
+  DriverOnboarding = 'driver-onboarding',
 }
 
 export enum EBannerDisplayType {
