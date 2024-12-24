@@ -31,7 +31,7 @@ export class BannersController {
   @Post()
   create(@Body() createBannerDto: CreateBannerDto) {
     return this.dataSource.transaction(async (manager) => {
-      const lastBanner = await manager.findOne(BannerEntity, { order: { id: 'DESC' }, withDeleted: true });
+      const lastBanner = await manager.findOne(BannerEntity, { where: {}, order: { id: 'DESC' }, withDeleted: true });
       const lastBannerId = lastBanner ? lastBanner.id : 0;
 
       const code = `ID${(lastBannerId + 1).toString().padStart(6, '0')}`;
