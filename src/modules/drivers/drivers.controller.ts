@@ -64,8 +64,7 @@ export class DriversController {
   }
 
   @Get('uniforms')
-  @Public()
   async getUniformInfo() {
-    return this.uniformsService.findOne({ where: {}, relations: ['sizes'] });
+    return this.uniformsService.findOne({ where: {}, relations: ['sizes', 'uniformImages'] });
   }
 }
