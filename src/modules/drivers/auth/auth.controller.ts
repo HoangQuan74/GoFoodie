@@ -74,6 +74,7 @@ export class AuthController {
 
     if (typeof isDraft === 'boolean' && driver.approvalStatus !== EDriverApprovalStatus.Approved) {
       driver.approvalStatus = isDraft ? EDriverApprovalStatus.Draft : EDriverApprovalStatus.Pending;
+      !isDraft && (driver.submittedAt = new Date());
     }
 
     return this.driversService.save(driver);

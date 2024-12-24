@@ -4,7 +4,7 @@ import { AuthGuard } from './auth/auth.guard';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SignContractDto } from './dto/sign-contract.dto';
 import { RegisterUniformDto } from './dto/register-uniform.dto';
-import { CurrentUser } from 'src/common/decorators';
+import { CurrentUser, Public } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { DriverUniformEntity } from 'src/database/entities/driver-uniform.entity';
 import { UniformsService } from './uniforms/uniforms.service';
@@ -53,7 +53,7 @@ export class DriversController {
     return this.driversService.save(driver);
   }
 
-  @Get('uniforms')
+  @Get('register-uniforms')
   async getUniforms(@CurrentUser() user: JwtPayload) {
     const { id } = user;
 
@@ -61,5 +61,11 @@ export class DriversController {
     if (!driver) throw new NotFoundException();
 
     return driver.uniforms;
+  }
+
+  @Get('uniforms')
+  @Public()
+  async getUniformInfo() {
+    return this.uniformsService.findOne({ where: {}, relations: ['sizes'] });
   }
 }
