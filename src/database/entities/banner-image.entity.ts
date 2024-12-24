@@ -27,7 +27,7 @@ export class BannerImageEntity extends BaseEntity {
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
-  @ManyToOne(() => BannerEntity, (banner) => banner.images, { onDelete: 'CASCADE' })
+  @ManyToOne(() => BannerEntity, (banner) => banner.images, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
   @JoinColumn({ name: 'banner_id' })
   banner: BannerEntity;
 

@@ -1,15 +1,19 @@
-import { AfterLoad, Column, Entity, OneToMany } from 'typeorm';
+import { AfterLoad, Column, Entity, Generated, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { EBannerDisplayType, EBannerPosition, EBannerType } from 'src/common/enums';
 import { EAppType } from 'src/common/enums/config.enum';
 import { BannerImageEntity } from './banner-image.entity';
 import { BannerCriteriaEntity } from './banner-criteria.entity';
 import { APP_TYPES, BANNER_DISPLAY_TYPES, BANNER_POSITIONS } from 'src/common/constants';
+import { AdminEntity } from './admin.entity';
 
 @Entity('banners')
 export class BannerEntity extends BaseEntity {
   @Column()
   name: string;
+
+  @Column()
+  code: string;
 
   @Column({ name: 'app_type', type: 'enum', enum: EAppType })
   appType: EAppType;
@@ -32,11 +36,18 @@ export class BannerEntity extends BaseEntity {
   @Column({ nullable: true })
   description: string;
 
+  @Column({ name: 'created_by_id', nullable: true })
+  createdById: number;
+
   @OneToMany(() => BannerImageEntity, (image) => image.banner, { cascade: true })
   images: BannerImageEntity[];
 
   @OneToMany(() => BannerCriteriaEntity, (criteria) => criteria.banner, { cascade: true })
   criteria: BannerCriteriaEntity[];
+
+  @ManyToOne(() => AdminEntity, (admin) => admin.id)
+  @JoinColumn({ name: 'created_by_id' })
+  createdBy: AdminEntity;
 
   appTypeLabel: string;
   displayTypeLabel: string;

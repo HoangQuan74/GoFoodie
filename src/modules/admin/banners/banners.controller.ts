@@ -1,16 +1,22 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { BannerEntity } from 'src/database/entities/banner.entity';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { BannersService } from './banners.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { BANNER_TYPES, BANNER_DISPLAY_TYPES } from 'src/common/constants';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateBannerDto } from './dto/create-banner.dto';
 import { QueryBannerDto } from './dto/query-banner.dto';
+import { DataSource } from 'typeorm';
+import { UpdateBannerDto } from './dto/update-banner.dto';
 
 @Controller('banners')
 @ApiTags('Banners')
 @UseGuards(AuthGuard)
 export class BannersController {
-  constructor(private readonly bannersService: BannersService) {}
+  constructor(
+    private readonly bannersService: BannersService,
+    private readonly dataSource: DataSource,
+  ) {}
 
   @Get('types')
   getTypes() {
@@ -24,7 +30,13 @@ export class BannersController {
 
   @Post()
   create(@Body() createBannerDto: CreateBannerDto) {
-    return this.bannersService.save(createBannerDto);
+    return this.dataSource.transaction(async (manager) => {
+      const lastBanner = await manager.findOne(BannerEntity, { order: { id: 'DESC' }, withDeleted: true });
+      const lastBannerId = lastBanner ? lastBanner.id : 0;
+
+      const code = `ID${(lastBannerId + 1).toString().padStart(6, '0')}`;
+      return manager.save(BannerEntity, { ...createBannerDto, code });
+    });
   }
 
   @Get()
@@ -34,6 +46,8 @@ export class BannersController {
 
     const queryBuilder = this.bannersService
       .createQueryBuilder('banner')
+      .addSelect(['createdBy.id', 'createdBy.name'])
+      .leftJoin('banner.createdBy', 'createdBy')
       .orderBy('banner.id', 'DESC')
       .take(limit)
       .skip((page - 1) * limit);
@@ -59,10 +73,14 @@ export class BannersController {
     return banner;
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateBannerDto: UpdateBannerDto) {
-  //   return this.bannersService.update(+id, updateBannerDto);
-  // }
+  @Patch(':id')
+  async update(@Param('id') id: number, @Body() updateBannerDto: UpdateBannerDto) {
+    const banner = await this.bannersService.findOne({ where: { id } });
+    if (!banner) throw new NotFoundException();
+
+    Object.assign(banner, updateBannerDto);
+    return this.bannersService.save(banner);
+  }
 
   @Delete(':id')
   async remove(@Param('id') id: number) {

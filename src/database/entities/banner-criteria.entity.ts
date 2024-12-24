@@ -14,7 +14,7 @@ export class BannerCriteriaEntity extends BaseEntity {
   @Column({ type: 'simple-array' })
   value: number[];
 
-  @ManyToOne(() => BannerEntity, (banner) => banner.id, { onDelete: 'CASCADE' })
+  @ManyToOne(() => BannerEntity, (banner) => banner.id, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
   @JoinColumn({ name: 'banner_id' })
   banner: BannerEntity;
 }
