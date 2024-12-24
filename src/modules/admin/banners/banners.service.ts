@@ -27,4 +27,8 @@ export class BannersService {
   async remove(entity: BannerEntity) {
     return this.bannerRepository.softRemove(entity);
   }
+
+  createQueryBuilder(alias?: string) {
+    return this.bannerRepository.createQueryBuilder(alias);
+  }
 }
