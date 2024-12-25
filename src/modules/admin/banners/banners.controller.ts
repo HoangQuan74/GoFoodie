@@ -6,7 +6,7 @@ import { BANNER_TYPES, BANNER_DISPLAY_TYPES } from 'src/common/constants';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateBannerDto } from './dto/create-banner.dto';
 import { QueryBannerDto } from './dto/query-banner.dto';
-import { DataSource } from 'typeorm';
+import { Brackets, DataSource } from 'typeorm';
 import { UpdateBannerDto } from './dto/update-banner.dto';
 import { JwtPayload } from 'src/common/interfaces';
 import { CurrentUser } from 'src/common/decorators';
@@ -43,7 +43,7 @@ export class BannersController {
 
   @Get()
   async find(@Query() query: QueryBannerDto) {
-    const { limit, page, type, appType } = query;
+    const { limit, page, type, appType, search } = query;
     const { createdAtFrom, createdAtTo, startDateFrom, startDateTo, endDateFrom, endDateTo } = query;
 
     const queryBuilder = this.bannersService
@@ -62,6 +62,15 @@ export class BannersController {
     startDateTo && queryBuilder.andWhere('banner.startDate <= :startDateTo', { startDateTo });
     endDateFrom && queryBuilder.andWhere('banner.endDate >= :endDateFrom', { endDateFrom });
     endDateTo && queryBuilder.andWhere('banner.endDate <= :endDateTo', { endDateTo });
+
+    if (search) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.where('banner.name ILIKE :search', { search: `%${search}%` });
+          qb.orWhere('banner.code ILIKE :search', { search: `%${search}%` });
+        }),
+      );
+    }
 
     const [items, total] = await queryBuilder.getManyAndCount();
     return { items, total };
