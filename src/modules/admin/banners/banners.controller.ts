@@ -8,6 +8,8 @@ import { CreateBannerDto } from './dto/create-banner.dto';
 import { QueryBannerDto } from './dto/query-banner.dto';
 import { DataSource } from 'typeorm';
 import { UpdateBannerDto } from './dto/update-banner.dto';
+import { JwtPayload } from 'src/common/interfaces';
+import { CurrentUser } from 'src/common/decorators';
 
 @Controller('banners')
 @ApiTags('Banners')
@@ -29,13 +31,13 @@ export class BannersController {
   }
 
   @Post()
-  create(@Body() createBannerDto: CreateBannerDto) {
+  create(@Body() createBannerDto: CreateBannerDto, @CurrentUser() user: JwtPayload) {
     return this.dataSource.transaction(async (manager) => {
       const lastBanner = await manager.findOne(BannerEntity, { where: {}, order: { id: 'DESC' }, withDeleted: true });
       const lastBannerId = lastBanner ? lastBanner.id : 0;
 
       const code = `ID${(lastBannerId + 1).toString().padStart(6, '0')}`;
-      return manager.save(BannerEntity, { ...createBannerDto, code });
+      return manager.save(BannerEntity, { ...createBannerDto, code, createdById: user.id });
     });
   }
 

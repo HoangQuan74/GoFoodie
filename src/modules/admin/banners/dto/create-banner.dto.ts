@@ -76,6 +76,7 @@ export class CreateBannerDto {
 
   @ApiProperty()
   @IsString()
+  @IsOptional()
   description: string;
 
   @ApiProperty({ type: Date })
