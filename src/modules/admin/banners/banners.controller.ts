@@ -10,6 +10,7 @@ import { Brackets, DataSource } from 'typeorm';
 import { UpdateBannerDto } from './dto/update-banner.dto';
 import { JwtPayload } from 'src/common/interfaces';
 import { CurrentUser } from 'src/common/decorators';
+import { EBannerStatus } from 'src/common/enums';
 
 @Controller('banners')
 @ApiTags('Banners')
@@ -43,7 +44,7 @@ export class BannersController {
 
   @Get()
   async find(@Query() query: QueryBannerDto) {
-    const { limit, page, type, appType, search } = query;
+    const { limit, page, type, appType, search, status } = query;
     const { createdAtFrom, createdAtTo, startDateFrom, startDateTo, endDateFrom, endDateTo } = query;
 
     const queryBuilder = this.bannersService
@@ -70,6 +71,18 @@ export class BannersController {
           qb.orWhere('banner.code ILIKE :search', { search: `%${search}%` });
         }),
       );
+    }
+
+    switch (status) {
+      case EBannerStatus.NotStarted:
+        queryBuilder.andWhere('banner.startDate > NOW()');
+        break;
+      case EBannerStatus.InProgress:
+        queryBuilder.andWhere('banner.startDate <= NOW() AND (banner.endDate > NOW() OR banner.endDate IS NULL)');
+        break;
+      case EBannerStatus.Ended:
+        queryBuilder.andWhere('(banner.endDate <= NOW() OR banner.endDate IS NULL)');
+        break;
     }
 
     const [items, total] = await queryBuilder.getManyAndCount();

@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsOptional, ValidateIf } from 'class-validator';
-import { EBannerType } from 'src/common/enums';
+import { EBannerStatus, EBannerType } from 'src/common/enums';
 import { EAppType } from 'src/common/enums/config.enum';
 import { PaginationQuery } from 'src/common/query';
 
@@ -38,4 +38,9 @@ export class QueryBannerDto extends PaginationQuery {
   @ApiPropertyOptional()
   @IsOptional()
   endDateTo: Date;
+
+  @ApiPropertyOptional({ enum: EBannerStatus })
+  @IsEnum(EBannerStatus)
+  @ValidateIf((o) => o.status)
+  status: EBannerStatus;
 }

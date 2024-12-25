@@ -24,3 +24,9 @@ export enum EBannerLinkType {
 export enum ECriteriaType {
   Area = 'area',
 }
+
+export enum EBannerStatus {
+  NotStarted = 'not-started',
+  InProgress = 'in-progress',
+  Ended = 'ended',
+}
