@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, Generated, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { FileEntity } from './file.entity';
 import { BannerEntity } from './banner.entity';
@@ -11,6 +11,10 @@ export class BannerImageEntity extends BaseEntity {
 
   @Column()
   imageId: string;
+
+  @Generated('increment')
+  @Column()
+  sort: number;
 
   @Column({ nullable: true })
   title: string;

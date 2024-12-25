@@ -21,6 +21,10 @@ export class CreateBannerImageDto {
   imageId: string;
 
   @ApiProperty()
+  @IsNumber()
+  sort: number;
+
+  @ApiProperty()
   @IsString()
   title: string;
 
