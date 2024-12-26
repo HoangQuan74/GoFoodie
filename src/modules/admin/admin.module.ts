@@ -17,6 +17,7 @@ import { RequestsModule } from './requests/requests.module';
 import { UniformsModule } from './uniforms/uniforms.module';
 import { BannersModule } from './banners/banners.module';
 import { OptionsModule } from './options/options.module';
+import { OnlineTrainingsModule } from './online-trainings/online-trainings.module';
 
 @Module({
   imports: [
@@ -78,6 +79,10 @@ import { OptionsModule } from './options/options.module';
         path: 'admin',
         module: OptionsModule,
       },
+      {
+        path: 'admin',
+        module: OnlineTrainingsModule,
+      },
     ]),
     AdminsModule,
     MerchantsModule,
@@ -94,6 +99,7 @@ import { OptionsModule } from './options/options.module';
     UniformsModule,
     BannersModule,
     OptionsModule,
+    OnlineTrainingsModule,
   ],
   providers: [
     {

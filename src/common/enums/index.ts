@@ -7,3 +7,4 @@ export * from './product-category.enum';
 export * from './service-group.enum';
 export * from './request.enum';
 export * from './banner.enum';
+export * from './online-training.enum';

@@ -113,7 +113,7 @@ export class StoresController {
     const total = await queryBuilder.getCount();
 
     const items = entities.map((entity) => {
-      const item = entity as any;
+      const item = entity;
       item.productCount = raw.find((r) => r.store_id === entity.id).productCount;
       return item;
     });
