@@ -8,7 +8,7 @@ import { LessThan, MoreThan, Repository } from 'typeorm';
 export class RefreshTokensService {
   constructor(
     @InjectRepository(MerchantRefreshTokenEntity)
-    private readonly adminRefreshTokenRepository: Repository<MerchantRefreshTokenEntity>,
+    private readonly refreshTokenRepository: Repository<MerchantRefreshTokenEntity>,
   ) {}
 
   async createRefreshToken(userId: number, deviceToken: string): Promise<MerchantRefreshTokenEntity> {
@@ -18,23 +18,23 @@ export class RefreshTokensService {
     refreshToken.deviceToken = deviceToken;
     refreshToken.token = generateRandomString(40);
     refreshToken.expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-    return this.adminRefreshTokenRepository.save(refreshToken);
+    return this.refreshTokenRepository.save(refreshToken);
   }
 
   async revokeAllTokens(userId: number) {
-    await this.adminRefreshTokenRepository.delete({ merchantId: userId });
+    await this.refreshTokenRepository.delete({ merchantId: userId });
   }
 
   async revokeToken(userId: number, token: string) {
-    await this.adminRefreshTokenRepository.update({ merchantId: userId, token }, { isRevoked: true });
+    await this.refreshTokenRepository.update({ merchantId: userId, token }, { isRevoked: true });
   }
 
   removeExpiredTokens() {
-    this.adminRefreshTokenRepository.delete({ expiresAt: LessThan(new Date()) });
+    this.refreshTokenRepository.delete({ expiresAt: LessThan(new Date()) });
   }
 
   findValidToken(token: string, merchantId: number): Promise<MerchantRefreshTokenEntity> {
-    return this.adminRefreshTokenRepository.findOne({
+    return this.refreshTokenRepository.findOne({
       where: { token, expiresAt: MoreThan(new Date()), isRevoked: false, merchantId },
     });
   }

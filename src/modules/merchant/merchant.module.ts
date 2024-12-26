@@ -8,6 +8,7 @@ import { MerchantsService } from './merchants.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MerchantEntity } from 'src/database/entities/merchant.entity';
 import { MerchantOtpEntity } from 'src/database/entities/merchant-otp.entity';
+import { OptionGroupsModule } from './option-groups/option-groups.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { MerchantOtpEntity } from 'src/database/entities/merchant-otp.entity';
     ]),
     ProductsModule,
     StoresModule,
+    OptionGroupsModule,
   ],
   providers: [MerchantsService],
   exports: [MerchantsService],

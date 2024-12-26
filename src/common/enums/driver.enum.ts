@@ -14,6 +14,7 @@ export enum EDriverApprovalStatus {
 
 export enum EDriverUniformStatus {
   Ordered = 'ordered',
+  Received = 'received',
 }
 
 export enum EDriverUniformPaymentMethod {

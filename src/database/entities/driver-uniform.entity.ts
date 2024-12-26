@@ -3,6 +3,7 @@ import { BaseEntity } from './base.entity';
 import { DriverEntity } from './driver.entity';
 import { EDriverUniformPaymentMethod, EDriverUniformStatus } from 'src/common/enums/driver.enum';
 import { UniformSizeEntity } from './uniform-size.entity';
+import { FileEntity } from './file.entity';
 
 @Entity('driver_uniforms')
 export class DriverUniformEntity extends BaseEntity {
@@ -24,6 +25,9 @@ export class DriverUniformEntity extends BaseEntity {
   @Column({ name: 'size_id' })
   sizeId: number;
 
+  @Column({ name: 'uniform_image_id', nullable: true })
+  uniformImageId: string;
+
   @Column({ type: 'enum', enum: EDriverUniformStatus, default: EDriverUniformStatus.Ordered })
   status: EDriverUniformStatus;
 
@@ -37,4 +41,8 @@ export class DriverUniformEntity extends BaseEntity {
   @ManyToOne(() => UniformSizeEntity, (size) => size.id)
   @JoinColumn({ name: 'size_id' })
   size: UniformSizeEntity;
+
+  @ManyToOne(() => FileEntity, (file) => file.id)
+  @JoinColumn({ name: 'uniform_image_id' })
+  uniformImage: FileEntity;
 }

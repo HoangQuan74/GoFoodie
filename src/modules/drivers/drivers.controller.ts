@@ -1,13 +1,14 @@
 import { Body, Controller, Get, NotFoundException, Post, UseGuards } from '@nestjs/common';
 import { DriversService } from './drivers.service';
 import { AuthGuard } from './auth/auth.guard';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SignContractDto } from './dto/sign-contract.dto';
 import { RegisterUniformDto } from './dto/register-uniform.dto';
 import { CurrentUser, Public } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { DriverUniformEntity } from 'src/database/entities/driver-uniform.entity';
 import { UniformsService } from './uniforms/uniforms.service';
+import { EDriverUniformStatus } from 'src/common/enums/driver.enum';
 
 @Controller('drivers')
 @ApiTags('Drivers')
@@ -66,5 +67,22 @@ export class DriversController {
   @Get('uniforms')
   async getUniformInfo() {
     return this.uniformsService.findOne({ where: {}, relations: ['sizes', 'uniformImages'] });
+  }
+
+  @Post('upload-uniform')
+  @ApiBody({ schema: { type: 'object', properties: { uniformImageId: { type: 'string' } } } })
+  async uploadUniform(@Body() { uniformImageId }: { uniformImageId: string }, @CurrentUser() user: JwtPayload) {
+    const { id } = user;
+
+    const driver = await this.driversService.findOne({ where: { id }, relations: ['uniforms'] });
+    if (!driver) throw new NotFoundException();
+
+    const driverUniform = driver.uniforms.find((uniform) => uniform.status === EDriverUniformStatus.Ordered);
+    if (!driverUniform) throw new NotFoundException();
+
+    driverUniform.uniformImageId = uniformImageId;
+    driverUniform.status = EDriverUniformStatus.Received;
+
+    return this.driversService.save(driver);
   }
 }

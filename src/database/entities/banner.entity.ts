@@ -4,7 +4,7 @@ import { EBannerDisplayType, EBannerPosition, EBannerType } from 'src/common/enu
 import { EAppType } from 'src/common/enums/config.enum';
 import { BannerImageEntity } from './banner-image.entity';
 import { BannerCriteriaEntity } from './banner-criteria.entity';
-import { APP_TYPES, BANNER_DISPLAY_TYPES, BANNER_POSITIONS } from 'src/common/constants';
+import { APP_TYPES, BANNER_DISPLAY_TYPES, BANNER_POSITIONS, BANNER_TYPES } from 'src/common/constants';
 import { AdminEntity } from './admin.entity';
 
 @Entity('banners')
@@ -52,11 +52,13 @@ export class BannerEntity extends BaseEntity {
   appTypeLabel: string;
   displayTypeLabel: string;
   positionLabel: string;
+  typeLabel: string;
 
   @AfterLoad()
   afterLoad() {
     this.appTypeLabel = APP_TYPES.find((type) => type.value === this.appType)?.label;
     this.displayTypeLabel = BANNER_DISPLAY_TYPES.find((type) => type.value === this.displayType)?.label;
     this.positionLabel = BANNER_POSITIONS.find((position) => position.value === this.position)?.label;
+    this.typeLabel = BANNER_TYPES.find((type) => type.value === this.type)?.label;
   }
 }
