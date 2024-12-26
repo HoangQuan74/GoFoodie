@@ -65,7 +65,6 @@ export class BannersController {
     endDateTo && queryBuilder.andWhere('banner.endDate <= :endDateTo', { endDateTo });
 
     if (search) {
-      // lowercase search and assign new variable name
       const searchLower = search.toLowerCase();
       const appTypes = APP_TYPES.filter((app) => app.label.toLowerCase().includes(searchLower));
       const positions = BANNER_POSITIONS.filter((position) => position.label.toLowerCase().includes(searchLower));

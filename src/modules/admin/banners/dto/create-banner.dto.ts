@@ -70,6 +70,10 @@ export class CreateBannerDto {
   @IsEnum(EAppType)
   appType: EAppType;
 
+  @ApiProperty()
+  @IsBoolean()
+  isActive: boolean;
+
   @ApiProperty({ enum: EBannerDisplayType })
   @IsEnum(EBannerDisplayType)
   displayType: EBannerDisplayType;
