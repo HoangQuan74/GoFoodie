@@ -6,7 +6,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentStore } from 'src/common/decorators/current-store.decorator';
 import { StoreEntity } from 'src/database/entities/store.entity';
-import { DataSource, FindManyOptions, In, Like } from 'typeorm';
+import { DataSource, In, Like } from 'typeorm';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { OptionEntity } from 'src/database/entities/option.entity';
 import { ProductApprovalEntity } from 'src/database/entities/product-approval.entity';

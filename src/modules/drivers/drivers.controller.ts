@@ -4,7 +4,7 @@ import { AuthGuard } from './auth/auth.guard';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SignContractDto } from './dto/sign-contract.dto';
 import { RegisterUniformDto } from './dto/register-uniform.dto';
-import { CurrentUser, Public } from 'src/common/decorators';
+import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { DriverUniformEntity } from 'src/database/entities/driver-uniform.entity';
 import { UniformsService } from './uniforms/uniforms.service';

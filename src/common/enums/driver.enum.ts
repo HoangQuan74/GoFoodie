@@ -1,5 +1,3 @@
-import e from 'express';
-
 export enum EDriverStatus {
   Active = 'active',
   Inactive = 'inactive',

@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { CreateBannerDto } from './dto/create-banner.dto';
-import { UpdateBannerDto } from './dto/update-banner.dto';
 import { BannerEntity } from 'src/database/entities/banner.entity';
 import { DeepPartial, FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';

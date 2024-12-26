@@ -1,4 +1,4 @@
-import { AfterLoad, Column, Entity, Generated, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { AfterLoad, Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { EBannerDisplayType, EBannerPosition, EBannerType } from 'src/common/enums';
 import { EAppType } from 'src/common/enums/config.enum';
