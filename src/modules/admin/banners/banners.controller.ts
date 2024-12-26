@@ -2,7 +2,7 @@ import { BannerEntity } from 'src/database/entities/banner.entity';
 import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { BannersService } from './banners.service';
 import { AuthGuard } from '../auth/auth.guard';
-import { BANNER_TYPES, BANNER_DISPLAY_TYPES } from 'src/common/constants';
+import { BANNER_TYPES, BANNER_DISPLAY_TYPES, APP_TYPES, BANNER_POSITIONS } from 'src/common/constants';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateBannerDto } from './dto/create-banner.dto';
 import { QueryBannerDto } from './dto/query-banner.dto';
@@ -65,10 +65,25 @@ export class BannersController {
     endDateTo && queryBuilder.andWhere('banner.endDate <= :endDateTo', { endDateTo });
 
     if (search) {
+      // lowercase search and assign new variable name
+      const searchLower = search.toLowerCase();
+      const appTypes = APP_TYPES.filter((app) => app.label.toLowerCase().includes(searchLower));
+      const positions = BANNER_POSITIONS.filter((position) => position.label.toLowerCase().includes(searchLower));
+
       queryBuilder.andWhere(
         new Brackets((qb) => {
           qb.where('banner.name ILIKE :search', { search: `%${search}%` });
           qb.orWhere('banner.code ILIKE :search', { search: `%${search}%` });
+
+          if (appTypes.length) {
+            const appTypeIds = appTypes.map((app) => app.value);
+            qb.orWhere('banner.appType IN (:...appTypeIds)', { appTypeIds });
+          }
+
+          if (positions.length) {
+            const positionIds = positions.map((position) => position.value);
+            qb.orWhere('banner.position IN (:...positionIds)', { positionIds });
+          }
         }),
       );
     }
