@@ -39,6 +39,9 @@ export class BannerEntity extends BaseEntity {
   @Column({ name: 'created_by_id', nullable: true })
   createdById: number;
 
+  @Column({ default: false })
+  isActive: boolean;
+
   @OneToMany(() => BannerImageEntity, (image) => image.banner, { cascade: true })
   images: BannerImageEntity[];
 

@@ -4,12 +4,16 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { ProductApprovalEntity } from 'src/database/entities/product-approval.entity';
 
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectRepository(ProductEntity)
     private readonly productRepository: Repository<ProductEntity>,
+
+    @InjectRepository(ProductApprovalEntity)
+    private readonly productApprovalRepository: Repository<ProductApprovalEntity>,
   ) {}
 
   async save(entity: DeepPartial<ProductEntity>) {
@@ -30,5 +34,9 @@ export class ProductsService {
 
   async remove(entity: ProductEntity) {
     return this.productRepository.remove(entity);
+  }
+
+  async saveProductApproval(entity: DeepPartial<ProductApprovalEntity>) {
+    return this.productApprovalRepository.save(entity);
   }
 }

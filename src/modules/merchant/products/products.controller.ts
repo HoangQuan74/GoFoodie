@@ -10,7 +10,7 @@ import { DataSource, FindManyOptions, In, Like } from 'typeorm';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { OptionEntity } from 'src/database/entities/option.entity';
 import { ProductApprovalEntity } from 'src/database/entities/product-approval.entity';
-import { ERequestType } from 'src/common/enums';
+import { EProductApprovalStatus, ERequestType } from 'src/common/enums';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { QueryProductDto } from './dto/query-product.dto';
@@ -129,10 +129,47 @@ export class ProductsController {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto, @CurrentStore() storeId: number) {
-    const { optionIds = [] } = updateProductDto;
-    const product = await this.productsService.findOne({ where: { id: +id } });
+  async update(
+    @Param('id') id: string,
+    @Body() updateProductDto: UpdateProductDto,
+    @CurrentStore() storeId: number,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const { optionIds = [], name, description, imageId } = updateProductDto;
+    const product = await this.productsService.findOne({
+      select: { store: { id: true, storeCode: true } },
+      where: { id: +id, storeId },
+      relations: ['store'],
+    });
+
     if (!product) throw new NotFoundException();
+
+    let isNeedApproval = false;
+    product.approvalStatus === EProductApprovalStatus.Approved && (isNeedApproval = true);
+    name !== product.name && (isNeedApproval = true);
+    description !== product.description && (isNeedApproval = true);
+    imageId !== product.imageId && (isNeedApproval = true);
+
+    if (isNeedApproval) {
+      const lastProductApproval = await this.productsService.findOne({
+        where: { code: Like(`${product.store.storeCode}-%`) },
+        order: { id: 'DESC' },
+      });
+
+      const numberApproval = lastProductApproval ? +lastProductApproval.code.split('-')[1] + 1 : 1;
+      const approvalCode = `${product.store.storeCode}-${numberApproval.toString().padStart(2, '0')}`;
+
+      const productApproval = new ProductApprovalEntity();
+      productApproval.code = approvalCode;
+      productApproval.productId = +id;
+      productApproval.merchantId = user.id;
+      productApproval.name = name;
+      productApproval.description = description;
+      productApproval.imageId = imageId;
+      productApproval.type = ERequestType.Update;
+
+      await this.productsService.saveProductApproval(productApproval);
+    }
 
     const productOptionGroups = [];
     if (optionIds.length) {
