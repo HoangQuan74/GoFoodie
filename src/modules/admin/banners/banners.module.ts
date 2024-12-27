@@ -4,9 +4,11 @@ import { BannersController } from './banners.controller';
 import { AdminsModule } from '../admins/admins.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BannerEntity } from 'src/database/entities/banner.entity';
+import { BannerTypeEntity } from 'src/database/entities/banner-type.entity';
+import { BannerPositionEntity } from 'src/database/entities/banner-position.entity';
 
 @Module({
-  imports: [AdminsModule, TypeOrmModule.forFeature([BannerEntity])],
+  imports: [AdminsModule, TypeOrmModule.forFeature([BannerEntity, BannerTypeEntity, BannerPositionEntity])],
   controllers: [BannersController],
   providers: [BannersService],
 })

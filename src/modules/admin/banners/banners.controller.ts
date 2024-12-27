@@ -23,7 +23,6 @@ import { UpdateBannerDto } from './dto/update-banner.dto';
 import { JwtPayload } from 'src/common/interfaces';
 import { CurrentUser } from 'src/common/decorators';
 import { EBannerStatus } from 'src/common/enums';
-import { BannerImageEntity } from 'src/database/entities/banner-file.entity';
 
 @Controller('banners')
 @ApiTags('Banners')
@@ -36,12 +35,17 @@ export class BannersController {
 
   @Get('types')
   getTypes() {
-    return BANNER_TYPES;
+    return this.bannersService.getTypes();
   }
 
   @Get('display-types')
   getDisplayTypes() {
     return BANNER_DISPLAY_TYPES;
+  }
+
+  @Get('positions')
+  async getPositions(@Query('appType') appType: string, @Query('type') type: string) {
+    return this.bannersService.getPositions(appType, type);
   }
 
   @Post()

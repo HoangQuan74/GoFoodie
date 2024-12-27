@@ -21,9 +21,9 @@ export const BANNER_POSITIONS = Object.freeze([
 ]);
 
 export const BANNER_TYPES = Object.freeze([
-  { label: 'Static', value: EBannerType.Static, positions: BANNER_POSITIONS },
-  { label: 'Popup', value: EBannerType.Popup, positions: BANNER_POSITIONS },
-  { label: 'Slider', value: EBannerType.Slider, positions: BANNER_POSITIONS },
+  { label: 'Static', value: EBannerType.Static },
+  { label: 'Popup', value: EBannerType.Popup },
+  { label: 'Slider', value: EBannerType.Slider },
 ]);
 
 export const APP_TYPES = Object.freeze([
@@ -35,6 +35,8 @@ export const APP_TYPES = Object.freeze([
 export const BANNER_DISPLAY_TYPES = Object.freeze([
   { label: 'Hình ảnh', value: EBannerDisplayType.Image },
   { label: 'Video', value: EBannerDisplayType.Video },
+  { label: 'Text', value: EBannerDisplayType.Text },
+  { label: 'Gif', value: EBannerDisplayType.Gif },
 ]);
 
 export const CRITERIA_TYPES = Object.freeze([

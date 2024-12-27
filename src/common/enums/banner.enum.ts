@@ -14,6 +14,8 @@ export enum EBannerPosition {
 export enum EBannerDisplayType {
   Image = 'image',
   Video = 'video',
+  Text = 'text',
+  Gif = 'gif',
 }
 
 export enum EBannerLinkType {

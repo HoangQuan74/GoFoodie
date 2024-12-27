@@ -4,16 +4,20 @@ import { AuthGuard } from '../auth/auth.guard';
 import { ApiTags } from '@nestjs/swagger';
 import { ECriteriaType } from 'src/common/enums';
 import { ProvincesService } from 'src/modules/provinces/provinces.service';
+import { OptionsService } from './options.service';
 
 @Controller('options')
 @ApiTags('Options')
 @UseGuards(AuthGuard)
 export class OptionsController {
-  constructor(private readonly provincesService: ProvincesService) {}
+  constructor(
+    private readonly provincesService: ProvincesService,
+    private readonly optionsService: OptionsService,
+  ) {}
 
   @Get('app-types')
   getAppTypes() {
-    return APP_TYPES;
+    return this.optionsService.getAppTypes();
   }
 
   @Get('criteria')
