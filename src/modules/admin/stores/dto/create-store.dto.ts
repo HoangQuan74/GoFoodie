@@ -116,12 +116,6 @@ export class CreateRepresentativeDto {
   @IsOptional()
   address: string;
 
-  @ApiPropertyOptional({ description: 'Mã số thuế cá nhân' })
-  @IsString()
-  @IsNotEmpty()
-  @ValidateIf((o) => o.type === EStoreRepresentativeType.Individual)
-  personalTaxCode: string;
-
   @ApiPropertyOptional({ description: 'Số CMND' })
   @IsString()
   @IsNotEmpty()

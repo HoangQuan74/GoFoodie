@@ -30,9 +30,6 @@ export class StoreRepresentativeEntity extends BaseEntity {
   @Column({ name: 'tax_code', nullable: true })
   taxCode: string;
 
-  @Column({ name: 'personal_tax_code', nullable: true })
-  personalTaxCode: string;
-
   @Column({ name: 'identity_card', nullable: true })
   identityCard: string;
 
