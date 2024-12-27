@@ -51,6 +51,9 @@ export class BannersController {
       .createQueryBuilder('banner')
       .addSelect(['createdBy.id', 'createdBy.name'])
       .leftJoin('banner.createdBy', 'createdBy')
+      .loadRelationCountAndMap('banner.displayImages', 'banner.images', 'image', (qb) =>
+        qb.andWhere('image.isActive = TRUE'),
+      )
       .orderBy('banner.id', 'DESC')
       .take(limit)
       .skip((page - 1) * limit);

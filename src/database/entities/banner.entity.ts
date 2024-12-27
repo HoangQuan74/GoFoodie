@@ -52,6 +52,7 @@ export class BannerEntity extends BaseEntity {
   @JoinColumn({ name: 'created_by_id' })
   createdBy: AdminEntity;
 
+  displayImages: number;
   appTypeLabel: string;
   displayTypeLabel: string;
   positionLabel: string;
