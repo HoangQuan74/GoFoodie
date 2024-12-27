@@ -2,7 +2,7 @@ import { AfterLoad, Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typ
 import { BaseEntity } from './base.entity';
 import { EBannerDisplayType, EBannerPosition, EBannerType } from 'src/common/enums';
 import { EAppType } from 'src/common/enums/config.enum';
-import { BannerImageEntity } from './banner-image.entity';
+import { BannerImageEntity } from './banner-file.entity';
 import { BannerCriteriaEntity } from './banner-criteria.entity';
 import { APP_TYPES, BANNER_DISPLAY_TYPES, BANNER_POSITIONS, BANNER_TYPES } from 'src/common/constants';
 import { AdminEntity } from './admin.entity';
@@ -43,7 +43,7 @@ export class BannerEntity extends BaseEntity {
   isActive: boolean;
 
   @OneToMany(() => BannerImageEntity, (image) => image.banner, { cascade: true })
-  images: BannerImageEntity[];
+  files: BannerImageEntity[];
 
   @OneToMany(() => BannerCriteriaEntity, (criteria) => criteria.banner, { cascade: true })
   criteria: BannerCriteriaEntity[];
@@ -52,7 +52,7 @@ export class BannerEntity extends BaseEntity {
   @JoinColumn({ name: 'created_by_id' })
   createdBy: AdminEntity;
 
-  displayImages: number;
+  countActiveBanner: number;
   appTypeLabel: string;
   displayTypeLabel: string;
   positionLabel: string;

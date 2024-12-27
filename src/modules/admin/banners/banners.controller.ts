@@ -23,7 +23,7 @@ import { UpdateBannerDto } from './dto/update-banner.dto';
 import { JwtPayload } from 'src/common/interfaces';
 import { CurrentUser } from 'src/common/decorators';
 import { EBannerStatus } from 'src/common/enums';
-import { BannerImageEntity } from 'src/database/entities/banner-image.entity';
+import { BannerImageEntity } from 'src/database/entities/banner-file.entity';
 
 @Controller('banners')
 @ApiTags('Banners')
@@ -80,11 +80,11 @@ export class BannersController {
     const queryBuilder = this.bannersService
       .createQueryBuilder('banner')
       .addSelect(['createdBy.id', 'createdBy.name'])
-      .loadRelationCountAndMap('banner.displayImages', 'banner.images', 'image', (qb) =>
-        qb.andWhere('image.isActive = TRUE'),
+      .loadRelationCountAndMap('banner.countActiveBanner', 'banner.files', 'file', (qb) =>
+        qb.andWhere('file.isActive = TRUE'),
       )
       .leftJoin('banner.createdBy', 'createdBy')
-      .leftJoin('banner.images', 'image', 'image.isActive = TRUE')
+      .leftJoin('banner.files', 'file', 'file.isActive = TRUE')
       .orderBy('banner.id', 'DESC')
       .take(limit)
       .skip((page - 1) * limit);
@@ -141,7 +141,7 @@ export class BannersController {
 
   @Get(':id')
   async findOne(@Param('id') id: number) {
-    const banner = await this.bannersService.findOne({ where: { id }, relations: { images: true, criteria: true } });
+    const banner = await this.bannersService.findOne({ where: { id }, relations: { files: true, criteria: true } });
     if (!banner) throw new NotFoundException();
 
     return banner;
@@ -175,7 +175,7 @@ export class BannersController {
 
   @Delete(':id')
   async remove(@Param('id') id: number) {
-    const banner = await this.bannersService.findOne({ where: { id }, relations: { images: true, criteria: true } });
+    const banner = await this.bannersService.findOne({ where: { id }, relations: { files: true, criteria: true } });
     if (!banner) throw new NotFoundException();
 
     return this.bannersService.remove(banner);

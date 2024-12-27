@@ -18,7 +18,7 @@ import { EAppType } from 'src/common/enums/config.enum';
 export class CreateBannerImageDto {
   @ApiProperty()
   @IsUUID()
-  imageId: string;
+  fileId: string;
 
   @ApiProperty()
   @IsNumber()
@@ -43,6 +43,11 @@ export class CreateBannerImageDto {
   @ApiProperty()
   @IsBoolean()
   isActive: boolean;
+
+  @ApiProperty()
+  @IsUUID()
+  @IsOptional()
+  videoThumbnailId: string;
 }
 
 export class CreateBannerCriteriaDto {
@@ -102,7 +107,7 @@ export class CreateBannerDto {
   @ValidateNested({ each: true })
   @IsNotEmpty()
   @Type(() => CreateBannerImageDto)
-  images: CreateBannerImageDto[];
+  files: CreateBannerImageDto[];
 
   @ApiProperty({ type: [CreateBannerCriteriaDto] })
   @ValidateNested({ each: true })

@@ -4,13 +4,13 @@ import { FileEntity } from './file.entity';
 import { BannerEntity } from './banner.entity';
 import { EBannerLinkType } from 'src/common/enums';
 
-@Entity('banner_images')
+@Entity('banner_files')
 export class BannerImageEntity extends BaseEntity {
   @Column({ name: 'banner_id' })
   bannerId: string;
 
   @Column()
-  imageId: string;
+  fileId: string;
 
   @Generated('increment')
   @Column()
@@ -25,17 +25,20 @@ export class BannerImageEntity extends BaseEntity {
   @Column({ nullable: true })
   link: string;
 
+  @Column({ name: 'video_thumbnail_id', nullable: true })
+  videoThumbnailId: string;
+
   @Column({ name: 'link_type', type: 'enum', enum: EBannerLinkType })
   linkType: EBannerLinkType;
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
-  @ManyToOne(() => BannerEntity, (banner) => banner.images, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
+  @ManyToOne(() => BannerEntity, (banner) => banner.files, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
   @JoinColumn({ name: 'banner_id' })
   banner: BannerEntity;
 
   @ManyToOne(() => FileEntity, (file) => file.id)
-  @JoinColumn({ name: 'image_id' })
-  image: FileEntity;
+  @JoinColumn({ name: 'file_id' })
+  file: FileEntity;
 }
