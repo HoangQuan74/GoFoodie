@@ -1,8 +1,20 @@
 import { BannerEntity } from 'src/database/entities/banner.entity';
-import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  ConflictException,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { BannersService } from './banners.service';
 import { AuthGuard } from '../auth/auth.guard';
-import { BANNER_TYPES, BANNER_DISPLAY_TYPES, APP_TYPES, BANNER_POSITIONS } from 'src/common/constants';
+import { BANNER_TYPES, BANNER_DISPLAY_TYPES, APP_TYPES, BANNER_POSITIONS, EXCEPTIONS } from 'src/common/constants';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateBannerDto } from './dto/create-banner.dto';
 import { QueryBannerDto } from './dto/query-banner.dto';
@@ -37,6 +49,23 @@ export class BannersController {
     return this.dataSource.transaction(async (manager) => {
       const lastBanner = await manager.findOne(BannerEntity, { where: {}, order: { id: 'DESC' }, withDeleted: true });
       const lastBannerId = lastBanner ? lastBanner.id : 0;
+      const { startDate, endDate, appType, type, position } = createBannerDto;
+
+      const existedBannerBuilder = await manager
+        .createQueryBuilder(BannerEntity, 'banner')
+        .where('banner.appType = :appType', { appType })
+        .andWhere('banner.type = :type', { type })
+        .andWhere('banner.position = :position', { position })
+        .andWhere(
+          new Brackets((qb) => {
+            qb.where('banner.endDate >= :startDate', { startDate });
+            qb.orWhere('banner.endDate IS NULL');
+          }),
+        );
+      endDate && existedBannerBuilder.andWhere('banner.startDate <= :endDate', { endDate });
+
+      const existedBanner = await existedBannerBuilder.getOne();
+      if (existedBanner) throw new ConflictException(EXCEPTIONS.BANNER_EXISTED);
 
       const code = `ID${(lastBannerId + 1).toString().padStart(6, '0')}`;
       return manager.save(BannerEntity, { ...createBannerDto, code, createdById: user.id });
@@ -122,6 +151,23 @@ export class BannersController {
   async update(@Param('id') id: number, @Body() updateBannerDto: UpdateBannerDto) {
     const banner = await this.bannersService.findOne({ where: { id } });
     if (!banner) throw new NotFoundException();
+
+    const { startDate, endDate, appType, type, position } = updateBannerDto;
+    const existedBannerBuilder = this.bannersService
+      .createQueryBuilder('banner')
+      .where('banner.id != :id', { id })
+      .andWhere('banner.appType = :appType', { appType })
+      .andWhere('banner.type = :type', { type })
+      .andWhere('banner.position = :position', { position })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('banner.endDate >= :startDate', { startDate });
+          qb.orWhere('banner.endDate IS NULL');
+        }),
+      );
+    endDate && existedBannerBuilder.andWhere('banner.startDate <= :endDate', { endDate });
+    const existedBanner = await existedBannerBuilder.getOne();
+    if (existedBanner) throw new ConflictException(EXCEPTIONS.BANNER_EXISTED);
 
     Object.assign(banner, updateBannerDto);
     return this.bannersService.save(banner);
