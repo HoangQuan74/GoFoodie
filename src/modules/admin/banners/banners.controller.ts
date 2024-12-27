@@ -11,6 +11,7 @@ import { UpdateBannerDto } from './dto/update-banner.dto';
 import { JwtPayload } from 'src/common/interfaces';
 import { CurrentUser } from 'src/common/decorators';
 import { EBannerStatus } from 'src/common/enums';
+import { BannerImageEntity } from 'src/database/entities/banner-image.entity';
 
 @Controller('banners')
 @ApiTags('Banners')
@@ -50,10 +51,11 @@ export class BannersController {
     const queryBuilder = this.bannersService
       .createQueryBuilder('banner')
       .addSelect(['createdBy.id', 'createdBy.name'])
-      .leftJoin('banner.createdBy', 'createdBy')
       .loadRelationCountAndMap('banner.displayImages', 'banner.images', 'image', (qb) =>
         qb.andWhere('image.isActive = TRUE'),
       )
+      .leftJoin('banner.createdBy', 'createdBy')
+      .leftJoin('banner.images', 'image', 'image.isActive = TRUE')
       .orderBy('banner.id', 'DESC')
       .take(limit)
       .skip((page - 1) * limit);
@@ -92,13 +94,15 @@ export class BannersController {
 
     switch (status) {
       case EBannerStatus.NotStarted:
-        queryBuilder.andWhere('banner.startDate > NOW()');
+        queryBuilder.andWhere('banner.startDate > NOW() AND image.id IS NOT NULL');
         break;
       case EBannerStatus.InProgress:
-        queryBuilder.andWhere('banner.startDate <= NOW() AND (banner.endDate > NOW() OR banner.endDate IS NULL)');
+        queryBuilder.andWhere(
+          'banner.startDate <= NOW() AND (banner.endDate > NOW() OR banner.endDate IS NULL) AND image.id IS NOT NULL',
+        );
         break;
       case EBannerStatus.Ended:
-        queryBuilder.andWhere('(banner.endDate <= NOW() OR banner.endDate IS NULL)');
+        queryBuilder.andWhere('banner.endDate <= NOW() OR image.id IS NULL');
         break;
     }
 
