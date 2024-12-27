@@ -20,6 +20,7 @@ import { ServiceTypesModule } from './modules/service-types/service-types.module
 import { ServiceGroupsModule } from './modules/service-groups/service-groups.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { UniformSizesModule } from './modules/uniform-sizes/uniform-sizes.module';
+import { ClientModule } from './modules/client/client.module';
 
 const { NODE_ENV = 'development', PORT = 3000 } = process.env;
 
@@ -116,6 +117,22 @@ async function bootstrap() {
     });
 
     SwaggerModule.setup('api/driver/document', app, documentDriver);
+
+    config.setTitle('API Client Documentation');
+    const documentClient = SwaggerModule.createDocument(app, config.build(), {
+      include: [ClientModule, ...commonModules],
+      deepScanRoutes: true,
+    });
+
+    Object.values((documentClient as OpenAPIObject).paths).forEach((path: any) => {
+      Object.values(path).forEach((method: any) => {
+        if (Array.isArray(method.security) && method.security.includes('public')) {
+          method.security = [];
+        }
+      });
+    });
+
+    SwaggerModule.setup('api/client/document', app, documentClient);
   }
 
   // start app

@@ -23,6 +23,7 @@ import { FirebaseModule } from './modules/firebase/firebase.module';
 import { DriversModule } from './modules/drivers/drivers.module';
 import { ConfigsModule } from './modules/configs/configs.module';
 import { UniformSizesModule } from './modules/uniform-sizes/uniform-sizes.module';
+import { ClientModule } from './modules/client/client.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { UniformSizesModule } from './modules/uniform-sizes/uniform-sizes.module
     DriversModule,
     ConfigsModule,
     UniformSizesModule,
+    ClientModule,
   ],
   controllers: [],
   providers: [],
