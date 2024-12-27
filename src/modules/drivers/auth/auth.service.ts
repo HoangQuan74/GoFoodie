@@ -106,4 +106,8 @@ export class AuthService {
       throw new UnauthorizedException();
     }
   }
+
+  async logout(driverId: number) {
+    await this.refreshTokensService.revokeAllTokens(driverId);
+  }
 }

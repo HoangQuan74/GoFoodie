@@ -79,4 +79,11 @@ export class AuthController {
 
     return this.driversService.save(driver);
   }
+
+  @Post('logout')
+  @ApiOperation({ summary: 'Đăng xuất' })
+  logout(@CurrentUser() user: JwtPayload) {
+    const { id } = user;
+    return this.authService.logout(id);
+  }
 }
