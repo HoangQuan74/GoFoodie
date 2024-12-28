@@ -127,15 +127,15 @@ export class BannersController {
 
     switch (status) {
       case EBannerStatus.NotStarted:
-        queryBuilder.andWhere('banner.startDate > NOW() AND image.id IS NOT NULL');
+        queryBuilder.andWhere('banner.startDate > NOW() AND file.id IS NOT NULL');
         break;
       case EBannerStatus.InProgress:
         queryBuilder.andWhere(
-          'banner.startDate <= NOW() AND (banner.endDate > NOW() OR banner.endDate IS NULL) AND image.id IS NOT NULL',
+          'banner.startDate <= NOW() AND (banner.endDate > NOW() OR banner.endDate IS NULL) AND file.id IS NOT NULL',
         );
         break;
       case EBannerStatus.Ended:
-        queryBuilder.andWhere('banner.endDate <= NOW() OR image.id IS NULL');
+        queryBuilder.andWhere('banner.endDate <= NOW() OR file.id IS NULL');
         break;
     }
 
