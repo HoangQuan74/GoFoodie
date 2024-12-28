@@ -19,6 +19,7 @@ import { OptionGroupsModule } from './option-groups/option-groups.module';
       { path: 'merchant', module: AuthModule },
       { path: 'merchant', module: ProductsModule },
       { path: 'merchant', module: StoresModule },
+      { path: 'merchant', module: OptionGroupsModule },
     ]),
     ProductsModule,
     StoresModule,
