@@ -32,6 +32,7 @@ export class OptionsController {
         const provinces = this.provincesService
           .createQueryBuilder('province')
           .select(['province.name as label', 'province.id as value'])
+          .orderBy('province.name')
           .getRawMany();
         return provinces;
       default:
