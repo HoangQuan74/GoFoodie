@@ -9,7 +9,7 @@ export class BannerImageEntity extends BaseEntity {
   @Column({ name: 'banner_id' })
   bannerId: string;
 
-  @Column()
+  @Column({ name: 'file_id', nullable: true })
   fileId: string;
 
   @Generated('increment')

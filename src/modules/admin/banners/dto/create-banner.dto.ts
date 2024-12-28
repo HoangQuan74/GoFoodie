@@ -18,6 +18,7 @@ import { EAppType } from 'src/common/enums/config.enum';
 export class CreateBannerImageDto {
   @ApiProperty()
   @IsUUID()
+  @IsOptional()
   fileId: string;
 
   @ApiProperty()
