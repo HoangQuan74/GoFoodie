@@ -26,8 +26,8 @@ export class ProductCategoryEntity extends BaseEntity {
   @Column({ name: 'store_id', nullable: true })
   storeId: number;
 
-  @Column({ name: 'parent_id', nullable: true })
-  parentId: number;
+  // @Column({ name: 'parent_id', nullable: true })
+  // parentId: number;
 
   @ManyToOne(() => StoreEntity, (store) => store.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'store_id' })
