@@ -18,3 +18,8 @@ export enum EDriverUniformStatus {
 export enum EDriverUniformPaymentMethod {
   Cash = 'cash',
 }
+
+export enum EDriverContractStatus {
+  Signed = 'signed',
+  Unsigned = 'unsigned',
+}

@@ -7,9 +7,10 @@ import { JwtPayload } from 'src/common/interfaces';
 import { AuthGuard } from './auth.guard';
 import { UpdateDriverProfileDto } from './dto/update-profile.dto';
 import { DriversService } from '../drivers.service';
-import { EDriverApprovalStatus } from 'src/common/enums/driver.enum';
+import { EDriverApprovalStatus, EDriverContractStatus } from 'src/common/enums/driver.enum';
 import { RefreshTokenDto } from './refresh-token.dto';
 import { Request } from 'express';
+import { UniformsService } from '../uniforms/uniforms.service';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -18,6 +19,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly driversService: DriversService,
+    private readonly uniformsService: UniformsService,
   ) {}
 
   @Post('login')
@@ -45,20 +47,64 @@ export class AuthController {
 
   @Get('profile')
   @ApiOperation({ summary: 'Thông tin tài khoản' })
-  getProfile(@CurrentUser() user: JwtPayload) {
+  async getProfile(@CurrentUser() user: JwtPayload) {
     const { id } = user;
-    return this.driversService.findOne({
+    const profile = await this.driversService.findOne({
       where: { id },
       relations: {
-        vehicle: true,
         signature: true,
-        banks: {
-          bank: true,
-          bankBranch: true,
-        },
-        emergencyContacts: { relationship: true },
       },
     });
+    if (!profile) throw new NotFoundException();
+
+    const uniform = await this.uniformsService.findOneDriverUniform({ where: { driverId: id }, order: { id: 'ASC' } });
+    const uniformStatus = uniform ? uniform.status : 'none';
+
+    const contractStatus = profile.signature ? EDriverContractStatus.Signed : EDriverContractStatus.Unsigned;
+    delete profile.signature;
+    return { profile, contractStatus, uniformStatus };
+  }
+
+  @Get('vehicle')
+  @ApiOperation({ summary: 'Thông tin xe' })
+  async getVehicle(@CurrentUser() user: JwtPayload) {
+    const { id } = user;
+    const driver = await this.driversService.findOne({
+      select: { id: true },
+      where: { id },
+      relations: { vehicle: true },
+    });
+    if (!driver) throw new NotFoundException();
+
+    return driver.vehicle;
+  }
+
+  @Get('banks')
+  @ApiOperation({ summary: 'Thông tin tài khoản ngân hàng' })
+  async getBanks(@CurrentUser() user: JwtPayload) {
+    const { id } = user;
+    const driver = await this.driversService.findOne({
+      select: { id: true },
+      where: { id },
+      relations: { banks: { bank: true, bankBranch: true } },
+    });
+    if (!driver) throw new NotFoundException();
+
+    return driver.banks;
+  }
+
+  @Get('emergency-contacts')
+  @ApiOperation({ summary: 'Danh sách liên hệ khẩn cấp' })
+  async getEmergencyContacts(@CurrentUser() user: JwtPayload) {
+    const { id } = user;
+    const driver = await this.driversService.findOne({
+      select: { id: true },
+      where: { id },
+      relations: { emergencyContacts: { relationship: true } },
+    });
+    if (!driver) throw new NotFoundException();
+
+    return driver.emergencyContacts;
   }
 
   @Patch('profile')
