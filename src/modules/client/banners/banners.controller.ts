@@ -13,14 +13,17 @@ export class BannersController {
   async getBanner(@Param('position') position: string) {
     return this.bannersService
       .createQueryBuilder('banner')
+      .select(['banner.id', 'banner.name', 'banner.type', 'banner.displayType', 'file.description'])
       .where('banner.position = :position', { position })
       .andWhere('banner.appType = :appType', { appType: EAppType.AppClient })
+      .innerJoinAndSelect('banner.files', 'file', 'file.isActive = TRUE')
       .andWhere('banner.startDate <= NOW()')
       .andWhere(
         new Brackets((qb) => {
           qb.where('banner.endDate >= NOW()').orWhere('banner.endDate IS NULL');
         }),
       )
+      .orderBy('file.sort', 'ASC')
       .getOne();
   }
 }
