@@ -53,6 +53,7 @@ export class AuthController {
       where: { id },
       relations: {
         signature: true,
+        serviceTypes: true,
       },
     });
     if (!profile) throw new NotFoundException();
