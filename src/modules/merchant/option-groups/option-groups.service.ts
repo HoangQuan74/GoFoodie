@@ -37,4 +37,8 @@ export class OptionGroupsService {
   async remove(entity: OptionGroupEntity) {
     return this.optionGroupRepository.remove(entity);
   }
+
+  async count(options: FindManyOptions<OptionGroupEntity>) {
+    return this.optionGroupRepository.count(options);
+  }
 }

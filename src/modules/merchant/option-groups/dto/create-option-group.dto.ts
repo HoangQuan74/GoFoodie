@@ -57,10 +57,10 @@ export class CreateOptionGroupDto {
   @Type(() => CreateOptionDto)
   options: CreateOptionDto[];
 
-  // @ApiPropertyOptional({ type: [UpdateProductOptionGroupDto] })
-  // @ValidateNested({ each: true })
-  // @Type(() => UpdateProductOptionGroupDto)
-  // @IsArray()
-  // @IsOptional()
-  // products: UpdateProductOptionGroupDto[];
+  @ApiPropertyOptional({ type: [UpdateProductOptionGroupDto] })
+  @ValidateNested({ each: true })
+  @Type(() => UpdateProductOptionGroupDto)
+  @IsArray()
+  @IsOptional()
+  products: UpdateProductOptionGroupDto[];
 }

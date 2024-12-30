@@ -108,6 +108,7 @@ export class StoresController {
     }
 
     queryBuilder.skip((page - 1) * limit);
+    queryBuilder.take(limit);
 
     const { raw, entities } = await queryBuilder.getRawAndEntities();
     const total = await queryBuilder.getCount();

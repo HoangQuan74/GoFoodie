@@ -15,7 +15,7 @@ export class QueryProductDto extends PaginationQuery {
   @ValidateIf((o) => o.approvalStatus)
   approvalStatus: EProductApprovalStatus;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: Boolean })
   @Transform(({ value }) => (typeof value === 'string' && value ? value === 'true' : value))
   isDisplay: boolean;
 }
