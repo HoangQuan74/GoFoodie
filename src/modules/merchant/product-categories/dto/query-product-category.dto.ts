@@ -10,6 +10,11 @@ export class QueryProductCategoryDto extends PaginationQuery {
   @ValidateIf((o) => o.status)
   status: EProductCategoryStatus;
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(({ value }) => (typeof value === 'string' && value ? value === 'true' : value))
+  includeProducts: boolean;
+
   @ApiPropertyOptional({ enum: EProductStatus })
   @IsEnum(EProductStatus)
   @IsOptional()
