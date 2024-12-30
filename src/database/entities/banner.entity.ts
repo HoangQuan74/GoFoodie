@@ -1,11 +1,13 @@
 import { AfterLoad, Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { EBannerDisplayType, EBannerPosition, EBannerType } from 'src/common/enums';
+import { EBannerDisplayType, EBannerType } from 'src/common/enums';
 import { EAppType } from 'src/common/enums/config.enum';
 import { BannerImageEntity } from './banner-file.entity';
 import { BannerCriteriaEntity } from './banner-criteria.entity';
-import { APP_TYPES, BANNER_DISPLAY_TYPES, BANNER_POSITIONS, BANNER_TYPES } from 'src/common/constants';
+import { APP_TYPES, BANNER_DISPLAY_TYPES, BANNER_TYPES } from 'src/common/constants';
 import { AdminEntity } from './admin.entity';
+import { BannerPositionEntity } from './banner-position.entity';
+import { AppTypeEntity } from './app-type.entity';
 
 @Entity('banners')
 export class BannerEntity extends BaseEntity {
@@ -25,7 +27,7 @@ export class BannerEntity extends BaseEntity {
   displayType: EBannerDisplayType;
 
   @Column()
-  position: EBannerPosition;
+  position: string;
 
   @Column({ name: 'start_date', default: () => 'CURRENT_TIMESTAMP' })
   startDate: Date;
@@ -58,11 +60,15 @@ export class BannerEntity extends BaseEntity {
   positionLabel: string;
   typeLabel: string;
 
+  @ManyToOne(() => BannerPositionEntity, (position) => position.value)
+  @JoinColumn({ name: 'position' })
+  positionEntity: BannerPositionEntity;
+
   @AfterLoad()
   afterLoad() {
     this.appTypeLabel = APP_TYPES.find((type) => type.value === this.appType)?.label;
     this.displayTypeLabel = BANNER_DISPLAY_TYPES.find((type) => type.value === this.displayType)?.label;
-    this.positionLabel = BANNER_POSITIONS.find((position) => position.value === this.position)?.label;
+    this.positionLabel = this.positionEntity?.label;
     this.typeLabel = BANNER_TYPES.find((type) => type.value === this.type)?.label;
   }
 }

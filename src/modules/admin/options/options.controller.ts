@@ -1,5 +1,5 @@
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
-import { APP_TYPES, CRITERIA_TYPES } from 'src/common/constants';
+import { CRITERIA_TYPES } from 'src/common/constants';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiTags } from '@nestjs/swagger';
 import { ECriteriaType } from 'src/common/enums';
