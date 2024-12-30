@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsEnum, ValidateIf } from 'class-validator';
-import { EProductCategoryStatus } from 'src/common/enums';
+import { Transform, Type } from 'class-transformer';
+import { IsEnum, IsOptional, ValidateIf } from 'class-validator';
+import { EProductApprovalStatus, EProductCategoryStatus, EProductStatus } from 'src/common/enums';
 import { PaginationQuery } from 'src/common/query';
 
 export class QueryProductCategoryDto extends PaginationQuery {
@@ -10,7 +10,13 @@ export class QueryProductCategoryDto extends PaginationQuery {
   @ValidateIf((o) => o.status)
   status: EProductCategoryStatus;
 
-  @ApiPropertyOptional({ type: Boolean })
-  @Transform(({ value }) => (typeof value === 'string' && value ? value === 'true' : value))
-  includeProducts: boolean;
+  @ApiPropertyOptional({ enum: EProductStatus })
+  @IsEnum(EProductStatus)
+  @IsOptional()
+  productStatus: EProductStatus;
+
+  @ApiPropertyOptional({ enum: EProductApprovalStatus })
+  @IsEnum(EProductApprovalStatus)
+  @IsOptional()
+  approvalStatus: EProductApprovalStatus;
 }

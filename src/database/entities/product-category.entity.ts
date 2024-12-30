@@ -1,4 +1,4 @@
-import { Column, Entity, Generated, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, Generated, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { StoreEntity } from './store.entity';
 import { ProductEntity } from './product.entity';
@@ -26,9 +26,6 @@ export class ProductCategoryEntity extends BaseEntity {
   @Column({ name: 'store_id', nullable: true })
   storeId: number;
 
-  // @Column({ name: 'parent_id', nullable: true })
-  // parentId: number;
-
   @ManyToOne(() => StoreEntity, (store) => store.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'store_id' })
   store: StoreEntity;
@@ -39,6 +36,14 @@ export class ProductCategoryEntity extends BaseEntity {
   @ManyToOne(() => ServiceGroupEntity, (serviceGroup) => serviceGroup.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'service_group_id' })
   serviceGroup: ServiceGroupEntity;
+
+  @ManyToMany(() => StoreEntity, (store) => store.id)
+  @JoinTable({
+    name: 'store_product_categories',
+    joinColumn: { name: 'product_category_id' },
+    inverseJoinColumn: { name: 'store_id' },
+  })
+  stores: StoreEntity[];
 
   totalProducts: number;
 }

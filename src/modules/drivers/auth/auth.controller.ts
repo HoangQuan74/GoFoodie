@@ -61,7 +61,6 @@ export class AuthController {
     const uniformStatus = uniform ? uniform.status : 'none';
 
     const contractStatus = profile.signature ? EDriverContractStatus.Signed : EDriverContractStatus.Unsigned;
-    delete profile.signature;
     return { profile, contractStatus, uniformStatus };
   }
 

@@ -10,5 +10,6 @@ import { MerchantModule } from '../merchant.module';
   imports: [WardsModule, TypeOrmModule.forFeature([StoreEntity]), forwardRef(() => MerchantModule)],
   controllers: [StoresController],
   providers: [StoresService],
+  exports: [StoresService],
 })
 export class StoresModule {}
