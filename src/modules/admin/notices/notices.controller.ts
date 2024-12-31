@@ -43,7 +43,7 @@ export class NoticesController {
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    const item = await this.noticesService.findOne({ where: { id: +id } });
+    const item = await this.noticesService.findOne({ where: { id: +id }, relations: ['criteria'] });
     if (!item) throw new NotFoundException();
 
     return item;
