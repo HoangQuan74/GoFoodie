@@ -18,6 +18,7 @@ import { UniformsModule } from './uniforms/uniforms.module';
 import { BannersModule } from './banners/banners.module';
 import { OptionsModule } from './options/options.module';
 import { OnlineTrainingsModule } from './online-trainings/online-trainings.module';
+import { NoticesModule } from './notices/notices.module';
 
 @Module({
   imports: [
@@ -83,6 +84,10 @@ import { OnlineTrainingsModule } from './online-trainings/online-trainings.modul
         path: 'admin',
         module: OnlineTrainingsModule,
       },
+      {
+        path: 'admin',
+        module: NoticesModule,
+      },
     ]),
     AdminsModule,
     MerchantsModule,
@@ -100,6 +105,7 @@ import { OnlineTrainingsModule } from './online-trainings/online-trainings.modul
     BannersModule,
     OptionsModule,
     OnlineTrainingsModule,
+    NoticesModule,
   ],
   providers: [
     {
