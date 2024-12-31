@@ -86,7 +86,7 @@ export class ProductsController {
 
   @Get()
   async find(@Query() query: QueryProductDto, @CurrentStore() storeId: number) {
-    const { status, approvalStatus, isDisplay, limit, page } = query;
+    const { status, approvalStatus, productCategoryId, limit, page } = query;
 
     const queryBuilder = this.productsService
       .createQueryBuilder('product')
@@ -105,8 +105,9 @@ export class ProductsController {
       .take(limit)
       .skip((page - 1) * limit);
 
-    if (status) queryBuilder.andWhere('product.status = :status', { status });
-    if (approvalStatus) queryBuilder.andWhere('product.approvalStatus = :approvalStatus', { approvalStatus });
+    status && queryBuilder.andWhere('product.status = :status', { status });
+    approvalStatus && queryBuilder.andWhere('product.approvalStatus = :approvalStatus', { approvalStatus });
+    productCategoryId && queryBuilder.andWhere('product.productCategoryId = :productCategoryId', { productCategoryId });
 
     const [items, total] = await queryBuilder.getManyAndCount();
     return { items, total };

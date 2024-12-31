@@ -7,6 +7,7 @@ import { DriverEntity } from 'src/database/entities/driver.entity';
 import { DriversController } from './drivers.controller';
 import { UniformsModule } from './uniforms/uniforms.module';
 import { OnlineTrainingsModule } from './online-trainings/online-trainings.module';
+import { BannersModule } from './banners/banners.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { OnlineTrainingsModule } from './online-trainings/online-trainings.modul
       { path: 'driver', module: OnlineTrainingsModule },
     ]),
     OnlineTrainingsModule,
+    BannersModule,
   ],
   controllers: [DriversController],
   providers: [DriversService],

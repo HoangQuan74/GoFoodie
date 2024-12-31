@@ -7,7 +7,6 @@ import { BannerCriteriaEntity } from './banner-criteria.entity';
 import { APP_TYPES, BANNER_DISPLAY_TYPES, BANNER_TYPES } from 'src/common/constants';
 import { AdminEntity } from './admin.entity';
 import { BannerPositionEntity } from './banner-position.entity';
-import { AppTypeEntity } from './app-type.entity';
 
 @Entity('banners')
 export class BannerEntity extends BaseEntity {

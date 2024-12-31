@@ -1,9 +1,9 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { BannersService } from './banners.service';
-import { Public } from 'src/common/decorators';
-import { Brackets } from 'typeorm';
-import { EAppType } from 'src/common/enums/config.enum';
 import { ApiOperation } from '@nestjs/swagger';
+import { Public } from 'src/common/decorators';
+import { EAppType } from 'src/common/enums/config.enum';
+import { Brackets } from 'typeorm';
 
 @Controller('banners')
 export class BannersController {
@@ -17,7 +17,7 @@ export class BannersController {
       .createQueryBuilder('banner')
       .select(['banner.id', 'banner.name', 'banner.type', 'banner.displayType', 'file.description'])
       .where('banner.position = :position', { position })
-      .andWhere('banner.appType = :appType', { appType: EAppType.AppClient })
+      .andWhere('banner.appType = :appType', { appType: EAppType.AppMerchant })
       .innerJoinAndSelect('banner.files', 'file', 'file.isActive = TRUE')
       .andWhere('banner.startDate <= NOW()')
       .andWhere(

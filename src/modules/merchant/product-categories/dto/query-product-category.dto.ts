@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import { IsEnum, IsOptional, ValidateIf } from 'class-validator';
 import { EProductApprovalStatus, EProductCategoryStatus, EProductStatus } from 'src/common/enums';
 import { PaginationQuery } from 'src/common/query';
