@@ -51,7 +51,7 @@ export class CreateBannerImageDto {
   videoThumbnailId: string;
 }
 
-export class CreateBannerCriteriaDto {
+export class CreateCriteriaDto {
   @ApiProperty({ enum: ECriteriaType })
   @IsEnum(ECriteriaType)
   type: ECriteriaType;
@@ -112,9 +112,9 @@ export class CreateBannerDto {
   @Type(() => CreateBannerImageDto)
   files: CreateBannerImageDto[];
 
-  @ApiProperty({ type: [CreateBannerCriteriaDto] })
+  @ApiProperty({ type: [CreateCriteriaDto] })
   @ValidateNested({ each: true })
   @IsNotEmpty()
-  @Type(() => CreateBannerCriteriaDto)
-  criteria: CreateBannerCriteriaDto[];
+  @Type(() => CreateCriteriaDto)
+  criteria: CreateCriteriaDto[];
 }

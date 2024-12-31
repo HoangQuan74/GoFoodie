@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { NoticeEntity } from 'src/database/entities/notice.entity';
-import { Repository, FindOneOptions, FindManyOptions } from 'typeorm';
+import { Repository, FindOneOptions, FindManyOptions, DeepPartial } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { NoticeTypeEntity } from 'src/database/entities/notice-type.entity';
 
@@ -14,7 +14,7 @@ export class NoticesService {
     private noticeTypeRepository: Repository<NoticeTypeEntity>,
   ) {}
 
-  async save(entity: Partial<NoticeEntity>): Promise<NoticeEntity> {
+  async save(entity: DeepPartial<NoticeEntity>) {
     return this.noticeRepository.save(entity);
   }
 
