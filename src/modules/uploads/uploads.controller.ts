@@ -6,6 +6,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
   Res,
   UploadedFile,
   UseGuards,
@@ -16,8 +17,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import * as path from 'path';
+import * as sharp from 'sharp';
 import { AppGuard } from 'src/app.gaurd';
 import { Public } from 'src/common/decorators';
+import { FileQueryDto } from './dto/file-query.dto';
 
 @Controller('uploads')
 @ApiTags('Uploads')
@@ -45,13 +48,25 @@ export class UploadsController {
 
   @Get(':id')
   @Public()
-  async download(@Param('id') id: string, @Res() res: Response) {
+  async download(@Param('id') id: string, @Res() res: Response, @Query() query: FileQueryDto) {
+    const { width, quality } = query;
     const file = await this.uploadsService.findOne({ where: { id } });
     if (!file) throw new NotFoundException();
 
-    const filePath = path.join(__dirname, `../../../uploads`);
-    const fullPath = path.join(filePath, file.path);
+    const isImage = file.mimetype.startsWith('image');
 
-    return res.status(200).contentType(file.mimetype).sendFile(fullPath);
+    const uploadsPath = path.join(__dirname, `../../../uploads`);
+    const fullPath = path.join(uploadsPath, file.path);
+
+    if (!isImage) {
+      return res.status(200).contentType(file.mimetype).sendFile(file.path);
+    }
+
+    const image = sharp(fullPath);
+    if (width) image.resize(width);
+    if (quality) image.jpeg({ quality: quality });
+
+    res.contentType(file.mimetype);
+    image.pipe(res);
   }
 }
