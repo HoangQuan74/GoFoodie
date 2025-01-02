@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToMany } from 'typeorm';
+import { ServiceTypeEntity } from './service-type.entity';
 
 @Entity('provinces')
 export class ProvinceEntity {
@@ -10,4 +11,7 @@ export class ProvinceEntity {
 
   @Column({ name: 'short_name', default: '' })
   shortName: string;
+
+  @ManyToMany(() => ServiceTypeEntity, (serviceType) => serviceType.provinces)
+  serviceTypes: ServiceTypeEntity[];
 }

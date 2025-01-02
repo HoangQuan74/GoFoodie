@@ -38,6 +38,7 @@ export class IdentityQuery {
   @IsArray()
   @IsInt({ each: true })
   @ArrayMinSize(1)
+  @Type(() => Number)
   ids: number[];
 }
 

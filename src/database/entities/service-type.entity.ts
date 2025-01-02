@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable } from 'typeorm';
+import { ProvinceEntity } from './province.entity';
 
 @Entity('service_types')
 export class ServiceTypeEntity {
@@ -10,4 +11,12 @@ export class ServiceTypeEntity {
 
   @Column({ default: '' })
   code: string;
+
+  @ManyToMany(() => ProvinceEntity, (province) => province.serviceTypes)
+  @JoinTable({
+    name: 'service_type_provinces',
+    joinColumn: { name: 'service_type_id' },
+    inverseJoinColumn: { name: 'province_id' },
+  })
+  provinces: ProvinceEntity[];
 }
