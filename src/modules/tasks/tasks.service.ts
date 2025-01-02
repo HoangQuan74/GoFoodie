@@ -2,6 +2,7 @@ import { MerchantEntity } from './../../database/entities/merchant.entity';
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
+import { EMerchantRole } from 'src/common/enums';
 import { EAppType } from 'src/common/enums/config.enum';
 import { ENoticeSendType } from 'src/common/enums/notice.enum';
 import { FileEntity } from 'src/database/entities/file.entity';
@@ -11,12 +12,17 @@ import { Brackets, DataSource, LessThan, Repository } from 'typeorm';
 
 @Injectable()
 export class TasksService {
+  private readonly chunkSize = 100;
+
   constructor(
     @InjectRepository(FileEntity)
     private readonly fileRepository: Repository<FileEntity>,
 
     @InjectRepository(NoticeEntity)
     private readonly noticeRepository: Repository<NoticeEntity>,
+
+    @InjectRepository(MerchantEntity)
+    private readonly merchantRepository: Repository<MerchantEntity>,
 
     private readonly dataSource: DataSource,
   ) {}
@@ -41,14 +47,13 @@ export class TasksService {
       AND c.contype = 'f';`,
     );
 
-    const limit = 100;
-    const pages = Math.ceil(count / limit);
+    const pages = Math.ceil(count / this.chunkSize);
 
     for (let i = 0; i < pages; i++) {
       const files = await this.fileRepository.find({
         where: { createdAt: LessThan(before) },
-        take: limit,
-        skip: i * limit,
+        take: this.chunkSize,
+        skip: i * this.chunkSize,
       });
 
       let fileIds = files.map((file) => file.id);
@@ -89,7 +94,6 @@ export class TasksService {
     const notices = await this.noticeRepository
       .createQueryBuilder('notice')
       .where('notice.isSent = false')
-      .andWhere('notice.sendType = :sendType', { sendType: ENoticeSendType.Email })
       .andWhere(
         new Brackets((qb) => {
           qb.where('notice.sendNow = true');
@@ -107,10 +111,28 @@ export class TasksService {
           // ...
           break;
         case EAppType.AppMerchant:
-          // const merchants = await this.dataSource.
-          // Send notice to merchant here
-          // ...
-          // ...
+          // đếm số lượng merchant
+          // chia ra nhiều lần gửi
+          // gửi thông báo cho merchant
+
+          const where = { role: EMerchantRole.Owner };
+          const count = await this.merchantRepository.count({ where });
+          const pages = Math.ceil(count / this.chunkSize);
+
+          for (let i = 0; i < pages; i++) {
+            const merchants = await this.merchantRepository.find({
+              where,
+              take: this.chunkSize,
+              skip: i * this.chunkSize,
+            });
+
+            for (const merchant of merchants) {
+              // Send notice to merchant here
+              // ...
+              // ...
+            }
+          }
+
           break;
         case EAppType.AppDriver:
           // Send notice to driver here
