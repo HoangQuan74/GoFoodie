@@ -18,7 +18,7 @@ import { CurrentStore } from 'src/common/decorators/current-store.decorator';
 import { QueryOptionGroupDto } from './dto/query-option-group.dto';
 import { FindManyOptions, ILike, Not } from 'typeorm';
 import { OptionGroupEntity } from 'src/database/entities/option-group.entity';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../auth/auth.guard';
 import { ProductOptionGroupEntity } from 'src/database/entities/product-option-group.entity';
 import { ProductOptionGroupsService } from 'src/modules/product-option-groups/product-option-groups.service';
@@ -34,6 +34,7 @@ export class OptionGroupsController {
   ) {}
 
   @Post()
+  @ApiOperation({ summary: 'Tạo nhóm tùy chọn (Topping)' })
   async create(@Body() createOptionGroupDto: CreateOptionGroupDto, @CurrentStore() storeId: number) {
     const { name } = createOptionGroupDto;
     const { products = [], ...rest } = createOptionGroupDto;
@@ -56,6 +57,7 @@ export class OptionGroupsController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Danh sách nhóm tùy chọn (Topping)' })
   async find(@Query() query: QueryOptionGroupDto, @CurrentStore() storeId: number) {
     const { limit, page, search, status } = query;
     const where = { storeId };
@@ -75,10 +77,12 @@ export class OptionGroupsController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Chi tiết nhóm tùy chọn (Topping)' })
   async findOne(@Param('id') id: number, @CurrentStore() storeId: number) {
     const optionGroup = await this.optionGroupsService.findOne({
+      select: { products: { id: true, name: true } },
       where: { id, storeId },
-      relations: { options: true },
+      relations: { options: true, products: true },
     });
     if (!optionGroup) throw new NotFoundException();
 
@@ -86,6 +90,7 @@ export class OptionGroupsController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Xóa nhóm tùy chọn (Topping)' })
   async remove(@Param('id') id: number, @CurrentStore() storeId: number) {
     const optionGroup = await this.optionGroupsService.findOne({
       where: { id, storeId },
@@ -97,6 +102,7 @@ export class OptionGroupsController {
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Cập nhật nhóm tùy chọn (Topping)' })
   async update(
     @Param('id') id: number,
     @Body() updateOptionGroupDto: UpdateOptionGroupDto,

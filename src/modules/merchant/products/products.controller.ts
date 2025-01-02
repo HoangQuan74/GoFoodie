@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, NotFoundE
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentStore } from 'src/common/decorators/current-store.decorator';
 import { StoreEntity } from 'src/database/entities/store.entity';
@@ -27,6 +27,7 @@ export class ProductsController {
   ) {}
 
   @Post()
+  @ApiOperation({ summary: 'Tạo sản phẩm (món ăn)' })
   create(@Body() createProductDto: CreateProductDto, @CurrentStore() storeId: number, @CurrentUser() user: JwtPayload) {
     const { id: merchantId } = user;
 
@@ -85,6 +86,7 @@ export class ProductsController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Danh sách sản phẩm (món ăn)' })
   async find(@Query() query: QueryProductDto, @CurrentStore() storeId: number) {
     const { status, approvalStatus, productCategoryId, limit, page } = query;
 
@@ -114,6 +116,7 @@ export class ProductsController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Chi tiết sản phẩm (món ăn)' })
   async findOne(@Param('id') id: string, @CurrentStore() storeId: number) {
     const product = await this.productsService.findOne({
       select: { productOptionGroups: true, productWorkingTimes: true, productCategory: { id: true, name: true } },
@@ -130,6 +133,7 @@ export class ProductsController {
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Cập nhật sản phẩm (món ăn)' })
   async update(
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
@@ -192,6 +196,7 @@ export class ProductsController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Xóa sản phẩm (món ăn)' })
   async remove(@Param('id') id: string, @CurrentStore() storeId: number) {
     const product = await this.productsService.findOne({
       where: { id: +id, storeId },

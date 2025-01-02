@@ -21,43 +21,43 @@ export class UpdateProductOptionGroupDto {
 }
 
 export class CreateOptionDto {
-  @ApiProperty()
+  @ApiProperty({ description: 'Tên tùy chọn' })
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Giá tùy chọn' })
   @IsNumber()
   @IsOptional()
   price: number;
 
-  @ApiProperty({ enum: EOptionStatus })
+  @ApiProperty({ enum: EOptionStatus, description: 'Trạng thái tùy chọn' })
   @IsEnum(EOptionStatus)
   status: EOptionStatus;
 }
 
 export class CreateOptionGroupDto {
-  @ApiProperty()
+  @ApiProperty({ description: 'Tên nhóm tùy chọn (Topping)' })
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Có phải là nhóm tùy chọn được chọn nhiều lựa chọn không' })
   @IsBoolean()
   isMultiple: boolean;
 
-  @ApiProperty({ enum: EOptionGroupStatus })
+  @ApiProperty({ enum: EOptionGroupStatus, description: 'Trạng thái nhóm tùy chọn' })
   @IsEnum(EOptionGroupStatus)
   status: EOptionGroupStatus;
 
-  @ApiProperty({ type: [CreateOptionDto] })
+  @ApiProperty({ type: [CreateOptionDto], description: 'Danh sách tùy chọn' })
   @ValidateNested({ each: true })
   @ArrayMinSize(1)
   @IsArray()
   @Type(() => CreateOptionDto)
   options: CreateOptionDto[];
 
-  @ApiPropertyOptional({ type: [UpdateProductOptionGroupDto] })
+  @ApiPropertyOptional({ type: [UpdateProductOptionGroupDto], description: 'Danh sách sản phẩm liên kết' })
   @ValidateNested({ each: true })
   @Type(() => UpdateProductOptionGroupDto)
   @IsArray()

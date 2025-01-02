@@ -14,7 +14,7 @@ import {
 import { ProductCategoriesService } from './product-categories.service';
 import { CurrentStore } from 'src/common/decorators/current-store.decorator';
 import { AuthGuard } from '../auth/auth.guard';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { QueryProductCategoryDto } from './dto/query-product-category.dto';
 import { Brackets, IsNull, Not } from 'typeorm';
 import { StoresService } from '../stores/stores.service';
@@ -33,6 +33,7 @@ export class ProductCategoriesController {
   ) {}
 
   @Post()
+  @ApiOperation({ summary: 'Tạo danh mục sản phẩm' })
   async create(@CurrentStore() storeId: number, @Body() body: CreateProductCategoryDto) {
     const store = await this.storesService.findOne({
       select: { id: true, serviceGroupId: true },
@@ -68,6 +69,7 @@ export class ProductCategoriesController {
   }
 
   @Get('global')
+  @ApiOperation({ summary: 'Danh sách danh mục sản phẩm của hệ thống' })
   async getGlobalCategories(@Query('serviceGroupId') serviceGroupId: number) {
     const select = { id: true, name: true };
     const options = { select, where: { serviceGroupId, storeId: IsNull(), status: EProductCategoryStatus.Active } };
@@ -77,6 +79,7 @@ export class ProductCategoriesController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Danh sách danh mục sản phẩm của cửa hàng' })
   async find(@CurrentStore() storeId: number, @Query() query: QueryProductCategoryDto) {
     const { limit, page, search, status, productStatus, includeProducts, approvalStatus } = query;
     const store = await this.storesService.findOne({
@@ -121,6 +124,7 @@ export class ProductCategoriesController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Chi tiết danh mục sản phẩm' })
   async findOne(@CurrentStore() storeId: number, @Param('id') id: number) {
     const productCategory = await this.productCategoriesService.findOne({
       where: [
@@ -134,6 +138,7 @@ export class ProductCategoriesController {
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Cập nhật danh mục sản phẩm' })
   async update(@CurrentStore() storeId: number, @Param('id') id: number, @Body() body: UpdateProductCategoryDto) {
     const { name } = body;
 
@@ -148,6 +153,7 @@ export class ProductCategoriesController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Xóa danh mục sản phẩm' })
   async remove(@CurrentStore() storeId: number, @Param('id') id: number) {
     const productCategory = await this.productCategoriesService
       .createQueryBuilder('productCategory')

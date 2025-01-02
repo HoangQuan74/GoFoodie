@@ -22,11 +22,11 @@ export class CreateOptionDto {
 }
 
 export class CreateOptionGroupsDto {
-  @ApiProperty()
+  @ApiProperty({ description: 'Id nhóm tùy chọn (Topping)' })
   @IsInt()
   optionGroupId: number;
 
-  @ApiProperty({ type: [CreateOptionDto] })
+  @ApiProperty({ type: [CreateOptionDto], description: 'Danh sách tùy chọn' })
   @ValidateNested({ each: true })
   @ArrayMinSize(1)
   @Type(() => CreateOptionDto)
@@ -48,45 +48,45 @@ export class CreateProductWorkingTimeDto {
 }
 
 export class CreateProductDto {
-  @ApiProperty()
+  @ApiProperty({ description: 'Tên sản phẩm' })
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Mô tả sản phẩm' })
   @IsString()
   @IsOptional()
   description: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Giá sản phẩm' })
   @IsNumber()
   price: number;
 
-  @ApiProperty({ enum: EProductStatus })
+  @ApiProperty({ enum: EProductStatus, description: 'Trạng thái sản phẩm' })
   @IsEnum(EProductStatus)
   @IsNotEmpty()
   status: EProductStatus;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Id danh mục sản phẩm' })
   @IsInt()
   productCategoryId: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Id hình ảnh sản phẩm' })
   @IsUUID()
   imageId: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Có phải bán theo thời gian bình thường không' })
   @IsBoolean()
   @Type(() => Boolean)
   isNormalTime: boolean;
 
-  @ApiPropertyOptional({ type: [CreateProductWorkingTimeDto] })
+  @ApiPropertyOptional({ type: [CreateProductWorkingTimeDto], description: 'Danh sách thời gian bán' })
   @ValidateNested({ each: true })
   @IsOptional()
   @Type(() => CreateProductWorkingTimeDto)
   productWorkingTimes: CreateProductWorkingTimeDto[];
 
-  @ApiPropertyOptional({ type: [Number] })
+  @ApiPropertyOptional({ type: [Number], description: 'Danh sách nhóm tùy chọn (Topping)' })
   @IsArray()
   @IsInt({ each: true })
   @IsOptional()
