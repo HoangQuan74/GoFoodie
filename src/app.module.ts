@@ -25,6 +25,7 @@ import { ConfigsModule } from './modules/configs/configs.module';
 import { UniformSizesModule } from './modules/uniform-sizes/uniform-sizes.module';
 import { ClientModule } from './modules/client/client.module';
 import { MapboxModule } from './modules/mapbox/mapbox.module';
+import { MailHistoriesModule } from './modules/mail-histories/mail-histories.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { MapboxModule } from './modules/mapbox/mapbox.module';
     UniformSizesModule,
     ClientModule,
     MapboxModule,
+    MailHistoriesModule,
   ],
   controllers: [],
   providers: [],

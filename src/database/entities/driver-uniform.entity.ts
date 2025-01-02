@@ -34,7 +34,7 @@ export class DriverUniformEntity extends BaseEntity {
   @Column({ name: 'payment_method', type: 'enum', enum: EDriverUniformPaymentMethod })
   paymentMethod: EDriverUniformPaymentMethod;
 
-  @ManyToOne(() => DriverEntity, (driver) => driver.id)
+  @ManyToOne(() => DriverEntity, (driver) => driver.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'driver_id' })
   driver: DriverEntity;
 

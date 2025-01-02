@@ -31,7 +31,7 @@ export class DriverVehicleEntity extends BaseEntity {
   @Column({ name: 'vehicle_registration_back_image_id', nullable: true })
   vehicleRegistrationBackImageId: string;
 
-  @OneToOne(() => DriverEntity, (driver) => driver.id)
+  @OneToOne(() => DriverEntity, (driver) => driver.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'driver_id' })
   driver: DriverEntity;
 

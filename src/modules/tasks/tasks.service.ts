@@ -9,10 +9,15 @@ import { FileEntity } from 'src/database/entities/file.entity';
 import { NoticeEntity } from 'src/database/entities/notice.entity';
 import { deleteFile } from 'src/utils/file';
 import { Brackets, DataSource, LessThan, Repository } from 'typeorm';
+import { MailHistoriesService } from '../mail-histories/mail-histories.service';
+import { MailHistoryEntity } from 'src/database/entities/mail-history.entity';
+import { EDriverApprovalStatus, EDriverStatus } from 'src/common/enums/driver.enum';
+import { DriverEntity } from 'src/database/entities/driver.entity';
 
 @Injectable()
 export class TasksService {
   private readonly chunkSize = 100;
+  private readonly retryCount = 5;
 
   constructor(
     @InjectRepository(FileEntity)
@@ -24,7 +29,11 @@ export class TasksService {
     @InjectRepository(MerchantEntity)
     private readonly merchantRepository: Repository<MerchantEntity>,
 
+    @InjectRepository(DriverEntity)
+    private readonly driverRepository: Repository<DriverEntity>,
+
     private readonly dataSource: DataSource,
+    private readonly mailHistoriesService: MailHistoriesService,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, {
@@ -111,38 +120,82 @@ export class TasksService {
           // ...
           break;
         case EAppType.AppMerchant:
-          // đếm số lượng merchant
-          // chia ra nhiều lần gửi
-          // gửi thông báo cho merchant
+          const merchantWhere = { role: EMerchantRole.Owner };
+          const merchantCount = await this.merchantRepository.count({ where: merchantWhere });
+          const merchantPages = Math.ceil(merchantCount / this.chunkSize);
 
-          const where = { role: EMerchantRole.Owner };
-          const count = await this.merchantRepository.count({ where });
-          const pages = Math.ceil(count / this.chunkSize);
-
-          for (let i = 0; i < pages; i++) {
+          for (let i = 0; i < merchantPages; i++) {
             const merchants = await this.merchantRepository.find({
-              where,
+              select: ['id', 'name', 'email', 'deviceToken'],
+              where: merchantWhere,
               take: this.chunkSize,
               skip: i * this.chunkSize,
             });
 
             for (const merchant of merchants) {
-              // Send notice to merchant here
-              // ...
-              // ...
+              if (notice.sendType === ENoticeSendType.Email && merchant.email) {
+                const mailHistory = new MailHistoryEntity();
+                mailHistory.to = merchant.email;
+                mailHistory.subject = notice.title;
+                mailHistory.body = notice.content;
+
+                await this.mailHistoriesService.save(mailHistory);
+              }
             }
           }
 
           break;
         case EAppType.AppDriver:
-          // Send notice to driver here
-          // ...
-          // ...
+          const driverWhere = { status: EDriverStatus.Active, approvalStatus: EDriverApprovalStatus.Approved };
+          const driverCount = await this.driverRepository.count({ where: driverWhere });
+          const driverPages = Math.ceil(driverCount / this.chunkSize);
+
+          for (let i = 0; i < driverPages; i++) {
+            const drivers = await this.driverRepository.find({
+              select: ['id', 'fullName', 'email', 'deviceToken'],
+              where: driverWhere,
+              take: this.chunkSize,
+              skip: i * this.chunkSize,
+            });
+
+            for (const driver of drivers) {
+              if (notice.sendType === ENoticeSendType.Email && driver.email) {
+                const mailHistory = new MailHistoryEntity();
+                mailHistory.to = driver.email;
+                mailHistory.subject = notice.title;
+                mailHistory.body = notice.content;
+
+                await this.mailHistoriesService.save(mailHistory);
+              }
+            }
+          }
           break;
       }
 
       notice.isSent = true;
       await this.noticeRepository.save(notice);
+    }
+  }
+
+  @Cron(CronExpression.EVERY_5_MINUTES, {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    disabled: false,
+  })
+  async sendMailHistories() {
+    const where = { isSent: false, retryCount: LessThan(this.retryCount) };
+    const count = await this.mailHistoriesService.count({ where });
+    const pages = Math.ceil(count / this.chunkSize);
+
+    for (let i = 0; i < pages; i++) {
+      const mailHistories = await this.mailHistoriesService.find({
+        where,
+        take: this.chunkSize,
+        skip: i * this.chunkSize,
+      });
+
+      for (const mailHistory of mailHistories) {
+        await this.mailHistoriesService.sendMail(mailHistory);
+      }
     }
   }
 }

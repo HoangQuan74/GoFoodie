@@ -11,7 +11,7 @@ export class DriverSignatureEntity {
   @Column({ name: 'signature_image_id' })
   signatureImageId: string;
 
-  @OneToOne(() => DriverEntity, (driver) => driver.id)
+  @OneToOne(() => DriverEntity, (driver) => driver.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'driver_id' })
   driver: DriverEntity;
 

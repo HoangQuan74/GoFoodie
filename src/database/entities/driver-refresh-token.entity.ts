@@ -19,7 +19,7 @@ export class DriverRefreshTokenEntity extends BaseEntity {
   @Column({ name: 'is_revoked', default: false })
   isRevoked: boolean;
 
-  @ManyToOne(() => DriverEntity, (driver) => driver.id)
+  @ManyToOne(() => DriverEntity, (driver) => driver.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'driver_id' })
   driver: DriverEntity;
 }
