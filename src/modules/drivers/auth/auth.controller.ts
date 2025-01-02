@@ -50,10 +50,12 @@ export class AuthController {
   async getProfile(@CurrentUser() user: JwtPayload) {
     const { id } = user;
     const profile = await this.driversService.findOne({
+      select: { activeArea: { id: true, name: true } },
       where: { id },
       relations: {
         signature: true,
         serviceTypes: true,
+        activeArea: true,
       },
     });
     if (!profile) throw new NotFoundException();
