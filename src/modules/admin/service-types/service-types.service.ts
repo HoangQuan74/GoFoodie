@@ -17,4 +17,8 @@ export class ServiceTypesService {
   async save(entity: DeepPartial<ServiceTypeEntity>): Promise<ServiceTypeEntity> {
     return this.serviceTypeRepository.save(entity);
   }
+
+  async saveMany(entities: DeepPartial<ServiceTypeEntity>[]): Promise<ServiceTypeEntity[]> {
+    return this.serviceTypeRepository.save(entities);
+  }
 }

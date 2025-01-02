@@ -18,7 +18,7 @@ export class ServiceTypesController {
 
   @Patch()
   @ApiOperation({ summary: 'Cập nhật thông tin loại hình dịch vụ' })
-  async create(@Body() body: UpdateServiceTypeDto) {
-    return this.serviceTypesService.save(body);
+  async create(@Body() { items }: UpdateServiceTypeDto) {
+    return this.serviceTypesService.saveMany(items);
   }
 }
