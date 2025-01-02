@@ -59,7 +59,7 @@ export class UploadsController {
     const fullPath = path.join(uploadsPath, file.path);
 
     if (!isImage) {
-      return res.status(200).contentType(file.mimetype).sendFile(file.path);
+      return res.status(200).contentType(file.mimetype).sendFile(fullPath);
     }
 
     const image = sharp(fullPath);
