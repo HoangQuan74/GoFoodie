@@ -70,6 +70,9 @@ export class DriverEntity extends BaseEntity {
   @Column({ name: 'created_by_id', nullable: true })
   createdById: number;
 
+  @Column({ name: 'balance', default: 0 })
+  balance: number;
+
   @OneToMany(() => DriverBankEntity, (driverBank) => driverBank.driver, { cascade: true })
   banks: DriverBankEntity[];
 
