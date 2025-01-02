@@ -1,15 +1,22 @@
+import { MerchantEntity } from './../../database/entities/merchant.entity';
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
+import { EAppType } from 'src/common/enums/config.enum';
+import { ENoticeSendType } from 'src/common/enums/notice.enum';
 import { FileEntity } from 'src/database/entities/file.entity';
+import { NoticeEntity } from 'src/database/entities/notice.entity';
 import { deleteFile } from 'src/utils/file';
-import { DataSource, LessThan, Repository } from 'typeorm';
+import { Brackets, DataSource, LessThan, Repository } from 'typeorm';
 
 @Injectable()
 export class TasksService {
   constructor(
     @InjectRepository(FileEntity)
     private readonly fileRepository: Repository<FileEntity>,
+
+    @InjectRepository(NoticeEntity)
+    private readonly noticeRepository: Repository<NoticeEntity>,
 
     private readonly dataSource: DataSource,
   ) {}
@@ -71,6 +78,49 @@ export class TasksService {
           })
           .catch(() => {});
       }
+    }
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES, {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    disabled: false,
+  })
+  async sendNotices() {
+    const notices = await this.noticeRepository
+      .createQueryBuilder('notice')
+      .where('notice.isSent = false')
+      .andWhere('notice.sendType = :sendType', { sendType: ENoticeSendType.Email })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('notice.sendNow = true');
+          qb.orWhere('notice.startTime <= :now', { now: new Date() });
+        }),
+      )
+      .getMany();
+
+    for (const notice of notices) {
+      switch (notice.appType) {
+        case EAppType.AppClient:
+          // const clients = await this.dataSource.query('SELECT * FROM clients WHERE id IN (SELECT client_id FROM client_devices WHERE is_active = true)');
+          // Send notice to user here
+          // ...
+          // ...
+          break;
+        case EAppType.AppMerchant:
+          // const merchants = await this.dataSource.
+          // Send notice to merchant here
+          // ...
+          // ...
+          break;
+        case EAppType.AppDriver:
+          // Send notice to driver here
+          // ...
+          // ...
+          break;
+      }
+
+      notice.isSent = true;
+      await this.noticeRepository.save(notice);
     }
   }
 }

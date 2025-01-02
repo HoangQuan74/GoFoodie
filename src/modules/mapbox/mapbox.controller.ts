@@ -12,14 +12,16 @@ import { MapboxService } from './mapbox.service';
 import { AppGuard } from 'src/app.gaurd';
 import axios from 'axios';
 import { ApiTags } from '@nestjs/swagger';
+import { Public } from 'src/common/decorators';
 
 @Controller('mapbox')
 @ApiTags('Mapbox')
-@UseGuards(AppGuard)
+// @UseGuards(AppGuard)
 export class MapboxController {
   constructor(private readonly mapboxService: MapboxService) {}
 
   @Get('search/searchbox/v1/suggest')
+  @Public()
   async search(@Query() query: object) {
     try {
       const { data } = await axios.get(`${MAPBOX_URL}/search/searchbox/v1/suggest`, {
@@ -36,6 +38,7 @@ export class MapboxController {
   }
 
   @Get('geocoding/v5/mapbox.places/:query')
+  @Public()
   async geocoding(@Query() query: object, @Param('query') queryParam: string) {
     try {
       const { data } = await axios.get(`${MAPBOX_URL}/geocoding/v5/mapbox.places/${queryParam}.json`, {
