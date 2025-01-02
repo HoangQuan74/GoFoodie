@@ -50,11 +50,11 @@ export class NoticesController {
       switch (status) {
         case ENoticeStatus.NotStarted:
           queryBuilder.andWhere('notice.sendNow = false');
-          queryBuilder.andWhere('notice.startDate > NOW()');
+          queryBuilder.andWhere('notice.startTime > NOW()');
           break;
         case ENoticeStatus.InProgress:
           queryBuilder.andWhere('notice.sendNow = false');
-          queryBuilder.andWhere('notice.startDate <= NOW()');
+          queryBuilder.andWhere('notice.startTime <= NOW()');
           queryBuilder.andWhere('notice.endTime IS NULL OR notice.endTime > NOW()');
           break;
         case ENoticeStatus.Ended:
@@ -62,7 +62,7 @@ export class NoticesController {
             new Brackets((qb) => {
               qb.where('notice.sendNow = true')
                 .orWhere('notice.endTime IS NOT NULL AND notice.endTime < NOW()')
-                .orWhere('notice.endTime IS NULL AND notice.startDate < NOW()');
+                .orWhere('notice.endTime IS NULL AND notice.startTime < NOW()');
             }),
           );
           break;
