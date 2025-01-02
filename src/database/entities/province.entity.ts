@@ -12,6 +12,9 @@ export class ProvinceEntity {
   @Column({ name: 'short_name', default: '' })
   shortName: string;
 
+  @Column({ name: 'code', default: '' })
+  code: string;
+
   @ManyToMany(() => ServiceTypeEntity, (serviceType) => serviceType.provinces)
   serviceTypes: ServiceTypeEntity[];
 }
