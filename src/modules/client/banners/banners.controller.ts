@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { BannersService } from './banners.service';
 import { Public } from 'src/common/decorators';
 import { Brackets } from 'typeorm';
@@ -27,5 +27,25 @@ export class BannersController {
       )
       .orderBy('file.sort', 'ASC')
       .getOne();
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Danh sách banner' })
+  @Public()
+  async find(@Query('page') page: string) {
+    return this.bannersService
+      .createQueryBuilder('banner')
+      .select(['banner.id', 'banner.name', 'banner.type', 'banner.displayType', 'file.description'])
+      .where('banner.position ILIKE :page', { page: `%${page}%` })
+      .andWhere('banner.appType = :appType', { appType: EAppType.AppClient })
+      .innerJoinAndSelect('banner.files', 'file', 'file.isActive = TRUE')
+      .andWhere('banner.startDate <= NOW()')
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('banner.endDate >= NOW()').orWhere('banner.endDate IS NULL');
+        }),
+      )
+      .orderBy('file.sort', 'ASC')
+      .getMany();
   }
 }
