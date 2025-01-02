@@ -42,6 +42,16 @@ export class IdentityQuery {
   ids: number[];
 }
 
+export class IdentityQueryOptional {
+  @ApiPropertyOptional({ type: [Number] })
+  @IsArray()
+  @IsInt({ each: true })
+  @ArrayMinSize(1)
+  @Type(() => Number)
+  @IsOptional()
+  ids: number[];
+}
+
 export class IdDto {
   @ApiProperty()
   @IsInt()
