@@ -21,6 +21,7 @@ import { ServiceGroupsModule } from './modules/service-groups/service-groups.mod
 import { AdminModule } from './modules/admin/admin.module';
 import { UniformSizesModule } from './modules/uniform-sizes/uniform-sizes.module';
 import { ClientModule } from './modules/client/client.module';
+import { MapboxModule } from './modules/mapbox/mapbox.module';
 
 const { NODE_ENV = 'development', PORT = 3000 } = process.env;
 
@@ -68,6 +69,7 @@ async function bootstrap() {
       ServiceTypesModule,
       ServiceGroupsModule,
       UniformSizesModule,
+      MapboxModule,
     ];
 
     const document = SwaggerModule.createDocument(app, config.build(), {

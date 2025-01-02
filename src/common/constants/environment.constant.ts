@@ -17,3 +17,6 @@ export const TIMEZONE: string = process.env.TIMEZONE || 'Asia/Ho_Chi_Minh';
 export const FIREBASE_PROJECT_ID: string = process.env.FIREBASE_PROJECT_ID || '';
 export const FIREBASE_CLIENT_EMAIL: string = process.env.FIREBASE_CLIENT_EMAIL || '';
 export const FIREBASE_PRIVATE_KEY: string = process.env.FIREBASE_PRIVATE_KEY || '';
+
+export const MAPBOX_URL: string = process.env.MAPBOX_URL || '';
+export const MAPBOX_ACCESS_TOKEN: string = process.env.MAPBOX_ACCESS_TOKEN || '';

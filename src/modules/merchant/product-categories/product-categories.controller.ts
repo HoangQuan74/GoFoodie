@@ -89,9 +89,11 @@ export class ProductCategoriesController {
       .createQueryBuilder('productCategory')
       .select(['productCategory.id', 'productCategory.name', 'productCategory.storeId'])
       .loadRelationCountAndMap('productCategory.totalProducts', 'productCategory.products', 'products', (qb) => {
-        return qb
-          .andWhere('products.status = :productStatus', { productStatus })
-          .andWhere('products.storeId = :storeId', { storeId });
+        const subQuery = qb.andWhere('products.storeId = :storeId', { storeId });
+        productStatus && subQuery.andWhere('products.status = :productStatus', { productStatus });
+        approvalStatus && subQuery.andWhere('products.approvalStatus = :approvalStatus', { approvalStatus });
+
+        return subQuery;
       })
       .where(
         new Brackets((qb) => {
@@ -100,18 +102,18 @@ export class ProductCategoriesController {
         }),
       )
       .leftJoin('productCategory.stores', 'stores')
+      .leftJoin('productCategory.products', 'products', 'products.storeId = :storeId', { storeId })
       .orderBy('productCategory.name', 'ASC')
       .skip((page - 1) * limit)
       .take(limit);
 
     search && queryBuilder.andWhere('productCategory.name ILIKE :search', { search: `%${search}%` });
     status && queryBuilder.andWhere('productCategory.status = :status', { status });
-    productStatus && queryBuilder.andWhere('products.status = :productStatus', { productStatus });
-    approvalStatus && queryBuilder.andWhere('products.approvalStatus = :approvalStatus', { approvalStatus });
+    // productStatus && queryBuilder.andWhere('products.status = :productStatus', { productStatus });
+    // approvalStatus && queryBuilder.andWhere('products.approvalStatus = :approvalStatus', { approvalStatus });
 
     if (includeProducts) {
       queryBuilder.addSelect(['products.id', 'products.name', 'products.status']);
-      queryBuilder.leftJoin('productCategory.products', 'products');
     }
 
     const [items, total] = await queryBuilder.getManyAndCount();

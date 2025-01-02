@@ -24,6 +24,7 @@ import { DriversModule } from './modules/drivers/drivers.module';
 import { ConfigsModule } from './modules/configs/configs.module';
 import { UniformSizesModule } from './modules/uniform-sizes/uniform-sizes.module';
 import { ClientModule } from './modules/client/client.module';
+import { MapboxModule } from './modules/mapbox/mapbox.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { ClientModule } from './modules/client/client.module';
     ConfigsModule,
     UniformSizesModule,
     ClientModule,
+    MapboxModule,
   ],
   controllers: [],
   providers: [],
