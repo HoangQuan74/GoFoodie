@@ -18,6 +18,7 @@ import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import * as path from 'path';
 import * as sharp from 'sharp';
+import * as fs from 'fs';
 import { AppGuard } from 'src/app.gaurd';
 import { Public } from 'src/common/decorators';
 import { FileQueryDto } from './dto/file-query.dto';
@@ -57,6 +58,8 @@ export class UploadsController {
 
     const uploadsPath = path.join(__dirname, `../../../uploads`);
     const fullPath = path.join(uploadsPath, file.path);
+
+    if (!fs.existsSync(fullPath)) throw new NotFoundException();
 
     if (!isImage) {
       return res.status(200).contentType(file.mimetype).sendFile(fullPath);
