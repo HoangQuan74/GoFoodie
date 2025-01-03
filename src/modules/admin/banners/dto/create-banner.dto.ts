@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
@@ -28,6 +28,16 @@ export class CreateBannerImageDto {
   @ApiProperty()
   @IsString()
   title: string;
+
+  @ApiPropertyOptional()
+  @IsNumber()
+  @IsOptional()
+  changeTime: number;
+
+  @ApiPropertyOptional()
+  @IsNumber()
+  @IsOptional()
+  changeSpeed: number;
 
   @ApiProperty()
   @IsString()
@@ -80,6 +90,16 @@ export class CreateBannerDto {
   @ApiProperty()
   @IsBoolean()
   isActive: boolean;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  viewAllLink: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  changeType: string;
 
   @ApiProperty({ enum: EBannerDisplayType })
   @IsEnum(EBannerDisplayType)

@@ -4,6 +4,7 @@ import { DeepPartial, FindManyOptions, FindOneOptions, Repository } from 'typeor
 import { InjectRepository } from '@nestjs/typeorm';
 import { BannerTypeEntity } from 'src/database/entities/banner-type.entity';
 import { BannerPositionEntity } from 'src/database/entities/banner-position.entity';
+import { BannerChangeTypeEntity } from 'src/database/entities/banner-change-type.entity';
 
 @Injectable()
 export class BannersService {
@@ -16,6 +17,9 @@ export class BannersService {
 
     @InjectRepository(BannerPositionEntity)
     private readonly bannerPositionRepository: Repository<BannerPositionEntity>,
+
+    @InjectRepository(BannerChangeTypeEntity)
+    private readonly bannerChangeTypeRepository: Repository<BannerChangeTypeEntity>,
   ) {}
 
   async save(entity: DeepPartial<BannerEntity>) {
@@ -46,5 +50,9 @@ export class BannersService {
     return this.bannerPositionRepository.find({
       where: { appTypes: { value: appType }, bannerTypes: { value: type } },
     });
+  }
+
+  async getChangeTypes() {
+    return this.bannerChangeTypeRepository.find();
   }
 }

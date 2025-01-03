@@ -8,6 +8,7 @@ import { APP_TYPES, BANNER_DISPLAY_TYPES } from 'src/common/constants';
 import { AdminEntity } from './admin.entity';
 import { BannerPositionEntity } from './banner-position.entity';
 import { BannerTypeEntity } from './banner-type.entity';
+import { BannerChangeTypeEntity } from './banner-change-type.entity';
 
 @Entity('banners')
 export class BannerEntity extends BaseEntity {
@@ -44,6 +45,12 @@ export class BannerEntity extends BaseEntity {
   @Column({ default: false })
   isActive: boolean;
 
+  @Column({ name: 'view_all_link', nullable: true })
+  viewAllLink: string;
+
+  @Column({ name: 'change_type', nullable: true })
+  changeType: string;
+
   @OneToMany(() => BannerImageEntity, (image) => image.banner, { cascade: true })
   files: BannerImageEntity[];
 
@@ -61,6 +68,10 @@ export class BannerEntity extends BaseEntity {
   @ManyToOne(() => BannerPositionEntity, (position) => position.value)
   @JoinColumn({ name: 'position' })
   positionEntity: BannerPositionEntity;
+
+  @ManyToOne(() => BannerChangeTypeEntity, (changeType) => changeType.value)
+  @JoinColumn({ name: 'change_type' })
+  changeTypeEntity: BannerChangeTypeEntity;
 
   countActiveBanner: number;
   appTypeLabel: string;

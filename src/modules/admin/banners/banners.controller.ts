@@ -38,6 +38,11 @@ export class BannersController {
     return this.bannersService.getTypes();
   }
 
+  @Get('change-types')
+  getChangeTypes() {
+    return this.bannersService.getChangeTypes();
+  }
+
   @Get('display-types')
   getDisplayTypes() {
     return BANNER_DISPLAY_TYPES;
@@ -90,6 +95,7 @@ export class BannersController {
       .leftJoin('banner.createdBy', 'createdBy')
       .leftJoin('banner.files', 'file', 'file.isActive = TRUE')
       .leftJoinAndSelect('banner.positionEntity', 'positionEntity')
+      .leftJoinAndSelect('banner.typeEntity', 'typeEntity')
       .orderBy('banner.id', 'DESC')
       .take(limit)
       .skip((page - 1) * limit);

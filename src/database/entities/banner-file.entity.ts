@@ -34,6 +34,12 @@ export class BannerImageEntity extends BaseEntity {
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
+  @Column({ name: 'change_time', nullable: true })
+  changeTime: number;
+
+  @Column({ name: 'change_speed', nullable: true })
+  changeSpeed: number;
+
   @ManyToOne(() => BannerEntity, (banner) => banner.files, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
   @JoinColumn({ name: 'banner_id' })
   banner: BannerEntity;
