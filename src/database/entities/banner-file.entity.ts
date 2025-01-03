@@ -40,6 +40,9 @@ export class BannerImageEntity extends BaseEntity {
   @Column({ name: 'change_speed', nullable: true })
   changeSpeed: number;
 
+  @Column({ type: 'simple-array', nullable: true })
+  tags: string[];
+
   @ManyToOne(() => BannerEntity, (banner) => banner.files, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
   @JoinColumn({ name: 'banner_id' })
   banner: BannerEntity;

@@ -47,6 +47,11 @@ export class CreateBannerImageDto {
   @IsString()
   link: string;
 
+  @ApiProperty({ type: [String] })
+  @IsArray()
+  @IsString({ each: true })
+  tags: string[];
+
   @ApiProperty({ enum: EBannerLinkType })
   @IsEnum(EBannerLinkType)
   linkType: EBannerLinkType;
