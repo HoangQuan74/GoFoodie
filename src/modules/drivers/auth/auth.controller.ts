@@ -74,7 +74,7 @@ export class AuthController {
     const driver = await this.driversService.findOne({
       select: { id: true },
       where: { id },
-      relations: { vehicle: true },
+      relations: { vehicle: { vehicleImages: true } },
     });
     if (!driver) throw new NotFoundException();
 
