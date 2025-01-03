@@ -1,7 +1,8 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { AfterLoad, Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { NoticeEntity } from './notice.entity';
 import { BaseEntity } from './base.entity';
 import { ECriteriaType } from 'src/common/enums';
+import { CRITERIA_TYPES } from 'src/common/constants';
 
 @Entity('notice_criteria')
 export class NoticeCriteriaEntity extends BaseEntity {
@@ -17,4 +18,11 @@ export class NoticeCriteriaEntity extends BaseEntity {
   @ManyToOne(() => NoticeEntity, (notice) => notice.id, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
   @JoinColumn({ name: 'notice_id' })
   notice: NoticeEntity;
+
+  typeLabel: string;
+
+  @AfterLoad()
+  setComputed() {
+    this.typeLabel = CRITERIA_TYPES.find((item) => item.value === this.type)?.label;
+  }
 }

@@ -1,13 +1,5 @@
 import { MAPBOX_ACCESS_TOKEN, MAPBOX_URL } from './../../common/constants';
-import {
-  BadGatewayException,
-  Controller,
-  Get,
-  Param,
-  Query,
-  ServiceUnavailableException,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query, ServiceUnavailableException, UseGuards } from '@nestjs/common';
 import { MapboxService } from './mapbox.service';
 import { AppGuard } from 'src/app.gaurd';
 import axios from 'axios';
@@ -50,7 +42,8 @@ export class MapboxController {
 
       return data;
     } catch (error) {
-      throw new ServiceUnavailableException(error.response.data.error);
+      const message = error.response.data?.message || error.response.data?.error;
+      throw new ServiceUnavailableException(message);
     }
   }
 }
