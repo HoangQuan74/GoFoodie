@@ -110,10 +110,12 @@ export class OptionGroupsController {
   ) {
     const { products = [], ...rest } = updateOptionGroupDto;
 
-    const isExist = await this.optionGroupsService.count({
-      where: { name: rest.name, id: Not(id), storeId },
-    });
-    if (isExist) throw new BadRequestException(EXCEPTIONS.NAME_EXISTED);
+    if (rest.name) {
+      const isExist = await this.optionGroupsService.count({
+        where: { name: rest.name, id: Not(id), storeId },
+      });
+      if (isExist) throw new BadRequestException(EXCEPTIONS.NAME_EXISTED);
+    }
 
     let optionGroup = await this.optionGroupsService.findOne({ where: { id }, relations: ['options'] });
     if (!optionGroup) throw new NotFoundException();
