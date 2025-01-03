@@ -33,8 +33,10 @@ export class NoticesController {
     const queryBuilder = this.noticesService
       .createQueryBuilder('notice')
       .addSelect(['noticeType.name'])
+      .addSelect(['createdBy.id', 'createdBy.name'])
       .leftJoin('notice.type', 'noticeType')
       .leftJoinAndSelect('notice.criteria', 'criteria')
+      .leftJoin('notice.createdBy', 'createdBy')
       .orderBy('notice.id', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
