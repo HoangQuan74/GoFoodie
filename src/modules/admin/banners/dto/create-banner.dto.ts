@@ -12,7 +12,7 @@ import {
   IsUUID,
   ValidateNested,
 } from 'class-validator';
-import { EBannerDisplayType, EBannerLinkType, EBannerType, ECriteriaType } from 'src/common/enums';
+import { EBannerDisplayType, EBannerLinkType, ECriteriaType } from 'src/common/enums';
 import { EAppType } from 'src/common/enums/config.enum';
 
 export class CreateBannerImageDto {
@@ -68,9 +68,10 @@ export class CreateBannerDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ enum: EBannerType })
-  @IsEnum(EBannerType)
-  type: EBannerType;
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  type: string;
 
   @ApiProperty({ enum: EAppType })
   @IsEnum(EAppType)

@@ -1,16 +1,3 @@
-export enum EBannerType {
-  Static = 'static',
-  Popup = 'popup',
-  Slider = 'slider',
-}
-
-// export enum EBannerPosition {
-//   MerchantOnboarding = 'merchant-onboarding',
-//   MerchantHome1 = 'merchant-home-1',
-//   MerchantHome2 = 'merchant-home-2',
-//   DriverOnboarding = 'driver-onboarding',
-// }
-
 export enum EBannerDisplayType {
   Image = 'image',
   Video = 'video',

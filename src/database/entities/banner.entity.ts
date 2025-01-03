@@ -1,12 +1,13 @@
 import { AfterLoad, Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { EBannerDisplayType, EBannerType } from 'src/common/enums';
+import { EBannerDisplayType } from 'src/common/enums';
 import { EAppType } from 'src/common/enums/config.enum';
 import { BannerImageEntity } from './banner-file.entity';
 import { BannerCriteriaEntity } from './banner-criteria.entity';
-import { APP_TYPES, BANNER_DISPLAY_TYPES, BANNER_TYPES } from 'src/common/constants';
+import { APP_TYPES, BANNER_DISPLAY_TYPES } from 'src/common/constants';
 import { AdminEntity } from './admin.entity';
 import { BannerPositionEntity } from './banner-position.entity';
+import { BannerTypeEntity } from './banner-type.entity';
 
 @Entity('banners')
 export class BannerEntity extends BaseEntity {
@@ -20,7 +21,7 @@ export class BannerEntity extends BaseEntity {
   appType: EAppType;
 
   @Column()
-  type: EBannerType;
+  type: string;
 
   @Column({ name: 'display_type', type: 'enum', enum: EBannerDisplayType })
   displayType: EBannerDisplayType;
@@ -53,21 +54,25 @@ export class BannerEntity extends BaseEntity {
   @JoinColumn({ name: 'created_by_id' })
   createdBy: AdminEntity;
 
+  @ManyToOne(() => BannerTypeEntity, (type) => type.value)
+  @JoinColumn({ name: 'type' })
+  typeEntity: BannerTypeEntity;
+
+  @ManyToOne(() => BannerPositionEntity, (position) => position.value)
+  @JoinColumn({ name: 'position' })
+  positionEntity: BannerPositionEntity;
+
   countActiveBanner: number;
   appTypeLabel: string;
   displayTypeLabel: string;
   positionLabel: string;
   typeLabel: string;
 
-  @ManyToOne(() => BannerPositionEntity, (position) => position.value)
-  @JoinColumn({ name: 'position' })
-  positionEntity: BannerPositionEntity;
-
   @AfterLoad()
   afterLoad() {
     this.appTypeLabel = APP_TYPES.find((type) => type.value === this.appType)?.label;
     this.displayTypeLabel = BANNER_DISPLAY_TYPES.find((type) => type.value === this.displayType)?.label;
     this.positionLabel = this.positionEntity?.label;
-    this.typeLabel = BANNER_TYPES.find((type) => type.value === this.type)?.label;
+    this.typeLabel = this.typeEntity?.label;
   }
 }

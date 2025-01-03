@@ -89,7 +89,7 @@ export class BannersController {
       )
       .leftJoin('banner.createdBy', 'createdBy')
       .leftJoin('banner.files', 'file', 'file.isActive = TRUE')
-      .leftJoin('banner.positionEntity', 'positionEntity')
+      .leftJoinAndSelect('banner.positionEntity', 'positionEntity')
       .orderBy('banner.id', 'DESC')
       .take(limit)
       .skip((page - 1) * limit);
