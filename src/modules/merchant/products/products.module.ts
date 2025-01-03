@@ -15,5 +15,6 @@ import { ProductApprovalEntity } from 'src/database/entities/product-approval.en
   ],
   controllers: [ProductsController],
   providers: [ProductsService],
+  exports: [ProductsService],
 })
 export class ProductsModule {}

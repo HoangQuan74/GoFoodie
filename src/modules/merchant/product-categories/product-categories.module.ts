@@ -5,9 +5,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductCategoryEntity } from 'src/database/entities/product-category.entity';
 import { MerchantModule } from '../merchant.module';
 import { StoresModule } from '../stores/stores.module';
+import { ProductsModule } from '../products/products.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ProductCategoryEntity]), forwardRef(() => MerchantModule), StoresModule],
+  imports: [
+    TypeOrmModule.forFeature([ProductCategoryEntity]),
+    forwardRef(() => MerchantModule),
+    StoresModule,
+    ProductsModule,
+  ],
   controllers: [ProductCategoriesController],
   providers: [ProductCategoriesService],
 })

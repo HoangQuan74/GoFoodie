@@ -18,10 +18,11 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { QueryProductCategoryDto } from './dto/query-product-category.dto';
 import { Brackets, IsNull, Not } from 'typeorm';
 import { StoresService } from '../stores/stores.service';
-import { EProductCategoryStatus } from 'src/common/enums';
+import { EProductApprovalStatus, EProductCategoryStatus, EProductStatus } from 'src/common/enums';
 import { CreateProductCategoryDto } from './dto/create-product-category.dto';
 import { UpdateProductCategoryDto } from './dto/update-product-category.dto';
 import { EXCEPTIONS } from 'src/common/constants';
+import { ProductsService } from '../products/products.service';
 
 @Controller('product-categories')
 @ApiTags('Product Categories')
@@ -30,6 +31,7 @@ export class ProductCategoriesController {
   constructor(
     private readonly productCategoriesService: ProductCategoriesService,
     private readonly storesService: StoresService,
+    private readonly productsService: ProductsService,
   ) {}
 
   @Post()
@@ -105,15 +107,20 @@ export class ProductCategoriesController {
         }),
       )
       .leftJoin('productCategory.stores', 'stores')
-      .leftJoin('productCategory.products', 'products', 'products.storeId = :storeId', { storeId })
+      .leftJoin(
+        'productCategory.products',
+        'products',
+        'products.storeId = :storeId' +
+          (productStatus ? ' AND products.status = :productStatus' : '') +
+          (approvalStatus ? ' AND products.approvalStatus = :approvalStatus' : ''),
+      )
+      .setParameters({ storeId, productStatus, approvalStatus })
       .orderBy('productCategory.name', 'ASC')
       .skip((page - 1) * limit)
       .take(limit);
 
     search && queryBuilder.andWhere('productCategory.name ILIKE :search', { search: `%${search}%` });
     status && queryBuilder.andWhere('productCategory.status = :status', { status });
-    // productStatus && queryBuilder.andWhere('products.status = :productStatus', { productStatus });
-    // approvalStatus && queryBuilder.andWhere('products.approvalStatus = :approvalStatus', { approvalStatus });
 
     if (includeProducts) {
       queryBuilder.addSelect(['products.id', 'products.name', 'products.status']);
@@ -166,5 +173,29 @@ export class ProductCategoriesController {
     if (productCategory.totalProducts) throw new BadRequestException(EXCEPTIONS.CATEGORY_HAS_PRODUCTS);
 
     return this.productCategoriesService.remove(productCategory);
+  }
+
+  @Patch(':id/hide-products')
+  @ApiOperation({ summary: 'Ẩn tất cả sản phẩm của danh mục' })
+  async hideProducts(@CurrentStore() storeId: number, @Param('id') id: number) {
+    const productCategory = await this.productCategoriesService.findOne({ where: { id, storeId } });
+    if (!productCategory) throw new NotFoundException();
+
+    return this.productsService.update(
+      { productCategoryId: id, storeId, approvalStatus: EProductApprovalStatus.Approved },
+      { status: EProductStatus.Inactive },
+    );
+  }
+
+  @Patch(':id/show-products')
+  @ApiOperation({ summary: 'Hiện tất cả sản phẩm của danh mục' })
+  async showProducts(@CurrentStore() storeId: number, @Param('id') id: number) {
+    const productCategory = await this.productCategoriesService.findOne({ where: { id, storeId } });
+    if (!productCategory) throw new NotFoundException();
+
+    return this.productsService.update(
+      { productCategoryId: id, storeId, approvalStatus: EProductApprovalStatus.Approved },
+      { status: EProductStatus.Active },
+    );
   }
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { DeepPartial, FindManyOptions, FindOneOptions, FindOptionsWhere, Repository } from 'typeorm';
 import { ProductApprovalEntity } from 'src/database/entities/product-approval.entity';
 
 @Injectable()
@@ -28,6 +28,10 @@ export class ProductsService {
 
   createQueryBuilder(alias: string) {
     return this.productRepository.createQueryBuilder(alias);
+  }
+
+  async update(options: FindOptionsWhere<ProductEntity>, data: DeepPartial<ProductEntity>) {
+    return this.productRepository.update(options, data);
   }
 
   async remove(entity: ProductEntity) {
