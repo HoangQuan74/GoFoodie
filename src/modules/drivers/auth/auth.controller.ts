@@ -33,9 +33,18 @@ export class AuthController {
   @Post('login/sms')
   @Public()
   @ApiOperation({ summary: 'Đăng nhập bằng mã OTP' })
-  loginSms(@Body() body: LoginSmsDto) {
+  async loginSms(@Body() body: LoginSmsDto) {
     const { idToken, deviceToken } = body;
-    return this.authService.signInWithSms(idToken, deviceToken);
+    const profile = await this.authService.signInWithSms(idToken, deviceToken);
+
+    const uniform = await this.uniformsService.findOneDriverUniform({
+      where: { driverId: profile.id },
+      order: { id: 'ASC' },
+    });
+    const uniformStatus = uniform ? uniform.status : 'none';
+    const contractStatus = profile.signature ? EDriverContractStatus.Signed : EDriverContractStatus.Unsigned;
+
+    return { ...profile, contractStatus, uniformStatus };
   }
 
   @Post('refresh-token')
