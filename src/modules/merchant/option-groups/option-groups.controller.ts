@@ -65,7 +65,7 @@ export class OptionGroupsController {
     search && (where['name'] = ILike(`%${search}%`));
 
     const options: FindManyOptions<OptionGroupEntity> = {
-      select: { options: { id: true, name: true } },
+      select: { options: { id: true, name: true, status: true, price: true } },
       where,
       take: limit,
       skip: (page - 1) * limit,
