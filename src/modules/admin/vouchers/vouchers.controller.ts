@@ -41,6 +41,7 @@ export class VouchersController {
       .createQueryBuilder('voucher')
       .select(['voucher.id as id', 'voucher.code as code', 'voucher.name as name', 'voucher.isActive as "isActive"'])
       .addSelect(['voucher.startTime as "startTime"', 'voucher.endTime as "endTime"'])
+      .addSelect(['voucher.maxUseTime as "maxUseTime"', 'voucher.maxUseTimePerUser as "maxUseTimePerUser"'])
       .addSelect(['voucher.discountType as "discountType"', 'voucher.discountValue as "discountValue"'])
       .addSelect(['createdBy.name as "createdByName"'])
       .addSelect(['serviceType.name as "serviceTypeName"'])
@@ -50,8 +51,9 @@ export class VouchersController {
           .select('COUNT(1)', 'count')
           .from('voucher_products', 'vp')
           .where('vp.voucher_id = voucher.id')
-          .innerJoin(ProductEntity, 'product', 'product.id = vp.product_id')
+          .innerJoin(ProductEntity, 'product', 'product.id = vp.product_id');
       }, 'productsCount')
+      .addSelect(['0 as "usedCount"'])
       .leftJoin('voucher.createdBy', 'createdBy')
       .leftJoin('voucher.serviceType', 'serviceType')
       .leftJoin('voucher.type', 'type')
