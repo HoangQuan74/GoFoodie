@@ -13,8 +13,9 @@ export class ServiceTypesController {
   @Get()
   @Public()
   @ApiOperation({ summary: 'Danh sách loại hình dịch vụ' })
-  async find() {
-    return this.serviceTypesService.find();
+  async find(@Query('provinceId') provinceId?: number) {
+    const where = provinceId ? { provinces: { id: provinceId } } : {};
+    return this.serviceTypesService.find({ where });
   }
 
   @Get(':id/provinces')
