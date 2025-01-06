@@ -1,0 +1,23 @@
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import { AppTypeEntity } from './app-type.entity';
+import { FeeEntity } from './fee.entity';
+
+@Entity('app_fees')
+export class AppFeeEntity {
+  @PrimaryColumn({ name: 'app_type_id' })
+  appTypeId: string;
+
+  @PrimaryColumn({ name: 'fee_id' })
+  feeId: number;
+
+  @Column()
+  value: number;
+
+  @ManyToOne(() => AppTypeEntity, (appType) => appType.value)
+  @JoinColumn({ name: 'app_type_id' })
+  appType: AppTypeEntity;
+
+  @ManyToOne(() => FeeEntity, (fee) => fee.id, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
+  @JoinColumn({ name: 'fee_id' })
+  fee: FeeEntity;
+}

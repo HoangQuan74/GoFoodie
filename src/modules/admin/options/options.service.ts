@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AppTypeEntity } from 'src/database/entities/app-type.entity';
-import { Repository } from 'typeorm';
+import { FindManyOptions, Repository } from 'typeorm';
 
 @Injectable()
 export class OptionsService {
@@ -10,7 +10,7 @@ export class OptionsService {
     private readonly appTypeRepository: Repository<AppTypeEntity>,
   ) {}
 
-  async getAppTypes(): Promise<AppTypeEntity[]> {
-    return this.appTypeRepository.find();
+  async getAppTypes(options?: FindManyOptions<AppTypeEntity>): Promise<AppTypeEntity[]> {
+    return this.appTypeRepository.find(options);
   }
 }

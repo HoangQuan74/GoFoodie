@@ -21,6 +21,7 @@ import { OnlineTrainingsModule } from './online-trainings/online-trainings.modul
 import { NoticesModule } from './notices/notices.module';
 import { ServiceTypesModule } from './service-types/service-types.module';
 import { VouchersModule } from './vouchers/vouchers.module';
+import { FeesModule } from './fees/fees.module';
 
 @Module({
   imports: [
@@ -98,6 +99,10 @@ import { VouchersModule } from './vouchers/vouchers.module';
         path: 'admin',
         module: VouchersModule,
       },
+      {
+        path: 'admin',
+        module: FeesModule,
+      },
     ]),
     AdminsModule,
     MerchantsModule,
@@ -118,6 +123,7 @@ import { VouchersModule } from './vouchers/vouchers.module';
     NoticesModule,
     ServiceTypesModule,
     VouchersModule,
+    FeesModule,
   ],
   providers: [
     {

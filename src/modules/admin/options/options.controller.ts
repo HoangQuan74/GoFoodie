@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { CRITERIA_TYPES } from 'src/common/constants';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiTags } from '@nestjs/swagger';
@@ -16,8 +16,9 @@ export class OptionsController {
   ) {}
 
   @Get('app-types')
-  getAppTypes() {
-    return this.optionsService.getAppTypes();
+  getAppTypes(@Query('feeTypeId') feeTypeId: number) {
+    const options = feeTypeId ? { where: { feeTypes: { id: feeTypeId } } } : {};
+    return this.optionsService.getAppTypes(options);
   }
 
   @Get('criteria')
