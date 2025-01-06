@@ -1,8 +1,8 @@
 import { Controller, Get, NotFoundException, Param, Query } from '@nestjs/common';
 import { ServiceTypesService } from './service-types.service';
 import { Public } from 'src/common/decorators';
-import { ApiOperation, ApiTags, PartialType } from '@nestjs/swagger';
-import { IdentityQuery, IdentityQueryOptional } from 'src/common/query';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { IdentityQueryOptional } from 'src/common/query';
 import { In } from 'typeorm';
 
 @Controller('service-types')

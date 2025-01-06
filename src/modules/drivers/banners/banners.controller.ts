@@ -17,7 +17,15 @@ export class BannersController {
   async getBanner(@Param('position') position: string) {
     return this.bannersService
       .createQueryBuilder('banner')
-      .select(['banner.id', 'banner.name', 'banner.type', 'banner.displayType', 'file.description'])
+      .select([
+        'banner.id',
+        'banner.name',
+        'banner.type',
+        'banner.displayType',
+        'file.description',
+        'banner.viewAllLink',
+        'banner.changeType',
+      ])
       .where('banner.position = :position', { position })
       .andWhere('banner.appType = :appType', { appType: EAppType.AppDriver })
       .innerJoinAndSelect('banner.files', 'file', 'file.isActive = TRUE')
@@ -37,7 +45,16 @@ export class BannersController {
   async find(@Query('page') page: string) {
     return this.bannersService
       .createQueryBuilder('banner')
-      .select(['banner.id', 'banner.name', 'banner.type', 'banner.displayType', 'file.description', 'banner.position'])
+      .select([
+        'banner.id',
+        'banner.name',
+        'banner.type',
+        'banner.displayType',
+        'file.description',
+        'banner.position',
+        'banner.viewAllLink',
+        'banner.changeType',
+      ])
       .where('banner.position ILIKE :page', { page: `%${page}%` })
       .andWhere('banner.appType = :appType', { appType: EAppType.AppDriver })
       .innerJoinAndSelect('banner.files', 'file', 'file.isActive = TRUE')

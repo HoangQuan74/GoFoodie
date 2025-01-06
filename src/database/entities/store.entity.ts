@@ -13,7 +13,6 @@ import { ServiceTypeEntity } from './service-type.entity';
 import { AdminEntity } from './admin.entity';
 import { FileEntity } from './file.entity';
 import { StoreSpecialWorkingTimeEntity } from './store-special-working-time.entity';
-import { ProductCategoryEntity } from './product-category.entity';
 
 @Entity('stores')
 export class StoreEntity extends BaseEntity {

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
 import { ServiceTypesService } from './service-types.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UpdateServiceTypeDto } from './dto/update-service-type.dto';
