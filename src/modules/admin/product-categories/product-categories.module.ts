@@ -10,5 +10,6 @@ import { AdminsModule } from '../admins/admins.module';
   imports: [TypeOrmModule.forFeature([ProductCategoryEntity]), StoresModule, AdminsModule],
   controllers: [ProductCategoriesController],
   providers: [ProductCategoriesService],
+  exports: [ProductCategoriesService],
 })
 export class ProductCategoriesModule {}

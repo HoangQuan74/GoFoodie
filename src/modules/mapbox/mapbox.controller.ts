@@ -8,7 +8,7 @@ import { Public } from 'src/common/decorators';
 
 @Controller('mapbox')
 @ApiTags('Mapbox')
-// @UseGuards(AppGuard)
+@UseGuards(AppGuard)
 export class MapboxController {
   constructor(private readonly mapboxService: MapboxService) {}
 
@@ -44,6 +44,38 @@ export class MapboxController {
     } catch (error) {
       const message = error.response.data?.message || error.response.data?.error;
       throw new ServiceUnavailableException(message);
+    }
+  }
+
+  @Get('directions/v5/mapbox/driving-traffic/:coordinates')
+  async directions(@Query() query: object, @Param('coordinates') coordinates: string) {
+    try {
+      const { data } = await axios.get(`${MAPBOX_URL}/directions/v5/mapbox/driving-traffic/${coordinates}`, {
+        params: {
+          ...query,
+          access_token: MAPBOX_ACCESS_TOKEN,
+        },
+      });
+
+      return data;
+    } catch (error) {
+      throw new ServiceUnavailableException(error.response.data.error);
+    }
+  }
+
+  @Get('directions/v5/mapbox/driving/:coordinates')
+  async directionsDriving(@Query() query: object, @Param('coordinates') coordinates: string) {
+    try {
+      const { data } = await axios.get(`${MAPBOX_URL}/directions/v5/mapbox/driving/${coordinates}`, {
+        params: {
+          ...query,
+          access_token: MAPBOX_ACCESS_TOKEN,
+        },
+      });
+
+      return data;
+    } catch (error) {
+      throw new ServiceUnavailableException(error.response.data.error);
     }
   }
 }

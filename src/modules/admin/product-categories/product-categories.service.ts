@@ -33,4 +33,18 @@ export class ProductCategoriesService {
   remove(entity: ProductCategoryEntity) {
     return this.productCategoryRepository.softRemove(entity);
   }
+
+  async createProductCategoryIfNotExist(categoryId: number, storeId: number) {
+    const category = await this.productCategoryRepository
+      .createQueryBuilder('category')
+      .where('category.id = :categoryId', { categoryId })
+      .leftJoinAndSelect('category.stores', 'stores', 'stores.id = :storeId', { storeId })
+      .getOne();
+
+    if (!category) return;
+
+    if (category.stores.length === 0) {
+      await this.productCategoryRepository.createQueryBuilder('category').relation('stores').of(category).add(storeId);
+    }
+  }
 }

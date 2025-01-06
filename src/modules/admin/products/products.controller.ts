@@ -11,6 +11,7 @@ import { OptionEntity } from 'src/database/entities/option.entity';
 import { OptionGroupsService } from '../option-groups/option-groups.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { EProductApprovalStatus, EProductStatus } from 'src/common/enums';
+import { ProductCategoriesService } from '../product-categories/product-categories.service';
 
 @Controller('products')
 @ApiTags('Quản lý sản phẩm')
@@ -20,14 +21,17 @@ export class ProductsController {
     private readonly productsService: ProductsService,
     private readonly optionGroupsService: OptionGroupsService,
     private readonly dataSource: DataSource,
+    private readonly productCategoriesService: ProductCategoriesService,
   ) {}
 
   @Post()
   async create(@Body() createProductDto: CreateProductDto, @Param('storeId') storeId: number) {
     return this.dataSource.transaction(async (manager) => {
-      const { optionIds = [] } = createProductDto;
+      const { optionIds = [], productCategoryId } = createProductDto;
       const store = await manager.findOne(StoreEntity, { where: { id: storeId } });
       if (!store) throw new NotFoundException();
+
+      await this.productCategoriesService.createProductCategoryIfNotExist(productCategoryId, storeId);
 
       const lastProduct = await manager.findOne(ProductEntity, {
         where: { storeId },
@@ -110,9 +114,11 @@ export class ProductsController {
 
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    const { optionIds = [] } = updateProductDto;
+    const { optionIds = [], productCategoryId } = updateProductDto;
     const product = await this.productsService.findOne({ where: { id: +id } });
     if (!product) throw new NotFoundException();
+
+    await this.productCategoriesService.createProductCategoryIfNotExist(productCategoryId, product.storeId);
 
     const productOptionGroups = [];
     if (optionIds.length) {
