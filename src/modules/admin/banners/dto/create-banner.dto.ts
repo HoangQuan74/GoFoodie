@@ -50,6 +50,7 @@ export class CreateBannerImageDto {
   @ApiProperty({ type: [String] })
   @IsArray()
   @IsString({ each: true })
+  @IsOptional()
   tags: string[];
 
   @ApiProperty({ enum: EBannerLinkType })

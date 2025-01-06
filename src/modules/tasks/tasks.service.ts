@@ -13,6 +13,7 @@ import { MailHistoriesService } from '../mail-histories/mail-histories.service';
 import { MailHistoryEntity } from 'src/database/entities/mail-history.entity';
 import { EDriverApprovalStatus, EDriverStatus } from 'src/common/enums/driver.enum';
 import { DriverEntity } from 'src/database/entities/driver.entity';
+import { CRONJOB } from 'src/common/constants';
 
 @Injectable()
 export class TasksService {
@@ -38,7 +39,7 @@ export class TasksService {
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, {
     timeZone: 'Asia/Ho_Chi_Minh',
-    disabled: false,
+    disabled: !CRONJOB,
   })
   async cleanUpGarbageFiles() {
     const duration = 24 * 60 * 60 * 1000;
@@ -97,7 +98,7 @@ export class TasksService {
 
   @Cron(CronExpression.EVERY_5_MINUTES, {
     timeZone: 'Asia/Ho_Chi_Minh',
-    disabled: false,
+    disabled: !CRONJOB,
   })
   async sendNotices() {
     const notices = await this.noticeRepository
@@ -179,7 +180,7 @@ export class TasksService {
 
   @Cron(CronExpression.EVERY_5_MINUTES, {
     timeZone: 'Asia/Ho_Chi_Minh',
-    disabled: false,
+    disabled: !CRONJOB,
   })
   async sendMailHistories() {
     const where = { isSent: false, retryCount: LessThan(this.retryCount) };

@@ -20,3 +20,5 @@ export const FIREBASE_PRIVATE_KEY: string = process.env.FIREBASE_PRIVATE_KEY || 
 
 export const MAPBOX_URL: string = process.env.MAPBOX_URL || '';
 export const MAPBOX_ACCESS_TOKEN: string = process.env.MAPBOX_ACCESS_TOKEN || '';
+
+export const CRONJOB: boolean = process.env.CRONJOB === 'true';

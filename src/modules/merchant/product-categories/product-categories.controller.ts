@@ -23,6 +23,7 @@ import { CreateProductCategoryDto } from './dto/create-product-category.dto';
 import { UpdateProductCategoryDto } from './dto/update-product-category.dto';
 import { EXCEPTIONS } from 'src/common/constants';
 import { ProductsService } from '../products/products.service';
+import { StoreEntity } from 'src/database/entities/store.entity';
 
 @Controller('product-categories')
 @ApiTags('Product Categories')
@@ -72,10 +73,16 @@ export class ProductCategoriesController {
 
   @Get('global')
   @ApiOperation({ summary: 'Danh sách danh mục sản phẩm của hệ thống' })
-  async getGlobalCategories(@Query('serviceGroupId') serviceGroupId: number) {
-    const select = { id: true, name: true };
-    const options = { select, where: { serviceGroupId, storeId: IsNull(), status: EProductCategoryStatus.Active } };
-    const [items, total] = await this.productCategoriesService.findAndCount(options);
+  async getGlobalCategories(@CurrentStore() storeId: number) {
+    const queryBuilder = this.productCategoriesService
+      .createQueryBuilder('productCategory')
+      .select(['productCategory.id', 'productCategory.name'])
+      .where('productCategory.storeId IS NULL')
+      .innerJoin(StoreEntity, 'store', 'store.serviceGroupId = productCategory.serviceGroupId AND store.id = :storeId')
+      .setParameters({ storeId })
+      .andWhere('productCategory.status = :status', { status: EProductCategoryStatus.Active });
+
+    const [items, total] = await queryBuilder.getManyAndCount();
 
     return { items, total };
   }
