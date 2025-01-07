@@ -8,6 +8,7 @@ import { FeeEntity } from 'src/database/entities/fee.entity';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiTags } from '@nestjs/swagger';
 import { UpdateFeeDto } from './dto/update-fee.dto';
+import { Brackets } from 'typeorm';
 
 @Controller('fees')
 @ApiTags('Cấu hình phí')
@@ -45,7 +46,12 @@ export class FeesController {
       .take(limit);
 
     if (search) {
-      queryBuilder.andWhere('fee.name ILIKE :search', { search: `%${search}%` });
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.where('feeType.name ILIKE :search', { search: `%${search}%` });
+          qb.orWhere('serviceType.name ILIKE :search', { search: `%${search}%` });
+        }),
+      );
     }
 
     if (typeof isActive === 'boolean') {

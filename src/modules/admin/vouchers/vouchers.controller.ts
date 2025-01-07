@@ -74,14 +74,16 @@ export class VouchersController {
         new Brackets((qb) => {
           qb.where('voucher.code ILIKE :search', { search: `%${search}%` });
           qb.orWhere('voucher.name ILIKE :search', { search: `%${search}%` });
+          qb.orWhere('type.name ILIKE :search', { search: `%${search}%` });
+          qb.orWhere('serviceType.name ILIKE :search', { search: `%${search}%` });
         }),
       );
     }
 
-    queryBuilder.andWhere('voucher.startTime >= :startTimeFrom', { startTimeFrom });
-    queryBuilder.andWhere('voucher.startTime <= :startTimeTo', { startTimeTo });
-    queryBuilder.andWhere('voucher.endTime >= :endTimeFrom', { endTimeFrom });
-    queryBuilder.andWhere('voucher.endTime <= :endTimeTo', { endTimeTo });
+    startTimeFrom && queryBuilder.andWhere('voucher.startTime >= :startTimeFrom', { startTimeFrom });
+    startTimeTo && queryBuilder.andWhere('voucher.startTime <= :startTimeTo', { startTimeTo });
+    endTimeFrom && queryBuilder.andWhere('voucher.endTime >= :endTimeFrom', { endTimeFrom });
+    endTimeTo && queryBuilder.andWhere('voucher.endTime <= :endTimeTo', { endTimeTo });
 
     const items = await queryBuilder.getRawMany();
     const total = await queryBuilder.getCount();
