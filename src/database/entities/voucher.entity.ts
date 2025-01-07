@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { ServiceTypeEntity } from './service-type.entity';
-import { ERefundType, EVoucherDiscountType } from 'src/common/enums/voucher.enum';
+import { ERefundType, EVoucherDiscountType, EMaxDiscountType } from 'src/common/enums/voucher.enum';
 import { AdminEntity } from './admin.entity';
 import { VoucherTypeEntity } from './voucher-type.entity';
 import { ProductEntity } from './product.entity';
@@ -46,6 +46,14 @@ export class VoucherEntity extends BaseEntity {
 
   @Column({ name: 'max_discount_value', nullable: true })
   maxDiscountValue: number;
+
+  @Column({
+    name: 'max_discount_type',
+    type: 'enum',
+    enum: EMaxDiscountType,
+    default: EMaxDiscountType.Unlimited,
+  })
+  maxDiscountType: EMaxDiscountType;
 
   @Column({ name: 'is_private', default: false })
   isPrivate: boolean;

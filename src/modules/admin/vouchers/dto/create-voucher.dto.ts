@@ -16,7 +16,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { EXCEPTIONS } from 'src/common/constants';
-import { ERefundType, EVoucherDiscountType } from 'src/common/enums/voucher.enum';
+import { ERefundType, EVoucherDiscountType, EMaxDiscountType } from 'src/common/enums/voucher.enum';
 import { IdDto } from 'src/common/query';
 
 export class CreateVoucherDto {
@@ -49,10 +49,6 @@ export class CreateVoucherDto {
   @IsDate()
   @Type(() => Date)
   endTime: Date;
-
-  @ApiProperty()
-  @IsBoolean()
-  isActive: boolean;
 
   @ApiProperty({ enum: ERefundType })
   @IsEnum(ERefundType)
@@ -93,6 +89,10 @@ export class CreateVoucherDto {
   @IsNumber()
   @Min(1)
   maxUseTimePerUser: number;
+
+  @ApiProperty()
+  @IsBoolean()
+  isAllProducts: boolean;
 
   @ApiProperty({ type: [IdDto] })
   @ValidateNested({ each: true })

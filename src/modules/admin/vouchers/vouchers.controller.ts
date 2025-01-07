@@ -23,6 +23,7 @@ import { JwtPayload } from 'src/common/interfaces';
 import { EXCEPTIONS } from 'src/common/constants';
 import { DataSource, EntityManager } from 'typeorm';
 import { ProductEntity } from 'src/database/entities/product.entity';
+import { EMaxDiscountType } from 'src/common/enums/voucher.enum';
 
 @Controller('vouchers')
 @ApiTags('Quản lý voucher')
@@ -80,6 +81,7 @@ export class VouchersController {
       const voucher = new VoucherEntity();
       Object.assign(voucher, body);
       voucher.createdById = user.id;
+      voucher.maxDiscountType = voucher.maxDiscountValue ? EMaxDiscountType.Unlimited : EMaxDiscountType.Limited;
       return manager.save(voucher);
     });
   }
@@ -90,7 +92,10 @@ export class VouchersController {
     const voucher = await this.vouchersService.findOne({ where: { id: id } });
     if (!voucher) throw new NotFoundException();
 
-    return this.vouchersService.save(body);
+    Object.assign(voucher, body);
+    voucher.maxDiscountType = voucher.maxDiscountValue ? EMaxDiscountType.Unlimited : EMaxDiscountType.Limited;
+
+    return this.vouchersService.save(voucher);
   }
 
   @Delete(':id')
