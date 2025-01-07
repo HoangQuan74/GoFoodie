@@ -48,6 +48,7 @@ export class ProductsController {
       Object.assign(newProduct, createProductDto);
       newProduct.storeId = storeId;
       newProduct.code = productCode;
+      newProduct.approvalStatus = EProductApprovalStatus.Pending;
       const productOptionGroups = [];
 
       if (optionIds.length) {
@@ -79,7 +80,7 @@ export class ProductsController {
       productApproval.productId = product.id;
       productApproval.type = ERequestType.Create;
       productApproval.merchantId = merchantId;
-      await manager.save(ProductApprovalEntity);
+      await manager.save(productApproval);
 
       return product;
     });
