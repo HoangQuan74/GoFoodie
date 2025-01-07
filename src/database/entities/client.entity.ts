@@ -8,8 +8,20 @@ export class ClientEntity extends BaseEntity {
   @Column({ nullable: true })
   email: string;
 
-  @Column({ nullable: true })
+  @Column()
   phone: string;
+
+  @Column({ nullable: true })
+  latitude: number;
+
+  @Column({ nullable: true })
+  longitude: number;
+
+  @Column({ nullable: true })
+  address: string;
+
+  @Column({ name: 'device_token', nullable: true })
+  deviceToken: string;
 
   @Column({ name: 'last_login', nullable: true })
   lastLogin: Date;

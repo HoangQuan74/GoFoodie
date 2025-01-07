@@ -58,10 +58,7 @@ export class AuthService {
       const { phone_number } = await this.firebaseService.verifyIdToken(idToken);
       const phone = phone_number.replace('+84', '0');
 
-      let driver = await this.driversService
-        .createQueryBuilder('driver')
-        .where('driver.phoneNumber = :phone', { phone })
-        .getOne();
+      let driver = await this.driversService.findOne({ where: { phoneNumber: phone } });
 
       if (!driver) {
         driver = new DriverEntity();
