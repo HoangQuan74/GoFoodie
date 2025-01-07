@@ -16,7 +16,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { EXCEPTIONS } from 'src/common/constants';
-import { ERefundType, EVoucherDiscountType, EMaxDiscountType } from 'src/common/enums/voucher.enum';
+import { ERefundType, EVoucherDiscountType } from 'src/common/enums/voucher.enum';
 import { IdDto } from 'src/common/query';
 
 export class CreateVoucherDto {

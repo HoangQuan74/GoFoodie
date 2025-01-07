@@ -34,6 +34,11 @@ export class VouchersController {
     private readonly dataSource: DataSource,
   ) {}
 
+  @Get('types')
+  async getTypes() {
+    return this.vouchersService.findVoucherTypes();
+  }
+
   @Get()
   @ApiOperation({ summary: 'Danh sách voucher' })
   async find(@Query() query: QueryVoucherDto) {
