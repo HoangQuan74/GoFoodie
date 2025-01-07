@@ -24,6 +24,11 @@ export class FeesController {
     return this.feesService.save(newFee);
   }
 
+  @Get('types')
+  async getTypes() {
+    return this.feesService.getTypes();
+  }
+
   @Get()
   async find(@Query() query: QueryFeeDto) {
     const { page, limit, search } = query;
