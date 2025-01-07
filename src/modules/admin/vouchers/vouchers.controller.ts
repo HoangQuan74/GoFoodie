@@ -23,7 +23,7 @@ import { JwtPayload } from 'src/common/interfaces';
 import { EXCEPTIONS } from 'src/common/constants';
 import { Brackets, DataSource, EntityManager } from 'typeorm';
 import { ProductEntity } from 'src/database/entities/product.entity';
-import { EMaxDiscountType } from 'src/common/enums/voucher.enum';
+import { EMaxDiscountType, EVoucherStatus } from 'src/common/enums/voucher.enum';
 
 @Controller('vouchers')
 @ApiTags('Quản lý voucher')
@@ -42,7 +42,7 @@ export class VouchersController {
   @Get()
   @ApiOperation({ summary: 'Danh sách voucher' })
   async find(@Query() query: QueryVoucherDto) {
-    const { page, limit, search, startTimeFrom, startTimeTo, endTimeFrom, endTimeTo } = query;
+    const { page, limit, search, startTimeFrom, startTimeTo, endTimeFrom, endTimeTo, status } = query;
 
     const queryBuilder = this.vouchersService
       .createQueryBuilder('voucher')
@@ -78,6 +78,28 @@ export class VouchersController {
           qb.orWhere('serviceType.name ILIKE :search', { search: `%${search}%` });
         }),
       );
+    }
+
+    if (status) {
+      switch (status) {
+        case EVoucherStatus.NotStarted:
+          queryBuilder.andWhere('voucher.startTime > NOW()');
+          queryBuilder.andWhere('voucher.isActive = true');
+          break;
+        case EVoucherStatus.InProgress:
+          queryBuilder.andWhere('voucher.startTime <= NOW()');
+          queryBuilder.andWhere('voucher.endTime >= NOW()');
+          queryBuilder.andWhere('voucher.isActive = true');
+          break;
+        case EVoucherStatus.Ended:
+          queryBuilder.andWhere(
+            new Brackets((qb) => {
+              qb.where('voucher.endTime < NOW()');
+              qb.orWhere('voucher.isActive = false');
+            }),
+          );
+          break;
+      }
     }
 
     startTimeFrom && queryBuilder.andWhere('voucher.startTime >= :startTimeFrom', { startTimeFrom });

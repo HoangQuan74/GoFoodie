@@ -1,6 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
+import { IsEnum, IsOptional, ValidateIf } from 'class-validator';
 import { PaginationQuery } from 'src/common/query';
+import { EVoucherStatus } from 'src/common/enums/voucher.enum';
 
 export class QueryVoucherDto extends PaginationQuery {
   @ApiPropertyOptional()
@@ -22,4 +23,9 @@ export class QueryVoucherDto extends PaginationQuery {
   @ApiPropertyOptional()
   @IsOptional()
   typeId: number;
+
+  @ApiPropertyOptional({ enum: EVoucherStatus })
+  @IsEnum(EVoucherStatus)
+  @ValidateIf((o) => o.status)
+  status: EVoucherStatus;
 }

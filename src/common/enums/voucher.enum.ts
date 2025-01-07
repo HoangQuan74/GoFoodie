@@ -12,3 +12,9 @@ export enum EMaxDiscountType {
   Limited = 'limited',
   Unlimited = 'unlimited',
 }
+
+export enum EVoucherStatus {
+  NotStarted = 'not-started',
+  InProgress = 'in-progress',
+  Ended = 'ended',
+}
