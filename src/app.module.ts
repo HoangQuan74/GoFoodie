@@ -26,6 +26,8 @@ import { UniformSizesModule } from './modules/uniform-sizes/uniform-sizes.module
 import { ClientModule } from './modules/client/client.module';
 import { MapboxModule } from './modules/mapbox/mapbox.module';
 import { MailHistoriesModule } from './modules/mail-histories/mail-histories.module';
+import { JwtModule } from '@nestjs/jwt';
+import { JWT_SECRET } from './common/constants';
 
 @Module({
   imports: [
@@ -35,6 +37,10 @@ import { MailHistoriesModule } from './modules/mail-histories/mail-histories.mod
     ServeStaticModule.forRoot({
       serveRoot: '/public',
       rootPath: join(__dirname, '..', 'public'),
+    }),
+    JwtModule.register({
+      global: true,
+      secret: JWT_SECRET,
     }),
     AdminModule,
     MailModule,

@@ -1,6 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsString, ValidateNested, ArrayMinSize, IsOptional } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  ValidateNested,
+  ArrayMinSize,
+  IsOptional,
+} from 'class-validator';
 import { CreateCriteriaDto } from '../../banners/dto/create-banner.dto';
 
 export class CreateAppFeeDto {

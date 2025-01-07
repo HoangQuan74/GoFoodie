@@ -7,16 +7,7 @@ import { StoresModule } from 'src/modules/admin/stores/stores.module';
 import { MerchantModule } from '../merchant.module';
 
 @Module({
-  imports: [
-    FirebaseModule,
-    RefreshTokensModule,
-    forwardRef(() => MerchantModule),
-    StoresModule,
-    // JwtModule.register({
-    //   global: true,
-    //   secret: JWT_SECRET,
-    // }),
-  ],
+  imports: [FirebaseModule, RefreshTokensModule, forwardRef(() => MerchantModule), StoresModule],
   controllers: [AuthController],
   providers: [AuthService],
 })
