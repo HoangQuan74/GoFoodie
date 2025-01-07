@@ -21,7 +21,7 @@ import { VoucherEntity } from 'src/database/entities/voucher.entity';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { EXCEPTIONS } from 'src/common/constants';
-import { DataSource, EntityManager } from 'typeorm';
+import { Brackets, DataSource, EntityManager } from 'typeorm';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { EMaxDiscountType } from 'src/common/enums/voucher.enum';
 
@@ -42,7 +42,8 @@ export class VouchersController {
   @Get()
   @ApiOperation({ summary: 'Danh sách voucher' })
   async find(@Query() query: QueryVoucherDto) {
-    const { page, limit, search } = query;
+    const { page, limit, search, startTimeFrom, startTimeTo, endTimeFrom, endTimeTo } = query;
+
     const queryBuilder = this.vouchersService
       .createQueryBuilder('voucher')
       .select(['voucher.id as id', 'voucher.code as code', 'voucher.name as name', 'voucher.isActive as "isActive"'])
@@ -67,6 +68,20 @@ export class VouchersController {
       .orderBy('voucher.id', 'DESC')
       .limit(limit)
       .offset((page - 1) * limit);
+
+    if (search) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.where('voucher.code ILIKE :search', { search: `%${search}%` });
+          qb.orWhere('voucher.name ILIKE :search', { search: `%${search}%` });
+        }),
+      );
+    }
+
+    queryBuilder.andWhere('voucher.startTime >= :startTimeFrom', { startTimeFrom });
+    queryBuilder.andWhere('voucher.startTime <= :startTimeTo', { startTimeTo });
+    queryBuilder.andWhere('voucher.endTime >= :endTimeFrom', { endTimeFrom });
+    queryBuilder.andWhere('voucher.endTime <= :endTimeTo', { endTimeTo });
 
     const items = await queryBuilder.getRawMany();
     const total = await queryBuilder.getCount();

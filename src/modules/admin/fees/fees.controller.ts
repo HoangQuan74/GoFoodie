@@ -31,7 +31,7 @@ export class FeesController {
 
   @Get()
   async find(@Query() query: QueryFeeDto) {
-    const { page, limit, search } = query;
+    const { page, limit, search, isActive, feeTypeId } = query;
     const queryBuilder = this.feesService
       .createQueryBuilder('fee')
       .addSelect(['createdBy.id', 'createdBy.name'])
@@ -45,7 +45,14 @@ export class FeesController {
       .take(limit);
 
     if (search) {
+      queryBuilder.andWhere('fee.name ILIKE :search', { search: `%${search}%` });
     }
+
+    if (typeof isActive === 'boolean') {
+      queryBuilder.andWhere('fee.isActive = :isActive', { isActive });
+    }
+
+    feeTypeId && queryBuilder.andWhere('fee.feeTypeId = :feeTypeId', { feeTypeId });
 
     const [items, total] = await queryBuilder.getManyAndCount();
     return { items, total };
