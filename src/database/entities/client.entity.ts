@@ -1,5 +1,6 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
+import { FileEntity } from './file.entity';
 
 @Entity('clients')
 export class ClientEntity extends BaseEntity {
@@ -9,13 +10,16 @@ export class ClientEntity extends BaseEntity {
   @Column({ nullable: true })
   email: string;
 
+  @Column({ nullable: true, name: 'avatar_id' })
+  avatarId: string;
+
   @Column()
   phone: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'float' })
   latitude: number;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'float' })
   longitude: number;
 
   @Column({ nullable: true })
@@ -26,4 +30,8 @@ export class ClientEntity extends BaseEntity {
 
   @Column({ name: 'last_login', nullable: true })
   lastLogin: Date;
+
+  @ManyToOne(() => FileEntity, (file) => file.id)
+  @JoinColumn({ name: 'avatar_id' })
+  avatar: FileEntity;
 }

@@ -3,11 +3,15 @@ import { Entity, Column, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { EMerchantStatus } from 'src/common/enums';
 import { StoreEntity } from './store.entity';
+import { FileEntity } from './file.entity';
 
 @Entity('merchants')
 export class MerchantEntity extends BaseEntity {
   @Column({ nullable: true })
   name: string;
+
+  @Column({ nullable: true, name: 'avatar_id' })
+  avatarId: string;
 
   @Column({ nullable: true })
   phone: string;
@@ -42,4 +46,8 @@ export class MerchantEntity extends BaseEntity {
   @ManyToOne(() => StoreEntity, (store) => store.id)
   @JoinColumn({ name: 'store_id' })
   store: StoreEntity;
+
+  @ManyToOne(() => FileEntity, (file) => file.id)
+  @JoinColumn({ name: 'avatar_id' })
+  avatar: FileEntity;
 }
