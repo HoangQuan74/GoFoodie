@@ -3,9 +3,10 @@ import { BannersService } from './banners.service';
 import { Public } from 'src/common/decorators';
 import { Brackets } from 'typeorm';
 import { EAppType } from 'src/common/enums/config.enum';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @Controller('banners')
+@ApiTags('Client Banners')
 export class BannersController {
   constructor(private readonly bannersService: BannersService) {}
 

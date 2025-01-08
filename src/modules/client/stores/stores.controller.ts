@@ -1,34 +1,44 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { StoresService } from './stores.service';
-import { CreateStoreDto } from './dto/create-store.dto';
-import { UpdateStoreDto } from './dto/update-store.dto';
+import { ApiTags } from '@nestjs/swagger';
+import { Public } from 'src/common/decorators';
+import * as moment from 'moment-timezone';
+import { ProductEntity } from 'src/database/entities/product.entity';
 
 @Controller('stores')
+@ApiTags('Client Stores')
 export class StoresController {
   constructor(private readonly storesService: StoresService) {}
 
-  @Post()
-  create(@Body() createStoreDto: CreateStoreDto) {
-    return this.storesService.create(createStoreDto);
-  }
+  @Get('nearby')
+  @Public()
+  async findNearby() {
+    const now = moment().tz('Asia/Ho_Chi_Minh');
+    const dayOfWeek = now.day();
+    const currentTime = now.hours() * 60 + now.minutes();
+    console.log(dayOfWeek);
 
-  @Get()
-  findAll() {
-    return this.storesService.findAll();
-  }
+    const queryBuilder = this.storesService
+      .createQueryBuilder('store')
+      .innerJoin(
+        'store.workingTimes',
+        'workingTime',
+        'workingTime.dayOfWeek = :dayOfWeek AND workingTime.openTime <= :currentTime AND workingTime.closeTime >= :currentTime',
+      )
+      .innerJoin('store.products', 'product', 'product.isAvailable = true')
+      // .innerJoinAndSelect(
+      //   (subQuery) => {
+      //     return subQuery.from(ProductEntity, 'product');
+      //   },
+      //   'products',
+      //   'products.store_id = store.id',
+      // )
+      .setParameters({ dayOfWeek, currentTime });
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.storesService.findOne(+id);
-  }
+    const stores = await queryBuilder.getMany();
+    console.log(stores.length);
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateStoreDto: UpdateStoreDto) {
-    return this.storesService.update(+id, updateStoreDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.storesService.remove(+id);
+    return stores;
+    // return this.storesService.findNearby();
   }
 }

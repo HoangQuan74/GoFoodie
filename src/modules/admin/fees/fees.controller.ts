@@ -67,7 +67,10 @@ export class FeesController {
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    const fee = await this.feesService.findOne({ where: { id: +id } });
+    const fee = await this.feesService.findOne({
+      where: { id: +id },
+      relations: ['appFees', 'criteria'],
+    });
     if (!fee) throw new NotFoundException();
 
     return fee;
