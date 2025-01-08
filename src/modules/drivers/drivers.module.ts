@@ -18,6 +18,8 @@ import { WorkingSessionsModule } from './working-sessions/working-sessions.modul
     RouterModule.register([
       { path: 'driver', module: AuthModule },
       { path: 'driver', module: OnlineTrainingsModule },
+      { path: 'driver', module: BannersModule },
+      { path: 'driver', module: WorkingSessionsModule },
     ]),
     OnlineTrainingsModule,
     BannersModule,
