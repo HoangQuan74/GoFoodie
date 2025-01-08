@@ -13,6 +13,7 @@ import {
   IsDate,
   IsBoolean,
   IsNumber,
+  IsNumberString,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -66,7 +67,7 @@ export class CreateStoreBankDto {
   bankBranchId: string;
 
   @ApiProperty({ description: 'Số tài khoản' })
-  @IsString()
+  @IsNumberString()
   @IsNotEmpty()
   bankAccountNumber: string;
 

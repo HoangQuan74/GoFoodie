@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
+import { IsLatitude, IsLongitude, IsNotEmpty, IsString } from 'class-validator';
 
 export class LoginDto {
   @ApiProperty()
@@ -25,16 +25,12 @@ export class LoginSmsDto {
   idToken: string;
 
   @ApiProperty()
-  @IsNumber()
-  @Min(-90)
-  @Max(90)
+  @IsLatitude()
   @IsNotEmpty()
   latitude: number;
 
   @ApiProperty()
-  @IsNumber()
-  @Min(-180)
-  @Max(180)
+  @IsLongitude()
   @IsNotEmpty()
   longitude: number;
 
