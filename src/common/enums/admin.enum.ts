@@ -6,6 +6,7 @@ export enum EAdminStatus {
 export enum EAdminOtpType {
   ForgotPassword = 'forgot_password',
   VerifyEmail = 'verify_email',
+  UpdatePhone = 'update_phone',
 }
 
 export enum ERoleStatus {

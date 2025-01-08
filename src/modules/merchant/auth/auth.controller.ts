@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Body } from '@nestjs/common';
 import { LoginDto, LoginSmsDto } from './dto/login.dto';
@@ -14,6 +14,12 @@ import { ResetPasswordByEmailDto, ResetPasswordBySmsDto } from './dto/reset-pass
 import { RegisterEmailCompletedDto, RegisterSmsDto } from './dto/register.dto';
 import { JwtPayload } from 'src/common/interfaces';
 import { CheckOtpDto } from './dto/check-otp.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdateEmailDto } from './dto/update-email.dto';
+import { UpdatePhoneDto } from './dto/update-phone.dto';
+import { MerchantsService } from '../merchants.service';
+import { FirebaseService } from 'src/modules/firebase/firebase.service';
+import { EXCEPTIONS } from 'src/common/constants';
 
 @Controller('auth')
 @ApiTags('Merchant Auth')
@@ -22,6 +28,8 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly storesService: StoresService,
+    private readonly merchantsService: MerchantsService,
+    private readonly firebaseService: FirebaseService,
   ) {}
 
   @Post('login')
@@ -145,7 +153,39 @@ export class AuthController {
     return this.authService.loginStore(user.id, user.deviceToken, storeId);
   }
 
-  // update profile
-  // @Patch('profile')
-  // @ApiOperation({ summary: 'Cập nhật thông tin cá nhân' })
+  @Patch('profile')
+  @ApiOperation({ summary: 'Cập nhật thông tin cá nhân' })
+  async updateProfile(@Body() body: UpdateProfileDto, @CurrentUser() user: JwtPayload) {
+    return this.merchantsService.save({ id: user.id, ...body });
+  }
+
+  @Patch('update-email')
+  @ApiOperation({ summary: 'Cập nhật email' })
+  async updateEmail(@Body() body: UpdateEmailDto, @CurrentUser() user: JwtPayload) {
+    try {
+      const { idToken, email } = body;
+      const { phone_number } = await this.firebaseService.verifyIdToken(idToken);
+      const phone = phone_number.replace('+84', '0');
+
+      const merchant = await this.merchantsService.findOne({ where: { id: user.id, phone } });
+      if (!merchant) throw new BadRequestException(EXCEPTIONS.INVALID_PHONE);
+
+      merchant.email = email;
+      return this.merchantsService.save(merchant);
+    } catch (error) {
+      throw new BadRequestException();
+    }
+  }
+
+  @Patch('update-phone')
+  @ApiOperation({ summary: 'Cập nhật số điện thoại' })
+  async updatePhone(@CurrentUser() user: JwtPayload) {
+    return this.authService.sendOtpUpdatePhone(user.id);
+  }
+
+  @Patch('update-phone/completed')
+  @ApiOperation({ summary: 'Hoàn tất cập nhật số điện thoại' })
+  async updatePhoneCompleted(@Body() body: UpdatePhoneDto, @CurrentUser() user: JwtPayload) {
+    return this.authService.updatePhone(user.id, body);
+  }
 }

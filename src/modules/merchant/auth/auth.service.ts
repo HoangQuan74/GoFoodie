@@ -9,9 +9,10 @@ import { EAdminOtpType, EMerchantStatus, EStoreApprovalStatus, EStoreStatus } fr
 import { MerchantEntity } from 'src/database/entities/merchant.entity';
 import { FirebaseService } from 'src/modules/firebase/firebase.service';
 import { Request } from 'express';
-import { Brackets } from 'typeorm';
+import { Brackets, IsNull, Not } from 'typeorm';
 import { RegisterSmsDto } from './dto/register.dto';
 import { MerchantsService } from '../merchants.service';
+import { UpdatePhoneDto } from './dto/update-phone.dto';
 
 @Injectable()
 export class AuthService {
@@ -275,5 +276,32 @@ export class AuthService {
 
     const isValidOtp = await this.merchantsService.validateOtp(merchant.id, otp);
     if (!isValidOtp) throw new UnauthorizedException();
+  }
+
+  async sendOtpUpdatePhone(id: number) {
+    const merchant = await this.merchantsService.findOne({ where: { id, email: Not(IsNull()) } });
+    if (!merchant) throw new NotFoundException(EXCEPTIONS.EMAIL_CONFLICT);
+
+    const otp = generateOTP();
+    const otpType = EAdminOtpType.UpdatePhone;
+    await this.merchantsService.deleteOtp(merchant.id, otpType);
+    await this.merchantsService.saveOtp({ merchantId: merchant.id, otp, type: otpType });
+    this.mailService.sendOtp(merchant.email, otp, merchant.name);
+
+    return { message: 'OTP has been sent to your email' };
+  }
+
+  async updatePhone(id: number, body: UpdatePhoneDto) {
+    const { phone, otp } = body;
+
+    const merchant = await this.merchantsService.findOne({ where: { id, email: Not(IsNull()) } });
+    if (!merchant) throw new NotFoundException(EXCEPTIONS.EMAIL_CONFLICT);
+
+    const isValidOtp = await this.merchantsService.validateOtp(merchant.id, otp);
+    if (!isValidOtp) throw new UnauthorizedException();
+
+    merchant.phone = phone;
+    await this.merchantsService.save(merchant);
+    await this.merchantsService.deleteOtp(merchant.id, EAdminOtpType.UpdatePhone);
   }
 }
