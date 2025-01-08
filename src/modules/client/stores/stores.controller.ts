@@ -1,9 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { StoresService } from './stores.service';
 import { ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/common/decorators';
 import * as moment from 'moment-timezone';
-import { ProductEntity } from 'src/database/entities/product.entity';
+import { EProductStatus, EStoreApprovalStatus, EStoreStatus } from 'src/common/enums';
+import { PaginationQuery } from 'src/common/query';
+import { TIMEZONE } from 'src/common/constants';
+import { Brackets } from 'typeorm';
 
 @Controller('stores')
 @ApiTags('Client Stores')
@@ -12,33 +15,50 @@ export class StoresController {
 
   @Get('nearby')
   @Public()
-  async findNearby() {
-    const now = moment().tz('Asia/Ho_Chi_Minh');
+  async findNearby(@Query() query: PaginationQuery) {
+    const { limit, page } = query;
+
+    const now = moment().tz(TIMEZONE);
     const dayOfWeek = now.day();
     const currentTime = now.hours() * 60 + now.minutes();
-    console.log(dayOfWeek);
 
     const queryBuilder = this.storesService
       .createQueryBuilder('store')
+      .select(['store.id', 'store.name', 'store.specialDish', 'store.streetName', 'store.storeAvatarId'])
       .innerJoin(
         'store.workingTimes',
         'workingTime',
         'workingTime.dayOfWeek = :dayOfWeek AND workingTime.openTime <= :currentTime AND workingTime.closeTime >= :currentTime',
       )
-      .innerJoin('store.products', 'product', 'product.isAvailable = true')
-      // .innerJoinAndSelect(
-      //   (subQuery) => {
-      //     return subQuery.from(ProductEntity, 'product');
-      //   },
-      //   'products',
-      //   'products.store_id = store.id',
-      // )
-      .setParameters({ dayOfWeek, currentTime });
+      .addSelect(['product.id', 'product.name', 'product.price', 'product.imageId'])
+      .innerJoin(
+        'store.products',
+        'product',
+        'product.status = :productStatus AND product.approvalStatus = :productApprovalStatus',
+      )
+      .leftJoin('product.productWorkingTimes', 'productWorkingTime', 'product.isNormalTime = false')
+      .where(
+        new Brackets((qb) => {
+          qb.where('product.isNormalTime = true');
+          qb.orWhere(
+            new Brackets((qb) => {
+              qb.where('productWorkingTime.dayOfWeek = :dayOfWeek', { dayOfWeek });
+              qb.andWhere('productWorkingTime.openTime <= :currentTime', { currentTime });
+              qb.andWhere('productWorkingTime.closeTime >= :currentTime', { currentTime });
+            }),
+          );
+        }),
+      )
+      .andWhere('store.isPause = false')
+      .andWhere('store.status = :storeStatus')
+      .andWhere('store.approvalStatus = :storeApprovalStatus')
+      .setParameters({ dayOfWeek, currentTime })
+      .setParameters({ storeStatus: EStoreStatus.Active, storeApprovalStatus: EStoreApprovalStatus.Approved })
+      .setParameters({ productStatus: EProductStatus.Active, productApprovalStatus: EStoreApprovalStatus.Approved })
+      .take(limit)
+      .skip((page - 1) * limit);
 
-    const stores = await queryBuilder.getMany();
-    console.log(stores.length);
-
-    return stores;
-    // return this.storesService.findNearby();
+    const [items, total] = await queryBuilder.getManyAndCount();
+    return { items, total };
   }
 }
