@@ -152,9 +152,9 @@ export class ProductsController {
 
     let isNeedApproval = false;
     product.approvalStatus === EProductApprovalStatus.Approved && (isNeedApproval = true);
-    name !== product.name && (isNeedApproval = true);
-    description !== product.description && (isNeedApproval = true);
-    imageId !== product.imageId && (isNeedApproval = true);
+    name && name !== product.name && (isNeedApproval = true);
+    description && description !== product.description && (isNeedApproval = true);
+    imageId && imageId !== product.imageId && (isNeedApproval = true);
 
     if (isNeedApproval) {
       const lastProductApproval = await this.productsService.findOne({
@@ -169,7 +169,7 @@ export class ProductsController {
       productApproval.code = approvalCode;
       productApproval.productId = +id;
       productApproval.merchantId = user.id;
-      productApproval.name = name;
+      productApproval.name = name || product.name;
       productApproval.description = description;
       productApproval.imageId = imageId;
       productApproval.type = ERequestType.Update;

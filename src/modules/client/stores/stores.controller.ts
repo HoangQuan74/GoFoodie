@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, NotFoundException, Param, Query } from '@nestjs/common';
 import { StoresService } from './stores.service';
 import { ApiTags } from '@nestjs/swagger';
 import * as moment from 'moment-timezone';
@@ -9,11 +9,15 @@ import { Brackets } from 'typeorm';
 import { QueryStoresDto } from './dto/query-stores.dto';
 import * as lodash from 'lodash';
 import { ProductEntity } from 'src/database/entities/product.entity';
+import { ProductCategoriesService } from '../product-categories/product-categories.service';
 
 @Controller('stores')
 @ApiTags('Client Stores')
 export class StoresController {
-  constructor(private readonly storesService: StoresService) {}
+  constructor(
+    private readonly storesService: StoresService,
+    private readonly productCategoriesService: ProductCategoriesService,
+  ) {}
 
   @Get('nearby')
   async findNearby(@Query() query: PaginationQuery) {
@@ -124,8 +128,8 @@ export class StoresController {
       .setParameters({ dayOfWeek, currentTime })
       .setParameters({ storeStatus: EStoreStatus.Active, storeApprovalStatus: EStoreApprovalStatus.Approved })
       .setParameters({ productStatus: EProductStatus.Active, productApprovalStatus: EStoreApprovalStatus.Approved })
-      .take(limit)
-      .skip((page - 1) * limit);
+      .limit(limit)
+      .offset((page - 1) * limit);
 
     const rawItems = await queryBuilder.getRawMany();
     const total = await queryBuilder.getCount();
@@ -151,5 +155,57 @@ export class StoresController {
     });
 
     return { items, total };
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: number) {
+    const queryBuilder = this.storesService
+      .createQueryBuilder('store')
+      .select(['store.id', 'store.name', 'store.specialDish', 'store.streetName', 'store.storeAvatarId'])
+      .where('store.id = :id')
+      .andWhere('store.status = :storeStatus')
+      .andWhere('store.approvalStatus = :storeApprovalStatus')
+      .setParameters({ id, storeStatus: EStoreStatus.Active, storeApprovalStatus: EStoreApprovalStatus.Approved });
+
+    const store = await queryBuilder.getOne();
+    if (!store) throw new NotFoundException();
+
+    return store;
+  }
+
+  @Get(':id/product-categories')
+  async findProductCategories(@Param('id') storeId: number) {
+    const queryBuilder = this.productCategoriesService
+      .createQueryBuilder('category')
+      .select(['category.id', 'category.name', 'category.description'])
+      .addSelect(['product.id', 'product.name', 'product.price', 'product.imageId'])
+      .leftJoin('category.products', 'product', 'product.storeId = :storeId')
+      .leftJoin('category.stores', 'store', 'store.id = :storeId')
+      .where(
+        new Brackets((qb) => {
+          qb.where('category.storeId = :storeId');
+          qb.orWhere('store.id = :storeId');
+        }),
+      )
+      .setParameters({ storeId });
+
+    return queryBuilder.getMany();
+  }
+
+  @Get(':id/working-times')
+  async findWorkingTimes(@Param('id') storeId: number) {
+    console.log(storeId);
+    const queryBuilder = this.storesService
+      .createQueryBuilder('store')
+      .select(['store.id'])
+      .addSelect(['workingTime.dayOfWeek', 'workingTime.openTime', 'workingTime.closeTime'])
+      .leftJoin('store.workingTimes', 'workingTime')
+      .where('store.id = :storeId')
+      .setParameters({ storeId });
+
+    const store = await queryBuilder.getOne();
+    if (!store) throw new NotFoundException();
+
+    return store.workingTimes;
   }
 }

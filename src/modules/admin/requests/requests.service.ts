@@ -52,9 +52,9 @@ export class RequestsService {
       }
 
       if (partialEntity.status === ERequestStatus.Approved) {
-        product.name = productApproval.name;
-        product.description = productApproval.description;
-        product.imageId = productApproval.imageId;
+        product.name = productApproval.name || product.name;
+        product.description = productApproval.description || product.description;
+        product.imageId = productApproval.imageId || product.imageId;
         await this.productsService.save(product);
       }
     }

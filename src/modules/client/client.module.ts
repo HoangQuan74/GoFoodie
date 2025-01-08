@@ -7,6 +7,8 @@ import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClientEntity } from 'src/database/entities/client.entity';
 import { StoresModule } from './stores/stores.module';
+import { ProductsModule } from './products/products.module';
+import { ProductCategoriesModule } from './product-categories/product-categories.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { StoresModule } from './stores/stores.module';
     AuthModule,
     TypeOrmModule.forFeature([ClientEntity]),
     StoresModule,
+    ProductsModule,
+    ProductCategoriesModule,
   ],
   controllers: [ClientController],
   providers: [ClientService],
