@@ -8,6 +8,7 @@ import { DriversController } from './drivers.controller';
 import { UniformsModule } from './uniforms/uniforms.module';
 import { OnlineTrainingsModule } from './online-trainings/online-trainings.module';
 import { BannersModule } from './banners/banners.module';
+import { WorkingSessionsModule } from './working-sessions/working-sessions.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { BannersModule } from './banners/banners.module';
     ]),
     OnlineTrainingsModule,
     BannersModule,
+    WorkingSessionsModule,
   ],
   controllers: [DriversController],
   providers: [DriversService],
