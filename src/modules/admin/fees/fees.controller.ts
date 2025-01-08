@@ -50,7 +50,7 @@ export class FeesController {
         new Brackets((qb) => {
           qb.where('feeType.name ILIKE :search', { search: `%${search}%` });
           qb.orWhere('serviceType.name ILIKE :search', { search: `%${search}%` });
-          qb.orWhere('appType.name ILIKE :search', { search: `%${search}%` });
+          qb.orWhere('appType.label ILIKE :search', { search: `%${search}%` });
         }),
       );
     }
