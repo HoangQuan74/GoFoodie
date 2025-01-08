@@ -7,6 +7,7 @@ import { EProductStatus, EStoreApprovalStatus, EStoreStatus } from 'src/common/e
 import { PaginationQuery } from 'src/common/query';
 import { TIMEZONE } from 'src/common/constants';
 import { Brackets } from 'typeorm';
+import { QueryStoresDto } from './dto/query-stores.dto';
 
 @Controller('stores')
 @ApiTags('Client Stores')
@@ -56,6 +57,63 @@ export class StoresController {
       .setParameters({ productStatus: EProductStatus.Active, productApprovalStatus: EStoreApprovalStatus.Approved })
       .take(limit)
       .skip((page - 1) * limit);
+
+    const [items, total] = await queryBuilder.getManyAndCount();
+    return { items, total };
+  }
+
+  @Get()
+  async findAll(@Query() query: QueryStoresDto) {
+    const { limit, page, productCategoryCode } = query;
+
+    const now = moment().tz(TIMEZONE);
+    const dayOfWeek = now.day();
+    const currentTime = now.hours() * 60 + now.minutes();
+
+    const queryBuilder = this.storesService
+      .createQueryBuilder('store')
+      .select(['store.id', 'store.name', 'store.specialDish', 'store.streetName', 'store.storeAvatarId'])
+      .innerJoin(
+        'store.workingTimes',
+        'workingTime',
+        'workingTime.dayOfWeek = :dayOfWeek AND workingTime.openTime <= :currentTime AND workingTime.closeTime >= :currentTime',
+      )
+      .addSelect(['product.id', 'product.name', 'product.price', 'product.imageId'])
+      .innerJoin(
+        'store.products',
+        'product',
+        'product.status = :productStatus AND product.approvalStatus = :productApprovalStatus',
+      )
+      .leftJoin('product.productWorkingTimes', 'productWorkingTime', 'product.isNormalTime = false')
+      .where(
+        new Brackets((qb) => {
+          qb.where('product.isNormalTime = true');
+          qb.orWhere(
+            new Brackets((qb) => {
+              qb.where('productWorkingTime.dayOfWeek = :dayOfWeek', { dayOfWeek });
+              qb.andWhere('productWorkingTime.openTime <= :currentTime', { currentTime });
+              qb.andWhere('productWorkingTime.closeTime >= :currentTime', { currentTime });
+            }),
+          );
+        }),
+      )
+      .andWhere('store.isPause = false')
+      .andWhere('store.status = :storeStatus')
+      .andWhere('store.approvalStatus = :storeApprovalStatus')
+      .setParameters({ dayOfWeek, currentTime })
+      .setParameters({ storeStatus: EStoreStatus.Active, storeApprovalStatus: EStoreApprovalStatus.Approved })
+      .setParameters({ productStatus: EProductStatus.Active, productApprovalStatus: EStoreApprovalStatus.Approved })
+      .take(limit)
+      .skip((page - 1) * limit);
+
+    if (productCategoryCode) {
+      queryBuilder.innerJoin(
+        'product.productCategory',
+        'productCategory',
+        'productCategory.code = :productCategoryCode',
+      );
+      queryBuilder.setParameters({ productCategoryCode });
+    }
 
     const [items, total] = await queryBuilder.getManyAndCount();
     return { items, total };
