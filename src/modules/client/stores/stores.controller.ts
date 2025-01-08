@@ -14,7 +14,6 @@ export class StoresController {
   constructor(private readonly storesService: StoresService) {}
 
   @Get('nearby')
-  @Public()
   async findNearby(@Query() query: PaginationQuery) {
     const { limit, page } = query;
 
