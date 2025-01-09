@@ -7,6 +7,9 @@ export class CancelOrderReasonEntity extends BaseEntity {
   @Column()
   name: string;
 
+  @Column({ default: true })
+  status: boolean;
+
   @ManyToMany(() => AppTypeEntity, (appType) => appType.value)
   @JoinTable({ name: 'cancel_order_reason_app_types' })
   appTypes: AppTypeEntity[];
