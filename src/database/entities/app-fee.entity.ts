@@ -11,7 +11,7 @@ export class AppFeeEntity {
   feeId: number;
 
   @Column()
-  value: number;
+  value: string;
 
   @ManyToOne(() => AppTypeEntity, (appType) => appType.value)
   @JoinColumn({ name: 'app_type_id' })

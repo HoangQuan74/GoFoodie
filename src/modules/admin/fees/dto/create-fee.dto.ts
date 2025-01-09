@@ -19,8 +19,9 @@ export class CreateAppFeeDto {
   appTypeId: string;
 
   @ApiProperty()
-  @IsNumber()
-  value: number;
+  @IsString()
+  @Type(() => String)
+  value: string;
 }
 
 export class CreateFeeDto {
