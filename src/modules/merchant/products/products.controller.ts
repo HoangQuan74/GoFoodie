@@ -71,6 +71,7 @@ export class ProductsController {
       const lastProductApproval = await manager.findOne(ProductApprovalEntity, {
         where: { code: Like(`${store.storeCode}-%`) },
         order: { id: 'DESC' },
+        withDeleted: true,
       });
       const numberApproval = lastProductApproval ? +lastProductApproval.code.split('-')[1] + 1 : 1;
       const approvalCode = `${store.storeCode}-${numberApproval.toString().padStart(2, '0')}`;
@@ -152,7 +153,6 @@ export class ProductsController {
     if (!product) throw new NotFoundException();
 
     let isNeedApproval = false;
-    product.approvalStatus === EProductApprovalStatus.Approved && (isNeedApproval = true);
     name && name !== product.name && (isNeedApproval = true);
     description && description !== product.description && (isNeedApproval = true);
     imageId && imageId !== product.imageId && (isNeedApproval = true);
@@ -161,6 +161,7 @@ export class ProductsController {
       const lastProductApproval = await this.productsService.findOne({
         where: { code: Like(`${product.store.storeCode}-%`) },
         order: { id: 'DESC' },
+        withDeleted: true,
       });
 
       const numberApproval = lastProductApproval ? +lastProductApproval.code.split('-')[1] + 1 : 1;
@@ -173,7 +174,8 @@ export class ProductsController {
       productApproval.name = name || product.name;
       productApproval.description = description;
       productApproval.imageId = imageId;
-      productApproval.type = ERequestType.Update;
+      productApproval.type =
+        product.approvalStatus === EProductApprovalStatus.Approved ? ERequestType.Update : ERequestType.Create;
 
       await this.productsService.saveProductApproval(productApproval);
     }

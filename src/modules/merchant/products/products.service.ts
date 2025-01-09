@@ -43,6 +43,7 @@ export class ProductsService {
   }
 
   async saveProductApproval(entity: DeepPartial<ProductApprovalEntity>) {
+    await this.productApprovalRepository.softDelete({ productId: entity.productId });
     return this.productApprovalRepository.save(entity);
   }
 }
