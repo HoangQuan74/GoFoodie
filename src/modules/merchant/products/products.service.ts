@@ -26,6 +26,10 @@ export class ProductsService {
     return this.productRepository.findOne(options);
   }
 
+  async count(options?: FindManyOptions<ProductEntity>) {
+    return this.productRepository.count(options);
+  }
+
   createQueryBuilder(alias: string) {
     return this.productRepository.createQueryBuilder(alias);
   }

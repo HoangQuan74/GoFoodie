@@ -133,8 +133,13 @@ export class ProductCategoriesController {
       queryBuilder.addSelect(['products.id', 'products.name', 'products.status']);
     }
 
+    const where = { storeId };
+    status && (where['status'] = status);
+    approvalStatus && (where['approvalStatus'] = approvalStatus);
+    const totalProducts = await this.productsService.count({ where });
+
     const [items, total] = await queryBuilder.getManyAndCount();
-    return { items, total };
+    return { items, total, totalProducts };
   }
 
   @Get(':id')
