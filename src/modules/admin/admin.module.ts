@@ -23,6 +23,7 @@ import { ServiceTypesModule } from './service-types/service-types.module';
 import { VouchersModule } from './vouchers/vouchers.module';
 import { FeesModule } from './fees/fees.module';
 import { CancelOrderReasonsModule } from './cancel-order-reasons/cancel-order-reasons.module';
+import { OrderCriteriaModule } from './order-criteria/order-criteria.module';
 
 @Module({
   imports: [
@@ -108,6 +109,10 @@ import { CancelOrderReasonsModule } from './cancel-order-reasons/cancel-order-re
         path: 'admin',
         module: CancelOrderReasonsModule,
       },
+      {
+        path: 'admin',
+        module: OrderCriteriaModule,
+      },
     ]),
     AdminsModule,
     MerchantsModule,
@@ -130,6 +135,7 @@ import { CancelOrderReasonsModule } from './cancel-order-reasons/cancel-order-re
     VouchersModule,
     FeesModule,
     CancelOrderReasonsModule,
+    OrderCriteriaModule,
   ],
   providers: [
     {
