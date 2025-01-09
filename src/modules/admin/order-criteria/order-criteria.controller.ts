@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { OrderCriteriaService } from './order-criteria.service';
 import { ApiTags } from '@nestjs/swagger';
 import { Post, Body } from '@nestjs/common';
@@ -11,7 +11,7 @@ export class OrderCriteriaController {
 
   @Get()
   async find() {
-    return this.orderCriteriaService.find({ relations: ['serviceType'] });
+    return this.orderCriteriaService.find({ relations: ['serviceType'], order: { priority: 'ASC' } });
   }
 
   @Post()
