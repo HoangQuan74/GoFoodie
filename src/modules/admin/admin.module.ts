@@ -22,6 +22,7 @@ import { NoticesModule } from './notices/notices.module';
 import { ServiceTypesModule } from './service-types/service-types.module';
 import { VouchersModule } from './vouchers/vouchers.module';
 import { FeesModule } from './fees/fees.module';
+import { CancelOrderReasonsModule } from './cancel-order-reasons/cancel-order-reasons.module';
 
 @Module({
   imports: [
@@ -103,6 +104,10 @@ import { FeesModule } from './fees/fees.module';
         path: 'admin',
         module: FeesModule,
       },
+      {
+        path: 'admin',
+        module: CancelOrderReasonsModule,
+      },
     ]),
     AdminsModule,
     MerchantsModule,
@@ -124,6 +129,7 @@ import { FeesModule } from './fees/fees.module';
     ServiceTypesModule,
     VouchersModule,
     FeesModule,
+    CancelOrderReasonsModule,
   ],
   providers: [
     {
