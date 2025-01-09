@@ -89,7 +89,7 @@ export class ProductsController {
   @Get()
   @ApiOperation({ summary: 'Danh sách sản phẩm (món ăn)' })
   async find(@Query() query: QueryProductDto, @CurrentStore() storeId: number) {
-    const { status, approvalStatus, productCategoryId, limit, page } = query;
+    const { status, approvalStatus, productCategoryId, limit, page, search } = query;
 
     const queryBuilder = this.productsService
       .createQueryBuilder('product')
@@ -108,6 +108,7 @@ export class ProductsController {
       .take(limit)
       .skip((page - 1) * limit);
 
+    search && queryBuilder.andWhere('product.name ILIKE :search', { search: `%${search}%` });
     status && queryBuilder.andWhere('product.status = :status', { status });
     approvalStatus && queryBuilder.andWhere('product.approvalStatus = :approvalStatus', { approvalStatus });
     productCategoryId && queryBuilder.andWhere('product.productCategoryId = :productCategoryId', { productCategoryId });

@@ -4,6 +4,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { PaginationQuery } from 'src/common/query';
 import { CreateCancelOrderReasonsDto } from './dto/create-cancel-order-reason.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { In, Not } from 'typeorm';
 
 @Controller('cancel-order-reasons')
 @ApiTags('Cancel Order Reasons')
@@ -24,6 +25,9 @@ export class CancelOrderReasonsController {
   @Post()
   async create(@Body() createCancelOrderReasonDto: CreateCancelOrderReasonsDto) {
     const { reasons } = createCancelOrderReasonDto;
+
+    const reasonIds = reasons.map((reason) => reason.id).filter((id) => id);
+    await this.cancelOrderReasonsService.delete({ id: Not(In(reasonIds)) });
 
     for (const reason of reasons) {
       await this.cancelOrderReasonsService.save(reason);

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CancelOrderReasonEntity } from 'src/database/entities/cancel-order-reason.entity';
-import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
+import { DeepPartial, FindManyOptions, FindOptionsWhere, Repository } from 'typeorm';
 
 @Injectable()
 export class CancelOrderReasonsService {
@@ -28,5 +28,9 @@ export class CancelOrderReasonsService {
 
   async findAndCount(options: FindManyOptions<CancelOrderReasonEntity>) {
     return this.cancelOrderReasonRepository.findAndCount(options);
+  }
+
+  async delete(criteria: FindOptionsWhere<CancelOrderReasonEntity>) {
+    return this.cancelOrderReasonRepository.delete(criteria);
   }
 }
