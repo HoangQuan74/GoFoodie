@@ -56,6 +56,7 @@ export class CreateVoucherDto {
 
   @ApiProperty()
   @IsBoolean()
+  @IsOptional()
   isCanSave: boolean;
 
   @ApiProperty({ enum: EVoucherDiscountType })

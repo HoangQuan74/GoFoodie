@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { FindManyOptions, FindOneOptions, FindOptionsOrder, FindOptionsWhere, Repository } from 'typeorm';
+import { FindManyOptions, FindOneOptions, FindOptionsWhere, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ClientAddressEntity } from 'src/database/entities/client-address.entity';
 

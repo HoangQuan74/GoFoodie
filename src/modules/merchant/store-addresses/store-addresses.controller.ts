@@ -4,7 +4,6 @@ import { UpdateStoreAddressDto } from './dto/update-store-address.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiTags } from '@nestjs/swagger';
 import { CurrentStore } from 'src/common/decorators/current-store.decorator';
-import { EStoreAddressType } from 'src/common/enums';
 import { StoresService } from '../stores/stores.service';
 
 @Controller('store-addresses')

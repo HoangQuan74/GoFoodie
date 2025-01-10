@@ -16,7 +16,7 @@ import { CurrentStore } from 'src/common/decorators/current-store.decorator';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { QueryProductCategoryDto } from './dto/query-product-category.dto';
-import { Brackets, IsNull, Not } from 'typeorm';
+import { Brackets, Not } from 'typeorm';
 import { StoresService } from '../stores/stores.service';
 import { EProductApprovalStatus, EProductCategoryStatus, EProductStatus } from 'src/common/enums';
 import { CreateProductCategoryDto } from './dto/create-product-category.dto';
