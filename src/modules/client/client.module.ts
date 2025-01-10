@@ -9,6 +9,7 @@ import { ClientEntity } from 'src/database/entities/client.entity';
 import { StoresModule } from './stores/stores.module';
 import { ProductsModule } from './products/products.module';
 import { ProductCategoriesModule } from './product-categories/product-categories.module';
+import { AddressesModule } from './addresses/addresses.module';
 
 @Module({
   imports: [
@@ -17,12 +18,14 @@ import { ProductCategoriesModule } from './product-categories/product-categories
       { path: 'client', module: BannersModule },
       { path: 'client', module: StoresModule },
       { path: 'client', module: AuthModule },
+      { path: 'client', module: AddressesModule },
     ]),
     AuthModule,
     TypeOrmModule.forFeature([ClientEntity]),
     StoresModule,
     ProductsModule,
     ProductCategoriesModule,
+    AddressesModule,
   ],
   controllers: [ClientController],
   providers: [ClientService],

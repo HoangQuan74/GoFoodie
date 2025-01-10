@@ -50,7 +50,7 @@ export class VouchersController {
       .addSelect(['voucher.startTime as "startTime"', 'voucher.endTime as "endTime"'])
       .addSelect(['voucher.maxUseTime as "maxUseTime"', 'voucher.maxUseTimePerUser as "maxUseTimePerUser"'])
       .addSelect(['voucher.discountType as "discountType"', 'voucher.discountValue as "discountValue"'])
-      .addSelect(['createdBy.name as "createdByName"'])
+      .addSelect(['createdBy.name as "createdByName"', 'voucher.createdAt as "createdAt"'])
       .addSelect(['serviceType.name as "serviceTypeName"'])
       .addSelect(['type.name as "typeName"'])
       .addSelect((subQuery) => {
