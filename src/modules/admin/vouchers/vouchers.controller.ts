@@ -119,7 +119,7 @@ export class VouchersController {
       const voucher = new VoucherEntity();
       Object.assign(voucher, body);
       voucher.createdById = user.id;
-      voucher.maxDiscountType = voucher.maxDiscountValue ? EMaxDiscountType.Unlimited : EMaxDiscountType.Limited;
+      voucher.maxDiscountType = voucher.maxDiscountValue ? EMaxDiscountType.Limited : EMaxDiscountType.Unlimited;
       return manager.save(voucher);
     });
   }
@@ -131,7 +131,7 @@ export class VouchersController {
     if (!voucher) throw new NotFoundException();
 
     Object.assign(voucher, body);
-    voucher.maxDiscountType = voucher.maxDiscountValue ? EMaxDiscountType.Unlimited : EMaxDiscountType.Limited;
+    voucher.maxDiscountType = voucher.maxDiscountValue ? EMaxDiscountType.Limited : EMaxDiscountType.Unlimited;
 
     return this.vouchersService.save(voucher);
   }
