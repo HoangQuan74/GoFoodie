@@ -17,10 +17,10 @@ export class ClientAddressEntity extends BaseEntity {
   @Column()
   address: string;
 
-  @Column()
+  @Column({ type: 'float' })
   latitude: number;
 
-  @Column()
+  @Column({ type: 'float' })
   longitude: number;
 
   @Column({ nullable: true })
