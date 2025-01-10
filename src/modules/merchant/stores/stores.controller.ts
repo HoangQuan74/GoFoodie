@@ -159,4 +159,23 @@ export class StoresController {
 
     return this.storesService.remove(store);
   }
+
+  @Get(':id/working-times')
+  async getWorkingTimes(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
+    const store = await this.storesService
+      .createQueryBuilder('store')
+      .select(['store.id'])
+      .where('store.id = :id', { id })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('store.merchantId = :merchantId', { merchantId: user.id });
+          user.storeId && qb.orWhere('store.id = :storeId', { storeId: user.storeId });
+        }),
+      )
+      .leftJoinAndSelect('store.workingTimes', 'workingTimes')
+      .getOne();
+    if (!store) throw new NotFoundException();
+
+    return store.workingTimes;
+  }
 }
