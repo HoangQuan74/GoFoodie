@@ -131,7 +131,7 @@ export class ProductCategoriesController {
     }
 
     const where = { storeId };
-    status && (where['status'] = productStatus);
+    productStatus && (where['status'] = productStatus);
     approvalStatus && (where['approvalStatus'] = approvalStatus);
     const totalProducts = await this.productsService.count({ where });
 
