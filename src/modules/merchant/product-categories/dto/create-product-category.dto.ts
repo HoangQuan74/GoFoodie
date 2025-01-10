@@ -1,15 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsOptional, IsString, ValidateIf } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateProductCategoryDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  @ValidateIf((o) => !o.parentId)
+  @IsOptional()
   name: string;
 
   @ApiProperty()
   @IsInt()
-  @IsOptional()
   parentId: number;
 }

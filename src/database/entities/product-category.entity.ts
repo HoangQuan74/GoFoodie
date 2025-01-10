@@ -20,6 +20,9 @@ export class ProductCategoryEntity extends BaseEntity {
   @Column({ name: 'service_group_id' })
   serviceGroupId: number;
 
+  @Column({ name: 'parent_id', nullable: true })
+  parentId: number;
+
   @Column({ nullable: true })
   description: string;
 
@@ -44,6 +47,10 @@ export class ProductCategoryEntity extends BaseEntity {
     inverseJoinColumn: { name: 'store_id' },
   })
   stores: StoreEntity[];
+
+  @ManyToOne(() => ProductCategoryEntity, (category) => category.id, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'parent_id' })
+  parent: ProductCategoryEntity;
 
   totalProducts: number;
 }

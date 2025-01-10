@@ -14,6 +14,7 @@ import { AdminEntity } from './admin.entity';
 import { FileEntity } from './file.entity';
 import { StoreSpecialWorkingTimeEntity } from './store-special-working-time.entity';
 import { ProductEntity } from './product.entity';
+import { StoreLikeEntity } from './store-like.entity';
 
 @Entity('stores')
 export class StoreEntity extends BaseEntity {
@@ -167,6 +168,9 @@ export class StoreEntity extends BaseEntity {
 
   @OneToMany(() => ProductEntity, (product) => product.store)
   products: ProductEntity[];
+
+  @OneToMany(() => StoreLikeEntity, (like) => like.store)
+  likes: StoreLikeEntity[];
 
   productCount: number;
 }

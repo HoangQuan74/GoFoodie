@@ -46,20 +46,10 @@ export class ProductCategoriesController {
 
     const { parentId, name } = body;
 
-    if (!parentId) {
-      const isExist = await this.productCategoriesService.findOne({
-        where: [
-          { name, storeId },
-          { name, storeId: IsNull() },
-        ],
-      });
+    const parent = await this.productCategoriesService.findOne({ where: { id: parentId } });
+    if (!parent) throw new NotFoundException();
 
-      if (isExist) throw new BadRequestException(EXCEPTIONS.NAME_EXISTED);
-      return this.productCategoriesService.save({ name, storeId, serviceGroupId: store.serviceGroupId });
-    } else {
-      const parent = await this.productCategoriesService.findOne({ where: { id: parentId }, relations: ['stores'] });
-      if (!parent) throw new NotFoundException();
-
+    if (name === parent.name) {
       const isExist = await this.productCategoriesService.findOne({ where: { id: parentId, stores: { id: storeId } } });
       if (isExist) throw new BadRequestException(EXCEPTIONS.NAME_EXISTED);
 
@@ -68,6 +58,11 @@ export class ProductCategoriesController {
         .relation('stores')
         .of(parent)
         .add(storeId);
+    } else {
+      const isExist = await this.productCategoriesService.findOne({ where: { name, storeId } });
+      if (isExist) throw new BadRequestException(EXCEPTIONS.NAME_EXISTED);
+
+      return this.productCategoriesService.save({ name, storeId, serviceGroupId: store.serviceGroupId, parentId });
     }
   }
 
@@ -113,14 +108,9 @@ export class ProductCategoriesController {
           qb.orWhere('stores.id = :storeId', { storeId });
         }),
       )
+      .andWhere('productCategory.serviceGroupId = :serviceGroupId', { serviceGroupId: store.serviceGroupId })
       .leftJoin('productCategory.stores', 'stores')
-      .leftJoin(
-        'productCategory.products',
-        'products',
-        'products.storeId = :storeId' +
-          (productStatus ? ' AND products.status = :productStatus' : '') +
-          (approvalStatus ? ' AND products.approvalStatus = :approvalStatus' : ''),
-      )
+
       .setParameters({ storeId, productStatus, approvalStatus })
       .orderBy('productCategory.name', 'ASC')
       .skip((page - 1) * limit)
@@ -131,6 +121,13 @@ export class ProductCategoriesController {
 
     if (includeProducts) {
       queryBuilder.addSelect(['products.id', 'products.name', 'products.status']);
+      queryBuilder.leftJoin(
+        'productCategory.products',
+        'products',
+        'products.storeId = :storeId' +
+          (productStatus ? ' AND products.status = :productStatus' : '') +
+          (approvalStatus ? ' AND products.approvalStatus = :approvalStatus' : ''),
+      );
     }
 
     const where = { storeId };

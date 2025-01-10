@@ -1,6 +1,6 @@
-import { Controller, Get, NotFoundException, Param, Query } from '@nestjs/common';
+import { Controller, Get, NotFoundException, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { StoresService } from './stores.service';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import * as moment from 'moment-timezone';
 import { EProductStatus, EStoreApprovalStatus, EStoreStatus } from 'src/common/enums';
 import { PaginationQuery } from 'src/common/query';
@@ -10,6 +10,10 @@ import { QueryStoresDto } from './dto/query-stores.dto';
 import * as lodash from 'lodash';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { ProductCategoriesService } from '../product-categories/product-categories.service';
+import { CurrentUser } from 'src/common/decorators';
+import { JwtPayload } from 'src/common/interfaces';
+import { AuthGuard } from '../auth/auth.guard';
+import { StoreLikeEntity } from 'src/database/entities/store-like.entity';
 
 @Controller('stores')
 @ApiTags('Client Stores')
@@ -158,16 +162,33 @@ export class StoresController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: number) {
+  @UseGuards(AuthGuard)
+  async findOne(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
+    const { id: userId } = user;
+
     const queryBuilder = this.storesService
       .createQueryBuilder('store')
-      .select(['store.id', 'store.name', 'store.specialDish', 'store.streetName', 'store.storeAvatarId'])
+      .select([
+        'store.id as id',
+        'store.name as name',
+        'store.specialDish as "specialDish"',
+        'store.streetName as "streetName"',
+        'store.storeAvatarId as "storeAvatarId"',
+      ])
+      .addSelect((subQuery) => {
+        return subQuery
+          .select('COUNT(1)', 'likeCount')
+          .from(StoreLikeEntity, 'like')
+          .where('like.storeId = store.id')
+          .andWhere('like.clientId = :userId')
+          .setParameters({ userId });
+      }, 'likeCount')
       .where('store.id = :id')
       .andWhere('store.status = :storeStatus')
       .andWhere('store.approvalStatus = :storeApprovalStatus')
       .setParameters({ id, storeStatus: EStoreStatus.Active, storeApprovalStatus: EStoreApprovalStatus.Approved });
 
-    const store = await queryBuilder.getOne();
+    const store = await queryBuilder.getRawOne();
     if (!store) throw new NotFoundException();
 
     return store;
@@ -207,5 +228,19 @@ export class StoresController {
     if (!store) throw new NotFoundException();
 
     return store.workingTimes;
+  }
+
+  @Post(':id/like')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Like store' })
+  async likeStore(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
+    return this.storesService.likeStore(id, user.id);
+  }
+
+  @Post(':id/unlike')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Unlike store' })
+  async unlikeStore(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
+    return this.storesService.unlikeStore(id, user.id);
   }
 }
