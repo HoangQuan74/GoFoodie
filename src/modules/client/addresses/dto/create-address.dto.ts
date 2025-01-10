@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { IsEnum, IsLatitude, IsLongitude, IsNotEmpty, IsOptional, IsPhoneNumber, IsString } from 'class-validator';
 import { EClientAddressType } from 'src/common/enums';
 
@@ -6,11 +7,13 @@ export class CreateAddressDto {
   @ApiProperty()
   @IsLatitude()
   @IsNotEmpty()
+  @Type(() => Number)
   latitude: number;
 
   @ApiProperty()
   @IsLongitude()
   @IsNotEmpty()
+  @Type(() => Number)
   longitude: number;
 
   @ApiProperty()
