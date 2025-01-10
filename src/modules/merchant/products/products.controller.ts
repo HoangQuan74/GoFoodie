@@ -150,6 +150,10 @@ export class ProductsController {
       relations: ['store'],
     });
 
+    if (product.approvalStatus === EProductApprovalStatus.Rejected) {
+      product.approvalStatus = EProductApprovalStatus.Pending;
+    }
+
     if (!product) throw new NotFoundException();
 
     let isNeedApproval = false;
