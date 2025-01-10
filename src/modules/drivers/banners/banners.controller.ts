@@ -26,9 +26,11 @@ export class BannersController {
         'banner.viewAllLink',
         'banner.changeType',
       ])
+      .addSelect(['fileInfo.name', 'fileInfo.mimetype'])
       .where('banner.position = :position', { position })
       .andWhere('banner.appType = :appType', { appType: EAppType.AppDriver })
       .innerJoinAndSelect('banner.files', 'file', 'file.isActive = TRUE')
+      .innerJoin('file.file', 'fileInfo')
       .andWhere('banner.startDate <= NOW()')
       .andWhere(
         new Brackets((qb) => {
@@ -55,9 +57,11 @@ export class BannersController {
         'banner.viewAllLink',
         'banner.changeType',
       ])
+      .addSelect(['fileInfo.name', 'fileInfo.mimetype'])
       .where('banner.position ILIKE :page', { page: `%${page}%` })
       .andWhere('banner.appType = :appType', { appType: EAppType.AppDriver })
       .innerJoinAndSelect('banner.files', 'file', 'file.isActive = TRUE')
+      .innerJoin('file.file', 'fileInfo')
       .andWhere('banner.startDate <= NOW()')
       .andWhere(
         new Brackets((qb) => {
