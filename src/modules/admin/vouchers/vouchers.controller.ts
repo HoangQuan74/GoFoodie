@@ -84,20 +84,14 @@ export class VouchersController {
       switch (status) {
         case EVoucherStatus.NotStarted:
           queryBuilder.andWhere('voucher.startTime > NOW()');
-          queryBuilder.andWhere('voucher.isActive = true');
+          queryBuilder.andWhere('voucher.endTime > NOW()');
           break;
         case EVoucherStatus.InProgress:
           queryBuilder.andWhere('voucher.startTime <= NOW()');
           queryBuilder.andWhere('voucher.endTime >= NOW()');
-          queryBuilder.andWhere('voucher.isActive = true');
           break;
         case EVoucherStatus.Ended:
-          queryBuilder.andWhere(
-            new Brackets((qb) => {
-              qb.where('voucher.endTime < NOW()');
-              qb.orWhere('voucher.isActive = false');
-            }),
-          );
+          queryBuilder.andWhere('voucher.endTime < NOW()');
           break;
       }
     }

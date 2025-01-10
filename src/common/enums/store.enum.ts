@@ -27,3 +27,8 @@ export enum ESortStore {
   CreatedAtAsc = 'createdAt:ASC',
   CreatedAtDesc = 'createdAt:DESC',
 }
+
+export enum EStoreAddressType {
+  Receive = 'receive',
+  Return = 'return',
+}

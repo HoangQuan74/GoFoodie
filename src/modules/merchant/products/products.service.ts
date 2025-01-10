@@ -46,4 +46,8 @@ export class ProductsService {
     await this.productApprovalRepository.softDelete({ productId: entity.productId });
     return this.productApprovalRepository.save(entity);
   }
+
+  async findOneProductApproval(options: FindOneOptions<ProductApprovalEntity>) {
+    return this.productApprovalRepository.findOne(options);
+  }
 }

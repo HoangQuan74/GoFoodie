@@ -11,6 +11,7 @@ import { MerchantOtpEntity } from 'src/database/entities/merchant-otp.entity';
 import { OptionGroupsModule } from './option-groups/option-groups.module';
 import { ProductCategoriesModule } from './product-categories/product-categories.module';
 import { BannersModule } from './banners/banners.module';
+import { StoreAddressesModule } from './store-addresses/store-addresses.module';
 
 @Module({
   imports: [
@@ -24,12 +25,14 @@ import { BannersModule } from './banners/banners.module';
       { path: 'merchant', module: OptionGroupsModule },
       { path: 'merchant', module: ProductCategoriesModule },
       { path: 'merchant', module: BannersModule },
+      { path: 'merchant', module: StoreAddressesModule },
     ]),
     ProductsModule,
     StoresModule,
     OptionGroupsModule,
     ProductCategoriesModule,
     BannersModule,
+    StoreAddressesModule,
   ],
   providers: [MerchantsService],
   exports: [MerchantsService],

@@ -153,12 +153,13 @@ export class ProductsController {
     if (!product) throw new NotFoundException();
 
     let isNeedApproval = false;
+    product.approvalStatus !== EProductApprovalStatus.Approved && (isNeedApproval = true);
     name && name !== product.name && (isNeedApproval = true);
     description && description !== product.description && (isNeedApproval = true);
     imageId && imageId !== product.imageId && (isNeedApproval = true);
 
     if (isNeedApproval) {
-      const lastProductApproval = await this.productsService.findOne({
+      const lastProductApproval = await this.productsService.findOneProductApproval({
         where: { code: Like(`${product.store.storeCode}-%`) },
         order: { id: 'DESC' },
         withDeleted: true,
