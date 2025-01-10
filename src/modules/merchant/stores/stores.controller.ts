@@ -96,7 +96,6 @@ export class StoresController {
         }),
       )
       .leftJoinAndSelect('store.representative', 'representative')
-      .leftJoinAndSelect('store.workingTimes', 'workingTimes')
       .leftJoinAndSelect('store.banks', 'banks')
       .leftJoinAndSelect('banks.bank', 'bank')
       .leftJoinAndSelect('banks.bankBranch', 'bankBranch')
@@ -105,8 +104,7 @@ export class StoresController {
       .leftJoinAndSelect('store.businessArea', 'businessArea')
       .leftJoinAndSelect('store.province', 'province')
       .leftJoinAndSelect('store.district', 'district')
-      .leftJoinAndSelect('store.ward', 'ward')
-      .leftJoinAndSelect('store.specialWorkingTimes', 'specialWorkingTimes');
+      .leftJoinAndSelect('store.ward', 'ward');
 
     const store = await queryBuilder.getOne();
     if (!store) throw new NotFoundException();
@@ -177,5 +175,24 @@ export class StoresController {
     if (!store) throw new NotFoundException();
 
     return store.workingTimes;
+  }
+
+  @Get(':id/special-working-times')
+  async getSpecialWorkingTimes(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
+    const store = await this.storesService
+      .createQueryBuilder('store')
+      .select(['store.id', 'store.isSpecialWorkingTime'])
+      .where('store.id = :id', { id })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('store.merchantId = :merchantId', { merchantId: user.id });
+          user.storeId && qb.orWhere('store.id = :storeId', { storeId: user.storeId });
+        }),
+      )
+      .leftJoinAndSelect('store.specialWorkingTimes', 'specialWorkingTimes')
+      .getOne();
+    if (!store) throw new NotFoundException();
+
+    return store;
   }
 }

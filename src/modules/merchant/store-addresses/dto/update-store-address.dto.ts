@@ -6,6 +6,7 @@ export class UpdateStoreAddressDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  @IsOptional()
   address: string;
 
   @ApiPropertyOptional()
@@ -20,11 +21,18 @@ export class UpdateStoreAddressDto {
 
   @ApiProperty()
   @IsLatitude()
+  @IsOptional()
   lat: number;
 
   @ApiProperty()
   @IsLongitude()
+  @IsOptional()
   lng: number;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  note: string;
 
   @ApiProperty({ enum: EStoreAddressType })
   @IsEnum(EStoreAddressType)
