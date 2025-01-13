@@ -34,6 +34,7 @@ export class LoginSmsDto {
   @ApiProperty()
   @IsLongitude()
   @IsNotEmpty()
+  @Type(() => Number)
   longitude: number;
 
   @ApiProperty()
