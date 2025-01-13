@@ -143,7 +143,7 @@ export class ProductsController {
     @CurrentStore() storeId: number,
     @CurrentUser() user: JwtPayload,
   ) {
-    const { optionIds = [], name, description, imageId } = updateProductDto;
+    const { optionIds = [], name, description, imageId, ...rest } = updateProductDto;
     const product = await this.productsService.findOne({
       select: { store: { id: true, storeCode: true } },
       where: { id: +id, storeId },
@@ -183,6 +183,10 @@ export class ProductsController {
         product.approvalStatus === EProductApprovalStatus.Approved ? ERequestType.Update : ERequestType.Create;
 
       await this.productsService.saveProductApproval(productApproval);
+    } else {
+      product.name = name || product.name;
+      product.description = description || product.description;
+      product.imageId = imageId || product.imageId;
     }
 
     const productOptionGroups = [];
@@ -198,10 +202,11 @@ export class ProductsController {
           productOptionGroups.push({ optionGroupId: option.optionGroupId, options: [option] });
         }
       });
+
       product.productOptionGroups = productOptionGroups;
     }
 
-    return this.productsService.save({ ...product, ...updateProductDto });
+    return this.productsService.save({ ...product, ...rest });
   }
 
   @Delete(':id')
