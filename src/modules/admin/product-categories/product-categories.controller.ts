@@ -138,6 +138,9 @@ export class ProductCategoriesController {
           qb.orWhere('store.id IS NOT NULL');
         }),
       );
+      queryBuilder.groupBy('category.id');
+      queryBuilder.addGroupBy('serviceGroup.id');
+      queryBuilder.addGroupBy('parent.id');
       queryBuilder.setParameter('storeId', storeId);
     } else {
       queryBuilder.andWhere('category.storeId IS NULL');
