@@ -17,10 +17,10 @@ export class StoreAddressEntity extends BaseEntity {
   @Column({ name: 'gate', nullable: true })
   gate: string;
 
-  @Column({ name: 'lat' })
+  @Column({ name: 'lat', type: 'float' })
   lat: number;
 
-  @Column({ name: 'lng' })
+  @Column({ name: 'lng', type: 'float' })
   lng: number;
 
   @Column({ type: 'enum', enum: EStoreAddressType })

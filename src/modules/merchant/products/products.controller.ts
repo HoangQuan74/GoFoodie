@@ -157,6 +157,7 @@ export class ProductsController {
     if (!product) throw new NotFoundException();
 
     let isNeedApproval = false;
+    Object.assign(product, updateProductDto);
     product.approvalStatus !== EProductApprovalStatus.Approved && (isNeedApproval = true);
     name && name !== product.name && (isNeedApproval = true);
     description && description !== product.description && (isNeedApproval = true);
@@ -179,14 +180,18 @@ export class ProductsController {
       productApproval.name = name || product.name;
       productApproval.description = description;
       productApproval.imageId = imageId;
-      productApproval.type =
-        product.approvalStatus === EProductApprovalStatus.Approved ? ERequestType.Update : ERequestType.Create;
+
+      if (product.approvalStatus === EProductApprovalStatus.Approved) {
+        Object.assign(productApproval, rest);
+        productApproval.type = ERequestType.Update;
+      } else {
+        Object.assign(productApproval, updateProductDto);
+        productApproval.type = ERequestType.Create;
+      }
 
       await this.productsService.saveProductApproval(productApproval);
     } else {
-      product.name = name || product.name;
-      product.description = description || product.description;
-      product.imageId = imageId || product.imageId;
+      Object.assign(product, updateProductDto);
     }
 
     const productOptionGroups = [];
@@ -206,7 +211,7 @@ export class ProductsController {
       product.productOptionGroups = productOptionGroups;
     }
 
-    return this.productsService.save({ ...product, ...rest });
+    return this.productsService.save(product);
   }
 
   @Delete(':id')
