@@ -42,8 +42,12 @@ export class ProductCategoriesController {
   @Roles(OPERATIONS.PRODUCT_CATEGORY.CREATE)
   async create(@Body() body: CreateProductCategoryDto) {
     const { storeId, parentId, ...rest } = body;
+    const { name, serviceGroupId } = rest;
 
     if (!storeId) {
+      const exist = await this.productCategoriesService.findOne({ where: { name, serviceGroupId } });
+      if (exist) throw new ConflictException(EXCEPTIONS.NAME_EXISTED);
+
       const productCategory = await this.productCategoriesService.save(rest);
       const productCategoryCode = `${productCategory.id.toString().padStart(4, '0')}`;
       productCategory.code = productCategoryCode;
@@ -59,6 +63,9 @@ export class ProductCategoriesController {
       if (body.name && body.name === parentCategory.name) {
         await this.productCategoriesService.createProductCategoryIfNotExist(parentId, storeId);
       } else {
+        const exist = await this.productCategoriesService.findOne({ where: { name: body.name, storeId } });
+        if (exist) throw new ConflictException(EXCEPTIONS.NAME_EXISTED);
+
         body.serviceGroupId = store.serviceGroupId;
         body.storeId = storeId;
 
