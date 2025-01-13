@@ -1,7 +1,6 @@
 import { ClientEntity } from 'src/database/entities/client.entity';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { EClientAddressType } from 'src/common/enums';
 
 @Entity('client_addresses')
 export class ClientAddressEntity extends BaseEntity {
@@ -29,8 +28,8 @@ export class ClientAddressEntity extends BaseEntity {
   @Column({ nullable: true })
   gate: string;
 
-  @Column({ type: 'enum', enum: EClientAddressType, default: EClientAddressType.HOME })
-  type: EClientAddressType;
+  @Column({ nullable: true })
+  type: string;
 
   @Column({ nullable: true })
   note: string;

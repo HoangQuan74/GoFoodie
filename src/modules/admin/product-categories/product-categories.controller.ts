@@ -27,7 +27,6 @@ import { AuthGuard } from '../auth/auth.guard';
 import { AdminRolesGuard } from 'src/common/guards';
 import { Roles } from 'src/common/decorators';
 import { OPERATIONS } from 'src/common/constants/operation.constant';
-import { StoreEntity } from 'src/database/entities/store.entity';
 
 @Controller('product-categories')
 @ApiTags('Quản lý danh mục sản phẩm')
@@ -125,13 +124,14 @@ export class ProductCategoriesController {
       .leftJoin('category.parent', 'parent');
 
     if (storeId) {
-      queryBuilder.leftJoin('category.stores', 'store');
+      queryBuilder.leftJoin('category.stores', 'store', 'store.id = :storeId');
       queryBuilder.andWhere(
         new Brackets((qb) => {
           qb.where('category.storeId = :storeId', { storeId });
-          qb.orWhere('store.id = :storeId');
+          qb.orWhere('store.id IS NOT NULL');
         }),
       );
+      queryBuilder.setParameter('storeId', storeId);
     } else {
       queryBuilder.andWhere('category.storeId IS NULL');
     }

@@ -24,6 +24,7 @@ import { VouchersModule } from './vouchers/vouchers.module';
 import { FeesModule } from './fees/fees.module';
 import { CancelOrderReasonsModule } from './cancel-order-reasons/cancel-order-reasons.module';
 import { OrderCriteriaModule } from './order-criteria/order-criteria.module';
+import { FlashSalesModule } from './flash-sales/flash-sales.module';
 
 @Module({
   imports: [
@@ -113,6 +114,10 @@ import { OrderCriteriaModule } from './order-criteria/order-criteria.module';
         path: 'admin',
         module: OrderCriteriaModule,
       },
+      {
+        path: 'admin',
+        module: FlashSalesModule,
+      },
     ]),
     AdminsModule,
     MerchantsModule,
@@ -136,6 +141,7 @@ import { OrderCriteriaModule } from './order-criteria/order-criteria.module';
     FeesModule,
     CancelOrderReasonsModule,
     OrderCriteriaModule,
+    FlashSalesModule,
   ],
   providers: [
     {
