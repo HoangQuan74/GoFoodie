@@ -88,6 +88,8 @@ export class ProductCategoriesController {
         'category.updatedAt as updatedAt',
         'category.serviceGroupId as "serviceGroupId"',
         'serviceGroup.name as "serviceGroupName"',
+        'category.parentId as "parentId"',
+        'parent.name as "parentName"',
       ])
       .addSelect((subQuery) => {
         return subQuery
@@ -96,12 +98,18 @@ export class ProductCategoriesController {
           .where('product.productCategoryId = category.id');
       }, 'totalProducts')
       .leftJoin('category.serviceGroup', 'serviceGroup')
-      .where(
+      .leftJoin('category.parent', 'parent');
+    if (storeId) {
+      queryBuilder.leftJoin('category.stores', 'store');
+      queryBuilder.andWhere(
         new Brackets((qb) => {
-          qb.where('category.storeId IS NULL');
-          storeId && qb.orWhere('category.storeId = :storeId', { storeId });
+          qb.where('category.storeId = :storeId', { storeId });
+          qb.orWhere('store.id = :storeId');
         }),
       );
+    } else {
+      queryBuilder.andWhere('category.storeId IS NULL');
+    }
 
     status && queryBuilder.andWhere('category.status = :status', { status });
     serviceGroupId && queryBuilder.andWhere('category.serviceGroupId = :serviceGroupId', { serviceGroupId });
