@@ -21,13 +21,13 @@ export class UpdateStoreAddressDto {
   gate: string;
 
   @ApiProperty()
-  @IsLatitude()
+  // @IsLatitude()
   @IsOptional()
   @Type(() => Number)
   lat: number;
 
   @ApiProperty()
-  @IsLongitude()
+  // @IsLongitude()
   @IsOptional()
   @Type(() => Number)
   lng: number;
