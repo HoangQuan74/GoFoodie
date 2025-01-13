@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProductCategoryEntity } from 'src/database/entities/product-category.entity';
-import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { FindManyOptions, FindOneOptions, FindOptionsWhere, Repository } from 'typeorm';
 
 @Injectable()
 export class ProductCategoriesService {
@@ -24,6 +24,10 @@ export class ProductCategoriesService {
 
   async findAndCount(options?: FindManyOptions<ProductCategoryEntity>) {
     return this.productCategoryRepository.findAndCount(options);
+  }
+
+  async exists(where: FindOptionsWhere<ProductCategoryEntity> | FindOptionsWhere<ProductCategoryEntity>[]) {
+    return this.productCategoryRepository.existsBy(where);
   }
 
   createQueryBuilder(alias: string) {

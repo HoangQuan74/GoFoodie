@@ -18,7 +18,7 @@ import { UpdateProductCategoryDto } from './dto/update-product-category.dto';
 import { StoresService } from '../stores/stores.service';
 import { QueryProductCategoryDto } from './dto/query-product-category.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { Brackets, DataSource } from 'typeorm';
+import { Brackets, DataSource, IsNull, Not } from 'typeorm';
 import { ProductCategoryEntity } from 'src/database/entities/product-category.entity';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { EXCEPTIONS } from 'src/common/constants';
@@ -168,8 +168,21 @@ export class ProductCategoriesController {
   @Patch(':id')
   @Roles(OPERATIONS.PRODUCT_CATEGORY.UPDATE)
   async update(@Param('id') id: string, @Body() updateProductCategoryDto: UpdateProductCategoryDto) {
+    const { name } = updateProductCategoryDto;
     const productCategory = await this.productCategoriesService.findOne({ where: { id: +id } });
     if (!productCategory) throw new NotFoundException();
+
+    const { storeId, serviceGroupId } = productCategory;
+    if (storeId) {
+      const exist = await this.productCategoriesService.exists([
+        { name, storeId, id: Not(+id) },
+        { name, id: Not(+id), storeId: IsNull() },
+      ]);
+      if (exist) throw new ConflictException(EXCEPTIONS.NAME_EXISTED);
+    } else {
+      const exist = await this.productCategoriesService.exists({ name, serviceGroupId, id: Not(+id) });
+      if (exist) throw new ConflictException(EXCEPTIONS.NAME_EXISTED);
+    }
 
     return this.productCategoriesService.save({ ...productCategory, ...updateProductCategoryDto });
   }
