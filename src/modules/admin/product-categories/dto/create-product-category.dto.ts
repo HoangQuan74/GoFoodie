@@ -1,4 +1,4 @@
-import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, ValidateIf } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EProductCategoryStatus } from 'src/common/enums';
 
@@ -25,10 +25,11 @@ export class CreateProductCategoryDto {
 
   @ApiProperty()
   @IsInt()
-  @IsOptional()
+  @ValidateIf((o) => o.storeId)
   parentId: number;
 
   @ApiProperty()
   @IsInt()
+  @ValidateIf((o) => !o.storeId)
   serviceGroupId: number;
 }

@@ -27,6 +27,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { AdminRolesGuard } from 'src/common/guards';
 import { Roles } from 'src/common/decorators';
 import { OPERATIONS } from 'src/common/constants/operation.constant';
+import { StoreEntity } from 'src/database/entities/store.entity';
 
 @Controller('product-categories')
 @ApiTags('Quản lý danh mục sản phẩm')
@@ -40,11 +41,34 @@ export class ProductCategoriesController {
 
   @Post()
   @Roles(OPERATIONS.PRODUCT_CATEGORY.CREATE)
-  async create(@Body() createProductCategoryDto: CreateProductCategoryDto) {
-    const productCategory = await this.productCategoriesService.save(createProductCategoryDto);
-    const productCategoryCode = `${productCategory.id.toString().padStart(4, '0')}`;
-    productCategory.code = productCategoryCode;
-    return this.productCategoriesService.save(productCategory);
+  async create(@Body() body: CreateProductCategoryDto) {
+    const { storeId, parentId, ...rest } = body;
+
+    if (!storeId) {
+      const productCategory = await this.productCategoriesService.save(rest);
+      const productCategoryCode = `${productCategory.id.toString().padStart(4, '0')}`;
+      productCategory.code = productCategoryCode;
+      return this.productCategoriesService.save(productCategory);
+    } else {
+      const store = await this.storesService.findOne({ where: { id: storeId } });
+      if (!store) throw new NotFoundException();
+
+      const parentCategory = await this.productCategoriesService.findOne({ where: { id: parentId } });
+      if (!parentCategory) throw new NotFoundException();
+      if (parentCategory.serviceGroupId !== store.serviceGroupId) throw new BadRequestException();
+
+      if (body.name && body.name === parentCategory.name) {
+        await this.productCategoriesService.createProductCategoryIfNotExist(parentId, storeId);
+      } else {
+        body.serviceGroupId = store.serviceGroupId;
+        body.storeId = storeId;
+
+        const productCategory = await this.productCategoriesService.save(body);
+        const productCategoryCode = `${productCategory.id.toString().padStart(4, '0')}`;
+        productCategory.code = productCategoryCode;
+        return this.productCategoriesService.save(productCategory);
+      }
+    }
   }
 
   @Get('list')
@@ -99,6 +123,7 @@ export class ProductCategoriesController {
       }, 'totalProducts')
       .leftJoin('category.serviceGroup', 'serviceGroup')
       .leftJoin('category.parent', 'parent');
+
     if (storeId) {
       queryBuilder.leftJoin('category.stores', 'store');
       queryBuilder.andWhere(
