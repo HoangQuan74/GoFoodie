@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { IsLatitude, IsLongitude, IsNotEmpty, IsString } from 'class-validator';
 
 export class LoginDto {
@@ -27,6 +28,7 @@ export class LoginSmsDto {
   @ApiProperty()
   @IsLatitude()
   @IsNotEmpty()
+  @Type(() => Number)
   latitude: number;
 
   @ApiProperty()

@@ -25,5 +25,10 @@ export class CreateProductCategoryDto {
 
   @ApiProperty()
   @IsInt()
+  @IsOptional()
+  parentId: number;
+
+  @ApiProperty()
+  @IsInt()
   serviceGroupId: number;
 }
