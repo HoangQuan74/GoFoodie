@@ -28,6 +28,7 @@ import { MapboxModule } from './modules/mapbox/mapbox.module';
 import { MailHistoriesModule } from './modules/mail-histories/mail-histories.module';
 import { JwtModule } from '@nestjs/jwt';
 import { JWT_SECRET } from './common/constants';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { JWT_SECRET } from './common/constants';
     ClientModule,
     MapboxModule,
     MailHistoriesModule,
+    EventsModule,
   ],
   controllers: [],
   providers: [],
