@@ -6,6 +6,9 @@ import { AuthGuard } from '../auth/auth.guard';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { QueryFlashSaleProductsDto } from './dto/query-flash-sale-products.dto';
 import { AddFlashSaleProductsDto } from './dto/add-flash-sale-products.dto';
+// import { UpdateFlashSaleProductsDto } from './dto/update-flash-sale-products.dto';
+import { IdentityQuery } from 'src/common/query';
+import { In } from 'typeorm';
 
 @Controller('flash-sales')
 @ApiTags('Admin Flash Sales')
@@ -58,5 +61,13 @@ export class FlashSalesController {
 
     const data = products.map((product) => ({ flashSaleId: id, ...product }));
     return this.flashSalesService.addProducts(data);
+  }
+
+  @Delete(':id/products')
+  async removeProducts(@Param('id') id: number, @Body() { ids }: IdentityQuery) {
+    const flashSaleProducts = await this.flashSalesService.findProducts({ where: { flashSaleId: id, id: In(ids) } });
+    if (flashSaleProducts.length !== ids.length) throw new NotFoundException();
+
+    return this.flashSalesService.removeProducts(flashSaleProducts);
   }
 }
