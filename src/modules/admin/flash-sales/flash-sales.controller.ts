@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, NotFoundException, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  NotFoundException,
+  Query,
+  ConflictException,
+} from '@nestjs/common';
 import { FlashSalesService } from './flash-sales.service';
 import { CreateFlashSaleDto } from './dto/create-flash-sale.dto';
 import { UpdateFlashSaleDto } from './dto/update-flash-sale.dto';
@@ -30,11 +42,44 @@ export class FlashSalesController {
   @Get()
   @ApiOperation({ summary: 'Lấy danh sách flash sale' })
   async find(@Query() query: QueryFlashSaleProductsDto) {
-    const { limit, page } = query;
-    const options = { skip: limit * (page - 1), take: limit };
+    const { limit, page, search } = query;
 
-    const [items, total] = await this.flashSalesService.findAndCount(options);
+    const queryBuilder = this.flashSalesService
+      .createQueryBuilder('flashSale')
+      .select([
+        'flashSale.id as id',
+        'flashSale.name as name',
+        'flashSale.startDate as "startDate"',
+        'flashSale.endDate as "endDate"',
+        'timeFrame.startTime as "startTime"',
+        'timeFrame.endTime as "endTime"',
+      ])
+      .addSelect('COUNT(DISTINCT flashSaleProduct.id)', 'totalProducts')
+      .addSelect('COUNT(DISTINCT product.storeId)', 'totalStores')
+      .addSelect('COUNT(DISTINCT store.serviceGroupId)', 'totalServiceGroups')
+      .innerJoin('flashSale.timeFrame', 'timeFrame')
+      .leftJoin('flashSale.products', 'flashSaleProduct')
+      .leftJoin('flashSaleProduct.product', 'product')
+      .leftJoin('product.store', 'store')
+      .orderBy('flashSale.id', 'DESC')
+      .groupBy('flashSale.id')
+      .addGroupBy('timeFrame.id')
+      .limit(limit)
+      .offset(limit * (page - 1));
+
+    search && queryBuilder.andWhere('flashSale.name ILIKE :search', { search: `%${search}%` });
+
+    const items = await queryBuilder.getRawMany();
+    const total = await queryBuilder.getCount();
     return { items, total };
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    const flashSale = await this.flashSalesService.findOne({ where: { id: +id }, relations: ['timeFrame'] });
+    if (!flashSale) throw new NotFoundException();
+
+    return flashSale;
   }
 
   @Delete(':id')
@@ -63,13 +108,19 @@ export class FlashSalesController {
   }
 
   @Post(':id/products')
-  async addProducts(@Param('id') id: number, @Body() body: AddFlashSaleProductsDto) {
+  async addProducts(@Param('id') flashSaleId: number, @Body() body: AddFlashSaleProductsDto) {
     const { products } = body;
 
-    const flashSale = await this.flashSalesService.findOne({ where: { id } });
+    const flashSale = await this.flashSalesService.findOne({ where: { id: flashSaleId } });
     if (!flashSale) throw new NotFoundException();
 
-    const data = products.map((product) => ({ flashSaleId: id, ...product }));
+    const data = products.map((product) => ({ flashSaleId, ...product }));
+    const productIds = products.map((p) => p.productId);
+    if (new Set(productIds).size !== productIds.length) throw new ConflictException();
+
+    const countProducts = await this.flashSalesService.countProducts({ flashSaleId, productId: In(productIds) });
+    if (countProducts) throw new ConflictException();
+
     return this.flashSalesService.saveProducts(data);
   }
 

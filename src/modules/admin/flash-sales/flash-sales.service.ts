@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FlashSaleEntity } from 'src/database/entities/flash-sale.entity';
 import { FlashSaleTimeFrameEntity } from 'src/database/entities/flash-sale-time-frame.entity';
-import { DeepPartial, FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { DeepPartial, FindManyOptions, FindOneOptions, FindOptionsWhere, Repository } from 'typeorm';
 import { FlashSaleProductEntity } from 'src/database/entities/flash-sale-product.entity';
 
 @Injectable()
@@ -30,6 +30,10 @@ export class FlashSalesService {
     return this.flashSaleRepository.save(entity);
   }
 
+  createQueryBuilder(alias: string) {
+    return this.flashSaleRepository.createQueryBuilder(alias);
+  }
+
   async findOne(options?: FindOneOptions<FlashSaleEntity>) {
     return this.flashSaleRepository.findOne(options);
   }
@@ -44,6 +48,10 @@ export class FlashSalesService {
 
   async findAndCountProducts(options?: FindManyOptions<FlashSaleProductEntity>) {
     return this.flashSaleProductRepository.findAndCount(options);
+  }
+
+  async countProducts(where: FindOptionsWhere<FlashSaleProductEntity>) {
+    return this.flashSaleProductRepository.count({ where });
   }
 
   async findProducts(options?: FindManyOptions<FlashSaleProductEntity>) {

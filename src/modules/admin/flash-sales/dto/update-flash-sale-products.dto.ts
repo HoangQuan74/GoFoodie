@@ -1,9 +1,9 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { AddFlashSaleProductDto } from './add-flash-sale-products.dto';
 import { ArrayMinSize, IsArray, IsInt, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class UpdateFlashSaleProductDto extends PartialType(AddFlashSaleProductDto) {
+export class UpdateFlashSaleProductDto extends PartialType(OmitType(AddFlashSaleProductDto, ['productId'])) {
   @ApiProperty()
   @IsInt()
   id: number;
