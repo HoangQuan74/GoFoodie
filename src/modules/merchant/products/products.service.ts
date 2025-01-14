@@ -38,7 +38,10 @@ export class ProductsService {
     return this.productRepository.update(options, data);
   }
 
-  async remove(entity: ProductEntity) {
+  async remove(entity: ProductEntity | ProductEntity[]) {
+    if (Array.isArray(entity)) {
+      return this.productRepository.remove(entity);
+    }
     return this.productRepository.remove(entity);
   }
 

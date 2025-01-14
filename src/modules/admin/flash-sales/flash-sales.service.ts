@@ -42,7 +42,15 @@ export class FlashSalesService {
     return this.flashSaleProductRepository.findAndCount(options);
   }
 
+  async findProducts(options?: FindManyOptions<FlashSaleProductEntity>) {
+    return this.flashSaleProductRepository.find(options);
+  }
+
   async addProducts(entities: Partial<FlashSaleProductEntity>[]) {
     return this.flashSaleProductRepository.save(entities);
+  }
+
+  async removeProducts(entities: FlashSaleProductEntity[]) {
+    return this.flashSaleProductRepository.softRemove(entities);
   }
 }
