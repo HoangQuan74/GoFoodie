@@ -53,11 +53,13 @@ export class ProductCategoriesController {
       const isExist = await this.productCategoriesService.findOne({ where: { id: parentId, stores: { id: storeId } } });
       if (isExist) throw new BadRequestException(EXCEPTIONS.NAME_EXISTED);
 
-      return this.productCategoriesService
+      await this.productCategoriesService
         .createQueryBuilder('productCategory')
         .relation('stores')
         .of(parent)
         .add(storeId);
+
+      return parent;
     } else {
       const isExist = await this.productCategoriesService.findOne({ where: { name, storeId } });
       if (isExist) throw new BadRequestException(EXCEPTIONS.NAME_EXISTED);
