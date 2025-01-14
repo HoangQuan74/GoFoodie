@@ -300,6 +300,9 @@ export class AuthService {
     const isValidOtp = await this.merchantsService.validateOtp(merchant.id, otp);
     if (!isValidOtp) throw new UnauthorizedException();
 
+    const exist = await this.merchantsService.exists({ where: { phone, id: Not(id) } });
+    if (exist) throw new UnauthorizedException(EXCEPTIONS.PHONE_CONFLICT);
+
     merchant.phone = phone;
     await this.merchantsService.save(merchant);
     await this.merchantsService.deleteOtp(merchant.id, EAdminOtpType.UpdatePhone);

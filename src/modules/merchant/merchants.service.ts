@@ -28,6 +28,10 @@ export class MerchantsService {
     return this.merchantsRepository.findOne(options);
   }
 
+  async exists(options: FindManyOptions<MerchantEntity>) {
+    return this.merchantsRepository.exists(options);
+  }
+
   createQueryBuilder(alias: string) {
     return this.merchantsRepository.createQueryBuilder(alias);
   }
