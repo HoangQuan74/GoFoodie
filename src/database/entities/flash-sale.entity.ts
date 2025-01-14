@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { FlashSaleTimeFrameEntity } from './flash-sale-time-frame.entity';
 import { FlashSaleProductEntity } from './flash-sale-product.entity';
@@ -21,6 +21,7 @@ export class FlashSaleEntity extends BaseEntity {
   endDate: Date;
 
   @ManyToOne(() => FlashSaleTimeFrameEntity, (timeFrame) => timeFrame.flashSales)
+  @JoinColumn({ name: 'time_frame_id' })
   timeFrame: FlashSaleTimeFrameEntity;
 
   @OneToMany(() => FlashSaleProductEntity, (flashSaleProduct) => flashSaleProduct.flashSale)

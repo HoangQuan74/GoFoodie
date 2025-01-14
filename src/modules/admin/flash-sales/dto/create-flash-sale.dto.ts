@@ -1,7 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsInt } from 'class-validator';
+import { IsDateString, IsInt, IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateFlashSaleDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
   @ApiProperty()
   @IsDateString()
   startDate: string;

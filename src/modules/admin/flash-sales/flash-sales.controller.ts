@@ -6,7 +6,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { QueryFlashSaleProductsDto } from './dto/query-flash-sale-products.dto';
 import { AddFlashSaleProductsDto } from './dto/add-flash-sale-products.dto';
-// import { UpdateFlashSaleProductsDto } from './dto/update-flash-sale-products.dto';
+import { UpdateFlashSaleProductsDto } from './dto/update-flash-sale-products.dto';
 import { IdentityQuery } from 'src/common/query';
 import { In } from 'typeorm';
 
@@ -25,6 +25,16 @@ export class FlashSalesController {
   @ApiOperation({ summary: 'Lấy danh sách khung giờ flash sale' })
   getTimeFrames() {
     return this.flashSalesService.getTimeFrames({ order: { startTime: 'ASC' } });
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Lấy danh sách flash sale' })
+  async find(@Query() query: QueryFlashSaleProductsDto) {
+    const { limit, page } = query;
+    const options = { skip: limit * (page - 1), take: limit };
+
+    const [items, total] = await this.flashSalesService.findAndCount(options);
+    return { items, total };
   }
 
   @Delete(':id')
@@ -60,7 +70,7 @@ export class FlashSalesController {
     if (!flashSale) throw new NotFoundException();
 
     const data = products.map((product) => ({ flashSaleId: id, ...product }));
-    return this.flashSalesService.addProducts(data);
+    return this.flashSalesService.saveProducts(data);
   }
 
   @Delete(':id/products')
@@ -69,5 +79,15 @@ export class FlashSalesController {
     if (flashSaleProducts.length !== ids.length) throw new NotFoundException();
 
     return this.flashSalesService.removeProducts(flashSaleProducts);
+  }
+
+  @Patch(':id/products')
+  async updateProducts(@Param('id') id: number, @Body() body: UpdateFlashSaleProductsDto) {
+    const { products } = body;
+
+    const flashSale = await this.flashSalesService.findOne({ where: { id } });
+    if (!flashSale) throw new NotFoundException();
+
+    return this.flashSalesService.saveProducts(products);
   }
 }
