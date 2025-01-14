@@ -173,15 +173,42 @@ export class ProductCategoriesController {
   async remove(@CurrentStore() storeId: number, @Param('id') id: number) {
     const productCategory = await this.productCategoriesService
       .createQueryBuilder('productCategory')
-      .loadRelationCountAndMap('productCategory.totalProducts', 'productCategory.products')
+      .addSelect(['products.id'])
+      .loadRelationCountAndMap('productCategory.totalProducts', 'productCategory.products', 'products', (qb) => {
+        return qb
+          .andWhere(
+            new Brackets((qb) => {
+              qb.where('products.approvalStatus = :approvalStatus');
+              qb.orWhere('products.status = :status');
+            }),
+          )
+          .setParameters({ approvalStatus: EProductApprovalStatus.Rejected, status: EProductStatus.Inactive });
+      })
+      .leftJoin('productCategory.products', 'products', 'products.storeId = :storeId', { storeId })
       .where('productCategory.id = :id', { id })
-      .andWhere('productCategory.storeId = :storeId', { storeId })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('productCategory.storeId IS NULL');
+          qb.orWhere('stores.id = :storeId', { storeId });
+        }),
+      )
+      .leftJoin('productCategory.stores', 'stores')
       .getOne();
 
     if (!productCategory) throw new NotFoundException();
     if (productCategory.totalProducts) throw new BadRequestException(EXCEPTIONS.CATEGORY_HAS_PRODUCTS);
 
-    return this.productCategoriesService.remove(productCategory);
+    await this.productsService.remove(productCategory.products);
+
+    if (productCategory.storeId) {
+      return this.productCategoriesService.remove(productCategory);
+    }
+
+    return this.productCategoriesService
+      .createQueryBuilder('productCategory')
+      .relation('stores')
+      .of(productCategory)
+      .remove(storeId);
   }
 
   @Patch(':id/hide-products')

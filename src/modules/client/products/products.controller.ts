@@ -12,8 +12,9 @@ export class ProductsController {
     const queryBuilder = this.productsService
       .createQueryBuilder('product')
       .select(['product.id', 'product.name', 'product.price', 'product.description', 'product.imageId'])
-      .leftJoinAndSelect('product.productOptionGroups', 'optionGroups')
-      .leftJoinAndSelect('optionGroups.options', 'options')
+      .leftJoinAndSelect('product.productOptionGroups', 'productOptionGroups')
+      .leftJoinAndSelect('productOptionGroups.optionGroup', 'optionGroup')
+      .leftJoinAndSelect('productOptionGroups.options', 'options')
       .where('product.id = :id', { id });
     const product = await queryBuilder.getOne();
     if (!product) throw new NotFoundException();
