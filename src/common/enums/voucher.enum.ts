@@ -3,7 +3,7 @@ export enum ERefundType {
   Refund = 'refund',
 }
 
-export enum EVoucherDiscountType {
+export enum EDiscountType {
   Percentage = 1,
   Fixed = 2,
 }

@@ -24,7 +24,7 @@ export class ProductsController {
     private readonly productCategoriesService: ProductCategoriesService,
   ) {}
 
-  @Post()
+  @Post('stores/:storeId')
   async create(@Body() createProductDto: CreateProductDto, @Param('storeId') storeId: number) {
     return this.dataSource.transaction(async (manager) => {
       const { optionIds = [], productCategoryId } = createProductDto;
