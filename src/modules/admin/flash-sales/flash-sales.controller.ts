@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, NotFoundException, Query } from '@nestjs/common';
 import { FlashSalesService } from './flash-sales.service';
 import { CreateFlashSaleDto } from './dto/create-flash-sale.dto';
 import { UpdateFlashSaleDto } from './dto/update-flash-sale.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { QueryFlashSaleProductsDto } from './dto/query-flash-sale-products.dto';
+import { AddFlashSaleProductsDto } from './dto/add-flash-sale-products.dto';
 
 @Controller('flash-sales')
 @ApiTags('Admin Flash Sales')
@@ -39,7 +41,22 @@ export class FlashSalesController {
   }
 
   @Get(':id/products')
-  getProducts(@Param('id') id: string) {
-    return { items: [], total: 0 };
+  async getProducts(@Param('id') id: number, @Query() query: QueryFlashSaleProductsDto) {
+    const { limit, page } = query;
+    const options = { where: { flashSaleId: id }, skip: limit * (page - 1), take: limit };
+
+    const [items, total] = await this.flashSalesService.findAndCountProducts(options);
+    return { items, total };
+  }
+
+  @Post(':id/products')
+  async addProducts(@Param('id') id: number, @Body() body: AddFlashSaleProductsDto) {
+    const { products } = body;
+
+    const flashSale = await this.flashSalesService.findOne({ where: { id } });
+    if (!flashSale) throw new NotFoundException();
+
+    const data = products.map((product) => ({ flashSaleId: id, ...product }));
+    return this.flashSalesService.addProducts(data);
   }
 }
