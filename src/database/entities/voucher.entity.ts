@@ -1,15 +1,19 @@
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { ServiceTypeEntity } from './service-type.entity';
-import { ERefundType, EVoucherDiscountType, EMaxDiscountType } from 'src/common/enums/voucher.enum';
+import { ERefundType, EDiscountType, EMaxDiscountType } from 'src/common/enums/voucher.enum';
 import { AdminEntity } from './admin.entity';
 import { VoucherTypeEntity } from './voucher-type.entity';
 import { ProductEntity } from './product.entity';
+import { FileEntity } from './file.entity';
 
 @Entity('vouchers')
 export class VoucherEntity extends BaseEntity {
   @Column()
   name: string;
+
+  @Column({ name: 'image_id', nullable: true })
+  imageId: string;
 
   @Column()
   code: string;
@@ -35,8 +39,8 @@ export class VoucherEntity extends BaseEntity {
   @Column({ name: 'is_can_save', default: false })
   isCanSave: boolean;
 
-  @Column({ name: 'discount_type', type: 'enum', enum: EVoucherDiscountType })
-  discountType: EVoucherDiscountType;
+  @Column({ name: 'discount_type', type: 'enum', enum: EDiscountType })
+  discountType: EDiscountType;
 
   @Column({ name: 'discount_value' })
   discountValue: number;
@@ -89,6 +93,10 @@ export class VoucherEntity extends BaseEntity {
     inverseJoinColumn: { name: 'product_id' },
   })
   products: ProductEntity[];
+
+  @ManyToOne(() => FileEntity, (file) => file.id)
+  @JoinColumn({ name: 'image_id' })
+  image: FileEntity;
 
   used: number = 0;
   productCount: number;

@@ -49,6 +49,10 @@ export class CreateProductWorkingTimeDto {
 
 export class CreateProductDto {
   @ApiProperty()
+  @IsInt()
+  storeId: number;
+
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   name: string;

@@ -10,13 +10,14 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
   Matches,
   MaxLength,
   Min,
   ValidateNested,
 } from 'class-validator';
 import { EXCEPTIONS } from 'src/common/constants';
-import { ERefundType, EVoucherDiscountType } from 'src/common/enums/voucher.enum';
+import { ERefundType, EDiscountType } from 'src/common/enums/voucher.enum';
 import { IdDto } from 'src/common/query';
 
 export class CreateVoucherDto {
@@ -24,6 +25,10 @@ export class CreateVoucherDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @ApiProperty()
+  @IsUUID()
+  imageId: string;
 
   @ApiProperty()
   @IsInt()
@@ -59,9 +64,9 @@ export class CreateVoucherDto {
   @IsOptional()
   isCanSave: boolean;
 
-  @ApiProperty({ enum: EVoucherDiscountType })
-  @IsEnum(EVoucherDiscountType)
-  discountType: EVoucherDiscountType;
+  @ApiProperty({ enum: EDiscountType })
+  @IsEnum(EDiscountType)
+  discountType: EDiscountType;
 
   @ApiProperty()
   @IsNumber()

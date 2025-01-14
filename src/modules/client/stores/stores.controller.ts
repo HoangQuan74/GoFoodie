@@ -33,7 +33,14 @@ export class StoresController {
 
     const queryBuilder = this.storesService
       .createQueryBuilder('store')
-      .select(['store.id', 'store.name', 'store.specialDish', 'store.streetName', 'store.storeAvatarId'])
+      .select([
+        'store.id',
+        'store.name',
+        'store.specialDish',
+        'store.streetName',
+        'store.storeAvatarId',
+        'store.storeCoverId',
+      ])
       .innerJoin(
         'store.workingTimes',
         'workingTime',

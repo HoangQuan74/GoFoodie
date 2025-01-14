@@ -25,7 +25,9 @@ export class ProductsController {
   ) {}
 
   @Post()
-  async create(@Body() createProductDto: CreateProductDto, @Param('storeId') storeId: number) {
+  async create(@Body() createProductDto: CreateProductDto) {
+    const { storeId } = createProductDto;
+
     return this.dataSource.transaction(async (manager) => {
       const { optionIds = [], productCategoryId } = createProductDto;
       const store = await manager.findOne(StoreEntity, { where: { id: storeId } });
@@ -67,18 +69,18 @@ export class ProductsController {
   }
 
   @Get()
-  async find(@Query() query: QueryProductDto, @Param('storeId') storeId: number) {
-    const { page, limit, search, approvalStatus, status, isDisplay } = query;
+  async find(@Query() query: QueryProductDto) {
+    const { page, limit, search, approvalStatus, status, isDisplay, storeId } = query;
 
     const queryBuilder = this.productsService
       .createQueryBuilder('product')
       .addSelect(['productCategory.id', 'productCategory.name'])
-      .where('product.storeId = :storeId', { storeId })
       .leftJoin('product.productCategory', 'productCategory')
       .orderBy('product.id', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
 
+    storeId && queryBuilder.andWhere('product.storeId = :storeId', { storeId });
     search && queryBuilder.andWhere('product.name ILIKE :search', { search: `%${search}%` });
     approvalStatus && queryBuilder.andWhere('product.approvalStatus = :approvalStatus', { approvalStatus });
     status && queryBuilder.andWhere('product.status = :status', { status });

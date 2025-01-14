@@ -55,7 +55,7 @@ import { FlashSalesModule } from './flash-sales/flash-sales.module';
         module: ServiceGroupsModule,
       },
       {
-        path: 'admin/stores/:storeId',
+        path: 'admin',
         module: ProductsModule,
       },
       {

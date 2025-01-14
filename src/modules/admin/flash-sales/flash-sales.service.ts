@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FlashSaleEntity } from 'src/database/entities/flash-sale.entity';
 import { FlashSaleTimeFrameEntity } from 'src/database/entities/flash-sale-time-frame.entity';
 import { DeepPartial, FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { FlashSaleProductEntity } from 'src/database/entities/flash-sale-product.entity';
 
 @Injectable()
 export class FlashSalesService {
@@ -12,6 +13,9 @@ export class FlashSalesService {
 
     @InjectRepository(FlashSaleTimeFrameEntity)
     private readonly flashSaleTimeFrameRepository: Repository<FlashSaleTimeFrameEntity>,
+
+    @InjectRepository(FlashSaleProductEntity)
+    private readonly flashSaleProductRepository: Repository<FlashSaleProductEntity>,
   ) {}
 
   async find(options?: FindManyOptions<FlashSaleEntity>) {
@@ -30,7 +34,15 @@ export class FlashSalesService {
     return this.flashSaleRepository.softRemove(entity);
   }
 
-  getTimeFrames(options?: FindManyOptions<FlashSaleTimeFrameEntity>) {
+  async getTimeFrames(options?: FindManyOptions<FlashSaleTimeFrameEntity>) {
     return this.flashSaleTimeFrameRepository.find(options);
+  }
+
+  async findAndCountProducts(options?: FindManyOptions<FlashSaleProductEntity>) {
+    return this.flashSaleProductRepository.findAndCount(options);
+  }
+
+  async addProducts(entities: Partial<FlashSaleProductEntity>[]) {
+    return this.flashSaleProductRepository.save(entities);
   }
 }

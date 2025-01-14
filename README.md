@@ -76,15 +76,15 @@ example: yarn migration:generate src/database/migrations/create_user_table
 
 | Name          | CLI                                              | Description                         |
 | :------------ | :----------------------------------------------- | :---------------------------------- |
-| `decorator`   | `nest g d common/decorators/decorator-name`     | Generate a custom decorator         |
-| `filter`      | `nest g f common/filters/filter-name`           | Generate a filter declaration       |
+| `decorator`   | `nest g d common/decorators/decorator-name`      | Generate a custom decorator         |
+| `filter`       | `nest g f common/filters/filter-name`              | Generate a filter declaration        |
 | `guard`       | `nest g gu common/guards/guard-name`             | Generate a guard declaration        |
-| `interceptor` | `nest g itc common/interceptors/interceptor-name` | Generate an interceptor declaration |
-| `interface`   | `nest g itf common/interfaces/interface-name`     | Generate an interface               |
+| `interceptor` | `nest g itc common/interceptors/interceptor-name`| Generate an interceptor declaration |
+| `interface`   | `nest g itf common/interfaces/interface-name`    | Generate an interface               |
 | `middleware`  | `nest g mi common/middlewares/middleware-name`   | Generate a middleware declaration   |
 | `controller`  | `nest g co modules/controller-name`              | Generate a controller declaration   |
-| `resource`    | `nest g res modules/resource-name`                | Generate a new CRUD resource        |
-| `service`     | `nest g s modules/service-name`                 | Generate a service declaration      |
+| `resource`    | `nest g res modules/resource-name`               | Generate a new CRUD resource        |
+| `service`     | `nest g s modules/service-name`                  | Generate a service declaration      |
 | `module`      | `nest g mo modules/module-name`                  | Generate a module declaration       |
 
 
