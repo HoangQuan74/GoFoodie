@@ -16,7 +16,7 @@ import { CurrentStore } from 'src/common/decorators/current-store.decorator';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { QueryProductCategoryDto } from './dto/query-product-category.dto';
-import { Brackets, Not } from 'typeorm';
+import { Brackets, IsNull, Not } from 'typeorm';
 import { StoresService } from '../stores/stores.service';
 import { EProductApprovalStatus, EProductCategoryStatus, EProductStatus } from 'src/common/enums';
 import { CreateProductCategoryDto } from './dto/create-product-category.dto';
@@ -163,7 +163,17 @@ export class ProductCategoriesController {
     const productCategory = await this.productCategoriesService.findOne({ where: { id, storeId } });
     if (!productCategory) throw new NotFoundException();
 
-    const isExist = await this.productCategoriesService.count({ where: { name, storeId, id: Not(id) } });
+    const isExist = await this.productCategoriesService
+      .createQueryBuilder('productCategory')
+      .where('productCategory.name = :name', { name })
+      .andWhere('productCategory.id != :id', { id })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('productCategory.storeId = :storeId', { storeId });
+          qb.orWhere('productCategory.storeId IS NULL');
+        }),
+      )
+      .getExists();
     if (isExist) throw new BadRequestException(EXCEPTIONS.NAME_EXISTED);
 
     Object.assign(productCategory, body);
