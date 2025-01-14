@@ -1,7 +1,7 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { AddFlashSaleProductDto, AddFlashSaleProductsDto } from './add-flash-sale-products.dto';
-import { UpdateFlashSaleDto } from './update-flash-sale.dto';
-import { IsInt } from 'class-validator';
+import { AddFlashSaleProductDto } from './add-flash-sale-products.dto';
+import { ArrayMinSize, IsArray, IsInt, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class UpdateFlashSaleProductDto extends PartialType(AddFlashSaleProductDto) {
   @ApiProperty()
@@ -9,9 +9,11 @@ export class UpdateFlashSaleProductDto extends PartialType(AddFlashSaleProductDt
   id: number;
 }
 
-// export class UpdateFlashSaleProductsDto {
-//   @ApiProperty({ type: [UpdateFlashSaleProductDto] })
-//   @Type(() => UpdateFlashSaleProductDto)
-//   @
-//   products: UpdateFlashSaleProductDto[];
-// }
+export class UpdateFlashSaleProductsDto {
+  @ApiProperty({ type: [UpdateFlashSaleProductDto] })
+  @Type(() => UpdateFlashSaleProductDto)
+  @ValidateNested({ each: true })
+  @ArrayMinSize(1)
+  @IsArray()
+  products: UpdateFlashSaleProductDto[];
+}

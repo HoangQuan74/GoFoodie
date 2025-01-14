@@ -22,6 +22,10 @@ export class FlashSalesService {
     return this.flashSaleRepository.find(options);
   }
 
+  async findAndCount(options?: FindManyOptions<FlashSaleEntity>) {
+    return this.flashSaleRepository.findAndCount(options);
+  }
+
   async save(entity: DeepPartial<FlashSaleEntity>) {
     return this.flashSaleRepository.save(entity);
   }
@@ -46,7 +50,7 @@ export class FlashSalesService {
     return this.flashSaleProductRepository.find(options);
   }
 
-  async addProducts(entities: Partial<FlashSaleProductEntity>[]) {
+  async saveProducts(entities: Partial<FlashSaleProductEntity>[]) {
     return this.flashSaleProductRepository.save(entities);
   }
 
