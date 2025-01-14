@@ -15,6 +15,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.jwtService.verify(accessToken);
 
       // TODO: Do something
+      console.log('Client connected:', client.id);
     } catch (error) {
       client.disconnect();
       return;

@@ -49,7 +49,7 @@ export class ProductCategoriesController {
     const parent = await this.productCategoriesService.findOne({ where: { id: parentId } });
     if (!parent) throw new NotFoundException();
 
-    if (name && name === parent.name) {
+    if (!name || name === parent.name) {
       const isExist = await this.productCategoriesService.findOne({ where: { id: parentId, stores: { id: storeId } } });
       if (isExist) throw new BadRequestException(EXCEPTIONS.NAME_EXISTED);
 

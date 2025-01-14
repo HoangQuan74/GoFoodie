@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, Get, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, ConflictException, Controller, Get, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Body } from '@nestjs/common';
 import { LoginDto, LoginSmsDto } from './dto/login.dto';
@@ -20,6 +20,7 @@ import { UpdatePhoneDto } from './dto/update-phone.dto';
 import { MerchantsService } from '../merchants.service';
 import { FirebaseService } from 'src/modules/firebase/firebase.service';
 import { EXCEPTIONS } from 'src/common/constants';
+import { Not } from 'typeorm';
 
 @Controller('auth')
 @ApiTags('Merchant Auth')
@@ -164,11 +165,15 @@ export class AuthController {
   async updateEmail(@Body() body: UpdateEmailDto, @CurrentUser() user: JwtPayload) {
     try {
       const { idToken, email } = body;
+      const { id: userId } = user;
       const { phone_number } = await this.firebaseService.verifyIdToken(idToken);
       const phone = phone_number.replace('+84', '0');
 
-      const merchant = await this.merchantsService.findOne({ where: { id: user.id, phone } });
+      const merchant = await this.merchantsService.findOne({ where: { id: userId, phone } });
       if (!merchant) throw new BadRequestException(EXCEPTIONS.INVALID_PHONE);
+
+      const exist = await this.merchantsService.findOne({ where: { email, id: Not(userId) } });
+      if (exist) throw new ConflictException(EXCEPTIONS.EMAIL_CONFLICT);
 
       merchant.email = email;
       return this.merchantsService.save(merchant);
