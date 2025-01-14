@@ -104,6 +104,8 @@ export class StoresController {
       .leftJoinAndSelect('store.businessArea', 'businessArea')
       .leftJoinAndSelect('store.province', 'province')
       .leftJoinAndSelect('store.district', 'district')
+      .leftJoinAndSelect('store.workingTimes', 'workingTimes')
+      .leftJoinAndSelect('store.specialWorkingTimes', 'specialWorkingTimes')
       .leftJoinAndSelect('store.ward', 'ward');
 
     const store = await queryBuilder.getOne();
