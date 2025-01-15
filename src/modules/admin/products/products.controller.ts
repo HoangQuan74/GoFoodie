@@ -12,6 +12,7 @@ import { OptionGroupsService } from '../option-groups/option-groups.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { EProductApprovalStatus, EProductStatus } from 'src/common/enums';
 import { ProductCategoriesService } from '../product-categories/product-categories.service';
+import { Public } from 'src/common/decorators';
 
 @Controller('products')
 @ApiTags('Quản lý sản phẩm')
@@ -69,6 +70,7 @@ export class ProductsController {
   }
 
   @Get()
+  @Public()
   async find(@Query() query: QueryProductDto) {
     const { page, limit, search, approvalStatus, status, isDisplay, storeId } = query;
     const { productCategoryIds, serviceGroupIds, storeIds } = query;
@@ -77,8 +79,10 @@ export class ProductsController {
       .createQueryBuilder('product')
       .addSelect(['productCategory.id', 'productCategory.name'])
       .addSelect(['store.id', 'store.name'])
+      .addSelect(['serviceGroup.id', 'serviceGroup.name'])
       .leftJoin('product.productCategory', 'productCategory')
       .innerJoin('product.store', 'store')
+      .innerJoin('productCategory.serviceGroup', 'serviceGroup')
       .orderBy('product.id', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
