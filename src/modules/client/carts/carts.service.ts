@@ -54,7 +54,7 @@ export class CartsService {
 
     !cart.cartProducts && (cart.cartProducts = []);
     cart.cartProducts.push(cartProduct);
-    await this.save(cart);
+    await this.cartProductRepository.save(cartProduct);
   }
 
   async removeCartProduct(cartProduct: CartProductEntity) {
