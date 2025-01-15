@@ -17,7 +17,7 @@ export class CreateCartDto {
   @IsOptional()
   note?: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: [Number] })
   @IsArray()
   @IsInt({ each: true })
   @IsPositive({ each: true })

@@ -52,6 +52,7 @@ export class CartsService {
     cartProduct.note = note;
     cartProduct.cartProductOptions = cartProductOptions;
 
+    !cart.cartProducts && (cart.cartProducts = []);
     cart.cartProducts.push(cartProduct);
     await this.save(cart);
   }
