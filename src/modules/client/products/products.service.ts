@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProductEntity } from 'src/database/entities/product.entity';
-import { Repository } from 'typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
 
 @Injectable()
 export class ProductsService {
@@ -12,5 +12,9 @@ export class ProductsService {
 
   createQueryBuilder(alias: string) {
     return this.productRepository.createQueryBuilder(alias);
+  }
+
+  async findOne(options: FindOneOptions<ProductEntity>) {
+    return this.productRepository.findOne(options);
   }
 }

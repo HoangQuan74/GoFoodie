@@ -1,6 +1,8 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { CartEntity } from './cart.entity';
 import { BaseEntity } from './base.entity';
+import { CartProductOptionEntity } from './cart-product-option.entity';
+import { ProductEntity } from './product.entity';
 
 @Entity('cart_products')
 export class CartProductEntity extends BaseEntity {
@@ -11,18 +13,19 @@ export class CartProductEntity extends BaseEntity {
   productId: number;
 
   @Column()
-  name: string;
-
-  @Column()
   quantity: number;
 
-  @Column({ name: 'unit_price' })
-  unitPrice: number;
+  @Column({ nullable: true })
+  note: string;
 
-  @Column({ name: 'total_price' })
-  totalPrice: number;
+  @ManyToOne(() => ProductEntity, (product) => product.id)
+  @JoinColumn({ name: 'product_id' })
+  product: ProductEntity;
 
   @ManyToOne(() => CartEntity, (cart) => cart.id)
   @JoinColumn({ name: 'cart_id' })
   cart: CartEntity;
+
+  @OneToMany(() => CartProductOptionEntity, (cartProductOption) => cartProductOption.cartProduct, { cascade: true })
+  cartProductOptions: CartProductOptionEntity[];
 }
