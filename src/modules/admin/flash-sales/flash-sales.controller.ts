@@ -101,7 +101,6 @@ export class FlashSalesController {
   @Get(':id/products')
   async getProducts(@Param('id') id: number, @Query() query: QueryFlashSaleProductsDto) {
     const { limit, page } = query;
-    // const options = { where: { flashSaleId: id }, skip: limit * (page - 1), take: limit,
 
     const queryBuilder = this.flashSalesService
       .createQueryBuilderProducts('flashSaleProduct')
