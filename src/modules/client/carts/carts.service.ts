@@ -52,7 +52,7 @@ export class CartsService {
     cartProduct.note = note;
     cartProduct.cartProductOptions = cartProductOptions;
 
-    return this.cartProductRepository.save(cartProduct)
+    return this.cartProductRepository.save(cartProduct);
   }
 
   async removeCartProduct(cartProduct: CartProductEntity) {
