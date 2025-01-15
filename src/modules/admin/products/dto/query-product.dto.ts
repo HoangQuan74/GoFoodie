@@ -39,4 +39,11 @@ export class QueryProductDto extends PaginationQuery {
   @IsArray()
   @IsInt({ each: true })
   storeIds: number[];
+
+  @ApiPropertyOptional({ type: [Number] })
+  @IsOptional()
+  @Type(() => Number)
+  @IsArray()
+  @IsInt({ each: true })
+  productCategoryIds: number[];
 }

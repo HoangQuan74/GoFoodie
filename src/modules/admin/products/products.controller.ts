@@ -70,7 +70,8 @@ export class ProductsController {
 
   @Get()
   async find(@Query() query: QueryProductDto) {
-    const { page, limit, search, approvalStatus, status, isDisplay, storeId, serviceGroupIds, storeIds } = query;
+    const { page, limit, search, approvalStatus, status, isDisplay, storeId } = query;
+    const { productCategoryIds, serviceGroupIds, storeIds } = query;
 
     const queryBuilder = this.productsService
       .createQueryBuilder('product')
@@ -87,13 +88,10 @@ export class ProductsController {
     approvalStatus && queryBuilder.andWhere('product.approvalStatus = :approvalStatus', { approvalStatus });
     status && queryBuilder.andWhere('product.status = :status', { status });
 
-    if (serviceGroupIds?.length) {
-      queryBuilder.andWhere('productCategory.serviceGroupId IN (:...serviceGroupIds)', { serviceGroupIds });
-    }
-
-    if (storeIds?.length) {
-      queryBuilder.andWhere('product.storeId IN (:...storeIds)', { storeIds });
-    }
+    serviceGroupIds?.length && queryBuilder.andWhere('productCategory.serviceGroupId IN (:...serviceGroupIds)');
+    storeIds?.length && queryBuilder.andWhere('product.storeId IN (:...storeIds)');
+    productCategoryIds?.length && queryBuilder.andWhere('product.productCategoryId IN (:...productCategoryIds)');
+    queryBuilder.setParameters({ productCategoryIds, serviceGroupIds, storeIds });
 
     if (typeof isDisplay === 'boolean' && isDisplay === false) {
       queryBuilder.andWhere(
