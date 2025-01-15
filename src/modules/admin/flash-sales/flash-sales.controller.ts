@@ -101,9 +101,24 @@ export class FlashSalesController {
   @Get(':id/products')
   async getProducts(@Param('id') id: number, @Query() query: QueryFlashSaleProductsDto) {
     const { limit, page } = query;
-    const options = { where: { flashSaleId: id }, skip: limit * (page - 1), take: limit };
+    // const options = { where: { flashSaleId: id }, skip: limit * (page - 1), take: limit,
 
-    const [items, total] = await this.flashSalesService.findAndCountProducts(options);
+    const queryBuilder = this.flashSalesService
+      .createQueryBuilderProducts('flashSaleProduct')
+      .addSelect(['product.id', 'product.name', 'product.price', 'product.imageId', 'product.code'])
+      .addSelect(['store.id', 'store.name'])
+      .addSelect(['productCategory.id', 'productCategory.name'])
+      .addSelect(['serviceGroup.id', 'serviceGroup.name'])
+      .leftJoin('flashSaleProduct.product', 'product')
+      .leftJoin('product.productCategory', 'productCategory')
+      .leftJoin('productCategory.serviceGroup', 'serviceGroup')
+      .leftJoin('product.store', 'store')
+      .where('flashSaleProduct.flashSaleId = :flashSaleId', { flashSaleId: id })
+      .skip(limit * (page - 1))
+      .take(limit);
+
+    const [items, total] = await queryBuilder.getManyAndCount();
+
     return { items, total };
   }
 

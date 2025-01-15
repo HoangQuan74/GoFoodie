@@ -65,4 +65,8 @@ export class FlashSalesService {
   async removeProducts(entities: FlashSaleProductEntity[]) {
     return this.flashSaleProductRepository.softRemove(entities);
   }
+
+  createQueryBuilderProducts(alias: string) {
+    return this.flashSaleProductRepository.createQueryBuilder(alias);
+  }
 }
