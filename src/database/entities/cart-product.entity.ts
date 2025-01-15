@@ -22,7 +22,7 @@ export class CartProductEntity extends BaseEntity {
   @JoinColumn({ name: 'product_id' })
   product: ProductEntity;
 
-  @ManyToOne(() => CartEntity, (cart) => cart.id)
+  @ManyToOne(() => CartEntity, (cart) => cart.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'cart_id' })
   cart: CartEntity;
 

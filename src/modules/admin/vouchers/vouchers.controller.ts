@@ -66,6 +66,10 @@ export class VouchersController {
       .leftJoin('voucher.type', 'type')
       .leftJoin('voucher.products', 'products')
       .orderBy('voucher.id', 'DESC')
+      .groupBy('voucher.id')
+      .addGroupBy('createdBy.id')
+      .addGroupBy('serviceType.id')
+      .addGroupBy('type.id')
       .limit(limit)
       .offset((page - 1) * limit);
 
