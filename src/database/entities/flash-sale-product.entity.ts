@@ -27,7 +27,7 @@ export class FlashSaleProductEntity extends BaseEntity {
   @Column({ name: 'product_quantity', comment: 'Số lượng sản phẩm' })
   productQuantity: number;
 
-  @Column({ name: 'sold_quantity', comment: 'Số lượng sản phẩm đã bán' })
+  @Column({ name: 'sold_quantity', default: 0, comment: 'Số lượng sản phẩm đã bán' })
   soldQuantity: number;
 
   @Column({ name: 'limit_quantity', comment: 'Số lượng sản phẩm tối đa mỗi khách hàng được mua' })
