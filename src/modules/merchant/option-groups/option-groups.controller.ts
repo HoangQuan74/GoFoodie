@@ -94,7 +94,7 @@ export class OptionGroupsController {
   async remove(@Param('id') id: number, @CurrentStore() storeId: number) {
     const optionGroup = await this.optionGroupsService.findOne({
       where: { id, storeId },
-      relations: ['productOptionGroups'],
+      relations: ['productOptionGroups', 'options'],
     });
     if (!optionGroup) throw new NotFoundException();
 

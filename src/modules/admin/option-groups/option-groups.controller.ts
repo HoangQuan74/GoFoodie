@@ -117,7 +117,10 @@ export class OptionGroupsController {
 
   @Delete(':id')
   async remove(@Param('id') id: number) {
-    const optionGroup = await this.optionGroupsService.findOne({ where: { id }, relations: ['productOptionGroups'] });
+    const optionGroup = await this.optionGroupsService.findOne({
+      where: { id },
+      relations: ['productOptionGroups', 'options'],
+    });
     if (!optionGroup) throw new NotFoundException();
 
     return this.optionGroupsService.remove(optionGroup);

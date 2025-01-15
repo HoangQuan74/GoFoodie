@@ -70,12 +70,14 @@ export class ProductsController {
 
   @Get()
   async find(@Query() query: QueryProductDto) {
-    const { page, limit, search, approvalStatus, status, isDisplay, storeId } = query;
+    const { page, limit, search, approvalStatus, status, isDisplay, storeId, serviceGroupIds, storeIds } = query;
 
     const queryBuilder = this.productsService
       .createQueryBuilder('product')
       .addSelect(['productCategory.id', 'productCategory.name'])
+      .addSelect(['store.id', 'store.name'])
       .leftJoin('product.productCategory', 'productCategory')
+      .innerJoin('product.store', 'store')
       .orderBy('product.id', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
@@ -84,6 +86,14 @@ export class ProductsController {
     search && queryBuilder.andWhere('product.name ILIKE :search', { search: `%${search}%` });
     approvalStatus && queryBuilder.andWhere('product.approvalStatus = :approvalStatus', { approvalStatus });
     status && queryBuilder.andWhere('product.status = :status', { status });
+
+    if (serviceGroupIds?.length) {
+      queryBuilder.andWhere('productCategory.serviceGroupId IN (:...serviceGroupIds)', { serviceGroupIds });
+    }
+
+    if (storeIds?.length) {
+      queryBuilder.andWhere('product.storeId IN (:...storeIds)', { storeIds });
+    }
 
     if (typeof isDisplay === 'boolean' && isDisplay === false) {
       queryBuilder.andWhere(

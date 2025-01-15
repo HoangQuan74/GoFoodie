@@ -1,4 +1,3 @@
-//giỏ hàng của user
 import { ClientEntity } from 'src/database/entities/client.entity';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { BaseEntity } from './base.entity';
