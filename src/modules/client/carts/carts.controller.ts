@@ -56,6 +56,8 @@ export class CartsController {
         cartProduct.note = note;
         return this.cartsService.saveCartProduct(cartProduct);
       }
+
+      return this.cartsService.addProductToCart(cart, body);
     }
 
     cart = await this.cartsService.save({ clientId, storeId: product.storeId });
