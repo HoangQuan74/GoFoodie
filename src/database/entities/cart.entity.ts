@@ -1,10 +1,11 @@
 import { ClientEntity } from 'src/database/entities/client.entity';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { BaseEntity } from './base.entity';
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { CartProductEntity } from './cart-product.entity';
 
 @Entity('carts')
+@Index(['clientId', 'storeId'], { unique: true })
 export class CartEntity extends BaseEntity {
   @Column({ name: 'client_id' })
   clientId: number;

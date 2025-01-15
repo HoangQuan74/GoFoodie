@@ -46,7 +46,7 @@ export class CartsService {
     });
 
     const cartProduct = new CartProductEntity();
-    cartProduct.cart = cart;
+    cartProduct.cartId = cart.id;
     cartProduct.productId = productId;
     cartProduct.quantity = quantity;
     cartProduct.note = note;
@@ -54,7 +54,7 @@ export class CartsService {
 
     !cart.cartProducts && (cart.cartProducts = []);
     cart.cartProducts.push(cartProduct);
-    await this.cartProductRepository.save(cartProduct);
+    await this.cartRepository.save(cart);
   }
 
   async removeCartProduct(cartProduct: CartProductEntity) {
