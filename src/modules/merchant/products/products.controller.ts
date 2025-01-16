@@ -157,7 +157,6 @@ export class ProductsController {
     if (!product) throw new NotFoundException();
 
     let isNeedApproval = false;
-    Object.assign(product, updateProductDto);
     product.approvalStatus !== EProductApprovalStatus.Approved && (isNeedApproval = true);
     name && name !== product.name && (isNeedApproval = true);
     description && description !== product.description && (isNeedApproval = true);
@@ -182,10 +181,10 @@ export class ProductsController {
       productApproval.imageId = imageId;
 
       if (product.approvalStatus === EProductApprovalStatus.Approved) {
-        Object.assign(productApproval, rest);
+        Object.assign(product, rest);
         productApproval.type = ERequestType.Update;
       } else {
-        Object.assign(productApproval, updateProductDto);
+        Object.assign(product, updateProductDto);
         productApproval.type = ERequestType.Create;
       }
 
