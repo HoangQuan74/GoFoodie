@@ -65,11 +65,11 @@ export class OptionGroupsController {
     search && (where['name'] = ILike(`%${search}%`));
 
     const options: FindManyOptions<OptionGroupEntity> = {
-      select: { options: { id: true, name: true, status: true, price: true } },
+      select: { options: { id: true, name: true, status: true, price: true }, products: { id: true, name: true } },
       where,
       take: limit,
       skip: (page - 1) * limit,
-      relations: ['options'],
+      relations: ['options', 'products'],
       order: { id: 'DESC' },
     };
     const [items, total] = await this.optionGroupsService.findAndCount(options);
