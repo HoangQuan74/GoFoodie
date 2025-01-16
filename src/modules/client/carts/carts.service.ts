@@ -5,7 +5,6 @@ import { DeepPartial, FindManyOptions, FindOneOptions, Repository } from 'typeor
 import { CreateCartDto } from './dto/create-cart.dto';
 import { CartProductEntity } from 'src/database/entities/cart-product.entity';
 import { CartProductOptionEntity } from 'src/database/entities/cart-product-option.entity';
-import { UpdateCartDto } from './dto/update-cart.dto';
 
 @Injectable()
 export class CartsService {
