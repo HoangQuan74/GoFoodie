@@ -98,7 +98,7 @@ export class CreateVoucherDto {
 
   @ApiProperty()
   @IsBoolean()
-  isAllProducts: boolean;
+  isAllItems: boolean;
 
   @ApiProperty({ type: [IdDto] })
   @ValidateNested({ each: true })
