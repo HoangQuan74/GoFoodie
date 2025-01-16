@@ -123,20 +123,25 @@ export class CartsController {
 
   @Patch('cart-products/:id')
   async update(@Param('id') id: string, @Body() updateCartDto: UpdateCartDto, @CurrentUser() user: JwtPayload) {
-    const cart = await this.cartsService.findOne({ where: { clientId: user.id, cartProducts: { id: +id } } });
+    const cart = await this.cartsService.findOne({
+      where: { clientId: user.id, cartProducts: { id: +id } },
+      relations: ['cartProducts', 'cartProducts.cartProductOptions'],
+    });
     if (!cart) throw new NotFoundException();
 
     const cartProduct = cart.cartProducts.find((cp) => cp.id === +id);
     if (!cartProduct) throw new NotFoundException();
 
     const { optionIds } = updateCartDto;
-    const cartProductOptions = optionIds.map((optionId) => {
-      const cartProductOption = new CartProductOptionEntity();
-      cartProductOption.optionId = optionId;
-      return cartProductOption;
-    });
 
-    cartProduct.cartProductOptions = cartProductOptions;
+    if (optionIds) {
+      const cartProductOptions = optionIds.map((optionId) => {
+        const cartProductOption = new CartProductOptionEntity();
+        cartProductOption.optionId = optionId;
+        return cartProductOption;
+      });
+      cartProduct.cartProductOptions = cartProductOptions;
+    }
     Object.assign(cartProduct, updateCartDto);
 
     return this.cartsService.saveCartProduct(cartProduct);
