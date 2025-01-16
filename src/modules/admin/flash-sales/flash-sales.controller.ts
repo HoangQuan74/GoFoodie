@@ -20,7 +20,11 @@ import { QueryFlashSaleProductsDto } from './dto/query-flash-sale-products.dto';
 import { AddFlashSaleProductsDto } from './dto/add-flash-sale-products.dto';
 import { UpdateFlashSaleProductsDto } from './dto/update-flash-sale-products.dto';
 import { IdentityQuery } from 'src/common/query';
-import { In } from 'typeorm';
+import { Brackets, In } from 'typeorm';
+import { QueryFlashSaleDto } from './dto/query-flash-sale.dto';
+import { EFlashSaleStatus } from 'src/common/enums';
+import * as moment from 'moment-timezone';
+import { TIMEZONE } from 'src/common/constants';
 
 @Controller('flash-sales')
 @ApiTags('Admin Flash Sales')
@@ -41,8 +45,8 @@ export class FlashSalesController {
 
   @Get()
   @ApiOperation({ summary: 'Lấy danh sách flash sale' })
-  async find(@Query() query: QueryFlashSaleProductsDto) {
-    const { limit, page, search } = query;
+  async find(@Query() query: QueryFlashSaleDto) {
+    const { limit, page, search, createdAtFrom, createdAtTo, status } = query;
 
     const queryBuilder = this.flashSalesService
       .createQueryBuilder('flashSale')
@@ -68,6 +72,73 @@ export class FlashSalesController {
       .offset(limit * (page - 1));
 
     search && queryBuilder.andWhere('flashSale.name ILIKE :search', { search: `%${search}%` });
+
+    if (createdAtFrom && createdAtTo) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.where(
+            new Brackets((qb) => {
+              qb.where('flashSale.startDate >= :createdAtFrom', { createdAtFrom });
+              qb.andWhere('flashSale.startDate <= :createdAtTo', { createdAtTo });
+            }),
+          );
+          qb.orWhere(
+            new Brackets((qb) => {
+              qb.where('flashSale.endDate >= :createdAtFrom', { createdAtFrom });
+              qb.andWhere('flashSale.endDate <= :createdAtTo', { createdAtTo });
+            }),
+          );
+        }),
+      );
+    }
+
+    if (status) {
+      const currentDay = moment().tz(TIMEZONE).format('YYYY-MM-DD');
+      const currentTime = moment().tz(TIMEZONE).format('HH:mm:ss');
+
+      switch (status) {
+        case EFlashSaleStatus.NotStarted:
+          queryBuilder.andWhere(
+            new Brackets((qb) => {
+              qb.where(
+                new Brackets((qb) => {
+                  qb.where('flashSale.endDate > :currentDay');
+                  qb.andWhere(
+                    new Brackets((qb) => {
+                      qb.where('timeFrame.startTime > :currentTime');
+                      qb.orWhere('timeFrame.endTime < :currentTime');
+                    }),
+                  );
+                }),
+              );
+              qb.orWhere(
+                new Brackets((qb) => {
+                  qb.where('flashSale.endDate = :currentDay');
+                  qb.andWhere('timeFrame.startTime > :currentTime');
+                }),
+              );
+              qb.orWhere('flashSale.startDate > :currentDay');
+            }),
+          );
+          break;
+        case EFlashSaleStatus.InProgress:
+          queryBuilder.andWhere('flashSale.startDate <= :currentDay');
+          queryBuilder.andWhere('flashSale.endDate >= :currentDay');
+          queryBuilder.andWhere('timeFrame.startTime <= :currentTime');
+          queryBuilder.andWhere('timeFrame.endTime >= :currentTime');
+          break;
+        case EFlashSaleStatus.Ended:
+          queryBuilder.andWhere(
+            new Brackets((qb) => {
+              qb.where('flashSale.endDate < :currentDay');
+              qb.orWhere('flashSale.endDate <= :currentDay AND timeFrame.endTime < :currentTime');
+            }),
+          );
+          break;
+      }
+
+      queryBuilder.setParameters({ currentDay, currentTime });
+    }
 
     const items = await queryBuilder.getRawMany();
     const total = await queryBuilder.getCount();
@@ -101,7 +172,6 @@ export class FlashSalesController {
   @Get(':id/products')
   async getProducts(@Param('id') id: number, @Query() query: QueryFlashSaleProductsDto) {
     const { limit, page } = query;
-    // const options = { where: { flashSaleId: id }, skip: limit * (page - 1), take: limit,
 
     const queryBuilder = this.flashSalesService
       .createQueryBuilderProducts('flashSaleProduct')

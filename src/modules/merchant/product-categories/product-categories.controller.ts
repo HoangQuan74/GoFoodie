@@ -122,7 +122,7 @@ export class ProductCategoriesController {
     status && queryBuilder.andWhere('productCategory.status = :status', { status });
 
     if (includeProducts) {
-      queryBuilder.addSelect(['products.id', 'products.name', 'products.status']);
+      queryBuilder.addSelect(['products.id', 'products.name', 'products.status', 'products.imageId', 'products.price']);
       queryBuilder.leftJoin(
         'productCategory.products',
         'products',

@@ -6,6 +6,7 @@ import { AdminEntity } from './admin.entity';
 import { VoucherTypeEntity } from './voucher-type.entity';
 import { ProductEntity } from './product.entity';
 import { FileEntity } from './file.entity';
+import { StoreEntity } from './store.entity';
 
 @Entity('vouchers')
 export class VoucherEntity extends BaseEntity {
@@ -93,6 +94,14 @@ export class VoucherEntity extends BaseEntity {
     inverseJoinColumn: { name: 'product_id' },
   })
   products: ProductEntity[];
+
+  @ManyToMany(() => StoreEntity, (store) => store.id)
+  @JoinTable({
+    name: 'voucher_stores',
+    joinColumn: { name: 'voucher_id' },
+    inverseJoinColumn: { name: 'store_id' },
+  })
+  stores: StoreEntity[];
 
   @ManyToOne(() => FileEntity, (file) => file.id)
   @JoinColumn({ name: 'image_id' })

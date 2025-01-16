@@ -153,12 +153,59 @@ export class VouchersController {
   @ApiOperation({ summary: 'Chi tiết voucher' })
   async findOne(@Param('id') id: number) {
     const voucher = await this.vouchersService.findOne({
-      select: { products: { id: true, name: true } },
+      select: {
+        products: { id: true, name: true },
+        stores: { id: true, name: true, storeCode: true, serviceGroup: { id: true, name: true } },
+      },
+      where: { id: id },
+      relations: ['products', 'stores', 'stores.serviceGroup'],
+    });
+    if (!voucher) throw new NotFoundException();
+
+    return voucher;
+  }
+
+  @Get(':id/stores')
+  @ApiOperation({ summary: 'Danh sách cửa hàng được áp dụng voucher' })
+  async getStores(@Param('id') id: number) {
+    const voucher = await this.vouchersService.findOne({
+      select: { id: true, stores: { id: true, name: true, storeCode: true, serviceGroup: { id: true, name: true } } },
+      where: { id: id },
+      relations: ['stores', 'stores.serviceGroup'],
+    });
+    if (!voucher) throw new NotFoundException();
+
+    return voucher.stores;
+  }
+
+  @Get(':id/products')
+  @ApiOperation({ summary: 'Danh sách sản phẩm được áp dụng voucher' })
+  async getProducts(@Param('id') id: number) {
+    const voucher = await this.vouchersService.findOne({
+      select: { id: true, products: { id: true, name: true } },
       where: { id: id },
       relations: ['products'],
     });
     if (!voucher) throw new NotFoundException();
 
-    return voucher;
+    return voucher.products;
+  }
+
+  @Delete(':id/products/:productId')
+  @ApiOperation({ summary: 'Xóa sản phẩm khỏi voucher' })
+  async removeProduct(@Param('id') id: number, @Param('productId') productId: number) {
+    const voucher = await this.vouchersService.findOne({ where: { id: id } });
+    if (!voucher) throw new NotFoundException();
+
+    await this.vouchersService.removeProduct(voucher, productId);
+  }
+
+  @Delete(':id/stores/:storeId')
+  @ApiOperation({ summary: 'Xóa cửa hàng khỏi voucher' })
+  async removeStore(@Param('id') id: number, @Param('storeId') storeId: number) {
+    const voucher = await this.vouchersService.findOne({ where: { id: id } });
+    if (!voucher) throw new NotFoundException();
+
+    await this.vouchersService.removeStore(voucher, storeId);
   }
 }

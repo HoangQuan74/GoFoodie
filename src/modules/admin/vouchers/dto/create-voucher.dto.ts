@@ -105,4 +105,10 @@ export class CreateVoucherDto {
   @IsArray()
   @Type(() => IdDto)
   products: IdDto[];
+
+  @ApiProperty({ type: [IdDto] })
+  @ValidateNested({ each: true })
+  @IsArray()
+  @Type(() => IdDto)
+  stores: IdDto[];
 }

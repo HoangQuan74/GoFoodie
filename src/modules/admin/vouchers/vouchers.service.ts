@@ -30,7 +30,7 @@ export class VouchersService {
     return this.voucherRepository.findAndCount(options);
   }
 
-  createQueryBuilder(alias: string) {
+  createQueryBuilder(alias: string = 'voucher') {
     return this.voucherRepository.createQueryBuilder(alias);
   }
 
@@ -40,5 +40,13 @@ export class VouchersService {
 
   async findVoucherTypes(options?: FindManyOptions<VoucherTypeEntity>) {
     return this.voucherTypeRepository.find(options);
+  }
+
+  async removeProduct(voucher: VoucherEntity, productId: number) {
+    return this.createQueryBuilder().relation(VoucherEntity, 'products').of(voucher).remove(productId);
+  }
+
+  async removeStore(voucher: VoucherEntity, storeId: number) {
+    return this.createQueryBuilder().relation(VoucherEntity, 'stores').of(voucher).remove(storeId);
   }
 }
