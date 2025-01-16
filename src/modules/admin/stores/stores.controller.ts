@@ -98,7 +98,7 @@ export class StoresController {
     createdAtTo && queryBuilder.andWhere('store.createdAt <= :createdAtTo');
     approvedAtFrom && queryBuilder.andWhere('store.approvedAt >= :approvedAtFrom');
     approvedAtTo && queryBuilder.andWhere('store.approvedAt <= :approvedAtTo');
-    serviceGroupIds.length && queryBuilder.andWhere('store.serviceGroupId IN (:...serviceGroupIds)');
+    serviceGroupIds?.length && queryBuilder.andWhere('store.serviceGroupId IN (:...serviceGroupIds)');
 
     queryBuilder.setParameters({ serviceTypeId, businessAreaId, approvalStatus, status, merchantId, serviceGroupIds });
     queryBuilder.setParameters({ createdAtFrom, createdAtTo, approvedAtFrom, approvedAtTo });
