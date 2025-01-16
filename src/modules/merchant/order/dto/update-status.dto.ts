@@ -1,5 +1,5 @@
-import { OrderStatus } from 'src/database/entities/order.entity';
+import { EOrderStatus } from 'src/common/enums/order.enum';
 
 export class UpdateOrderStatusDto {
-  status: OrderStatus;
+  status: EOrderStatus;
 }

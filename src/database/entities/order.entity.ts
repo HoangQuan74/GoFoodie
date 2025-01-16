@@ -1,28 +1,15 @@
+import { EOrderStatus, EPaymentStatus } from 'src/common/enums/order.enum';
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
-  ManyToOne,
+  Entity,
   JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { CartEntity } from './cart.entity';
 import { DriverEntity } from './driver.entity';
-
-export enum OrderStatus {
-  Pending = 'pending',
-  Confirmed = 'confirmed',
-  InDelivery = 'in_delivery',
-  Delivered = 'delivered',
-  Cancelled = 'cancelled',
-}
-
-export enum PaymentStatus {
-  Unpaid = 'unpaid',
-  Paid = 'paid',
-  Refunded = 'refunded',
-}
 
 @Entity('orders')
 export class OrderEntity {
@@ -40,17 +27,17 @@ export class OrderEntity {
 
   @Column({
     type: 'enum',
-    enum: OrderStatus,
-    default: OrderStatus.Pending,
+    enum: EOrderStatus,
+    default: EOrderStatus.Pending,
   })
-  status: OrderStatus;
+  status: EOrderStatus;
 
   @Column({
     type: 'enum',
-    enum: PaymentStatus,
-    default: PaymentStatus.Unpaid,
+    enum: EPaymentStatus,
+    default: EPaymentStatus.Unpaid,
   })
-  paymentStatus: PaymentStatus;
+  paymentStatus: EPaymentStatus;
 
   @Column({ nullable: true })
   deliveryAddress: string;

@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { OrderEntity, OrderStatus } from 'src/database/entities/order.entity';
+import { EOrderStatus } from 'src/common/enums/order.enum';
+import { OrderEntity } from 'src/database/entities/order.entity';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { Repository } from 'typeorm';
 import { QueryOrderDto } from './dto/query-order.dto';
@@ -35,7 +36,7 @@ export class OrderService {
 
     if (queryOrderDto.isDelivered !== undefined) {
       query.andWhere('order.status = :deliveredStatus', {
-        deliveredStatus: queryOrderDto.isDelivered ? OrderStatus.Delivered : OrderStatus.InDelivery,
+        deliveredStatus: queryOrderDto.isDelivered ? EOrderStatus.Delivered : EOrderStatus.InDelivery,
       });
     }
 
@@ -93,11 +94,11 @@ export class OrderService {
       throw new NotFoundException(`Order with ID ${orderId} not found or does not belong to this merchant`);
     }
 
-    if (order.status !== OrderStatus.Pending) {
+    if (order.status !== EOrderStatus.Pending) {
       throw new BadRequestException('Only pending orders can be confirmed');
     }
 
-    order.status = OrderStatus.Confirmed;
+    order.status = EOrderStatus.Confirmed;
     return this.orderRepository.save(order);
   }
 
@@ -118,11 +119,11 @@ export class OrderService {
       throw new NotFoundException(`Order with ID ${orderId} not found or does not belong to this merchant`);
     }
 
-    if (order.status !== OrderStatus.Pending) {
+    if (order.status !== EOrderStatus.Pending) {
       throw new BadRequestException('Only pending orders can be cancelled');
     }
 
-    order.status = OrderStatus.Cancelled;
+    order.status = EOrderStatus.Cancelled;
     return this.orderRepository.save(order);
   }
 

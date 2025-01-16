@@ -1,10 +1,11 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CartEntity } from 'src/database/entities/cart.entity';
-import { OrderEntity, OrderStatus } from 'src/database/entities/order.entity';
+import { OrderEntity } from 'src/database/entities/order.entity';
 import { Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
+import { EOrderStatus } from 'src/common/enums/order.enum';
 
 @Injectable()
 export class OrderService {
@@ -110,11 +111,11 @@ export class OrderService {
   async cancelOrder(clientId: number, orderId: number): Promise<OrderEntity> {
     const order = await this.findOne(clientId, orderId);
 
-    if (order.status !== OrderStatus.Pending) {
+    if (order.status !== EOrderStatus.Pending) {
       throw new BadRequestException('Only pending orders can be cancelled');
     }
 
-    order.status = OrderStatus.Cancelled;
+    order.status = EOrderStatus.Cancelled;
     return this.orderRepository.save(order);
   }
 }

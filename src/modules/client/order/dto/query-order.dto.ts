@@ -2,20 +2,20 @@ import { PaginationQuery } from './../../../../common/query/base.query';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString, ValidateIf } from 'class-validator';
-import { OrderStatus, PaymentStatus } from 'src/database/entities/order.entity';
+import { EOrderStatus, EPaymentStatus } from 'src/common/enums/order.enum';
 
 export class QueryOrderDto extends PaginationQuery {
-  @ApiPropertyOptional({ enum: OrderStatus })
-  @IsEnum(OrderStatus)
+  @ApiPropertyOptional({ enum: EOrderStatus })
+  @IsEnum(EOrderStatus)
   @ValidateIf((o) => o.status !== undefined)
   @IsOptional()
-  status?: OrderStatus;
+  status?: EOrderStatus;
 
-  @ApiPropertyOptional({ enum: PaymentStatus })
-  @IsEnum(PaymentStatus)
+  @ApiPropertyOptional({ enum: EPaymentStatus })
+  @IsEnum(EPaymentStatus)
   @ValidateIf((o) => o.paymentStatus !== undefined)
   @IsOptional()
-  paymentStatus?: PaymentStatus;
+  paymentStatus?: EPaymentStatus;
 
   @ApiPropertyOptional()
   @IsOptional()
