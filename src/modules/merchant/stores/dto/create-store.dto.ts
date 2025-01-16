@@ -14,6 +14,7 @@ import {
   IsBoolean,
   IsNumber,
   IsNumberString,
+  Matches,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -118,7 +119,7 @@ export class CreateRepresentativeDto {
   address: string;
 
   @ApiPropertyOptional({ description: 'Số CMND' })
-  @IsString()
+  @Matches(/^[0-9]{9}$|^[0-9]{12}$/)
   @IsNotEmpty()
   @ValidateIf((o) => o.type === EStoreRepresentativeType.Individual)
   identityCard: string;
@@ -152,11 +153,6 @@ export class CreateRepresentativeDto {
   @IsNotEmpty()
   @ValidateIf((o) => o.type !== EStoreRepresentativeType.Individual)
   businessLicenseImageId: string;
-
-  // @ApiProperty({ description: 'Hình ảnh mã số thuế' })
-  // @IsString()
-  // @IsNotEmpty()
-  // taxLicenseImageId: string;
 
   @ApiPropertyOptional({ description: 'Hình ảnh liên quan' })
   @IsString()

@@ -51,7 +51,7 @@ export class StoresController {
   @Get()
   async find(@Query() query: QueryStoreDto) {
     const { search, page, limit, sort, serviceTypeId, businessAreaId, approvalStatus, status, merchantId } = query;
-    const { createdAtFrom, createdAtTo, approvedAtFrom, approvedAtTo } = query;
+    const { createdAtFrom, createdAtTo, approvedAtFrom, approvedAtTo, serviceGroupIds } = query;
 
     const queryBuilder = this.storesService
       .createQueryBuilder('store')
@@ -98,8 +98,9 @@ export class StoresController {
     createdAtTo && queryBuilder.andWhere('store.createdAt <= :createdAtTo');
     approvedAtFrom && queryBuilder.andWhere('store.approvedAt >= :approvedAtFrom');
     approvedAtTo && queryBuilder.andWhere('store.approvedAt <= :approvedAtTo');
+    serviceGroupIds.length && queryBuilder.andWhere('store.serviceGroupId IN (:...serviceGroupIds)');
 
-    queryBuilder.setParameters({ serviceTypeId, businessAreaId, approvalStatus, status, merchantId });
+    queryBuilder.setParameters({ serviceTypeId, businessAreaId, approvalStatus, status, merchantId, serviceGroupIds });
     queryBuilder.setParameters({ createdAtFrom, createdAtTo, approvedAtFrom, approvedAtTo });
 
     if (sort) {

@@ -13,6 +13,7 @@ import {
   IsDate,
   IsBoolean,
   IsNumber,
+  Matches,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -117,7 +118,7 @@ export class CreateRepresentativeDto {
   address: string;
 
   @ApiPropertyOptional({ description: 'Số CMND' })
-  @IsString()
+  @Matches(/^[0-9]{9}$|^[0-9]{12}$/)
   @IsNotEmpty()
   @ValidateIf((o) => o.type === EStoreRepresentativeType.Individual)
   identityCard: string;

@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsEnum, IsOptional, ValidateIf } from 'class-validator';
+import { IsArray, IsEnum, IsInt, IsOptional, ValidateIf } from 'class-validator';
 import { ESortStore, EStoreApprovalStatus, EStoreStatus } from 'src/common/enums';
 import { PaginationQuery } from 'src/common/query';
 
@@ -58,4 +58,11 @@ export class QueryStoreDto extends PaginationQuery {
   @IsOptional()
   @Transform(({ value }) => (typeof value === 'string' && value ? value === 'true' : value))
   isDraft: boolean;
+
+  @ApiPropertyOptional({ type: [Number] })
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  @Type(() => Number)
+  serviceGroupIds: number[];
 }
