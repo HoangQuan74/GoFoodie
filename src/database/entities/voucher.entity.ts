@@ -73,7 +73,7 @@ export class VoucherEntity extends BaseEntity {
   createdById: number;
 
   @Column({ name: 'is_all_products', default: false })
-  isAllProducts: boolean;
+  isAllItems: boolean;
 
   @ManyToOne(() => ServiceTypeEntity, (serviceType) => serviceType.id)
   @JoinColumn({ name: 'service_type_id' })

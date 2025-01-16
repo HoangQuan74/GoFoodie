@@ -159,13 +159,9 @@ export class CartsController {
   }
 
   @Delete('cart-products/:cartProductId')
-  async removeProduct(
-    @Param('id') id: string,
-    @Param('cartProductId') cartProductId: string,
-    @CurrentUser() user: JwtPayload,
-  ) {
+  async removeProduct(@Param('cartProductId') cartProductId: string, @CurrentUser() user: JwtPayload) {
     const cart = await this.cartsService.findOne({
-      where: { id: +id, clientId: user.id },
+      where: { clientId: user.id, cartProducts: { id: +cartProductId } },
       relations: ['cartProducts', 'cartProducts.cartProductOptions'],
     });
     if (!cart) throw new NotFoundException();
