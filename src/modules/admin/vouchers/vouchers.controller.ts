@@ -52,7 +52,7 @@ export class VouchersController {
       .addSelect(['voucher.discountType as "discountType"', 'voucher.discountValue as "discountValue"'])
       .addSelect(['createdBy.name as "createdByName"', 'voucher.createdAt as "createdAt"'])
       .addSelect(['serviceType.name as "serviceTypeName"'])
-      .addSelect(['type.name as "typeName"'])
+      .addSelect(['type.id as "typeId"', 'type.name as "typeName"'])
       .addSelect((subQuery) => {
         return subQuery
           .select('COUNT(1)', 'count')
@@ -60,6 +60,9 @@ export class VouchersController {
           .where('vp.voucher_id = voucher.id')
           .innerJoin(ProductEntity, 'product', 'product.id = vp.product_id');
       }, 'productsCount')
+      .addSelect((subQuery) => {
+        return subQuery.select('COUNT(1)', 'count').from('voucher_stores', 'vs').where('vs.voucher_id = voucher.id');
+      }, 'storesCount')
       .addSelect(['0 as "usedCount"'])
       .leftJoin('voucher.createdBy', 'createdBy')
       .leftJoin('voucher.serviceType', 'serviceType')
