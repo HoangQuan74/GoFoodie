@@ -11,6 +11,7 @@ import { ProductsModule } from './products/products.module';
 import { ProductCategoriesModule } from './product-categories/product-categories.module';
 import { AddressesModule } from './addresses/addresses.module';
 import { CartsModule } from './carts/carts.module';
+import { OrdersModule } from './order/order.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { CartsModule } from './carts/carts.module';
       { path: 'client', module: StoresModule },
       { path: 'client', module: AuthModule },
       { path: 'client', module: AddressesModule },
+      { path: 'client', module: OrdersModule },
     ]),
     AuthModule,
     TypeOrmModule.forFeature([ClientEntity]),
@@ -28,6 +30,7 @@ import { CartsModule } from './carts/carts.module';
     ProductCategoriesModule,
     AddressesModule,
     CartsModule,
+    OrdersModule,
   ],
   controllers: [ClientController],
   providers: [ClientService],
