@@ -28,17 +28,17 @@ export class AuthGuard implements CanActivate {
     try {
       const payload = (await this.jwtService.verifyAsync(token)) as JwtPayload;
       const { id, deviceToken } = payload;
-      const driver = await this.clientService.findOne({ where: { id } });
+      const client = await this.clientService.findOne({ where: { id } });
 
-      if (deviceToken !== driver.deviceToken) throw new UnauthorizedException(EXCEPTIONS.INVALID_DEVICE_TOKEN);
+      if (deviceToken !== client.deviceToken) throw new UnauthorizedException(EXCEPTIONS.INVALID_DEVICE_TOKEN);
 
-      driver.lastLogin = new Date();
-      this.clientService.save(driver);
+      client.lastLogin = new Date();
+      this.clientService.save(client);
 
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
 
-      request['user'] = driver;
+      request['user'] = client;
     } catch {
       throw new UnauthorizedException();
     }
