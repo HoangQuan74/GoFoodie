@@ -21,9 +21,7 @@ export class OrderService {
     const query = this.orderRepository
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.client', 'client')
-      .leftJoinAndSelect('order.cart', 'cart')
-      .leftJoinAndSelect('cart.cartProducts', 'cartProducts')
-      .leftJoinAndSelect('cartProducts.product', 'product')
+      .leftJoinAndSelect('order.orderItems', 'orderItems')
       .where('order.storeId = :storeId', { storeId: store.id });
 
     if (queryOrderDto.status) {
@@ -34,14 +32,8 @@ export class OrderService {
       query.andWhere('order.paymentStatus = :paymentStatus', { paymentStatus: queryOrderDto.paymentStatus });
     }
 
-    if (queryOrderDto.isDelivered !== undefined) {
-      query.andWhere('order.status = :deliveredStatus', {
-        deliveredStatus: queryOrderDto.isDelivered ? EOrderStatus.Delivered : EOrderStatus.InDelivery,
-      });
-    }
-
     if (queryOrderDto.keyword) {
-      query.andWhere('(client.name LIKE :keyword OR order.id LIKE :keyword)', {
+      query.andWhere('(client.name LIKE :keyword OR order.id::text LIKE :keyword)', {
         keyword: `%${queryOrderDto.keyword}%`,
       });
     }
@@ -59,6 +51,10 @@ export class OrderService {
 
     if (queryOrderDto.maxTotalAmount) {
       query.andWhere('order.totalAmount <= :maxTotalAmount', { maxTotalAmount: queryOrderDto.maxTotalAmount });
+    }
+
+    if (queryOrderDto.driverId) {
+      query.andWhere('order.driverId = :driverId', { driverId: queryOrderDto.driverId });
     }
 
     query
@@ -81,13 +77,11 @@ export class OrderService {
     const order = await this.orderRepository.findOne({
       where: {
         id: orderId,
-        cart: {
-          store: {
-            merchantId: merchantId,
-          },
+        store: {
+          merchantId: merchantId,
         },
       },
-      relations: ['cart', 'cart.store'],
+      relations: ['store'],
     });
 
     if (!order) {
@@ -106,13 +100,11 @@ export class OrderService {
     const order = await this.orderRepository.findOne({
       where: {
         id: orderId,
-        cart: {
-          store: {
-            merchantId: merchantId,
-          },
+        store: {
+          merchantId: merchantId,
         },
       },
-      relations: ['cart', 'cart.store'],
+      relations: ['store'],
     });
 
     if (!order) {

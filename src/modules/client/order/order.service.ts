@@ -1,104 +1,160 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { EOrderStatus } from 'src/common/enums/order.enum';
+import { CartProductOptionEntity } from 'src/database/entities/cart-product-option.entity';
+import { CartProductEntity } from 'src/database/entities/cart-product.entity';
 import { CartEntity } from 'src/database/entities/cart.entity';
+import { OrderItemEntity } from 'src/database/entities/order-item.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
-import { Repository } from 'typeorm';
+import { EventGatewayService } from 'src/events/event.gateway.service';
+import { Connection, Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
-import { EOrderStatus } from 'src/common/enums/order.enum';
 
 @Injectable()
 export class OrderService {
   constructor(
     @InjectRepository(OrderEntity)
     private orderRepository: Repository<OrderEntity>,
+    @InjectRepository(OrderItemEntity)
+    private orderItemRepository: Repository<OrderItemEntity>,
     @InjectRepository(CartEntity)
     private cartRepository: Repository<CartEntity>,
+    private eventGatewayService: EventGatewayService,
+    private connection: Connection,
   ) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<OrderEntity> {
-    const cart = await this.cartRepository.findOne({
-      where: { id: createOrderDto.cartId, clientId: createOrderDto.clientId },
-      relations: ['cartProducts', 'cartProducts.product'],
-    });
+    const { clientId, cartId, deliveryAddress, deliveryLatitude, deliveryLongitude, notes } = createOrderDto;
 
-    if (!cart) {
-      throw new NotFoundException(`Cart with ID ${createOrderDto.cartId} not found for this client`);
+    const queryRunner = this.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const cart = await this.cartRepository.findOne({
+        where: { id: cartId, clientId },
+        relations: [
+          'cartProducts',
+          'cartProducts.product',
+          'cartProducts.cartProductOptions',
+          'cartProducts.cartProductOptions.option',
+          'store',
+        ],
+      });
+
+      if (!cart) {
+        throw new NotFoundException(`Cart with ID ${cartId} not found for this client`);
+      }
+
+      if (cart.cartProducts.length === 0) {
+        throw new BadRequestException('Cannot create an order with an empty cart');
+      }
+
+      const totalAmount = cart.cartProducts.reduce((sum, cartProduct) => {
+        const productPrice = cartProduct.product.price;
+        const optionsPrice = cartProduct.cartProductOptions.reduce((optSum, option) => optSum + option.option.price, 0);
+        return sum + (productPrice + optionsPrice) * cartProduct.quantity;
+      }, 0);
+
+      const newOrder = this.orderRepository.create({
+        clientId,
+        storeId: cart.store.id,
+        totalAmount,
+        deliveryAddress,
+        deliveryLatitude,
+        deliveryLongitude,
+        notes,
+      });
+
+      const savedOrder = await queryRunner.manager.save(newOrder);
+
+      const orderItems = cart.cartProducts.map((cartProduct) => {
+        const productPrice = cartProduct.product.price;
+        const optionsPrice = cartProduct.cartProductOptions.reduce((sum, option) => sum + option.option.price, 0);
+        const itemPrice = productPrice + optionsPrice;
+
+        return this.orderItemRepository.create({
+          orderId: savedOrder.id,
+          productId: cartProduct.product.id,
+          productName: cartProduct.product.name,
+          price: itemPrice,
+          quantity: cartProduct.quantity,
+          subtotal: itemPrice * cartProduct.quantity,
+          note: cartProduct.note,
+          options: cartProduct.cartProductOptions.map((opt) => ({
+            optionId: opt.option.id,
+            optionName: opt.option.name,
+            optionPrice: opt.option.price,
+          })),
+        });
+      });
+
+      await queryRunner.manager.save(OrderItemEntity, orderItems);
+
+      // Delete the cart and its related entities
+      await queryRunner.manager.delete(CartProductOptionEntity, { cartProduct: { cartId } });
+      await queryRunner.manager.delete(CartProductEntity, { cartId });
+      await queryRunner.manager.delete(CartEntity, { id: cartId });
+
+      await queryRunner.commitTransaction();
+
+      this.eventGatewayService.notifyMerchantNewOrder(savedOrder.storeId, savedOrder);
+
+      return this.findOne(clientId, savedOrder.id);
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException('Failed to create order: ' + error.message);
+    } finally {
+      await queryRunner.release();
     }
-
-    if (cart.cartProducts.length === 0) {
-      throw new BadRequestException('Cannot create an order with an empty cart');
-    }
-
-    const totalAmount = cart.cartProducts.reduce((sum, cartProduct) => sum + cartProduct.quantity, 0);
-
-    const newOrder = this.orderRepository.create({
-      cartId: cart.id,
-      totalAmount: totalAmount,
-      deliveryAddress: createOrderDto.deliveryAddress,
-      deliveryLatitude: createOrderDto.deliveryLatitude,
-      deliveryLongitude: createOrderDto.deliveryLongitude,
-      notes: createOrderDto.notes,
-    });
-
-    return this.orderRepository.save(newOrder);
   }
 
   async findAllByClient(clientId: number, queryOrderDto: QueryOrderDto) {
-    const {
-      status,
-      paymentStatus,
-      startDate,
-      endDate,
-      keyword,
-      sortBy = 'createdAt',
-      sortOrder = 'DESC',
-      page = 1,
-      limit = 10,
-    } = queryOrderDto;
-
     const query = this.orderRepository
       .createQueryBuilder('order')
-      .leftJoinAndSelect('order.cart', 'cart')
-      .leftJoinAndSelect('cart.store', 'store')
-      .where('cart.clientId = :clientId', { clientId });
+      .leftJoinAndSelect('order.orderItems', 'orderItems')
+      .where('order.clientId = :clientId', { clientId });
 
-    if (status) {
-      query.andWhere('order.status = :status', { status });
+    if (queryOrderDto.status) {
+      query.andWhere('order.status = :status', { status: queryOrderDto.status });
     }
 
-    if (paymentStatus) {
-      query.andWhere('order.paymentStatus = :paymentStatus', { paymentStatus });
+    if (queryOrderDto.paymentStatus) {
+      query.andWhere('order.paymentStatus = :paymentStatus', { paymentStatus: queryOrderDto.paymentStatus });
     }
 
-    if (startDate && endDate) {
-      query.andWhere('order.createdAt BETWEEN :startDate AND :endDate', { startDate, endDate });
+    if (queryOrderDto.keyword) {
+      query.andWhere('order.id::text LIKE :keyword', { keyword: `%${queryOrderDto.keyword}%` });
     }
 
-    if (keyword) {
-      query.andWhere('(store.name LIKE :keyword OR order.id LIKE :keyword)', { keyword: `%${keyword}%` });
+    if (queryOrderDto.startDate && queryOrderDto.endDate) {
+      query.andWhere('order.createdAt BETWEEN :startDate AND :endDate', {
+        startDate: queryOrderDto.startDate,
+        endDate: queryOrderDto.endDate,
+      });
     }
 
     query
-      .orderBy(`order.${sortBy}`, sortOrder)
-      .skip((page - 1) * limit)
-      .take(limit);
+      .orderBy(`order.${queryOrderDto.sortBy || 'createdAt'}`, queryOrderDto.sortOrder || 'DESC')
+      .skip((queryOrderDto.page - 1) * queryOrderDto.limit)
+      .take(queryOrderDto.limit);
 
     const [orders, total] = await query.getManyAndCount();
 
     return {
       orders,
       total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
+      page: queryOrderDto.page,
+      limit: queryOrderDto.limit,
+      totalPages: Math.ceil(total / queryOrderDto.limit),
     };
   }
 
   async findOne(clientId: number, orderId: number): Promise<OrderEntity> {
     const order = await this.orderRepository.findOne({
-      where: { id: orderId, cart: { clientId } },
-      relations: ['cart', 'cart.store', 'cart.cartProducts', 'cart.cartProducts.product', 'driver'],
+      where: { id: orderId, clientId },
+      relations: ['orderItems'],
     });
 
     if (!order) {

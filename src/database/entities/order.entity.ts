@@ -1,23 +1,18 @@
 import { EOrderStatus, EPaymentStatus } from 'src/common/enums/order.enum';
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
-import { CartEntity } from './cart.entity';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { BaseEntity } from './base.entity';
+import { ClientEntity } from './client.entity';
 import { DriverEntity } from './driver.entity';
+import { OrderItemEntity } from './order-item.entity';
+import { StoreEntity } from './store.entity';
 
 @Entity('orders')
-export class OrderEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+export class OrderEntity extends BaseEntity {
+  @Column({ name: 'client_id' })
+  clientId: number;
 
-  @Column({ name: 'cart_id' })
-  cartId: number;
+  @Column({ name: 'store_id' })
+  storeId: number;
 
   @Column({ name: 'driver_id', nullable: true })
   driverId: number;
@@ -50,18 +45,18 @@ export class OrderEntity {
 
   @Column({ nullable: true })
   notes: string;
+  @ManyToOne(() => ClientEntity)
+  @JoinColumn({ name: 'client_id' })
+  client: ClientEntity;
 
-  @CreateDateColumn()
-  createdAt: Date;
+  @ManyToOne(() => StoreEntity)
+  @JoinColumn({ name: 'store_id' })
+  store: StoreEntity;
 
-  @UpdateDateColumn()
-  updatedAt: Date;
-
-  @ManyToOne(() => CartEntity, (cart) => cart.id)
-  @JoinColumn({ name: 'cart_id' })
-  cart: CartEntity;
-
-  @ManyToOne(() => DriverEntity, (driver) => driver.id)
+  @ManyToOne(() => DriverEntity)
   @JoinColumn({ name: 'driver_id' })
   driver: DriverEntity;
+
+  @OneToMany(() => OrderItemEntity, (orderItem) => orderItem.order)
+  orderItems: OrderItemEntity[];
 }

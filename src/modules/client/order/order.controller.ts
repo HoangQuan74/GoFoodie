@@ -11,14 +11,14 @@ import { QueryOrderDto } from 'src/modules/merchant/order/dto/query-order.dto';
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
-  @Post('orders')
+  @Post()
   @ApiOperation({ summary: 'Create a new order' })
   @ApiResponse({ status: 201, description: 'Order created successfully' })
   createOrder(@Body() createOrderDto: CreateOrderDto) {
     return this.orderService.create(createOrderDto);
   }
 
-  @Get('orders')
+  @Get()
   @ApiOperation({ summary: 'Get all orders for a client' })
   @ApiResponse({ status: 200, description: 'Returns a list of orders for the client' })
   @ApiQuery({ name: 'clientId', type: Number, required: true })
@@ -26,7 +26,7 @@ export class OrderController {
     return this.orderService.findAllByClient(clientId, queryOrderDto);
   }
 
-  @Get('orders/:id')
+  @Get(':id')
   @ApiOperation({ summary: 'Get details of a specific order' })
   @ApiResponse({ status: 200, description: 'Returns the details of the specified order' })
   @ApiQuery({ name: 'clientId', type: Number, required: true })
@@ -35,7 +35,7 @@ export class OrderController {
     return this.orderService.findOne(clientId, +id);
   }
 
-  @Patch('orders/:id/cancel')
+  @Patch(':id/cancel')
   @ApiOperation({ summary: 'Cancel an order' })
   @ApiResponse({ status: 200, description: 'Order cancelled successfully' })
   @ApiQuery({ name: 'clientId', type: Number, required: true })

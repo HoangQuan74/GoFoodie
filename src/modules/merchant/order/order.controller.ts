@@ -10,7 +10,7 @@ import { OrderService } from './order.service';
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
-  @Get('orders')
+  @Get()
   @ApiOperation({ summary: 'Query orders for merchant' })
   @ApiResponse({ status: 200, description: 'Returns a list of orders based on query parameters' })
   queryOrders(@Query('merchantId') merchantId: number, @Query() queryOrderDto: QueryOrderDto) {
