@@ -193,15 +193,20 @@ export class ProductCategoriesController {
 
   @Delete(':id')
   @Roles(OPERATIONS.PRODUCT_CATEGORY.DELETE)
-  async remove(@Param('id') id: number) {
+  async remove(@Param('id') id: number, @Query('storeId') storeId: number) {
     return this.dataSource.transaction(async (manager) => {
       const category = await manager.findOneBy(ProductCategoryEntity, { id, status: EProductCategoryStatus.Inactive });
       if (!category) throw new NotFoundException();
 
-      const totalProducts = await manager.count(ProductEntity, { where: { id: +id } });
+      const productCondition = storeId ? { storeId, productCategoryId: id } : { productCategoryId: id };
+      const totalProducts = await manager.count(ProductEntity, { where: productCondition });
       if (totalProducts > 0) throw new ConflictException(EXCEPTIONS.CATEGORY_HAS_PRODUCTS);
 
-      return manager.softDelete(ProductCategoryEntity, { id: +id });
+      if (category.storeId || !storeId) {
+        await manager.softDelete(ProductCategoryEntity, { id });
+      } else {
+        await manager.createQueryBuilder().relation(ProductCategoryEntity, 'stores').of(category).remove(storeId);
+      }
     });
   }
 }
