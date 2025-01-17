@@ -201,7 +201,7 @@ export class ProductCategoriesController {
       .where('productCategory.id = :id', { id })
       .andWhere(
         new Brackets((qb) => {
-          qb.where('productCategory.storeId IS NULL');
+          qb.where('productCategory.storeId = :storeId', { storeId });
           qb.orWhere('stores.id = :storeId', { storeId });
         }),
       )
