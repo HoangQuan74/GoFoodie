@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { BASE_URL } from 'src/common/constants';
+import logger from 'src/logger/winston-daily-rotate-file.logger';
 
 @Injectable()
 export class MailService {
@@ -18,8 +19,7 @@ export class MailService {
         context: { otp, email, logo, name, headerBg },
       });
     } catch (message) {
-      console.log('Error sending OTP to', email);
-      console.error(message);
+      logger.error(message);
     }
   }
 }

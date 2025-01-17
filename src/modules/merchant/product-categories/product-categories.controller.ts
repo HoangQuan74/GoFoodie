@@ -194,6 +194,7 @@ export class ProductCategoriesController {
               qb.orWhere('products.status = :status');
             }),
           )
+          .andWhere('products.storeId = :storeId', { storeId })
           .setParameters({ approvalStatus: EProductApprovalStatus.Rejected, status: EProductStatus.Inactive });
       })
       .leftJoin('productCategory.products', 'products', 'products.storeId = :storeId', { storeId })

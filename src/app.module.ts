@@ -29,6 +29,8 @@ import { MailHistoriesModule } from './modules/mail-histories/mail-histories.mod
 import { JwtModule } from '@nestjs/jwt';
 import { JWT_SECRET } from './common/constants';
 import { EventsModule } from './events/events.module';
+import { FcmModule } from './modules/fcm/fcm.module';
+import { FcmHistoriesModule } from './modules/fcm-histories/fcm-histories.module';
 
 @Module({
   imports: [
@@ -64,6 +66,8 @@ import { EventsModule } from './events/events.module';
     MapboxModule,
     MailHistoriesModule,
     EventsModule,
+    FcmModule,
+    FcmHistoriesModule,
   ],
   controllers: [],
   providers: [],
