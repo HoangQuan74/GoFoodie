@@ -195,7 +195,7 @@ export class ProductCategoriesController {
   @Roles(OPERATIONS.PRODUCT_CATEGORY.DELETE)
   async remove(@Param('id') id: number, @Query('storeId') storeId: number) {
     return this.dataSource.transaction(async (manager) => {
-      const category = await manager.findOneBy(ProductCategoryEntity, { id, status: EProductCategoryStatus.Inactive });
+      const category = await manager.findOneBy(ProductCategoryEntity, { id });
       if (!category) throw new NotFoundException();
 
       const productCondition = storeId ? { storeId, productCategoryId: id } : { productCategoryId: id };
