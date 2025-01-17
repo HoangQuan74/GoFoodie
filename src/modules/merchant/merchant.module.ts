@@ -12,6 +12,7 @@ import { OptionGroupsModule } from './option-groups/option-groups.module';
 import { ProductCategoriesModule } from './product-categories/product-categories.module';
 import { BannersModule } from './banners/banners.module';
 import { StoreAddressesModule } from './store-addresses/store-addresses.module';
+import { OrdersModule } from './order/order.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { StoreAddressesModule } from './store-addresses/store-addresses.module';
       { path: 'merchant', module: ProductCategoriesModule },
       { path: 'merchant', module: BannersModule },
       { path: 'merchant', module: StoreAddressesModule },
+      { path: 'merchant', module: OrdersModule },
     ]),
     ProductsModule,
     StoresModule,
@@ -33,6 +35,7 @@ import { StoreAddressesModule } from './store-addresses/store-addresses.module';
     ProductCategoriesModule,
     BannersModule,
     StoreAddressesModule,
+    OrdersModule,
   ],
   providers: [MerchantsService],
   exports: [MerchantsService],
