@@ -60,7 +60,7 @@ export class ProductCategoriesController {
       if (!parentCategory) throw new NotFoundException();
       if (parentCategory.serviceGroupId !== store.serviceGroupId) throw new BadRequestException();
 
-      if (body.name && body.name === parentCategory.name) {
+      if (!body.name || body.name === parentCategory.name) {
         await this.productCategoriesService.createProductCategoryIfNotExist(parentId, storeId);
       } else {
         const exist = await this.productCategoriesService.findOne({ where: { name: body.name, storeId } });
@@ -68,6 +68,7 @@ export class ProductCategoriesController {
 
         body.serviceGroupId = store.serviceGroupId;
         body.storeId = storeId;
+        body.parentId = parentId;
 
         const productCategory = await this.productCategoriesService.save(body);
         const productCategoryCode = `${productCategory.id.toString().padStart(4, '0')}`;
