@@ -5,7 +5,7 @@ import { EXCEPTIONS, JWT_EXPIRATION } from 'src/common/constants';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshTokensService } from '../refresh-tokens/refresh-tokens.service';
 import { MailService } from 'src/modules/mail/mail.service';
-import { EAdminOtpType, EMerchantStatus, EStoreApprovalStatus, EStoreStatus } from 'src/common/enums';
+import { EAdminOtpType, EMerchantStatus, ERoleType, EStoreApprovalStatus, EStoreStatus } from 'src/common/enums';
 import { MerchantEntity } from 'src/database/entities/merchant.entity';
 import { FirebaseService } from 'src/modules/firebase/firebase.service';
 import { Request } from 'express';
@@ -50,7 +50,7 @@ export class AuthService {
     if (merchant.status !== EMerchantStatus.Active) throw new UnauthorizedException(EXCEPTIONS.ACCOUNT_NOT_ACTIVE);
 
     const stores = merchant.store ? [merchant.store, ...merchant.stores] : merchant.stores;
-    const payload: JwtPayload = { id: merchant.id, deviceToken };
+    const payload: JwtPayload = { id: merchant.id, deviceToken, type: ERoleType.Merchant };
     const accessToken = this.jwtService.sign(payload, { expiresIn: JWT_EXPIRATION });
     const { token: refreshToken } = await this.refreshTokensService.createRefreshToken(merchant.id, deviceToken);
 
@@ -89,7 +89,7 @@ export class AuthService {
       if (merchant.status !== EMerchantStatus.Active) throw new UnauthorizedException(EXCEPTIONS.ACCOUNT_NOT_ACTIVE);
 
       const stores = merchant.store ? [merchant.store, ...merchant.stores] : merchant.stores;
-      const payload: JwtPayload = { id: merchant.id, deviceToken };
+      const payload: JwtPayload = { id: merchant.id, deviceToken, type: ERoleType.Merchant };
       const accessToken = this.jwtService.sign(payload, { expiresIn: JWT_EXPIRATION });
       const { token: refreshToken } = await this.refreshTokensService.createRefreshToken(merchant.id, deviceToken);
 
@@ -120,7 +120,7 @@ export class AuthService {
     merchant.deviceToken = deviceToken;
     merchant = await this.merchantsService.save(merchant);
 
-    const payload: JwtPayload = { id: merchant.id, deviceToken };
+    const payload: JwtPayload = { id: merchant.id, deviceToken, type: ERoleType.Merchant };
     const accessToken = this.jwtService.sign(payload, { expiresIn: JWT_EXPIRATION });
     const { token: refreshToken } = await this.refreshTokensService.createRefreshToken(merchant.id, deviceToken);
 

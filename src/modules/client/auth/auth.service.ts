@@ -6,6 +6,7 @@ import { ClientEntity } from 'src/database/entities/client.entity';
 import { JwtPayload } from 'src/common/interfaces';
 import { JwtService } from '@nestjs/jwt';
 import { JWT_EXPIRATION } from 'src/common/constants';
+import { ERoleType } from 'src/common/enums';
 
 @Injectable()
 export class AuthService {
@@ -31,7 +32,7 @@ export class AuthService {
       client = await this.clientService.save(client);
     }
 
-    const payload: JwtPayload = { id: client.id, deviceToken: rest.deviceToken };
+    const payload: JwtPayload = { id: client.id, deviceToken: rest.deviceToken, type: ERoleType.Client };
     const accessToken = this.jwtService.sign(payload, { expiresIn: JWT_EXPIRATION });
     const refreshToken = '';
 

@@ -7,7 +7,7 @@ import { CartEntity } from 'src/database/entities/cart.entity';
 import { OrderItemEntity } from 'src/database/entities/order-item.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { EventGatewayService } from 'src/events/event.gateway.service';
-import { Connection, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
 
@@ -21,13 +21,13 @@ export class OrderService {
     @InjectRepository(CartEntity)
     private cartRepository: Repository<CartEntity>,
     private eventGatewayService: EventGatewayService,
-    private connection: Connection,
+    private dataSource: DataSource,
   ) {}
 
-  async create(createOrderDto: CreateOrderDto): Promise<OrderEntity> {
-    const { clientId, cartId, deliveryAddress, deliveryLatitude, deliveryLongitude, notes } = createOrderDto;
+  async create(createOrderDto: CreateOrderDto, clientId: number): Promise<OrderEntity> {
+    const { cartId, deliveryAddress, deliveryLatitude, deliveryLongitude, notes } = createOrderDto;
 
-    const queryRunner = this.connection.createQueryRunner();
+    const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 

@@ -3,8 +3,8 @@ import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { EXCEPTIONS } from 'src/common/constants';
 import { IS_PUBLIC_KEY } from 'src/common/decorators';
-import { JwtPayload } from 'src/common/interfaces';
 import { EMerchantStatus } from 'src/common/enums';
+import { JwtPayload } from 'src/common/interfaces';
 import { MerchantsService } from '../merchants.service';
 
 @Injectable()
