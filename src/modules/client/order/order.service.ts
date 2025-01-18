@@ -92,7 +92,7 @@ export class OrderService {
 
       await queryRunner.manager.save(OrderItemEntity, orderItems);
 
-      // // Soft delete the cart and its related entities
+      // Soft delete the cart and its related entities
       await queryRunner.manager.softDelete(CartEntity, { id: cartId });
 
       await queryRunner.manager.softDelete(CartProductEntity, { cartId });
