@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EOrderStatus } from 'src/common/enums/order.enum';
-import { CartProductOptionEntity } from 'src/database/entities/cart-product-option.entity';
 import { CartProductEntity } from 'src/database/entities/cart-product.entity';
 import { CartEntity } from 'src/database/entities/cart.entity';
 import { OrderItemEntity } from 'src/database/entities/order-item.entity';
@@ -65,6 +64,7 @@ export class OrderService {
         deliveryLatitude,
         deliveryLongitude,
         notes,
+        status: EOrderStatus.Pending,
       });
 
       const savedOrder = await queryRunner.manager.save(newOrder);
@@ -92,10 +92,10 @@ export class OrderService {
 
       await queryRunner.manager.save(OrderItemEntity, orderItems);
 
-      // Delete the cart and its related entities
-      await queryRunner.manager.delete(CartProductOptionEntity, { cartProduct: { cartId } });
-      await queryRunner.manager.delete(CartProductEntity, { cartId });
-      await queryRunner.manager.delete(CartEntity, { id: cartId });
+      // // Soft delete the cart and its related entities
+      await queryRunner.manager.softDelete(CartEntity, { id: cartId });
+
+      await queryRunner.manager.softDelete(CartProductEntity, { cartId });
 
       await queryRunner.commitTransaction();
 
