@@ -104,6 +104,7 @@ export class CartsController {
       .setParameter('optionGroupStatus', EOptionGroupStatus.Active)
       .where('cart.clientId = :clientId', { clientId: user.id })
       .andWhere('cart.storeId = :storeId', { storeId: +storeId })
+      .orderBy('cartProducts.id', 'ASC')
       .getOne();
 
     const { cartProducts = [] } = cart;

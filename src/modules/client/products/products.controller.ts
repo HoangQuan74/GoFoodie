@@ -20,6 +20,7 @@ export class ProductsController {
       .leftJoin('productOptionGroups.optionGroup', 'optionGroup')
       .leftJoin('productOptionGroups.options', 'options', 'options.status = :status')
       .setParameter('status', EOptionStatus.Active)
+      .orderBy('optionGroup.isMultiple', 'ASC')
       .where('product.id = :id', { id });
 
     const product = await queryBuilder.getOne();

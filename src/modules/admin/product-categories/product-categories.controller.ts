@@ -22,7 +22,7 @@ import { Brackets, DataSource, IsNull, Not } from 'typeorm';
 import { ProductCategoryEntity } from 'src/database/entities/product-category.entity';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { EXCEPTIONS } from 'src/common/constants';
-import { EProductCategoryStatus, EProductStatus } from 'src/common/enums';
+import { EProductStatus } from 'src/common/enums';
 import { AuthGuard } from '../auth/auth.guard';
 import { AdminRolesGuard } from 'src/common/guards';
 import { Roles } from 'src/common/decorators';
