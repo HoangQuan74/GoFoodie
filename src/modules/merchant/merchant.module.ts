@@ -13,6 +13,7 @@ import { ProductCategoriesModule } from './product-categories/product-categories
 import { BannersModule } from './banners/banners.module';
 import { StoreAddressesModule } from './store-addresses/store-addresses.module';
 import { OrdersModule } from './order/order.module';
+import { CancelOrderReasonsModule } from './cancel-order-reasons/cancel-order-reasons.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { OrdersModule } from './order/order.module';
       { path: 'merchant', module: BannersModule },
       { path: 'merchant', module: StoreAddressesModule },
       { path: 'merchant', module: OrdersModule },
+      { path: 'merchant', module: CancelOrderReasonsModule },
     ]),
     ProductsModule,
     StoresModule,
@@ -36,6 +38,7 @@ import { OrdersModule } from './order/order.module';
     BannersModule,
     StoreAddressesModule,
     OrdersModule,
+    CancelOrderReasonsModule,
   ],
   providers: [MerchantsService],
   exports: [MerchantsService],
