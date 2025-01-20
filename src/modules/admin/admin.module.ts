@@ -25,6 +25,7 @@ import { FeesModule } from './fees/fees.module';
 import { CancelOrderReasonsModule } from './cancel-order-reasons/cancel-order-reasons.module';
 import { OrderCriteriaModule } from './order-criteria/order-criteria.module';
 import { FlashSalesModule } from './flash-sales/flash-sales.module';
+import { ChallengesModule } from './challenges/challenges.module';
 
 @Module({
   imports: [
@@ -142,6 +143,7 @@ import { FlashSalesModule } from './flash-sales/flash-sales.module';
     CancelOrderReasonsModule,
     OrderCriteriaModule,
     FlashSalesModule,
+    ChallengesModule,
   ],
   providers: [
     {

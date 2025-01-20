@@ -9,6 +9,7 @@ import { UniformsModule } from './uniforms/uniforms.module';
 import { OnlineTrainingsModule } from './online-trainings/online-trainings.module';
 import { BannersModule } from './banners/banners.module';
 import { WorkingSessionsModule } from './working-sessions/working-sessions.module';
+import { CancelOrderReasonsModule } from './cancel-order-reasons/cancel-order-reasons.module';
 
 @Module({
   imports: [
@@ -20,10 +21,12 @@ import { WorkingSessionsModule } from './working-sessions/working-sessions.modul
       { path: 'driver', module: OnlineTrainingsModule },
       { path: 'driver', module: BannersModule },
       { path: 'driver', module: WorkingSessionsModule },
+      { path: 'driver', module: CancelOrderReasonsModule },
     ]),
     OnlineTrainingsModule,
     BannersModule,
     WorkingSessionsModule,
+    CancelOrderReasonsModule,
   ],
   controllers: [DriversController],
   providers: [DriversService],

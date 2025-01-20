@@ -23,6 +23,7 @@ import { UpdateBannerDto } from './dto/update-banner.dto';
 import { JwtPayload } from 'src/common/interfaces';
 import { CurrentUser } from 'src/common/decorators';
 import { EBannerStatus } from 'src/common/enums';
+import { EAppType } from 'src/common/enums/config.enum';
 
 @Controller('banners')
 @ApiTags('Banners')
@@ -49,7 +50,7 @@ export class BannersController {
   }
 
   @Get('positions')
-  async getPositions(@Query('appType') appType: string, @Query('type') type: string) {
+  async getPositions(@Query('appType') appType: EAppType, @Query('type') type: string) {
     return this.bannersService.getPositions(appType, type);
   }
 

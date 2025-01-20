@@ -1,11 +1,12 @@
 import { Column, Entity, JoinTable, ManyToMany, PrimaryColumn } from 'typeorm';
 import { BannerPositionEntity } from './banner-position.entity';
 import { FeeTypeEntity } from './fee-type.entity';
+import { EAppType } from 'src/common/enums/config.enum';
 
 @Entity('app_types')
 export class AppTypeEntity {
   @PrimaryColumn()
-  value: string;
+  value: EAppType;
 
   @Column()
   label: string;

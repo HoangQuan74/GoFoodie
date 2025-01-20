@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { BannerTypeEntity } from 'src/database/entities/banner-type.entity';
 import { BannerPositionEntity } from 'src/database/entities/banner-position.entity';
 import { BannerChangeTypeEntity } from 'src/database/entities/banner-change-type.entity';
+import { EAppType } from 'src/common/enums/config.enum';
 
 @Injectable()
 export class BannersService {
@@ -46,7 +47,7 @@ export class BannersService {
     return this.bannerTypeRepository.find();
   }
 
-  async getPositions(appType: string, type: string) {
+  async getPositions(appType: EAppType, type: string) {
     return this.bannerPositionRepository.find({
       where: { appTypes: { value: appType }, bannerTypes: { value: type } },
     });
