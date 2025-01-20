@@ -5,10 +5,12 @@ import { CartProductEntity } from 'src/database/entities/cart-product.entity';
 import { CartEntity } from 'src/database/entities/cart.entity';
 import { OrderItemEntity } from 'src/database/entities/order-item.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
+import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
 import { EventGatewayService } from 'src/events/event.gateway.service';
 import { DataSource, Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
+import { UpdateOrderDto } from './dto/update-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -19,6 +21,8 @@ export class OrderService {
     private orderItemRepository: Repository<OrderItemEntity>,
     @InjectRepository(CartEntity)
     private cartRepository: Repository<CartEntity>,
+    @InjectRepository(OrderActivityEntity)
+    private orderActivityRepository: Repository<OrderActivityEntity>,
     private eventGatewayService: EventGatewayService,
     private dataSource: DataSource,
   ) {}
@@ -92,9 +96,17 @@ export class OrderService {
 
       await queryRunner.manager.save(OrderItemEntity, orderItems);
 
+      // Create initial order activity
+      const orderActivity = this.orderActivityRepository.create({
+        orderId: savedOrder.id,
+        status: EOrderStatus.Pending,
+        description: 'Order created',
+        performedBy: `client:${clientId}`,
+      });
+      await queryRunner.manager.save(OrderActivityEntity, orderActivity);
+
       // Soft delete the cart and its related entities
       await queryRunner.manager.softDelete(CartEntity, { id: cartId });
-
       await queryRunner.manager.softDelete(CartProductEntity, { cartId });
 
       await queryRunner.commitTransaction();
@@ -114,6 +126,7 @@ export class OrderService {
     const query = this.orderRepository
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.orderItems', 'orderItems')
+      .leftJoinAndSelect('order.activities', 'activities')
       .where('order.clientId = :clientId', { clientId });
 
     if (queryOrderDto.status) {
@@ -154,7 +167,7 @@ export class OrderService {
   async findOne(clientId: number, orderId: number): Promise<OrderEntity> {
     const order = await this.orderRepository.findOne({
       where: { id: orderId, clientId },
-      relations: ['orderItems'],
+      relations: ['orderItems', 'activities'],
     });
 
     if (!order) {
@@ -164,14 +177,39 @@ export class OrderService {
     return order;
   }
 
-  async cancelOrder(clientId: number, orderId: number): Promise<OrderEntity> {
+  async cancelOrder(clientId: number, orderId: number, updateOrderDto: UpdateOrderDto): Promise<OrderEntity> {
     const order = await this.findOne(clientId, orderId);
 
     if (order.status !== EOrderStatus.Pending) {
       throw new BadRequestException('Only pending orders can be cancelled');
     }
 
-    order.status = EOrderStatus.Cancelled;
-    return this.orderRepository.save(order);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      order.status = EOrderStatus.Cancelled;
+      await queryRunner.manager.save(order);
+
+      const orderActivity = this.orderActivityRepository.create({
+        orderId: order.id,
+        status: EOrderStatus.Cancelled,
+        description: 'Order cancelled by client',
+        performedBy: `client:${clientId}`,
+        cancellationReason: updateOrderDto.reasons || '',
+        cancellationType: 'client',
+      });
+      await queryRunner.manager.save(OrderActivityEntity, orderActivity);
+
+      await queryRunner.commitTransaction();
+
+      return this.findOne(clientId, orderId);
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException('Failed to cancel order: ' + error.message);
+    } finally {
+      await queryRunner.release();
+    }
   }
 }

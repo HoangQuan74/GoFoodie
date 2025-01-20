@@ -5,6 +5,7 @@ import { ClientEntity } from './client.entity';
 import { DriverEntity } from './driver.entity';
 import { OrderItemEntity } from './order-item.entity';
 import { StoreEntity } from './store.entity';
+import { OrderActivityEntity } from './order-activities.entity';
 
 @Entity('orders')
 export class OrderEntity extends BaseEntity {
@@ -17,7 +18,7 @@ export class OrderEntity extends BaseEntity {
   @Column({ name: 'driver_id', nullable: true })
   driverId: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: 'decimal', precision: 10, scale: 2, name: 'total_amount', nullable: true })
   totalAmount: number;
 
   @Column({
@@ -31,20 +32,22 @@ export class OrderEntity extends BaseEntity {
     type: 'enum',
     enum: EPaymentStatus,
     default: EPaymentStatus.Unpaid,
+    name: 'payment_status',
   })
   paymentStatus: EPaymentStatus;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, name: 'delivery_address' })
   deliveryAddress: string;
 
-  @Column({ type: 'float', nullable: true })
+  @Column({ type: 'float', nullable: true, name: 'delivery_latitude' })
   deliveryLatitude: number;
 
-  @Column({ type: 'float', nullable: true })
+  @Column({ type: 'float', nullable: true, name: 'delivery_longitude' })
   deliveryLongitude: number;
 
   @Column({ nullable: true })
   notes: string;
+
   @ManyToOne(() => ClientEntity)
   @JoinColumn({ name: 'client_id' })
   client: ClientEntity;
@@ -59,4 +62,7 @@ export class OrderEntity extends BaseEntity {
 
   @OneToMany(() => OrderItemEntity, (orderItem) => orderItem.order)
   orderItems: OrderItemEntity[];
+
+  @OneToMany(() => OrderActivityEntity, (activity) => activity.order)
+  activities: OrderActivityEntity[];
 }

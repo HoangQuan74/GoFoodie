@@ -1,10 +1,11 @@
-import { Controller, Get, Param, Patch, Query, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Patch, Query, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { AuthGuard } from '../auth/auth.guard';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { OrderService } from './order.service';
+import { UpdateOrderDto } from './dto/update-order.dto';
 
 @ApiTags('Orders')
 @Controller('orders')
@@ -20,19 +21,21 @@ export class OrderController {
     return this.orderService.queryOrders(merchantId, queryOrderDto);
   }
 
-  @Patch(':merchantId/orders/:orderId/confirm')
+  @Patch(':id/confirm')
   @ApiOperation({ summary: 'Confirm an order' })
   @ApiResponse({ status: 200, description: 'Order confirmed successfully' })
-  confirmOrder(@Param('orderId') orderId: string, @CurrentUser() user: JwtPayload) {
+  @ApiParam({ name: 'id', type: String, description: 'Order ID' })
+  confirmOrder(@Param('id') orderId: string, @CurrentUser() user: JwtPayload) {
     const { id: merchantId } = user;
     return this.orderService.confirmOrder(merchantId, +orderId);
   }
 
-  @Patch(':merchantId/orders/:orderId/cancel')
+  @Patch(':id/cancel')
   @ApiOperation({ summary: 'Cancel an order' })
+  @ApiParam({ name: 'id', type: String, description: 'Order ID' })
   @ApiResponse({ status: 200, description: 'Order cancelled successfully' })
-  cancelOrder(@Param('orderId') orderId: string, @CurrentUser() user: JwtPayload) {
+  cancelOrder(@Param('id') orderId: string, @CurrentUser() user: JwtPayload, @Body() updateOrderDto: UpdateOrderDto) {
     const { id: merchantId } = user;
-    return this.orderService.cancelOrder(merchantId, +orderId);
+    return this.orderService.cancelOrder(merchantId, +orderId, updateOrderDto);
   }
 }

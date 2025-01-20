@@ -2,10 +2,11 @@ import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@ne
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
-import { QueryOrderDto } from 'src/modules/merchant/order/dto/query-order.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderService } from './order.service';
+import { UpdateOrderDto } from './dto/update-order.dto';
+import { QueryOrderDto } from './dto/query-order.dto';
 
 @Controller('orders')
 @ApiTags('Orders')
@@ -42,8 +43,8 @@ export class OrderController {
   @ApiOperation({ summary: 'Cancel an order' })
   @ApiResponse({ status: 200, description: 'Order cancelled successfully' })
   @ApiParam({ name: 'id', type: String, description: 'Order ID' })
-  cancelOrder(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+  cancelOrder(@Param('id') id: string, @CurrentUser() user: JwtPayload, @Body() updateOrderDto: UpdateOrderDto) {
     const { id: clientId } = user;
-    return this.orderService.cancelOrder(clientId, +id);
+    return this.orderService.cancelOrder(clientId, +id, updateOrderDto);
   }
 }
