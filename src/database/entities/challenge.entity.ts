@@ -1,9 +1,10 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-import { ChallengeType } from './challenge-type.entity';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { ChallengeTypeEntity } from './challenge-type.entity';
 import { ServiceTypeEntity } from './service-type.entity';
 import { BannerPositionEntity } from './banner-position.entity';
 import { BaseEntity } from './base.entity';
 import { FileEntity } from './file.entity';
+import { ChallengeCriteriaEntity } from './challenge-criteria.entity';
 
 @Entity('challenges')
 export class ChallengeEntity extends BaseEntity {
@@ -46,9 +47,9 @@ export class ChallengeEntity extends BaseEntity {
   @Column({ name: 'service_type_id' })
   serviceTypeId: number;
 
-  @ManyToOne(() => ChallengeType, (type) => type.id)
+  @ManyToOne(() => ChallengeTypeEntity, (type) => type.id)
   @JoinColumn({ name: 'type_id' })
-  type: ChallengeType;
+  type: ChallengeTypeEntity;
 
   @ManyToOne(() => ServiceTypeEntity, (type) => type.id)
   @JoinColumn({ name: 'service_type_id' })
@@ -61,4 +62,7 @@ export class ChallengeEntity extends BaseEntity {
   @ManyToOne(() => FileEntity, (file) => file.id)
   @JoinColumn({ name: 'imageId' })
   image: FileEntity;
+
+  @OneToMany(() => ChallengeCriteriaEntity, (criteria) => criteria.challenge)
+  criteria: ChallengeCriteriaEntity[];
 }
