@@ -10,6 +10,7 @@ import { OrderEntity } from 'src/database/entities/order.entity';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { ClientModule } from '../client.module';
 import { EventsModule } from 'src/events/events.module';
+import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { EventsModule } from 'src/events/events.module';
       CartProductEntity,
       CartProductOptionEntity,
       StoreEntity,
+      OrderActivityEntity,
     ]),
     forwardRef(() => ClientModule),
     EventsModule,

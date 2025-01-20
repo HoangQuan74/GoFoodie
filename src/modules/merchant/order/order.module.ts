@@ -6,9 +6,14 @@ import { OrderEntity } from 'src/database/entities/order.entity';
 import { MerchantModule } from '../merchant.module';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { EventsModule } from 'src/events/events.module';
+import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([OrderEntity, StoreEntity]), forwardRef(() => MerchantModule), EventsModule],
+  imports: [
+    TypeOrmModule.forFeature([OrderEntity, StoreEntity, OrderActivityEntity]),
+    forwardRef(() => MerchantModule),
+    EventsModule,
+  ],
   controllers: [OrderController],
   providers: [OrderService],
   exports: [OrderService],
