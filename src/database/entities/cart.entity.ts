@@ -5,7 +5,7 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm
 import { CartProductEntity } from './cart-product.entity';
 
 @Entity('carts')
-@Index(['clientId', 'storeId'], { unique: true })
+@Index(['clientId', 'storeId'])
 export class CartEntity extends BaseEntity {
   @Column({ name: 'client_id' })
   clientId: number;
