@@ -1,6 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsInt, IsNumber, IsString, IsUUID } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsDate,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  ValidateNested,
+} from 'class-validator';
+import { CreateCriteriaDto } from '../../banners/dto/create-banner.dto';
 
 export class CreateChallengeDto {
   @ApiProperty()
@@ -53,8 +64,12 @@ export class CreateChallengeDto {
   @IsInt()
   serviceTypeId: number;
 
-  @ApiProperty()
-  criteria: { type: string; value: string }[];
+  @ApiProperty({ type: [CreateCriteriaDto] })
+  @ValidateNested({ each: true })
+  @IsArray()
+  @IsOptional()
+  @Type(() => CreateCriteriaDto)
+  criteria: CreateCriteriaDto[];
 
   @ApiProperty()
   @IsUUID()

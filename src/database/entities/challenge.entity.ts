@@ -11,7 +11,7 @@ export class ChallengeEntity extends BaseEntity {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ name: 'image_id' })
   imageId: string;
 
   @Column()
@@ -60,7 +60,7 @@ export class ChallengeEntity extends BaseEntity {
   position: BannerPositionEntity;
 
   @ManyToOne(() => FileEntity, (file) => file.id)
-  @JoinColumn({ name: 'imageId' })
+  @JoinColumn({ name: 'image_id' })
   image: FileEntity;
 
   @OneToMany(() => ChallengeCriteriaEntity, (criteria) => criteria.challenge)
