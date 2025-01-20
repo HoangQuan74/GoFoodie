@@ -9,6 +9,7 @@ import { EventGatewayService } from 'src/events/event.gateway.service';
 import { DataSource, Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
+import { UpdateOrderDto } from './dto/update-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -164,7 +165,7 @@ export class OrderService {
     return order;
   }
 
-  async cancelOrder(clientId: number, orderId: number): Promise<OrderEntity> {
+  async cancelOrder(clientId: number, orderId: number, updateOrderDto: UpdateOrderDto): Promise<OrderEntity> {
     const order = await this.findOne(clientId, orderId);
 
     if (order.status !== EOrderStatus.Pending) {
@@ -172,6 +173,8 @@ export class OrderService {
     }
 
     order.status = EOrderStatus.Cancelled;
+    order.clientCancellationReason = updateOrderDto.reasons || '';
+
     return this.orderRepository.save(order);
   }
 }

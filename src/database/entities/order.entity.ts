@@ -17,7 +17,7 @@ export class OrderEntity extends BaseEntity {
   @Column({ name: 'driver_id', nullable: true })
   driverId: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: 'decimal', precision: 10, scale: 2, name: 'total_amount', nullable: true })
   totalAmount: number;
 
   @Column({
@@ -31,16 +31,26 @@ export class OrderEntity extends BaseEntity {
     type: 'enum',
     enum: EPaymentStatus,
     default: EPaymentStatus.Unpaid,
+    name: 'payment_status',
   })
   paymentStatus: EPaymentStatus;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, name: 'client_cancellation_reason' })
+  clientCancellationReason: string;
+
+  @Column({ nullable: true, name: 'merchant_cancellation_reason' })
+  merchantCancellationReason: string;
+
+  @Column({ nullable: true, name: 'driver_cancellation_reason' })
+  driverCancellationReason: string;
+
+  @Column({ nullable: true, name: 'delivery_address' })
   deliveryAddress: string;
 
-  @Column({ type: 'float', nullable: true })
+  @Column({ type: 'float', nullable: true, name: 'delivery_latitude' })
   deliveryLatitude: number;
 
-  @Column({ type: 'float', nullable: true })
+  @Column({ type: 'float', nullable: true, name: 'delivery_longitude' })
   deliveryLongitude: number;
 
   @Column({ nullable: true })

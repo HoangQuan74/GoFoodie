@@ -5,6 +5,7 @@ import { OrderEntity } from 'src/database/entities/order.entity';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { Repository } from 'typeorm';
 import { QueryOrderDto } from './dto/query-order.dto';
+import { UpdateOrderDto } from './dto/update-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -43,18 +44,6 @@ export class OrderService {
         startDate: queryOrderDto.startDate,
         endDate: queryOrderDto.endDate,
       });
-    }
-
-    if (queryOrderDto.minTotalAmount) {
-      query.andWhere('order.totalAmount >= :minTotalAmount', { minTotalAmount: queryOrderDto.minTotalAmount });
-    }
-
-    if (queryOrderDto.maxTotalAmount) {
-      query.andWhere('order.totalAmount <= :maxTotalAmount', { maxTotalAmount: queryOrderDto.maxTotalAmount });
-    }
-
-    if (queryOrderDto.driverId) {
-      query.andWhere('order.driverId = :driverId', { driverId: queryOrderDto.driverId });
     }
 
     query
@@ -96,7 +85,7 @@ export class OrderService {
     return this.orderRepository.save(order);
   }
 
-  async cancelOrder(merchantId: number, orderId: number) {
+  async cancelOrder(merchantId: number, orderId: number, updateOrderDto: UpdateOrderDto) {
     const order = await this.orderRepository.findOne({
       where: {
         id: orderId,
@@ -116,6 +105,8 @@ export class OrderService {
     }
 
     order.status = EOrderStatus.Cancelled;
+    order.merchantCancellationReason = updateOrderDto.reasons || '';
+
     return this.orderRepository.save(order);
   }
 
