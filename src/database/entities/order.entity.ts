@@ -5,6 +5,7 @@ import { ClientEntity } from './client.entity';
 import { DriverEntity } from './driver.entity';
 import { OrderItemEntity } from './order-item.entity';
 import { StoreEntity } from './store.entity';
+import { OrderActivityEntity } from './order-activities.entity';
 
 @Entity('orders')
 export class OrderEntity extends BaseEntity {
@@ -35,15 +36,6 @@ export class OrderEntity extends BaseEntity {
   })
   paymentStatus: EPaymentStatus;
 
-  @Column({ nullable: true, name: 'client_cancellation_reason' })
-  clientCancellationReason: string;
-
-  @Column({ nullable: true, name: 'merchant_cancellation_reason' })
-  merchantCancellationReason: string;
-
-  @Column({ nullable: true, name: 'driver_cancellation_reason' })
-  driverCancellationReason: string;
-
   @Column({ nullable: true, name: 'delivery_address' })
   deliveryAddress: string;
 
@@ -55,6 +47,7 @@ export class OrderEntity extends BaseEntity {
 
   @Column({ nullable: true })
   notes: string;
+
   @ManyToOne(() => ClientEntity)
   @JoinColumn({ name: 'client_id' })
   client: ClientEntity;
@@ -69,4 +62,7 @@ export class OrderEntity extends BaseEntity {
 
   @OneToMany(() => OrderItemEntity, (orderItem) => orderItem.order)
   orderItems: OrderItemEntity[];
+
+  @OneToMany(() => OrderActivityEntity, (activity) => activity.order)
+  activities: OrderActivityEntity[];
 }

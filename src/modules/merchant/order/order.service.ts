@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EOrderStatus } from 'src/common/enums/order.enum';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { StoreEntity } from 'src/database/entities/store.entity';
-import { Repository } from 'typeorm';
+import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
+import { DataSource, Repository } from 'typeorm';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 
@@ -14,6 +15,9 @@ export class OrderService {
     private orderRepository: Repository<OrderEntity>,
     @InjectRepository(StoreEntity)
     private storeRepository: Repository<StoreEntity>,
+    @InjectRepository(OrderActivityEntity)
+    private orderActivityRepository: Repository<OrderActivityEntity>,
+    private dataSource: DataSource,
   ) {}
 
   async queryOrders(merchantId: number, queryOrderDto: QueryOrderDto) {
@@ -23,6 +27,7 @@ export class OrderService {
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.client', 'client')
       .leftJoinAndSelect('order.orderItems', 'orderItems')
+      .leftJoinAndSelect('order.activities', 'activities')
       .where('order.storeId = :storeId', { storeId: store.id });
 
     if (queryOrderDto.status) {
@@ -63,51 +68,97 @@ export class OrderService {
   }
 
   async confirmOrder(merchantId: number, orderId: number) {
-    const order = await this.orderRepository.findOne({
-      where: {
-        id: orderId,
-        store: {
-          merchantId: merchantId,
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const order = await this.orderRepository.findOne({
+        where: {
+          id: orderId,
+          store: {
+            merchantId: merchantId,
+          },
         },
-      },
-      relations: ['store'],
-    });
+        relations: ['store'],
+      });
 
-    if (!order) {
-      throw new NotFoundException(`Order with ID ${orderId} not found or does not belong to this merchant`);
+      if (!order) {
+        throw new NotFoundException(`Order with ID ${orderId} not found or does not belong to this merchant`);
+      }
+
+      if (order.status !== EOrderStatus.Pending) {
+        throw new BadRequestException('Only pending orders can be confirmed');
+      }
+
+      order.status = EOrderStatus.Confirmed;
+      await queryRunner.manager.save(order);
+
+      const orderActivity = this.orderActivityRepository.create({
+        orderId: order.id,
+        status: EOrderStatus.Confirmed,
+        description: 'Order confirmed by merchant',
+        performedBy: `merchant:${merchantId}`,
+      });
+      await queryRunner.manager.save(orderActivity);
+
+      await queryRunner.commitTransaction();
+
+      return order;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException('Failed to confirm order: ' + error.message);
+    } finally {
+      await queryRunner.release();
     }
-
-    if (order.status !== EOrderStatus.Pending) {
-      throw new BadRequestException('Only pending orders can be confirmed');
-    }
-
-    order.status = EOrderStatus.Confirmed;
-    return this.orderRepository.save(order);
   }
 
   async cancelOrder(merchantId: number, orderId: number, updateOrderDto: UpdateOrderDto) {
-    const order = await this.orderRepository.findOne({
-      where: {
-        id: orderId,
-        store: {
-          merchantId: merchantId,
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const order = await this.orderRepository.findOne({
+        where: {
+          id: orderId,
+          store: {
+            merchantId: merchantId,
+          },
         },
-      },
-      relations: ['store'],
-    });
+        relations: ['store'],
+      });
 
-    if (!order) {
-      throw new NotFoundException(`Order with ID ${orderId} not found or does not belong to this merchant`);
+      if (!order) {
+        throw new NotFoundException(`Order with ID ${orderId} not found or does not belong to this merchant`);
+      }
+
+      if (order.status !== EOrderStatus.Pending) {
+        throw new BadRequestException('Only pending orders can be cancelled');
+      }
+
+      order.status = EOrderStatus.Cancelled;
+      await queryRunner.manager.save(order);
+
+      const orderActivity = this.orderActivityRepository.create({
+        orderId: order.id,
+        status: EOrderStatus.Cancelled,
+        description: 'Order cancelled by merchant',
+        performedBy: `merchant:${merchantId}`,
+        cancellationReason: updateOrderDto.reasons || '',
+        cancellationType: 'merchant',
+      });
+      await queryRunner.manager.save(orderActivity);
+
+      await queryRunner.commitTransaction();
+
+      return order;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException('Failed to cancel order: ' + error.message);
+    } finally {
+      await queryRunner.release();
     }
-
-    if (order.status !== EOrderStatus.Pending) {
-      throw new BadRequestException('Only pending orders can be cancelled');
-    }
-
-    order.status = EOrderStatus.Cancelled;
-    order.merchantCancellationReason = updateOrderDto.reasons || '';
-
-    return this.orderRepository.save(order);
   }
 
   private async getStoreByMerchantId(merchantId: number): Promise<StoreEntity> {
