@@ -51,9 +51,13 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  notifyNewOrder(merchantId: number, order: OrderEntity) {
-    const user = this.connectedUsers.get(merchantId);
+  notifyNewOrder(userId: number, order: OrderEntity) {
+    const user = this.connectedUsers.get(userId);
     if (user && user.type === 'merchant') {
+      user.socket.emit('newOrder', { orderId: order.id, totalAmount: order.totalAmount });
+    }
+
+    if (user && user.type === 'driver') {
       user.socket.emit('newOrder', { orderId: order.id, totalAmount: order.totalAmount });
     }
   }

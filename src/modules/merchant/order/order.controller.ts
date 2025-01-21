@@ -21,6 +21,15 @@ export class OrderController {
     return this.orderService.queryOrders(merchantId, queryOrderDto);
   }
 
+  @Get(':id')
+  @ApiOperation({ summary: 'Get details of a specific order' })
+  @ApiResponse({ status: 200, description: 'Returns the details of the specified order' })
+  @ApiParam({ name: 'id', type: String, description: 'Order ID' })
+  getOrderDetails(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    const { id: merchantId } = user;
+    return this.orderService.findOne(merchantId, +id);
+  }
+
   @Patch(':id/confirm')
   @ApiOperation({ summary: 'Confirm an order' })
   @ApiResponse({ status: 200, description: 'Order confirmed successfully' })
