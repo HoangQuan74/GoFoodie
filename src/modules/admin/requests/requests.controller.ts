@@ -6,7 +6,7 @@ import { JwtPayload } from 'src/common/interfaces';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../auth/auth.guard';
 import { ERequestStatus } from 'src/common/enums';
-import { QueryRequestDto } from './dto/query-request.dto';
+import { QueryRequestDto, QueryRequestMerchantDto } from './dto/query-request.dto';
 import { Brackets, In } from 'typeorm';
 
 @Controller('requests')
@@ -227,25 +227,30 @@ export class RequestsController {
 
   @Get('merchants')
   @ApiOperation({ summary: 'Danh sách yêu cầu cửa hàng' })
-  async getStores(@Query() query: QueryRequestDto) {
-    const { page, limit, status, type, createdAtFrom, createdAtTo, search } = query;
+  async getStores(@Query() query: QueryRequestMerchantDto) {
+    const { page, limit, status, typeId, search } = query;
+    const { createdAtFrom, createdAtTo, approvedAtFrom, approvedAtTo } = query;
 
     const queryBuilder = this.requestsService
       .createMerchantRequestQueryBuilder('request')
-      // .select(['request.id as id', 'request.code as code', 'request.status as status', 'request.type as type'])
-      // .addSelect(['request.createdAt as "createdAt"', 'request.name as "name"', 'request.description as "description"'])
-      // .addSelect(['store.storeCode as "storeCode"', 'store.name as "storeName"'])
-      // .addSelect(['processedBy.name as "processedByName"', 'request.processedAt as "processedAt"'])
-      // .innerJoin('request.store', 'store')
-      // .leftJoin('request.processedBy', 'processedBy')
+      .addSelect(['type.id', 'type.name'])
+      .addSelect(['merchant.id', 'merchant.name'])
+      .addSelect(['store.storeCode', 'store.name'])
+      .addSelect(['approvedBy.id', 'approvedBy.name'])
+      .innerJoin('request.type', 'type')
+      .innerJoin('request.merchant', 'merchant')
+      .innerJoin('request.store', 'store')
+      .leftJoin('request.approvedBy', 'approvedBy')
       .orderBy('request.id', 'DESC')
       .limit(limit)
       .offset((page - 1) * limit);
 
     status && queryBuilder.andWhere('request.status = :status', { status });
-    type && queryBuilder.andWhere('request.type = :type', { type });
+    typeId && queryBuilder.andWhere('request.typeId = :typeId', { typeId });
     createdAtFrom && queryBuilder.andWhere('request.createdAt >= :createdAtFrom', { createdAtFrom });
     createdAtTo && queryBuilder.andWhere('request.createdAt <= :createdAtTo', { createdAtTo });
+    approvedAtFrom && queryBuilder.andWhere('request.approvedAt >= :approvedAtFrom', { approvedAtFrom });
+    approvedAtTo && queryBuilder.andWhere('request.approvedAt <= :approvedAtTo', { approvedAtTo });
 
     if (search) {
       queryBuilder.andWhere(
@@ -257,10 +262,63 @@ export class RequestsController {
       );
     }
 
-    const itemsPromise = queryBuilder.getRawMany();
-    const totalPromise = queryBuilder.getCount();
-    const [items, total] = await Promise.all([itemsPromise, totalPromise]);
-
+    const [items, total] = await queryBuilder.getManyAndCount();
     return { items, total };
+  }
+
+  @Get('merchants/:id')
+  @ApiOperation({ summary: 'Chi tiết yêu cầu cửa hàng' })
+  async getDetailStoreRequest(@Param('id') id: number) {
+    const request = await this.requestsService
+      .createMerchantRequestQueryBuilder('request')
+      .addSelect(['merchant.id', 'merchant.name'])
+      .addSelect(['store.storeCode', 'store.name'])
+      .addSelect(['approvedBy.id', 'approvedBy.name'])
+      .innerJoinAndSelect('request.type', 'type')
+      .innerJoin('request.merchant', 'merchant')
+      .innerJoin('request.store', 'store')
+      .leftJoin('request.approvedBy', 'approvedBy')
+      .where('request.id = :id', { id })
+      .getOne();
+    if (!request) throw new NotFoundException();
+
+    return request;
+  }
+
+  @Patch('merchants/approval')
+  @ApiOperation({ summary: 'Duyệt yêu cầu cửa hàng' })
+  async storeApproval(@Body() { ids }: IdentityQuery, @CurrentUser() user: JwtPayload) {
+    const requests = await this.requestsService
+      .createMerchantRequestQueryBuilder('request')
+      .select(['request.id'])
+      .where('request.id IN (:...ids)', { ids })
+      .andWhere('request.status = :status', { status: ERequestStatus.Pending })
+      .getMany();
+    if (requests.length !== ids.length) throw new NotFoundException();
+
+    await this.requestsService
+      .createMerchantRequestQueryBuilder('request')
+      .update()
+      .set({ approvedById: user.id, status: ERequestStatus.Approved, approvedAt: new Date() })
+      .where('request.id IN (:...ids)', { ids })
+      .execute();
+  }
+
+  @Patch('merchants/:id/reject')
+  @ApiOperation({ summary: 'Từ chối yêu cầu cửa hàng' })
+  @ApiBody({ schema: { type: 'object', properties: { reason: { type: 'string' } } } })
+  async storeReject(@Body() { reason }: { reason: string }, @CurrentUser() user: JwtPayload, @Param('id') id: number) {
+    const request = await this.requestsService
+      .createMerchantRequestQueryBuilder('request')
+      .where('request.id = :id', { id })
+      .getOne();
+    if (!request) throw new NotFoundException();
+
+    await this.requestsService
+      .createMerchantRequestQueryBuilder('request')
+      .update()
+      .set({ approvedById: user.id, status: ERequestStatus.Rejected, approvedAt: new Date(), reason })
+      .where('request.id = :id', { id })
+      .execute();
   }
 }

@@ -29,6 +29,12 @@ export class MerchantRequestEntity extends BaseEntity {
   @Column({ name: 'approved_by_id', nullable: true })
   approvedById: number;
 
+  @Column({ name: 'approved_at', nullable: true })
+  approvedAt: Date;
+
+  @Column({ nullable: true })
+  reason: string;
+
   @ManyToOne(() => MerchantEntity, (merchant) => merchant.id)
   @JoinColumn({ name: 'merchant_id' })
   merchant: MerchantEntity;
