@@ -224,4 +224,43 @@ export class RequestsController {
     const data = { processedById: user.id, status: ERequestStatus.Rejected, processedAt: new Date() };
     await this.requestsService.updateDriverRequest({ id: In(ids) }, data);
   }
+
+  @Get('merchants')
+  @ApiOperation({ summary: 'Danh sách yêu cầu cửa hàng' })
+  async getStores(@Query() query: QueryRequestDto) {
+    const { page, limit, status, type, createdAtFrom, createdAtTo, search } = query;
+
+    const queryBuilder = this.requestsService
+      .createMerchantRequestQueryBuilder('request')
+      // .select(['request.id as id', 'request.code as code', 'request.status as status', 'request.type as type'])
+      // .addSelect(['request.createdAt as "createdAt"', 'request.name as "name"', 'request.description as "description"'])
+      // .addSelect(['store.storeCode as "storeCode"', 'store.name as "storeName"'])
+      // .addSelect(['processedBy.name as "processedByName"', 'request.processedAt as "processedAt"'])
+      // .innerJoin('request.store', 'store')
+      // .leftJoin('request.processedBy', 'processedBy')
+      .orderBy('request.id', 'DESC')
+      .limit(limit)
+      .offset((page - 1) * limit);
+
+    status && queryBuilder.andWhere('request.status = :status', { status });
+    type && queryBuilder.andWhere('request.type = :type', { type });
+    createdAtFrom && queryBuilder.andWhere('request.createdAt >= :createdAtFrom', { createdAtFrom });
+    createdAtTo && queryBuilder.andWhere('request.createdAt <= :createdAtTo', { createdAtTo });
+
+    if (search) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.where('request.code ILIKE :search', { search: `%${search}%` })
+            .orWhere('store.storeCode ILIKE :search', { search: `%${search}%` })
+            .orWhere('store.name ILIKE :search', { search: `%${search}%` });
+        }),
+      );
+    }
+
+    const itemsPromise = queryBuilder.getRawMany();
+    const totalPromise = queryBuilder.getCount();
+    const [items, total] = await Promise.all([itemsPromise, totalPromise]);
+
+    return { items, total };
+  }
 }

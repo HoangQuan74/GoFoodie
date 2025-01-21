@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DriverRequestEntity } from 'src/database/entities/driver-request.entity';
 import { ProductsService } from '../products/products.service';
 import { EProductApprovalStatus, ERequestStatus, ERequestType } from 'src/common/enums';
+import { MerchantRequestEntity } from 'src/database/entities/merchant-request.entity';
 
 @Injectable()
 export class RequestsService {
@@ -14,6 +15,9 @@ export class RequestsService {
 
     @InjectRepository(DriverRequestEntity)
     private readonly driverRequestRepository: Repository<DriverRequestEntity>,
+
+    @InjectRepository(MerchantRequestEntity)
+    private readonly merchantRequestRepository: Repository<MerchantRequestEntity>,
 
     private readonly productsService: ProductsService,
   ) {}
@@ -83,5 +87,9 @@ export class RequestsService {
     partialEntity: Partial<DriverRequestEntity>,
   ) {
     return this.driverRequestRepository.update(criteria, partialEntity);
+  }
+
+  createMerchantRequestQueryBuilder(alias?: string) {
+    return this.merchantRequestRepository.createQueryBuilder(alias);
   }
 }
