@@ -21,6 +21,7 @@ import { PaginationQuery } from 'src/common/query';
 import { AuthGuard } from '../auth/auth.guard';
 import { QueryChallengeDto } from './dto/query-challenge.dto';
 import { EChallengeStatus } from 'src/common/enums/challenge.enum';
+import { EXCEPTIONS } from 'src/common/constants';
 
 @Controller('challenges')
 @ApiTags('Challenges')
@@ -42,7 +43,7 @@ export class ChallengesController {
       const { code } = body;
 
       const isCodeExist = await manager.exists(ChallengeEntity, { where: { code } });
-      if (isCodeExist) throw new BadRequestException('Code already exist');
+      if (isCodeExist) throw new BadRequestException(EXCEPTIONS.CODE_EXISTED);
 
       const challenge = new ChallengeEntity();
       Object.assign(challenge, body);

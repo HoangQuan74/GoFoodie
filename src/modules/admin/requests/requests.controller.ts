@@ -266,6 +266,12 @@ export class RequestsController {
     return { items, total };
   }
 
+  @Get('merchants/types')
+  @ApiOperation({ summary: 'Danh sách loại yêu cầu cửa hàng' })
+  async getStoreRequestTypes() {
+    return this.requestsService.findMerchantRequestTypes();
+  }
+
   @Get('merchants/:id')
   @ApiOperation({ summary: 'Chi tiết yêu cầu cửa hàng' })
   async getDetailStoreRequest(@Param('id') id: number) {
