@@ -6,11 +6,17 @@ import { ProductApprovalEntity } from 'src/database/entities/product-approval.en
 import { DriverRequestEntity } from 'src/database/entities/driver-request.entity';
 import { AdminsModule } from '../admins/admins.module';
 import { MerchantRequestEntity } from 'src/database/entities/merchant-request.entity';
+import { MerchantRequestTypeEntity } from 'src/database/entities/merchant-request-type.entity';
 import { ProductsModule } from '../products/products.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ProductApprovalEntity, DriverRequestEntity, MerchantRequestEntity]),
+    TypeOrmModule.forFeature([
+      ProductApprovalEntity,
+      DriverRequestEntity,
+      MerchantRequestEntity,
+      MerchantRequestTypeEntity,
+    ]),
     AdminsModule,
     ProductsModule,
   ],

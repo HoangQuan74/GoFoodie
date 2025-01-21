@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { ERequestStatus } from 'src/common/enums';
 import { MerchantEntity } from './merchant.entity';
-import { MerchantRequestType } from './merchant-request-type.entity';
+import { MerchantRequestTypeEntity } from './merchant-request-type.entity';
 import { StoreEntity } from './store.entity';
 import { AdminEntity } from './admin.entity';
 
@@ -39,9 +39,9 @@ export class MerchantRequestEntity extends BaseEntity {
   @JoinColumn({ name: 'merchant_id' })
   merchant: MerchantEntity;
 
-  @ManyToOne(() => MerchantRequestType, (requestType) => requestType.id)
+  @ManyToOne(() => MerchantRequestTypeEntity, (requestType) => requestType.id)
   @JoinColumn({ name: 'type_id' })
-  type: MerchantRequestType;
+  type: MerchantRequestTypeEntity;
 
   @ManyToOne(() => StoreEntity, (store) => store.id)
   @JoinColumn({ name: 'store_id' })
