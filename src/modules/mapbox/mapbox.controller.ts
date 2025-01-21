@@ -5,6 +5,9 @@ import { AppGuard } from 'src/app.gaurd';
 import axios from 'axios';
 import { ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/common/decorators';
+import { PaginationQuery } from 'src/common/query';
+import { SearchReverseDto } from './dto/search-reverse.dto';
+import { SearchForwardDto } from './dto/search-forward.dto';
 
 @Controller('mapbox')
 @ApiTags('Mapbox')
@@ -77,5 +80,49 @@ export class MapboxController {
     } catch (error) {
       throw new ServiceUnavailableException(error.response.data.error);
     }
+  }
+
+  @Get('search/forward')
+  async searchAddress(@Query() query: SearchForwardDto) {
+    const { search, limit } = query;
+    const { data } = await axios.get(`${MAPBOX_URL}/search/geocode/v6/forward`, {
+      params: {
+        access_token: MAPBOX_ACCESS_TOKEN,
+        q: search,
+        limit,
+        country: 'vn',
+      },
+    });
+
+    const result = data.features.map((feature) => ({
+      id: feature.id,
+      address: feature.properties?.place_formatted,
+      coordinates: feature.geometry?.coordinates,
+    }));
+
+    return result;
+  }
+
+  @Get('search/reverse')
+  async reverseAddress(@Query() query: SearchReverseDto) {
+    const { latitude, longitude } = query;
+
+    const { data } = await axios.get(`${MAPBOX_URL}/search/geocode/v6/reverse`, {
+      params: {
+        access_token: MAPBOX_ACCESS_TOKEN,
+        latitude,
+        longitude,
+        country: 'vn',
+        limit: 1,
+      },
+    });
+
+    const result = data.features.map((feature) => ({
+      id: feature.id,
+      address: feature.properties?.place_formatted,
+      coordinates: feature.geometry?.coordinates,
+    }));
+
+    return result;
   }
 }
