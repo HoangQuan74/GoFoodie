@@ -20,6 +20,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { PaginationQuery } from 'src/common/query';
 import { AuthGuard } from '../auth/auth.guard';
 import { QueryChallengeDto } from './dto/query-challenge.dto';
+import { EChallengeStatus } from 'src/common/enums/challenge.enum';
 
 @Controller('challenges')
 @ApiTags('Challenges')
@@ -52,7 +53,7 @@ export class ChallengesController {
 
   @Get()
   async find(@Query() query: QueryChallengeDto) {
-    const { page, limit, search, startTimeFrom, startTimeTo, endTimeFrom, endTimeTo, typeId } = query;
+    const { page, limit, search, startTimeFrom, startTimeTo, endTimeFrom, endTimeTo, typeId, status } = query;
 
     const queryBuilder = this.challengesService
       .createQueryBuilder('challenge')
@@ -70,6 +71,19 @@ export class ChallengesController {
           qb.orWhere('type.name ILIKE :search', { search: `%${search}%` });
         }),
       );
+    }
+
+    switch (status) {
+      case EChallengeStatus.InProgress:
+        queryBuilder.andWhere('challenge.startTime <= :now', { now: new Date() });
+        queryBuilder.andWhere('challenge.endTime >= :now', { now: new Date() });
+        break;
+      case EChallengeStatus.NotStarted:
+        queryBuilder.andWhere('challenge.startTime > :now', { now: new Date() });
+        break;
+      case EChallengeStatus.Ended:
+        queryBuilder.andWhere('challenge.endTime < :now', { now: new Date() });
+        break;
     }
 
     startTimeFrom && queryBuilder.andWhere('challenge.startTime >= :startTimeFrom', { startTimeFrom });
