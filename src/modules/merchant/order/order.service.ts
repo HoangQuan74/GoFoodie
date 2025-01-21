@@ -7,6 +7,7 @@ import { OrderActivityEntity } from 'src/database/entities/order-activities.enti
 import { DataSource, Repository } from 'typeorm';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { OrderService as DriverOrderService } from '../../drivers/order/order.service';
 
 @Injectable()
 export class OrderService {
@@ -18,6 +19,7 @@ export class OrderService {
     @InjectRepository(OrderActivityEntity)
     private orderActivityRepository: Repository<OrderActivityEntity>,
     private dataSource: DataSource,
+    private driverOrderService: DriverOrderService,
   ) {}
 
   async queryOrders(merchantId: number, queryOrderDto: QueryOrderDto) {
@@ -92,10 +94,10 @@ export class OrderService {
       }
 
       order.status = EOrderStatus.Confirmed;
-      await queryRunner.manager.save(order);
+      const savedOrder = await queryRunner.manager.save(order);
 
       const orderActivity = this.orderActivityRepository.create({
-        orderId: order.id,
+        orderId: savedOrder.id,
         status: EOrderStatus.Confirmed,
         description: 'Order confirmed by merchant',
         performedBy: `merchant:${merchantId}`,
@@ -104,7 +106,22 @@ export class OrderService {
 
       await queryRunner.commitTransaction();
 
-      return order;
+      // Attempt to assign the order to a driver
+      try {
+        await this.driverOrderService.assignOrderToDriver(savedOrder.id);
+      } catch (error) {
+        console.error('Failed to assign driver:', error);
+        // You might want to create an activity log for this failure
+        const failureActivity = this.orderActivityRepository.create({
+          orderId: savedOrder.id,
+          status: savedOrder.status,
+          description: 'Failed to assign driver automatically',
+          performedBy: 'system',
+        });
+        await this.orderActivityRepository.save(failureActivity);
+      }
+
+      return savedOrder;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException('Failed to confirm order: ' + error.message);
@@ -167,5 +184,18 @@ export class OrderService {
       throw new NotFoundException(`Store not found for merchant with ID ${merchantId}`);
     }
     return store;
+  }
+
+  async findOne(storeId: number, orderId: number): Promise<OrderEntity> {
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId, storeId },
+      relations: ['orderItems', 'activities'],
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${orderId} not found for this merchant`);
+    }
+
+    return order;
   }
 }
