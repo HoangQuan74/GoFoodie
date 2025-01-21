@@ -119,6 +119,14 @@ import { ChallengesModule } from './challenges/challenges.module';
         path: 'admin',
         module: FlashSalesModule,
       },
+      {
+        path: 'admin',
+        module: ChallengesModule,
+      },
+      {
+        path: 'admin',
+        module: OperationsModule,
+      },
     ]),
     AdminsModule,
     MerchantsModule,
