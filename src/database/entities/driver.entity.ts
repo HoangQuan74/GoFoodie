@@ -10,6 +10,7 @@ import { ProvinceEntity } from './province.entity';
 import { FileEntity } from './file.entity';
 import { DriverSignatureEntity } from './driver-signature.entity';
 import { DriverUniformEntity } from './driver-uniform.entity';
+import { DriverAvailabilityEntity } from './driver-availability.entity';
 
 @Entity('drivers')
 export class DriverEntity extends BaseEntity {
@@ -119,4 +120,7 @@ export class DriverEntity extends BaseEntity {
 
   @OneToMany(() => DriverUniformEntity, (uniform) => uniform.driver, { cascade: true })
   uniforms: DriverUniformEntity[];
+
+  @OneToMany(() => DriverAvailabilityEntity, (availability) => availability.driver)
+  driverAvailability: DriverAvailabilityEntity[];
 }

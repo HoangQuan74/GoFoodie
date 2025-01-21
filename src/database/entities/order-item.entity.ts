@@ -13,23 +13,45 @@ export class OrderItemEntity {
   @Column({ name: 'product_id' })
   productId: number;
 
-  @Column()
+  @Column({ name: 'product_image', nullable: true })
+  productImage: string;
+
+  @Column({ name: 'product_name', nullable: true })
   productName: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   price: number;
 
-  @Column()
+  @Column({ name: 'quantity' })
   quantity: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   subtotal: number;
 
-  @Column({ nullable: true })
+  @Column({ name: 'note', nullable: true })
   note: string;
 
   @Column('json', { nullable: true })
-  options: { optionId: number; optionName: string; optionPrice: number }[];
+  cartProductOptions: {
+    optionGroup: {
+      id: number;
+      name: string;
+      storeId: number;
+      isMultiple: boolean;
+      status: string;
+      createdAt: Date;
+      updateAt: Date;
+    };
+    options: {
+      id: number;
+      name: string;
+      price: number;
+      status: string;
+      optionGroupId: number;
+      createdAt: Date;
+      updateAt: Date;
+    };
+  }[];
 
   @ManyToOne(() => OrderEntity, (order) => order.orderItems)
   @JoinColumn({ name: 'order_id' })

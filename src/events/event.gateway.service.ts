@@ -9,4 +9,7 @@ export class EventGatewayService {
   notifyMerchantNewOrder(merchantId: number, order: OrderEntity) {
     this.eventsGateway.notifyNewOrder(merchantId, order);
   }
+  notifyDriverNewOrder(driverId: number, order: OrderEntity) {
+    this.eventsGateway.notifyNewOrder(driverId, order);
+  }
 }

@@ -7,15 +7,26 @@ import { MerchantModule } from '../merchant.module';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { EventsModule } from 'src/events/events.module';
 import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
+import { OrderService as DriverOrderService } from '../../drivers/order/order.service';
+import { DriverEntity } from 'src/database/entities/driver.entity';
+import { OrderCriteriaEntity } from 'src/database/entities/order-criteria.entity';
+import { DriverAvailabilityEntity } from 'src/database/entities/driver-availability.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([OrderEntity, StoreEntity, OrderActivityEntity]),
+    TypeOrmModule.forFeature([
+      OrderEntity,
+      StoreEntity,
+      OrderActivityEntity,
+      DriverEntity,
+      OrderCriteriaEntity,
+      DriverAvailabilityEntity,
+    ]),
     forwardRef(() => MerchantModule),
     EventsModule,
   ],
   controllers: [OrderController],
-  providers: [OrderService],
+  providers: [OrderService, DriverOrderService],
   exports: [OrderService],
 })
 export class OrdersModule {}

@@ -42,6 +42,7 @@ export class OrderService {
           'cartProducts.product',
           'cartProducts.cartProductOptions',
           'cartProducts.cartProductOptions.option',
+          'cartProducts.cartProductOptions.option.optionGroup',
           'store',
         ],
       });
@@ -81,16 +82,34 @@ export class OrderService {
         return this.orderItemRepository.create({
           orderId: savedOrder.id,
           productId: cartProduct.product.id,
-          productName: cartProduct.product.name,
+          productName: cartProduct.product.name ?? '',
+          productImage: cartProduct.product?.imageId ?? '',
           price: itemPrice,
           quantity: cartProduct.quantity,
           subtotal: itemPrice * cartProduct.quantity,
           note: cartProduct.note,
-          options: cartProduct.cartProductOptions.map((opt) => ({
-            optionId: opt.option.id,
-            optionName: opt.option.name,
-            optionPrice: opt.option.price,
-          })),
+          cartProductOptions: cartProduct.cartProductOptions.map((opt) => {
+            return {
+              optionGroup: {
+                id: opt.option.optionGroup.id,
+                name: opt.option.optionGroup.name,
+                storeId: opt.option.optionGroup.storeId,
+                isMultiple: opt.option.optionGroup.isMultiple,
+                status: opt.option.optionGroup.status,
+                createdAt: opt.option.optionGroup.createdAt,
+                updateAt: opt.option.optionGroup.updatedAt,
+              },
+              options: {
+                id: opt.option.id,
+                name: opt.option.name,
+                price: opt.option.price,
+                status: opt.option.status,
+                optionGroupId: opt.option.optionGroupId,
+                createdAt: opt.option.createdAt,
+                updateAt: opt.option.updatedAt,
+              },
+            };
+          }),
         });
       });
 
