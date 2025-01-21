@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
+import { IsEnum, IsOptional, ValidateIf } from 'class-validator';
+import { EChallengeStatus } from 'src/common/enums/challenge.enum';
 import { PaginationQuery } from 'src/common/query';
 
 export class QueryChallengeDto extends PaginationQuery {
@@ -22,4 +23,9 @@ export class QueryChallengeDto extends PaginationQuery {
   @ApiPropertyOptional()
   @IsOptional()
   typeId: number;
+
+  @ApiPropertyOptional({ enum: EChallengeStatus })
+  @IsEnum(EChallengeStatus)
+  @ValidateIf((o) => o.status)
+  status: EChallengeStatus;
 }
