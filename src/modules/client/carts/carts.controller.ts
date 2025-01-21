@@ -78,9 +78,20 @@ export class CartsController {
       ])
       .addSelect('SUM(cartProducts.quantity)', 'totalQuantity')
       .addSelect('COUNT(cartProducts.id)', 'totalItems')
-      .addSelect('SUM(cartProducts.quantity * product.price)', 'totalPrice')
+      .addSelect(`SUM((product.price + COALESCE(option."totalOptionPrice", 0)) * cartProducts.quantity)`, 'totalPrice')
       .addSelect('0', 'averageRating')
       .innerJoin('cart.cartProducts', 'cartProducts')
+      .leftJoin(
+        (qb) =>
+          qb
+            .select('cartProductOptions.cartProductId', 'cartProductId')
+            .addSelect('SUM(option.price)', 'totalOptionPrice')
+            .from(CartProductOptionEntity, 'cartProductOptions')
+            .innerJoin('cartProductOptions.option', 'option')
+            .groupBy('cartProductOptions.cartProductId'),
+        'option',
+        'option."cartProductId" = cartProducts.id',
+      )
       .innerJoin('cartProducts.product', 'product')
       .innerJoin('cart.store', 'store')
       .where('cart.clientId = :clientId', { clientId: user.id })

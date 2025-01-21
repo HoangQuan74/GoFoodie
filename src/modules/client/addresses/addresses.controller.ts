@@ -20,7 +20,7 @@ export class AddressesController {
 
   @Get()
   find(@CurrentUser() user: JwtPayload) {
-    return this.addressesService.find({ where: { clientId: user.id } });
+    return this.addressesService.find({ where: { clientId: user.id }, order: { id: 'DESC' } });
   }
 
   @Get(':id')
