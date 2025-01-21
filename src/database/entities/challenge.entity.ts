@@ -63,6 +63,6 @@ export class ChallengeEntity extends BaseEntity {
   @JoinColumn({ name: 'image_id' })
   image: FileEntity;
 
-  @OneToMany(() => ChallengeCriteriaEntity, (criteria) => criteria.challenge)
+  @OneToMany(() => ChallengeCriteriaEntity, (criteria) => criteria.challenge, { cascade: true })
   criteria: ChallengeCriteriaEntity[];
 }
