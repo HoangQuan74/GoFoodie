@@ -23,14 +23,15 @@ export class OrderService {
   ) {}
 
   async queryOrders(merchantId: number, queryOrderDto: QueryOrderDto) {
-    const store = await this.getStoreByMerchantId(merchantId);
+    const stores = await this.getStoresByMerchantId(merchantId);
+    const storeIds = stores.map((store) => store.id);
 
     const query = this.orderRepository
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.client', 'client')
       .leftJoinAndSelect('order.orderItems', 'orderItems')
       .leftJoinAndSelect('order.activities', 'activities')
-      .where('order.storeId = :storeId', { storeId: store.id });
+      .where('order.storeId IN (:...storeIds)', { storeIds });
 
     if (queryOrderDto.status) {
       query.andWhere('order.status = :status', { status: queryOrderDto.status });
@@ -178,12 +179,12 @@ export class OrderService {
     }
   }
 
-  private async getStoreByMerchantId(merchantId: number): Promise<StoreEntity> {
-    const store = await this.storeRepository.findOne({ where: { merchantId } });
-    if (!store) {
-      throw new NotFoundException(`Store not found for merchant with ID ${merchantId}`);
+  private async getStoresByMerchantId(merchantId: number): Promise<StoreEntity[]> {
+    const stores = await this.storeRepository.find({ where: { merchantId } });
+    if (!stores || stores.length === 0) {
+      throw new NotFoundException(`No stores found for merchant with ID ${merchantId}`);
     }
-    return store;
+    return stores;
   }
 
   async findOne(storeId: number, orderId: number): Promise<OrderEntity> {
