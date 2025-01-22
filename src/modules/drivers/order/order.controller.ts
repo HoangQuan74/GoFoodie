@@ -35,9 +35,9 @@ export class OrderController {
   @ApiResponse({ status: 200, description: 'Returns the order details' })
   @ApiResponse({ status: 404, description: 'Order not found' })
   @ApiParam({ name: 'id', type: String, description: 'Order ID' })
-  async getOrderDetails(@Param('id') id: number) {
-    // const { id: driverId } = user;
-    return this.orderService.getOrderDetailsForDriver(id, 51);
+  async getOrderDetails(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
+    const { id: driverId } = user;
+    return this.orderService.getOrderDetailsForDriver(id, driverId);
   }
 
   @Put(':id/accept')
@@ -45,9 +45,9 @@ export class OrderController {
   @ApiResponse({ status: 200, description: 'Order accepted successfully' })
   @ApiResponse({ status: 400, description: 'Unable to accept the order' })
   @ApiParam({ name: 'id', type: String, description: 'Order ID' })
-  async acceptOrder(@Param('id') id: number) {
-    // const { id: driverId } = user;
-    return this.orderService.acceptOrderByDriver(id, 51);
+  async acceptOrder(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
+    const { id: driverId } = user;
+    return this.orderService.acceptOrderByDriver(id, driverId);
   }
 
   @Put(':id/reject')
@@ -65,9 +65,9 @@ export class OrderController {
   @ApiResponse({ status: 200, description: 'Order updated successfully' })
   @ApiResponse({ status: 400, description: 'Unable to update the order' })
   @ApiParam({ name: 'id', type: String, description: 'Order ID' })
-  async updateStatus(@Param('id') id: number, @Body() statusDto: UpdateStatusDto) {
-    // const { id: driverId } = user;
-    return this.orderService.updateStatus(id, 51, statusDto.status);
+  async updateStatus(@Param('id') id: number, @Body() statusDto: UpdateStatusDto, @CurrentUser() user: JwtPayload) {
+    const { id: driverId } = user;
+    return this.orderService.updateStatus(id, driverId, statusDto.status);
   }
 
   @Post('assign')
