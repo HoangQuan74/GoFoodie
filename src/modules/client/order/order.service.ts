@@ -29,7 +29,7 @@ export class OrderService {
   ) {}
 
   async create(createOrderDto: CreateOrderDto, clientId: number): Promise<OrderEntity> {
-    const { cartId, deliveryAddress, deliveryLatitude, deliveryLongitude, notes } = createOrderDto;
+    const { cartId, deliveryAddress, deliveryLatitude, deliveryLongitude, notes, tip } = createOrderDto;
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -70,6 +70,7 @@ export class OrderService {
         deliveryLatitude,
         deliveryLongitude,
         notes,
+        tip,
         status: EOrderStatus.Pending,
       });
 

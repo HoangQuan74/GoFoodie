@@ -45,6 +45,9 @@ export class OrderEntity extends BaseEntity {
   @Column({ type: 'float', nullable: true, name: 'delivery_longitude' })
   deliveryLongitude: number;
 
+  @Column({ type: 'int8', nullable: true })
+  tip: number;
+
   @Column({ nullable: true })
   notes: string;
 
