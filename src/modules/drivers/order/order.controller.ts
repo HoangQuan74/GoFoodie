@@ -7,6 +7,7 @@ import { UpdateDriverAvailabilityDto } from './dto/update-driver-availability.dt
 import { OrderService } from './order.service';
 import { UpdateStatusDto } from './dto/update-status-order.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
+import { UpdateOrderDto } from './dto/update-order.dto';
 
 @Controller('order')
 @ApiTags('Orders')
@@ -64,9 +65,9 @@ export class OrderController {
   @ApiResponse({ status: 200, description: 'Order rejected successfully' })
   @ApiResponse({ status: 400, description: 'Unable to reject the order' })
   @ApiParam({ name: 'id', type: String, description: 'Order ID' })
-  async rejectOrder(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
+  async rejectOrder(@Param('id') id: number, @CurrentUser() user: JwtPayload, @Body() updateOrderDto: UpdateOrderDto) {
     const { id: driverId } = user;
-    return this.orderService.rejectOrderByDriver(id, driverId);
+    return this.orderService.rejectOrderByDriver(id, driverId, updateOrderDto);
   }
 
   @Put(':id/status')
