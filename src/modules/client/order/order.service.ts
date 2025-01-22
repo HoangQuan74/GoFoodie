@@ -180,7 +180,7 @@ export class OrderService {
     }
 
     if (queryOrderDto.search) {
-      query.andWhere('order.id::text LIKE :search', { search: `%${queryOrderDto.search}%` });
+      query.andWhere('order.id::text ILIKE :search', { search: `%${queryOrderDto.search}%` });
     }
 
     if (queryOrderDto.startDate && queryOrderDto.endDate) {

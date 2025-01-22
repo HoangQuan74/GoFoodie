@@ -12,6 +12,7 @@ import { EventGatewayService } from 'src/events/event.gateway.service';
 import { calculateDistance } from 'src/utils/distance';
 import { Repository } from 'typeorm';
 import { QueryOrderDto } from './dto/query-order.dto';
+import { UpdateOrderDto } from './dto/update-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -153,7 +154,7 @@ export class OrderService {
     return order;
   }
 
-  async rejectOrderByDriver(orderId: number, driverId: number): Promise<void> {
+  async rejectOrderByDriver(orderId: number, driverId: number, updateOrderDto: UpdateOrderDto): Promise<void> {
     const order = await this.orderRepository.findOne({
       where: { id: orderId },
     });
@@ -180,6 +181,7 @@ export class OrderService {
       orderId: orderId,
       status: EOrderStatus.SearchingForDriver,
       description: 'driver_rejected_the_order',
+      cancellationReason: updateOrderDto.reasons || '',
       performedBy: `driverId:${driverId}`,
     });
     await this.orderActivityRepository.save(orderActivity);
@@ -238,7 +240,7 @@ export class OrderService {
     }
 
     if (queryOrderDto.search) {
-      query.andWhere('order.id::text LIKE :search', { search: `%${queryOrderDto.search}%` });
+      query.andWhere('order.id::text ILIKE :search', { search: `%${queryOrderDto.search}%` });
     }
 
     if (queryOrderDto.startDate && queryOrderDto.endDate) {

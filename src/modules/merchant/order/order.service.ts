@@ -42,7 +42,7 @@ export class OrderService {
     }
 
     if (queryOrderDto.search) {
-      query.andWhere('(client.name LIKE :search OR order.id::text LIKE :search)', {
+      query.andWhere('(client.name ILIKE :search OR order.id::text ILIKE :search)', {
         search: `%${queryOrderDto.search}%`,
       });
     }
