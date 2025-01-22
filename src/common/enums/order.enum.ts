@@ -4,6 +4,9 @@ export enum EOrderStatus {
   InDelivery = 'in_delivery',
   Delivered = 'delivered',
   Cancelled = 'cancelled',
+  OfferSentToDriver = 'offer_sent_to_driver',
+  DriverAccepted = 'driver_accepted',
+  SearchingForDriver = 'searching_for_driver',
 }
 
 export enum EPaymentStatus {
