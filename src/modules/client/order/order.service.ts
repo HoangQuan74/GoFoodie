@@ -11,6 +11,7 @@ import { DataSource, Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { Group } from 'src/common/interfaces/order-item.interface';
 
 @Injectable()
 export class OrderService {
@@ -76,11 +77,24 @@ export class OrderService {
 
       const orderItems = cart.cartProducts.map((cartProduct) => {
         const productPrice = cartProduct.product.price;
-        const optionsPrice = cartProduct.cartProductOptions.reduce((sum, option) => sum + option.option.price, 0);
+
+        const groupedOptions = cartProduct.cartProductOptions.reduce((acc, opt) => {
+          const groupId = opt.option.optionGroup.id;
+          if (!acc[groupId]) {
+            acc[groupId] = {
+              optionGroup: opt.option.optionGroup,
+              options: [],
+            };
+          }
+          acc[groupId].options.push(opt.option);
+          return acc;
+        }, {});
+
+        const optionsPrice = cartProduct.cartProductOptions.reduce((sum, opt) => sum + opt.option.price, 0);
         const itemPrice = productPrice + optionsPrice;
 
-        return this.orderItemRepository.create({
-          orderId: savedOrder.id,
+        return {
+          orderId: 100,
           productId: cartProduct.product.id,
           productName: cartProduct.product.name ?? '',
           productImage: cartProduct.product?.imageId ?? '',
@@ -88,29 +102,37 @@ export class OrderService {
           quantity: cartProduct.quantity,
           subtotal: itemPrice * cartProduct.quantity,
           note: cartProduct.note,
-          cartProductOptions: cartProduct.cartProductOptions.map((opt) => {
-            return {
-              optionGroup: {
-                id: opt.option.optionGroup.id,
-                name: opt.option.optionGroup.name,
-                storeId: opt.option.optionGroup.storeId,
-                isMultiple: opt.option.optionGroup.isMultiple,
-                status: opt.option.optionGroup.status,
-                createdAt: opt.option.optionGroup.createdAt,
-                updateAt: opt.option.optionGroup.updatedAt,
-              },
-              options: {
-                id: opt.option.id,
-                name: opt.option.name,
-                price: opt.option.price,
-                status: opt.option.status,
-                optionGroupId: opt.option.optionGroupId,
-                createdAt: opt.option.createdAt,
-                updateAt: opt.option.updatedAt,
-              },
-            };
-          }),
-        });
+          cartProductOptions: Object.values(groupedOptions).map((group: Group) => ({
+            optionGroup: {
+              id: group.optionGroup.id,
+              name: group.optionGroup.name,
+              storeId: group.optionGroup.storeId,
+              isMultiple: group.optionGroup.isMultiple,
+              status: group.optionGroup.status,
+              createdAt: group.optionGroup.createdAt,
+              updateAt: group.optionGroup.updateAt,
+            },
+            options: Array.isArray(group.options)
+              ? group.options.map((option) => ({
+                  id: option.id,
+                  name: option.name,
+                  price: option.price,
+                  status: option.status,
+                  optionGroupId: option.optionGroupId,
+                  createdAt: option.createdAt,
+                  updateAt: option.updateAt,
+                }))
+              : {
+                  id: group.options.id,
+                  name: group.options.name,
+                  price: group.options.price,
+                  status: group.options.status,
+                  optionGroupId: group.options.optionGroupId,
+                  createdAt: group.options.createdAt,
+                  updateAt: group.options.updateAt,
+                },
+          })),
+        };
       });
 
       await queryRunner.manager.save(OrderItemEntity, orderItems);

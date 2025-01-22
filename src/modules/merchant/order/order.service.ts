@@ -4,7 +4,7 @@ import { EOrderStatus } from 'src/common/enums/order.enum';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderService as DriverOrderService } from '../../drivers/order/order.service';
@@ -100,23 +100,20 @@ export class OrderService {
       const orderActivity = this.orderActivityRepository.create({
         orderId: savedOrder.id,
         status: EOrderStatus.Confirmed,
-        description: 'Order confirmed by merchant',
+        description: 'order_confirmed_by_merchant',
         performedBy: `merchant:${merchantId}`,
       });
       await queryRunner.manager.save(orderActivity);
 
       await queryRunner.commitTransaction();
 
-      // Attempt to assign the order to a driver
       try {
         await this.driverOrderService.assignOrderToDriver(savedOrder.id);
       } catch (error) {
-        console.error('Failed to assign driver:', error);
-        // You might want to create an activity log for this failure
         const failureActivity = this.orderActivityRepository.create({
           orderId: savedOrder.id,
           status: savedOrder.status,
-          description: 'Failed to assign driver automatically',
+          description: 'failed_to_assign_driver_automatically',
           performedBy: 'system',
         });
         await this.orderActivityRepository.save(failureActivity);
@@ -161,7 +158,7 @@ export class OrderService {
       const orderActivity = this.orderActivityRepository.create({
         orderId: order.id,
         status: EOrderStatus.Cancelled,
-        description: 'Order cancelled by merchant',
+        description: 'order_cancelled_by_merchant',
         performedBy: `merchant:${merchantId}`,
         cancellationReason: updateOrderDto.reasons || '',
         cancellationType: 'merchant',
@@ -187,10 +184,16 @@ export class OrderService {
     return stores;
   }
 
-  async findOne(storeId: number, orderId: number): Promise<OrderEntity> {
+  async findOne(merchantId: number, orderId: number): Promise<OrderEntity> {
+    const stores = await this.getStoresByMerchantId(merchantId);
+    const storeIds = stores.map((store) => store.id);
+
     const order = await this.orderRepository.findOne({
-      where: { id: orderId, storeId },
-      relations: ['orderItems', 'activities'],
+      where: {
+        id: orderId,
+        storeId: In(storeIds),
+      },
+      relations: ['orderItems', 'activities', 'store', 'client'],
     });
 
     if (!order) {

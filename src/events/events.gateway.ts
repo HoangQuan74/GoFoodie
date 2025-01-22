@@ -53,26 +53,56 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   notifyNewOrder(userId: number, order: OrderEntity) {
     const user = this.connectedUsers.get(userId);
+    if (!user) return;
+
+    const baseOrderInfo = {
+      orderId: order.id,
+      totalAmount: order.totalAmount,
+      status: order.status,
+      paymentStatus: order.paymentStatus,
+      createdAt: order.createdAt,
+      notes: order.notes,
+    };
+
     if (user && user.type === 'merchant') {
-      user.socket.emit('newOrder', { orderId: order.id, totalAmount: order.totalAmount });
-    }
-
-    if (user && user.type === 'driver') {
-      user.socket.emit('newOrder', { orderId: order.id, totalAmount: order.totalAmount });
+      user.socket.emit('newOrder', {
+        ...baseOrderInfo,
+        clientName: order.client.name,
+        clientPhone: order.client.phone,
+        deliveryAddress: order.deliveryAddress,
+      });
     }
   }
 
-  notifyOrderStatus(clientId: number, orderId: number, status: string) {
-    const user = this.connectedUsers.get(clientId);
+  notifyOrderStatus(userId: number, orderId: number, status: string) {
+    const user = this.connectedUsers.get(userId);
     if (user && user.type === 'client') {
-      user.socket.emit('orderStatusUpdate', { orderId, status });
+      user.socket.emit('orderStatus', { orderId, status });
+    }
+    if (user && user.type === 'merchant') {
+      user.socket.emit('orderStatus', { orderId, status });
+    }
+    if (user && user.type === 'driver') {
+      user.socket.emit('orderStatus', { orderId, status });
     }
   }
 
-  notifyNewDelivery(driverId: number, orderId: number) {
+  notifyNewDelivery(driverId: number, order: OrderEntity) {
     const user = this.connectedUsers.get(driverId);
     if (user && user.type === 'driver') {
-      user.socket.emit('newDelivery', { orderId });
+      user.socket.emit('newDelivery', {
+        orderId: order.id,
+        pickupAddress: order.store.address,
+        deliveryAddress: order.deliveryAddress,
+        deliveryLatitude: order.deliveryLatitude,
+        deliveryLongitude: order.deliveryLongitude,
+        totalAmount: order.totalAmount,
+        status: order.status,
+        paymentStatus: order.paymentStatus,
+        clientName: order.client.name,
+        clientPhone: order.client.phone,
+        notes: order.notes,
+      });
     }
   }
 

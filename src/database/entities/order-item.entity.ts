@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { OrderEntity } from './order.entity';
 import { ProductEntity } from './product.entity';
+import { Group } from 'src/common/interfaces/order-item.interface';
 
 @Entity('order_items')
 export class OrderItemEntity {
@@ -32,26 +33,7 @@ export class OrderItemEntity {
   note: string;
 
   @Column('json', { nullable: true })
-  cartProductOptions: {
-    optionGroup: {
-      id: number;
-      name: string;
-      storeId: number;
-      isMultiple: boolean;
-      status: string;
-      createdAt: Date;
-      updateAt: Date;
-    };
-    options: {
-      id: number;
-      name: string;
-      price: number;
-      status: string;
-      optionGroupId: number;
-      createdAt: Date;
-      updateAt: Date;
-    };
-  }[];
+  cartProductOptions: Group | Group[];
 
   @ManyToOne(() => OrderEntity, (order) => order.orderItems)
   @JoinColumn({ name: 'order_id' })

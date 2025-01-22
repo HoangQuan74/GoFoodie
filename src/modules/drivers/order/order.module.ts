@@ -8,10 +8,17 @@ import { OrderController } from './order.controller';
 import { OrderService } from './order.service';
 import { DriversModule } from '../drivers.module';
 import { EventsModule } from 'src/events/events.module';
+import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([OrderEntity, DriverEntity, OrderCriteriaEntity, DriverAvailabilityEntity]),
+    TypeOrmModule.forFeature([
+      OrderEntity,
+      DriverEntity,
+      OrderCriteriaEntity,
+      DriverAvailabilityEntity,
+      OrderActivityEntity,
+    ]),
     forwardRef(() => DriversModule),
     EventsModule,
   ],
