@@ -3,10 +3,10 @@ import { ProductApprovalEntity } from 'src/database/entities/product-approval.en
 import { FindManyOptions, FindOneOptions, FindOptionsWhere, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DriverRequestEntity } from 'src/database/entities/driver-request.entity';
+import { RequestTypeEntity } from 'src/database/entities/request-type.entity';
 import { ProductsService } from '../products/products.service';
 import { EProductApprovalStatus, ERequestStatus, ERequestType } from 'src/common/enums';
 import { MerchantRequestEntity } from 'src/database/entities/merchant-request.entity';
-import { MerchantRequestTypeEntity } from 'src/database/entities/merchant-request-type.entity';
 
 @Injectable()
 export class RequestsService {
@@ -17,11 +17,11 @@ export class RequestsService {
     @InjectRepository(DriverRequestEntity)
     private readonly driverRequestRepository: Repository<DriverRequestEntity>,
 
+    @InjectRepository(RequestTypeEntity)
+    private readonly requestTypeRepository: Repository<RequestTypeEntity>,
+
     @InjectRepository(MerchantRequestEntity)
     private readonly merchantRequestRepository: Repository<MerchantRequestEntity>,
-
-    @InjectRepository(MerchantRequestTypeEntity)
-    private readonly merchantRequestTypeRepository: Repository<MerchantRequestTypeEntity>,
 
     private readonly productsService: ProductsService,
   ) {}
@@ -97,7 +97,7 @@ export class RequestsService {
     return this.merchantRequestRepository.createQueryBuilder(alias);
   }
 
-  async findMerchantRequestTypes(options?: FindManyOptions<MerchantRequestTypeEntity>) {
-    return this.merchantRequestTypeRepository.find(options);
+  async findRequestTypes(options?: FindManyOptions<RequestTypeEntity>) {
+    return this.requestTypeRepository.find(options);
   }
 }

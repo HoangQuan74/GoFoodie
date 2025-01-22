@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('merchant_request_types')
-export class MerchantRequestTypeEntity {
+@Entity('request_types')
+export class RequestTypeEntity {
   @PrimaryGeneratedColumn()
   id: number;
 

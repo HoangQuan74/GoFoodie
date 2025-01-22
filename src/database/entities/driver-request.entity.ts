@@ -1,46 +1,44 @@
 import { Entity, Column, ManyToOne, JoinColumn, ManyToMany, JoinTable } from 'typeorm';
 import { DriverEntity } from './driver.entity';
 import { BaseEntity } from './base.entity';
-import { EDriverRequestType, ERequestStatus } from 'src/common/enums';
+import { ERequestStatus } from 'src/common/enums';
 import { AdminEntity } from './admin.entity';
 import { FileEntity } from './file.entity';
+import { RequestTypeEntity } from './request-type.entity';
 
 @Entity('driver_requests')
 export class DriverRequestEntity extends BaseEntity {
   @Column()
   code: string;
 
-  @Column({ name: 'name' })
-  name: string;
-
   @Column()
   description: string;
 
-  @Column({ name: 'type' })
-  type: EDriverRequestType;
+  @Column({ name: 'type_id' })
+  typeId: number;
 
   @Column({ type: 'enum', enum: ERequestStatus, default: ERequestStatus.Pending })
   status: ERequestStatus;
 
-  @Column({ name: 'reject_reason', nullable: true })
-  rejectReason: string;
+  @Column({ name: 'approved_by_id', nullable: true })
+  approvedById: number;
+
+  @Column({ name: 'approved_at', nullable: true })
+  approvedAt: Date;
+
+  @Column({ nullable: true })
+  reason: string;
 
   @Column({ name: 'driver_id' })
   driverId: number;
-
-  @Column({ name: 'processed_by_id', nullable: true })
-  processedById: number;
-
-  @Column({ name: 'processed_at', nullable: true })
-  processedAt: Date;
 
   @ManyToOne(() => DriverEntity, (driver) => driver.id)
   @JoinColumn({ name: 'driver_id' })
   driver: DriverEntity;
 
   @ManyToOne(() => AdminEntity, (admin) => admin.id)
-  @JoinColumn({ name: 'processed_by_id' })
-  processedBy: AdminEntity;
+  @JoinColumn({ name: 'approved_by_id' })
+  approvedBy: AdminEntity;
 
   @ManyToMany(() => FileEntity, (file) => file.id)
   @JoinTable({
@@ -49,4 +47,8 @@ export class DriverRequestEntity extends BaseEntity {
     inverseJoinColumn: { name: 'file_id' },
   })
   files: FileEntity[];
+
+  @ManyToOne(() => RequestTypeEntity, (requestType) => requestType.id)
+  @JoinColumn({ name: 'type_id' })
+  type: RequestTypeEntity;
 }
