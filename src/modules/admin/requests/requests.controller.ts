@@ -334,7 +334,7 @@ export class RequestsController {
       .createMerchantRequestQueryBuilder('request')
       .update()
       .set({ approvedById: user.id, status: ERequestStatus.Approved, approvedAt: new Date() })
-      .where('request.id IN (:...ids)', { ids })
+      .where('id IN (:...ids)', { ids })
       .execute();
   }
 
@@ -352,7 +352,7 @@ export class RequestsController {
       .createMerchantRequestQueryBuilder('request')
       .update()
       .set({ approvedById: user.id, status: ERequestStatus.Rejected, approvedAt: new Date(), reason })
-      .where('request.id = :id', { id })
+      .where('id = :id', { id })
       .execute();
   }
 }
