@@ -18,11 +18,6 @@ export class QueryOrderDto extends PaginationQuery {
   paymentStatus?: EPaymentStatus;
 
   @ApiPropertyOptional()
-  @IsString()
-  @IsOptional()
-  keyword?: string;
-
-  @ApiPropertyOptional()
   @IsOptional()
   @Type(() => Date)
   startDate?: Date;
