@@ -11,6 +11,7 @@ import { OrderEntity } from 'src/database/entities/order.entity';
 import { EventGatewayService } from 'src/events/event.gateway.service';
 import { calculateDistance } from 'src/utils/distance';
 import { Repository } from 'typeorm';
+import { QueryOrderDto } from './dto/query-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -219,6 +220,48 @@ export class OrderService {
       });
       await this.orderActivityRepository.save(orderActivity);
     }
+  }
+
+  async findAllByClient(clientId: number, queryOrderDto: QueryOrderDto) {
+    const query = this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.orderItems', 'orderItems')
+      .leftJoinAndSelect('order.activities', 'activities');
+    // .where('order.clientId = :clientId', { clientId });
+
+    if (queryOrderDto.status) {
+      query.andWhere('order.status = :status', { status: queryOrderDto.status });
+    }
+
+    if (queryOrderDto.paymentStatus) {
+      query.andWhere('order.paymentStatus = :paymentStatus', { paymentStatus: queryOrderDto.paymentStatus });
+    }
+
+    if (queryOrderDto.keyword) {
+      query.andWhere('order.id::text LIKE :keyword', { keyword: `%${queryOrderDto.keyword}%` });
+    }
+
+    if (queryOrderDto.startDate && queryOrderDto.endDate) {
+      query.andWhere('order.createdAt BETWEEN :startDate AND :endDate', {
+        startDate: queryOrderDto.startDate,
+        endDate: queryOrderDto.endDate,
+      });
+    }
+
+    query
+      .orderBy(`order.${queryOrderDto.sortBy || 'createdAt'}`, queryOrderDto.sortOrder || 'DESC')
+      .skip((queryOrderDto.page - 1) * queryOrderDto.limit)
+      .take(queryOrderDto.limit);
+
+    const [orders, total] = await query.getManyAndCount();
+
+    return {
+      orders,
+      total,
+      page: queryOrderDto.page,
+      limit: queryOrderDto.limit,
+      totalPages: Math.ceil(total / queryOrderDto.limit),
+    };
   }
 
   private async findEligibleDrivers(order: OrderEntity): Promise<DriverEntity[]> {

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
@@ -6,6 +6,7 @@ import { AssignOrderDto } from './dto/assign-order.dto';
 import { UpdateDriverAvailabilityDto } from './dto/update-driver-availability.dto';
 import { OrderService } from './order.service';
 import { UpdateStatusDto } from './dto/update-status-order.dto';
+import { QueryOrderDto } from './dto/query-order.dto';
 
 @Controller('order')
 @ApiTags('Orders')
@@ -28,6 +29,14 @@ export class OrderController {
       updateDriverAvailabilityDto.latitude,
       updateDriverAvailabilityDto.longitude,
     );
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Get all offers orders for a drivers' })
+  @ApiResponse({ status: 200, description: 'Returns a list of orders for the drivers' })
+  getDriverOfferOrders(@Query() queryOrderDto: QueryOrderDto, @CurrentUser() user: JwtPayload) {
+    const { id: driverId } = user;
+    return this.orderService.findAllByClient(driverId, queryOrderDto);
   }
 
   @Get(':id')
