@@ -109,7 +109,10 @@ export class OrderService {
       throw new NotFoundException(`Order with ID ${orderId} not found`);
     }
 
-    if (order.status !== EOrderStatus.OfferSentToDriver || order.driverId !== driverId) {
+    if (
+      ![EOrderStatus.Confirmed, EOrderStatus.DriverAccepted, EOrderStatus.SearchingForDriver].includes(order.status) ||
+      order.driverId !== driverId
+    ) {
       throw new BadRequestException('You do not have permission to view this order');
     }
 
@@ -126,7 +129,10 @@ export class OrderService {
       throw new NotFoundException(`Order with ID ${orderId} not found`);
     }
 
-    if (order.status !== EOrderStatus.OfferSentToDriver || order.driverId !== driverId) {
+    if (
+      ![EOrderStatus.Confirmed, EOrderStatus.DriverAccepted, EOrderStatus.SearchingForDriver].includes(order.status) ||
+      order.driverId !== driverId
+    ) {
       throw new BadRequestException('You cannot accept this order');
     }
 
@@ -137,7 +143,7 @@ export class OrderService {
 
     const orderActivity = this.orderActivityRepository.create({
       orderId: orderId,
-      status: EOrderStatus.SearchingForDriver,
+      status: EOrderStatus.DriverAccepted,
       description: 'driver_accepted_the_order',
       performedBy: `driverId:${driverId}`,
     });
@@ -155,7 +161,10 @@ export class OrderService {
       throw new NotFoundException(`Order with ID ${orderId} not found`);
     }
 
-    if (order.status !== EOrderStatus.OfferSentToDriver || order.driverId !== driverId) {
+    if (
+      ![EOrderStatus.Confirmed, EOrderStatus.DriverAccepted, EOrderStatus.SearchingForDriver].includes(order.status) ||
+      order.driverId !== driverId
+    ) {
       throw new BadRequestException('You cannot reject this order');
     }
 
@@ -173,6 +182,43 @@ export class OrderService {
       performedBy: `driverId:${driverId}`,
     });
     await this.orderActivityRepository.save(orderActivity);
+  }
+
+  async updateStatus(orderId: number, driverId: number, status: EOrderStatus): Promise<void> {
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${orderId} not found`);
+    }
+
+    if (order.driverId !== driverId) {
+      throw new BadRequestException('You cannot update this order');
+    }
+
+    order.driverId = driverId;
+    order.status = status;
+
+    await this.orderRepository.save(order);
+
+    if (status === EOrderStatus.InDelivery) {
+      const orderActivity = this.orderActivityRepository.create({
+        orderId: orderId,
+        status: EOrderStatus.InDelivery,
+        description: 'driver_in_delivery_the_order',
+        performedBy: `driverId:${driverId}`,
+      });
+      await this.orderActivityRepository.save(orderActivity);
+    } else {
+      const orderActivity = this.orderActivityRepository.create({
+        orderId: orderId,
+        status: EOrderStatus.Delivered,
+        description: 'driver_delivered_the_order',
+        performedBy: `driverId:${driverId}`,
+      });
+      await this.orderActivityRepository.save(orderActivity);
+    }
   }
 
   private async findEligibleDrivers(order: OrderEntity): Promise<DriverEntity[]> {

@@ -1,10 +1,11 @@
 import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { AssignOrderDto } from './dto/assign-order.dto';
 import { UpdateDriverAvailabilityDto } from './dto/update-driver-availability.dto';
 import { OrderService } from './order.service';
+import { UpdateStatusDto } from './dto/update-status-order.dto';
 
 @Controller('order')
 @ApiTags('Orders')
@@ -33,27 +34,40 @@ export class OrderController {
   @ApiOperation({ summary: 'Get order details for driver' })
   @ApiResponse({ status: 200, description: 'Returns the order details' })
   @ApiResponse({ status: 404, description: 'Order not found' })
-  async getOrderDetails(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
-    const { id: driverId } = user;
-    return this.orderService.getOrderDetailsForDriver(id, driverId);
+  @ApiParam({ name: 'id', type: String, description: 'Order ID' })
+  async getOrderDetails(@Param('id') id: number) {
+    // const { id: driverId } = user;
+    return this.orderService.getOrderDetailsForDriver(id, 51);
   }
 
   @Put(':id/accept')
   @ApiOperation({ summary: 'Accept an order' })
   @ApiResponse({ status: 200, description: 'Order accepted successfully' })
   @ApiResponse({ status: 400, description: 'Unable to accept the order' })
-  async acceptOrder(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
-    const { id: driverId } = user;
-    return this.orderService.acceptOrderByDriver(id, driverId);
+  @ApiParam({ name: 'id', type: String, description: 'Order ID' })
+  async acceptOrder(@Param('id') id: number) {
+    // const { id: driverId } = user;
+    return this.orderService.acceptOrderByDriver(id, 51);
   }
 
   @Put(':id/reject')
   @ApiOperation({ summary: 'Reject an order' })
   @ApiResponse({ status: 200, description: 'Order rejected successfully' })
   @ApiResponse({ status: 400, description: 'Unable to reject the order' })
+  @ApiParam({ name: 'id', type: String, description: 'Order ID' })
   async rejectOrder(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
     const { id: driverId } = user;
     return this.orderService.rejectOrderByDriver(id, driverId);
+  }
+
+  @Put(':id/status')
+  @ApiOperation({ summary: 'Update status order' })
+  @ApiResponse({ status: 200, description: 'Order updated successfully' })
+  @ApiResponse({ status: 400, description: 'Unable to update the order' })
+  @ApiParam({ name: 'id', type: String, description: 'Order ID' })
+  async updateStatus(@Param('id') id: number, @Body() statusDto: UpdateStatusDto) {
+    // const { id: driverId } = user;
+    return this.orderService.updateStatus(id, 51, statusDto.status);
   }
 
   @Post('assign')

@@ -94,7 +94,7 @@ export class OrderService {
         const itemPrice = productPrice + optionsPrice;
 
         return {
-          orderId: 100,
+          orderId: savedOrder.id,
           productId: cartProduct.product.id,
           productName: cartProduct.product.name ?? '',
           productImage: cartProduct.product?.imageId ?? '',
@@ -141,7 +141,7 @@ export class OrderService {
       const orderActivity = this.orderActivityRepository.create({
         orderId: savedOrder.id,
         status: EOrderStatus.Pending,
-        description: 'Order created',
+        description: 'order_created',
         performedBy: `client:${clientId}`,
       });
       await queryRunner.manager.save(OrderActivityEntity, orderActivity);
@@ -236,7 +236,7 @@ export class OrderService {
       const orderActivity = this.orderActivityRepository.create({
         orderId: order.id,
         status: EOrderStatus.Cancelled,
-        description: 'Order cancelled by client',
+        description: 'order_cancelled_by_client',
         performedBy: `client:${clientId}`,
         cancellationReason: updateOrderDto.reasons || '',
         cancellationType: 'client',
