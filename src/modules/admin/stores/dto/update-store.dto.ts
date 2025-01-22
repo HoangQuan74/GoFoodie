@@ -1,6 +1,6 @@
 import { ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { CreateStoreDto, CreateStoreSpecialWorkingTimeDto } from './create-store.dto';
-import { IsBoolean, IsOptional, ValidateNested } from 'class-validator';
+import { IsBoolean, IsLatitude, IsLongitude, IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class UpdateStoreDto extends PartialType(CreateStoreDto) {
@@ -9,6 +9,18 @@ export class UpdateStoreDto extends PartialType(CreateStoreDto) {
   @Type(() => Boolean)
   @IsOptional()
   isPause: boolean;
+
+  @ApiPropertyOptional()
+  @IsLatitude()
+  @IsOptional()
+  @Type(() => Number)
+  latitude: number;
+
+  @ApiPropertyOptional()
+  @IsLongitude()
+  @IsOptional()
+  @Type(() => Number)
+  longitude: number;
 
   @ApiPropertyOptional()
   @IsBoolean()

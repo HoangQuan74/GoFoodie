@@ -96,7 +96,7 @@ export class MapboxController {
 
     const result = data.features.map((feature) => ({
       id: feature.id,
-      address: feature.properties?.place_formatted,
+      address: feature.properties?.full_address,
       coordinates: feature.geometry?.coordinates,
     }));
 
@@ -119,7 +119,7 @@ export class MapboxController {
 
     const result = data.features.map((feature) => ({
       id: feature.id,
-      address: feature.properties?.place_formatted,
+      address: feature.properties?.full_address,
       coordinates: feature.geometry?.coordinates,
     }));
 
