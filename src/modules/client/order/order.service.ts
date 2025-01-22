@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EOrderStatus } from 'src/common/enums/order.enum';
 import { CartProductEntity } from 'src/database/entities/cart-product.entity';
 import { CartEntity } from 'src/database/entities/cart.entity';
-import { Group, OrderItemEntity } from 'src/database/entities/order-item.entity';
+import { OrderItemEntity } from 'src/database/entities/order-item.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
 import { EventGatewayService } from 'src/events/event.gateway.service';
@@ -11,6 +11,7 @@ import { DataSource, Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { Group } from 'src/common/interfaces/order-item.interface';
 
 @Injectable()
 export class OrderService {

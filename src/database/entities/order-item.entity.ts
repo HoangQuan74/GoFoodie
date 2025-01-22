@@ -1,30 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { OrderEntity } from './order.entity';
 import { ProductEntity } from './product.entity';
-
-export interface Group {
-  optionGroup: OptionGroup;
-  options: Option | Option[];
-}
-export interface OptionGroup {
-  id: number;
-  name: string;
-  storeId: number;
-  isMultiple: boolean;
-  status: string;
-  createdAt: Date;
-  updateAt: Date;
-}
-
-export interface Option {
-  id: number;
-  name: string;
-  price: number;
-  status: string;
-  optionGroupId: number;
-  createdAt: Date;
-  updateAt: Date;
-}
+import { Group } from 'src/common/interfaces/order-item.interface';
 
 @Entity('order_items')
 export class OrderItemEntity {
