@@ -31,6 +31,7 @@ import { JWT_SECRET } from './common/constants';
 import { EventsModule } from './events/events.module';
 import { FcmModule } from './modules/fcm/fcm.module';
 import { FcmHistoriesModule } from './modules/fcm-histories/fcm-histories.module';
+import { FeeModule } from './modules/fee/fee.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { FcmHistoriesModule } from './modules/fcm-histories/fcm-histories.module
     EventsModule,
     FcmModule,
     FcmHistoriesModule,
+    FeeModule,
   ],
   controllers: [],
   providers: [],

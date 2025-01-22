@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToMany } from 'typeorm';
 import { FeeEntity } from './fee.entity';
 import { AppTypeEntity } from './app-type.entity';
+import { EFeeType } from 'src/common/enums';
 
 @Entity('fee_types')
 export class FeeTypeEntity {
@@ -9,6 +10,9 @@ export class FeeTypeEntity {
 
   @Column()
   name: string;
+
+  @Column({ default: '' })
+  value: EFeeType;
 
   @OneToMany(() => FeeEntity, (fee) => fee.feeType)
   fees: FeeEntity[];

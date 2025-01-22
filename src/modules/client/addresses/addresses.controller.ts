@@ -15,6 +15,13 @@ export class AddressesController {
 
   @Post()
   create(@Body() createAddressDto: CreateAddressDto, @CurrentUser() user: JwtPayload) {
+    const { type } = createAddressDto;
+
+    if (type) {
+      const isExist = this.addressesService.findOne({ where: { clientId: user.id, type } });
+      if (isExist) return this.addressesService.save({ ...isExist, ...createAddressDto });
+    }
+
     return this.addressesService.save({ ...createAddressDto, clientId: user.id });
   }
 
@@ -32,6 +39,12 @@ export class AddressesController {
   async update(@Param('id') id: string, @Body() updateAddressDto: UpdateAddressDto, @CurrentUser() user: JwtPayload) {
     const address = await this.addressesService.findOne({ where: { id: +id, clientId: user.id } });
     if (!address) throw new NotFoundException();
+
+    const { type } = updateAddressDto;
+    if (type && type !== address.type) {
+      const isExist = await this.addressesService.findOne({ where: { clientId: user.id, type } });
+      if (isExist) await this.addressesService.remove(isExist);
+    }
 
     return this.addressesService.save({ ...address, ...updateAddressDto });
   }

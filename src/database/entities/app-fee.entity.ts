@@ -1,11 +1,12 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { AppTypeEntity } from './app-type.entity';
 import { FeeEntity } from './fee.entity';
+import { EAppType } from 'src/common/enums/config.enum';
 
 @Entity('app_fees')
 export class AppFeeEntity {
   @PrimaryColumn({ name: 'app_type_id' })
-  appTypeId: string;
+  appTypeId: EAppType;
 
   @PrimaryColumn({ name: 'fee_id' })
   feeId: number;
