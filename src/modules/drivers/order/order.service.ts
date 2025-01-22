@@ -11,6 +11,7 @@ import { OrderEntity } from 'src/database/entities/order.entity';
 import { EventGatewayService } from 'src/events/event.gateway.service';
 import { calculateDistance } from 'src/utils/distance';
 import { Repository } from 'typeorm';
+import { QueryOrderDto } from './dto/query-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -109,7 +110,10 @@ export class OrderService {
       throw new NotFoundException(`Order with ID ${orderId} not found`);
     }
 
-    if (order.status !== EOrderStatus.OfferSentToDriver || order.driverId !== driverId) {
+    if (
+      ![EOrderStatus.Confirmed, EOrderStatus.DriverAccepted, EOrderStatus.SearchingForDriver].includes(order.status) ||
+      order.driverId !== driverId
+    ) {
       throw new BadRequestException('You do not have permission to view this order');
     }
 
@@ -126,7 +130,10 @@ export class OrderService {
       throw new NotFoundException(`Order with ID ${orderId} not found`);
     }
 
-    if (order.status !== EOrderStatus.OfferSentToDriver || order.driverId !== driverId) {
+    if (
+      ![EOrderStatus.Confirmed, EOrderStatus.DriverAccepted, EOrderStatus.SearchingForDriver].includes(order.status) ||
+      order.driverId !== driverId
+    ) {
       throw new BadRequestException('You cannot accept this order');
     }
 
@@ -137,7 +144,7 @@ export class OrderService {
 
     const orderActivity = this.orderActivityRepository.create({
       orderId: orderId,
-      status: EOrderStatus.SearchingForDriver,
+      status: EOrderStatus.DriverAccepted,
       description: 'driver_accepted_the_order',
       performedBy: `driverId:${driverId}`,
     });
@@ -155,7 +162,10 @@ export class OrderService {
       throw new NotFoundException(`Order with ID ${orderId} not found`);
     }
 
-    if (order.status !== EOrderStatus.OfferSentToDriver || order.driverId !== driverId) {
+    if (
+      ![EOrderStatus.Confirmed, EOrderStatus.DriverAccepted, EOrderStatus.SearchingForDriver].includes(order.status) ||
+      order.driverId !== driverId
+    ) {
       throw new BadRequestException('You cannot reject this order');
     }
 
@@ -173,6 +183,85 @@ export class OrderService {
       performedBy: `driverId:${driverId}`,
     });
     await this.orderActivityRepository.save(orderActivity);
+  }
+
+  async updateStatus(orderId: number, driverId: number, status: EOrderStatus): Promise<void> {
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${orderId} not found`);
+    }
+
+    if (order.driverId !== driverId) {
+      throw new BadRequestException('You cannot update this order');
+    }
+
+    order.driverId = driverId;
+    order.status = status;
+
+    await this.orderRepository.save(order);
+
+    if (status === EOrderStatus.InDelivery) {
+      const orderActivity = this.orderActivityRepository.create({
+        orderId: orderId,
+        status: EOrderStatus.InDelivery,
+        description: 'driver_in_delivery_the_order',
+        performedBy: `driverId:${driverId}`,
+      });
+      await this.orderActivityRepository.save(orderActivity);
+    } else {
+      const orderActivity = this.orderActivityRepository.create({
+        orderId: orderId,
+        status: EOrderStatus.Delivered,
+        description: 'driver_delivered_the_order',
+        performedBy: `driverId:${driverId}`,
+      });
+      await this.orderActivityRepository.save(orderActivity);
+    }
+  }
+
+  async findAllByClient(clientId: number, queryOrderDto: QueryOrderDto) {
+    const query = this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.orderItems', 'orderItems')
+      .leftJoinAndSelect('order.activities', 'activities');
+    // .where('order.clientId = :clientId', { clientId });
+
+    if (queryOrderDto.status) {
+      query.andWhere('order.status = :status', { status: queryOrderDto.status });
+    }
+
+    if (queryOrderDto.paymentStatus) {
+      query.andWhere('order.paymentStatus = :paymentStatus', { paymentStatus: queryOrderDto.paymentStatus });
+    }
+
+    if (queryOrderDto.search) {
+      query.andWhere('order.id::text LIKE :search', { search: `%${queryOrderDto.search}%` });
+    }
+
+    if (queryOrderDto.startDate && queryOrderDto.endDate) {
+      query.andWhere('order.createdAt BETWEEN :startDate AND :endDate', {
+        startDate: queryOrderDto.startDate,
+        endDate: queryOrderDto.endDate,
+      });
+    }
+
+    query
+      .orderBy(`order.${queryOrderDto.sortBy || 'createdAt'}`, queryOrderDto.sortOrder || 'DESC')
+      .skip((queryOrderDto.page - 1) * queryOrderDto.limit)
+      .take(queryOrderDto.limit);
+
+    const [orders, total] = await query.getManyAndCount();
+
+    return {
+      orders,
+      total,
+      page: queryOrderDto.page,
+      limit: queryOrderDto.limit,
+      totalPages: Math.ceil(total / queryOrderDto.limit),
+    };
   }
 
   private async findEligibleDrivers(order: OrderEntity): Promise<DriverEntity[]> {

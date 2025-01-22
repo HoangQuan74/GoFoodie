@@ -95,7 +95,7 @@ export class OrderService {
         const itemPrice = productPrice + optionsPrice;
 
         return {
-          orderId: 100,
+          orderId: savedOrder.id,
           productId: cartProduct.product.id,
           productName: cartProduct.product.name ?? '',
           productImage: cartProduct.product?.imageId ?? '',
@@ -142,7 +142,7 @@ export class OrderService {
       const orderActivity = this.orderActivityRepository.create({
         orderId: savedOrder.id,
         status: EOrderStatus.Pending,
-        description: 'Order created',
+        description: 'order_created',
         performedBy: `client:${clientId}`,
       });
       await queryRunner.manager.save(OrderActivityEntity, orderActivity);
@@ -179,8 +179,8 @@ export class OrderService {
       query.andWhere('order.paymentStatus = :paymentStatus', { paymentStatus: queryOrderDto.paymentStatus });
     }
 
-    if (queryOrderDto.keyword) {
-      query.andWhere('order.id::text LIKE :keyword', { keyword: `%${queryOrderDto.keyword}%` });
+    if (queryOrderDto.search) {
+      query.andWhere('order.id::text LIKE :search', { search: `%${queryOrderDto.search}%` });
     }
 
     if (queryOrderDto.startDate && queryOrderDto.endDate) {
@@ -209,7 +209,7 @@ export class OrderService {
   async findOne(clientId: number, orderId: number): Promise<OrderEntity> {
     const order = await this.orderRepository.findOne({
       where: { id: orderId, clientId },
-      relations: ['orderItems', 'activities'],
+      relations: ['orderItems', 'activities', 'store', 'client'],
     });
 
     if (!order) {
@@ -237,7 +237,7 @@ export class OrderService {
       const orderActivity = this.orderActivityRepository.create({
         orderId: order.id,
         status: EOrderStatus.Cancelled,
-        description: 'Order cancelled by client',
+        description: 'order_cancelled_by_client',
         performedBy: `client:${clientId}`,
         cancellationReason: updateOrderDto.reasons || '',
         cancellationType: 'client',
