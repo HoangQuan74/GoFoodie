@@ -8,7 +8,3 @@ export enum ERequestType {
   Create = 'create',
   Update = 'update',
 }
-
-export enum EDriverRequestType {
-  Other = 'other',
-}

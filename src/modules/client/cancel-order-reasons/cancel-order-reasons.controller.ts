@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { CancelOrderReasonsService } from './cancel-order-reasons.service';
 import { EAppType } from 'src/common/enums/config.enum';
 
@@ -6,6 +6,7 @@ import { EAppType } from 'src/common/enums/config.enum';
 export class CancelOrderReasonsController {
   constructor(private readonly cancelOrderReasonsService: CancelOrderReasonsService) {}
 
+  @Get()
   async find() {
     return this.cancelOrderReasonsService.find({ where: { status: true, appTypes: { value: EAppType.AppClient } } });
   }

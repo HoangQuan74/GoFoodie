@@ -11,16 +11,6 @@ export class QueryRequestDto extends PaginationQuery {
   @ValidateIf((o) => o.status)
   status: ERequestStatus;
 
-  @ApiPropertyOptional({ enum: ERequestType })
-  @IsOptional()
-  @IsEnum(ERequestType)
-  @ValidateIf((o) => o.type)
-  type: ERequestType;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  productCategoryId: number;
-
   @ApiPropertyOptional()
   @IsOptional()
   createdAtFrom: Date;
@@ -38,31 +28,28 @@ export class QueryRequestDto extends PaginationQuery {
   approvedAtTo: Date;
 }
 
-export class QueryRequestMerchantDto extends PaginationQuery {
-  @ApiPropertyOptional({ enum: ERequestStatus })
+export class QueryRequestProductDto extends QueryRequestDto {
+  @ApiPropertyOptional({ enum: ERequestType })
   @IsOptional()
-  @IsEnum(ERequestStatus)
-  @ValidateIf((o) => o.status)
-  status: ERequestStatus;
+  @IsEnum(ERequestType)
+  @ValidateIf((o) => o.type)
+  type: ERequestType;
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  productCategoryId: number;
+}
+
+export class QueryRequestMerchantDto extends QueryRequestDto {
   @ApiPropertyOptional()
   @IsOptional()
   @Type(() => Number)
   typeId: number;
+}
 
+export class QueryRequestDriverDto extends QueryRequestDto {
   @ApiPropertyOptional()
   @IsOptional()
-  createdAtFrom: Date;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  createdAtTo: Date;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  approvedAtFrom: Date;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  approvedAtTo: Date;
+  @Type(() => Number)
+  typeId: number;
 }

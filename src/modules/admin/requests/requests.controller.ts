@@ -6,7 +6,7 @@ import { JwtPayload } from 'src/common/interfaces';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../auth/auth.guard';
 import { ERequestStatus } from 'src/common/enums';
-import { QueryRequestDto, QueryRequestMerchantDto } from './dto/query-request.dto';
+import { QueryRequestProductDto, QueryRequestMerchantDto, QueryRequestDriverDto } from './dto/query-request.dto';
 import { Brackets, In } from 'typeorm';
 
 @Controller('requests')
@@ -17,7 +17,7 @@ export class RequestsController {
 
   @Get('products')
   @ApiOperation({ summary: 'Danh sách yêu cầu duyệt sản phẩm' })
-  async getProducts(@Query() query: QueryRequestDto) {
+  async getProducts(@Query() query: QueryRequestProductDto) {
     const { page, limit, status, type, productCategoryId, search } = query;
     const { createdAtFrom, createdAtTo, approvedAtFrom, approvedAtTo } = query;
 
@@ -141,41 +141,57 @@ export class RequestsController {
 
   @Get('drivers')
   @ApiOperation({ summary: 'Danh sách yêu cầu tài xế' })
-  async getDrivers(@Query() query: QueryRequestDto) {
-    const { page, limit, status, type, createdAtFrom, createdAtTo, search } = query;
+  async getDrivers(@Query() query: QueryRequestDriverDto) {
+    const { page, limit, status, typeId, search } = query;
+    const { approvedAtFrom, approvedAtTo, createdAtFrom, createdAtTo } = query;
 
     const queryBuilder = this.requestsService
       .createDriverRequestQueryBuilder('request')
-      .select(['request.id as id', 'request.code as code', 'request.status as status', 'request.type as type'])
-      .addSelect(['request.createdAt as "createdAt"', 'request.name as "name"', 'request.description as "description"'])
+      .select(['request.id as id', 'request.code as code', 'request.status as status', 'type.name as "typeName"'])
+      .addSelect(['request.createdAt as "createdAt"', 'request.description as "description"'])
       .addSelect(['driver.fullName as "driverName"', 'driver.phoneNumber as "driverPhone"'])
-      .addSelect(['processedBy.name as "processedByName"', 'request.processedAt as "processedAt"'])
+      .addSelect(['approvedBy.name as "approvedByName"', 'request.approvedAt as "approvedAt"'])
       .innerJoin('request.driver', 'driver')
-      .leftJoin('request.processedBy', 'processedBy')
+      .innerJoin('request.type', 'type')
+      .leftJoin('request.approvedBy', 'approvedBy')
       .orderBy('request.id', 'DESC')
       .limit(limit)
       .offset((page - 1) * limit);
 
     status && queryBuilder.andWhere('request.status = :status', { status });
-    type && queryBuilder.andWhere('request.type = :type', { type });
+    typeId && queryBuilder.andWhere('request.typeId = :typeId', { typeId });
     createdAtFrom && queryBuilder.andWhere('request.createdAt >= :createdAtFrom', { createdAtFrom });
     createdAtTo && queryBuilder.andWhere('request.createdAt <= :createdAtTo', { createdAtTo });
+    approvedAtFrom && queryBuilder.andWhere('request.approvedAt >= :approvedAtFrom', { approvedAtFrom });
+    approvedAtTo && queryBuilder.andWhere('request.approvedAt <= :approvedAtTo', { approvedAtTo });
 
     if (search) {
-      // queryBuilder.andWhere(
-      //   new Brackets((qb) => {
-      //     qb.where('request.code ILIKE :search', { search: `%${search}%` })
-      //       .orWhere('driver.name ILIKE :search', { search: `%${search}%` })
-      //       .orWhere('driver.phone ILIKE :search', { search: `%${search}%` });
-      //   }),
-      // );
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.where('request.code ILIKE :search', { search: `%${search}%` })
+            .orWhere('driver.fullName ILIKE :search', { search: `%${search}%` })
+            .orWhere('driver.phoneNumber ILIKE :search', { search: `%${search}%` });
+        }),
+      );
     }
+
+    const countQuery = this.requestsService.createDriverRequestQueryBuilder('request');
 
     const itemsPromise = queryBuilder.getRawMany();
     const totalPromise = queryBuilder.getCount();
-    const [items, total] = await Promise.all([itemsPromise, totalPromise]);
+    const pendingPromise = countQuery.where(`request.status = '${ERequestStatus.Pending}'`).getCount();
+    const approvedPromise = countQuery.where(`request.status = '${ERequestStatus.Approved}'`).getCount();
+    const rejectedPromise = countQuery.where(`request.status = '${ERequestStatus.Rejected}'`).getCount();
 
-    return { items, total };
+    const [[items, total], pending, approved, rejected] = await Promise.all([
+      itemsPromise,
+      totalPromise,
+      pendingPromise,
+      approvedPromise,
+      rejectedPromise,
+    ]);
+
+    return { items, total, pending, approved, rejected };
   }
 
   @Get('drivers/:id')
@@ -184,10 +200,10 @@ export class RequestsController {
       select: {
         driver: { id: true, fullName: true, phoneNumber: true },
         files: { id: true, path: true },
-        processedBy: { id: true, name: true },
+        approvedBy: { id: true, name: true },
       },
       where: { id },
-      relations: ['files', 'driver', 'processedBy'],
+      relations: ['files', 'driver', 'approvedBy'],
     };
     const request = await this.requestsService.findOneDriverRequest(options);
     if (!request) throw new NotFoundException();
@@ -203,11 +219,11 @@ export class RequestsController {
     });
     if (requests.length !== ids.length) throw new NotFoundException();
 
-    const data = { processedById: user.id, status: ERequestStatus.Approved, processedAt: new Date() };
+    const data = { approvedById: user.id, status: ERequestStatus.Approved, processedAt: new Date() };
     await this.requestsService.updateDriverRequest({ id: In(ids) }, data);
   }
 
-  @Patch('drivers/reject')
+  @Patch('drivers/:id/reject')
   @ApiOperation({ summary: 'Từ chối yêu cầu tài xế' })
   @ApiBody({
     schema: {
@@ -215,14 +231,14 @@ export class RequestsController {
       properties: { ids: { type: 'array', items: { type: 'number' } }, rejectReason: { type: 'string' } },
     },
   })
-  async driverReject(@Body() { ids }: IdentityQuery & { rejectReason: string }, @CurrentUser() user: JwtPayload) {
-    const requests = await this.requestsService.findDriverRequests({
-      where: { id: In(ids), status: ERequestStatus.Pending },
+  async driverReject(@Body() reason: string, @CurrentUser() user: JwtPayload, @Param('id') id: number) {
+    const request = await this.requestsService.findOneDriverRequest({
+      where: { id, status: ERequestStatus.Pending },
     });
-    if (requests.length !== ids.length) throw new NotFoundException();
+    if (!request) throw new NotFoundException();
 
-    const data = { processedById: user.id, status: ERequestStatus.Rejected, processedAt: new Date() };
-    await this.requestsService.updateDriverRequest({ id: In(ids) }, data);
+    const data = { approvedById: user.id, status: ERequestStatus.Rejected, approvedAt: new Date(), reason };
+    await this.requestsService.updateDriverRequest({ id }, data);
   }
 
   @Get('stores')
@@ -281,7 +297,7 @@ export class RequestsController {
   @Get('stores/types')
   @ApiOperation({ summary: 'Danh sách loại yêu cầu cửa hàng' })
   async getStoreRequestTypes() {
-    return this.requestsService.findMerchantRequestTypes();
+    return this.requestsService.findRequestTypes();
   }
 
   @Get('stores/:id')
