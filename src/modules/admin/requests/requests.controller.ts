@@ -262,8 +262,20 @@ export class RequestsController {
       );
     }
 
-    const [items, total] = await queryBuilder.getManyAndCount();
-    return { items, total };
+    const countQuery = this.requestsService.createMerchantRequestQueryBuilder('request');
+
+    const pendingPromise = countQuery.where(`request.status = '${ERequestStatus.Pending}'`).getCount();
+    const approvedPromise = countQuery.where(`request.status = '${ERequestStatus.Approved}'`).getCount();
+    const rejectedPromise = countQuery.where(`request.status = '${ERequestStatus.Rejected}'`).getCount();
+
+    const [[items, total], pending, approved, rejected] = await Promise.all([
+      queryBuilder.getManyAndCount(),
+      pendingPromise,
+      approvedPromise,
+      rejectedPromise,
+    ]);
+
+    return { items, total, pending, approved, rejected };
   }
 
   @Get('stores/types')
