@@ -66,6 +66,12 @@ export class StoreEntity extends BaseEntity {
   @Column({ nullable: true })
   address: string;
 
+  @Column({ nullable: true })
+  latitude: number;
+
+  @Column({ nullable: true })
+  longitude: number;
+
   @Column({ name: 'status', type: 'enum', enum: EStoreStatus, default: EStoreStatus.Active })
   status: string;
 
