@@ -225,7 +225,7 @@ export class RequestsController {
     await this.requestsService.updateDriverRequest({ id: In(ids) }, data);
   }
 
-  @Get('merchants')
+  @Get('stores')
   @ApiOperation({ summary: 'Danh sách yêu cầu cửa hàng' })
   async getStores(@Query() query: QueryRequestMerchantDto) {
     const { page, limit, status, typeId, search } = query;
@@ -266,13 +266,13 @@ export class RequestsController {
     return { items, total };
   }
 
-  @Get('merchants/types')
+  @Get('stores/types')
   @ApiOperation({ summary: 'Danh sách loại yêu cầu cửa hàng' })
   async getStoreRequestTypes() {
     return this.requestsService.findMerchantRequestTypes();
   }
 
-  @Get('merchants/:id')
+  @Get('stores/:id')
   @ApiOperation({ summary: 'Chi tiết yêu cầu cửa hàng' })
   async getDetailStoreRequest(@Param('id') id: number) {
     const request = await this.requestsService
@@ -291,7 +291,7 @@ export class RequestsController {
     return request;
   }
 
-  @Patch('merchants/approval')
+  @Patch('stores/approval')
   @ApiOperation({ summary: 'Duyệt yêu cầu cửa hàng' })
   async storeApproval(@Body() { ids }: IdentityQuery, @CurrentUser() user: JwtPayload) {
     const requests = await this.requestsService
@@ -310,7 +310,7 @@ export class RequestsController {
       .execute();
   }
 
-  @Patch('merchants/:id/reject')
+  @Patch('stores/:id/reject')
   @ApiOperation({ summary: 'Từ chối yêu cầu cửa hàng' })
   @ApiBody({ schema: { type: 'object', properties: { reason: { type: 'string' } } } })
   async storeReject(@Body() { reason }: { reason: string }, @CurrentUser() user: JwtPayload, @Param('id') id: number) {

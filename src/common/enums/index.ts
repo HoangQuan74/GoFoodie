@@ -9,3 +9,4 @@ export * from './request.enum';
 export * from './banner.enum';
 export * from './online-training.enum';
 export * from './flash-sale.enum';
+export * from './fee.enum';
