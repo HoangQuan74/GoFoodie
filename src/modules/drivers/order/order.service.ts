@@ -104,7 +104,7 @@ export class OrderService {
   async getOrderDetailsForDriver(orderId: number, driverId: number): Promise<OrderEntity> {
     const order = await this.orderRepository.findOne({
       where: { id: orderId },
-      relations: ['orderItems', 'activities', 'store', 'client'],
+      relations: ['orderItems', 'activities', 'store', 'client', 'driver'],
     });
 
     if (!order) {
@@ -132,7 +132,12 @@ export class OrderService {
     }
 
     if (
-      ![EOrderStatus.Confirmed, EOrderStatus.DriverAccepted, EOrderStatus.SearchingForDriver].includes(order.status) ||
+      ![
+        EOrderStatus.Confirmed,
+        EOrderStatus.DriverAccepted,
+        EOrderStatus.SearchingForDriver,
+        EOrderStatus.OfferSentToDriver,
+      ].includes(order.status) ||
       order.driverId !== driverId
     ) {
       throw new BadRequestException('You cannot accept this order');
@@ -164,7 +169,12 @@ export class OrderService {
     }
 
     if (
-      ![EOrderStatus.Confirmed, EOrderStatus.DriverAccepted, EOrderStatus.SearchingForDriver].includes(order.status) ||
+      ![
+        EOrderStatus.Confirmed,
+        EOrderStatus.DriverAccepted,
+        EOrderStatus.SearchingForDriver,
+        EOrderStatus.OfferSentToDriver,
+      ].includes(order.status) ||
       order.driverId !== driverId
     ) {
       throw new BadRequestException('You cannot reject this order');
