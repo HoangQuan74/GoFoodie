@@ -193,7 +193,7 @@ export class OrderService {
         id: orderId,
         storeId: In(storeIds),
       },
-      relations: ['orderItems', 'activities', 'store', 'client'],
+      relations: ['orderItems', 'activities', 'store', 'client', 'driver'],
     });
 
     if (!order) {

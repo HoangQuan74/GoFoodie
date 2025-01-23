@@ -226,7 +226,7 @@ export class OrderService {
   async findOne(clientId: number, orderId: number): Promise<OrderEntity> {
     const order = await this.orderRepository.findOne({
       where: { id: orderId, clientId },
-      relations: ['orderItems', 'activities', 'store', 'client'],
+      relations: ['orderItems', 'activities', 'store', 'client', 'driver'],
     });
 
     if (!order) {
