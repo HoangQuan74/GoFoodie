@@ -19,7 +19,7 @@ import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../auth/auth.guard';
 import { ERequestStatus } from 'src/common/enums';
 import { QueryRequestProductDto, QueryRequestMerchantDto, QueryRequestDriverDto } from './dto/query-request.dto';
-import { Brackets, ILike, In } from 'typeorm';
+import { Brackets, In } from 'typeorm';
 import { QueryRequestTypeDto } from './dto/query-request-type.dto';
 import { CreateRequestTypeDto } from './dto/create-request-type.dto';
 import { EXCEPTIONS } from 'src/common/constants';
@@ -33,14 +33,22 @@ export class RequestsController {
   @Get('types')
   @ApiOperation({ summary: 'Danh sách loại yêu cầu' })
   async getRequestTypes(@Query() query: QueryRequestTypeDto) {
-    const { page, limit, search, isActive, appTypeId } = query;
-    const options = {
-      skip: (page - 1) * limit,
-      take: limit,
-      where: { isActive, appTypeId, name: search && ILike(`%${search}%`) },
-      relations: ['appType'],
-    };
-    const [items, total] = await this.requestsService.findAndCountRequestTypes(options);
+    const { page, limit, search, isActive, appTypeId, createdAtFrom, createdAtTo } = query;
+
+    const queryBuilder = this.requestsService
+      .createRequestTypeQueryBuilder('requestType')
+      .leftJoinAndSelect('requestType.appTypes', 'appTypes')
+      .orderBy('requestType.id', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    search && queryBuilder.andWhere('requestType.name ILIKE :search', { search: `%${search}%` });
+    typeof isActive === 'boolean' && queryBuilder.andWhere('requestType.isActive = :isActive', { isActive });
+    appTypeId && queryBuilder.andWhere('appTypes.value = :appTypeId', { appTypeId });
+    createdAtFrom && queryBuilder.andWhere('requestType.createdAt >= :createdAtFrom', { createdAtFrom });
+    createdAtTo && queryBuilder.andWhere('requestType.createdAt <= :createdAtTo', { createdAtTo });
+
+    const [items, total] = await queryBuilder.getManyAndCount();
     return { items, total };
   }
 
@@ -56,8 +64,8 @@ export class RequestsController {
   @Post('types')
   @ApiOperation({ summary: 'Tạo loại yêu cầu' })
   async createRequestType(@Body() body: CreateRequestTypeDto) {
-    const { name, appTypeId } = body;
-    const isExist = await this.requestsService.findOneRequestType({ where: { name, appTypeId } });
+    const { name } = body;
+    const isExist = await this.requestsService.findOneRequestType({ where: { name } });
     if (isExist) throw new BadRequestException(EXCEPTIONS.NAME_EXISTED);
 
     return this.requestsService.saveRequestType(body);

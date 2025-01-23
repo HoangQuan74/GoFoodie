@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { EAppType } from 'src/common/enums/config.enum';
+import { Type } from 'class-transformer';
+import { ArrayMinSize, IsArray, IsBoolean, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import { CreateAppTypeDto } from '../../cancel-order-reasons/dto/create-cancel-order-reason.dto';
 
 export class CreateRequestTypeDto {
   @ApiProperty()
@@ -12,7 +13,10 @@ export class CreateRequestTypeDto {
   @IsBoolean()
   isActive: boolean;
 
-  @ApiProperty({ enum: EAppType })
-  @IsEnum(EAppType)
-  appTypeId: EAppType;
+  @ApiProperty({ type: [CreateAppTypeDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @ArrayMinSize(1)
+  @Type(() => CreateAppTypeDto)
+  appTypes: CreateAppTypeDto[];
 }

@@ -1,8 +1,7 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { AdminEntity } from './admin.entity';
 import { AppTypeEntity } from './app-type.entity';
-import { EAppType } from 'src/common/enums/config.enum';
 
 @Entity('request_types')
 export class RequestTypeEntity extends BaseEntity {
@@ -15,9 +14,6 @@ export class RequestTypeEntity extends BaseEntity {
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
-  @Column({ name: 'app_type_id', default: EAppType.AppClient })
-  appTypeId: EAppType;
-
   @Column({ name: 'created_by_id', nullable: true })
   createdById: number;
 
@@ -25,7 +21,11 @@ export class RequestTypeEntity extends BaseEntity {
   @JoinColumn({ name: 'created_by_id' })
   createdBy: AdminEntity;
 
-  @ManyToOne(() => AppTypeEntity, (appType) => appType.value)
-  @JoinColumn({ name: 'app_type_id' })
-  appType: AppTypeEntity;
+  @ManyToMany(() => AppTypeEntity, (appType) => appType.value, { cascade: true })
+  @JoinTable({
+    name: 'app_request_types',
+    joinColumn: { name: 'request_type_id' },
+    inverseJoinColumn: { name: 'app_type_id' },
+  })
+  appTypes: AppTypeEntity[];
 }

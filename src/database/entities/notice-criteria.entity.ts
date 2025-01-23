@@ -5,7 +5,6 @@ import { ECriteriaType } from 'src/common/enums';
 import { CRITERIA_TYPES } from 'src/common/constants';
 
 @Entity('notice_criteria')
-@Index(['noticeId', 'type'], { unique: true })
 export class NoticeCriteriaEntity extends BaseEntity {
   @Column({ name: 'notice_id' })
   noticeId: string;

@@ -4,7 +4,6 @@ import { BaseEntity } from './base.entity';
 import { ChallengeEntity } from './challenge.entity';
 
 @Entity('challenge_criteria')
-@Index(['challengeId', 'type'], { unique: true })
 export class ChallengeCriteriaEntity extends BaseEntity {
   @Column({ name: 'challenge_id' })
   challengeId: string;
