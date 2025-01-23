@@ -1,5 +1,5 @@
 import { BaseEntity } from './base.entity';
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { ServiceTypeEntity } from './service-type.entity';
 import { EOrderCriteriaType } from 'src/common/enums/order-criteria.enum';
 

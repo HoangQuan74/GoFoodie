@@ -14,11 +14,11 @@ export class AddressesController {
   constructor(private readonly addressesService: AddressesService) {}
 
   @Post()
-  create(@Body() createAddressDto: CreateAddressDto, @CurrentUser() user: JwtPayload) {
+  async create(@Body() createAddressDto: CreateAddressDto, @CurrentUser() user: JwtPayload) {
     const { type } = createAddressDto;
 
     if (type) {
-      const isExist = this.addressesService.findOne({ where: { clientId: user.id, type } });
+      const isExist = await this.addressesService.findOne({ where: { clientId: user.id, type } });
       if (isExist) return this.addressesService.save({ ...isExist, ...createAddressDto });
     }
 
