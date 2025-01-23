@@ -1,16 +1,18 @@
-import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
+import { AuthGuard } from '../auth/auth.guard';
 import { AssignOrderDto } from './dto/assign-order.dto';
-import { UpdateDriverAvailabilityDto } from './dto/update-driver-availability.dto';
-import { OrderService } from './order.service';
-import { UpdateStatusDto } from './dto/update-status-order.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
+import { UpdateDriverAvailabilityDto } from './dto/update-driver-availability.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { UpdateStatusDto } from './dto/update-status-order.dto';
+import { OrderService } from './order.service';
 
 @Controller('order')
 @ApiTags('Orders')
+@UseGuards(AuthGuard)
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
