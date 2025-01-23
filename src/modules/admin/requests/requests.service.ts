@@ -100,4 +100,20 @@ export class RequestsService {
   async findRequestTypes(options?: FindManyOptions<RequestTypeEntity>) {
     return this.requestTypeRepository.find(options);
   }
+
+  async findAndCountRequestTypes(options?: FindManyOptions<RequestTypeEntity>) {
+    return this.requestTypeRepository.findAndCount(options);
+  }
+
+  async saveRequestType(entity: Partial<RequestTypeEntity>) {
+    return this.requestTypeRepository.save(entity);
+  }
+
+  async findOneRequestType(options: FindOneOptions<RequestTypeEntity>) {
+    return this.requestTypeRepository.findOne(options);
+  }
+
+  async removeRequestType(entity: RequestTypeEntity) {
+    return this.requestTypeRepository.softRemove(entity);
+  }
 }

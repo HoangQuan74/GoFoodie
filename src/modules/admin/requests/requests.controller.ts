@@ -1,4 +1,16 @@
-import { Controller, Get, Body, Patch, Query, NotFoundException, UseGuards, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Body,
+  Patch,
+  Query,
+  NotFoundException,
+  UseGuards,
+  Param,
+  Post,
+  BadRequestException,
+  Delete,
+} from '@nestjs/common';
 import { RequestsService } from './requests.service';
 import { IdentityQuery } from 'src/common/query';
 import { CurrentUser } from 'src/common/decorators';
@@ -7,13 +19,68 @@ import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../auth/auth.guard';
 import { ERequestStatus } from 'src/common/enums';
 import { QueryRequestProductDto, QueryRequestMerchantDto, QueryRequestDriverDto } from './dto/query-request.dto';
-import { Brackets, In } from 'typeorm';
+import { Brackets, ILike, In } from 'typeorm';
+import { QueryRequestTypeDto } from './dto/query-request-type.dto';
+import { CreateRequestTypeDto } from './dto/create-request-type.dto';
+import { EXCEPTIONS } from 'src/common/constants';
 
 @Controller('requests')
 @ApiTags('Quản lý yêu cầu')
 @UseGuards(AuthGuard)
 export class RequestsController {
   constructor(private readonly requestsService: RequestsService) {}
+
+  @Get('types')
+  @ApiOperation({ summary: 'Danh sách loại yêu cầu' })
+  async getRequestTypes(@Query() query: QueryRequestTypeDto) {
+    const { page, limit, search, isActive, appTypeId } = query;
+    const options = {
+      skip: (page - 1) * limit,
+      take: limit,
+      where: { isActive, appTypeId, name: search && ILike(`%${search}%`) },
+      relations: ['appType'],
+    };
+    const [items, total] = await this.requestsService.findAndCountRequestTypes(options);
+    return { items, total };
+  }
+
+  @Get('types/:id')
+  @ApiOperation({ summary: 'Chi tiết loại yêu cầu' })
+  async getRequestType(@Param('id') id: number) {
+    const requestType = await this.requestsService.findOneRequestType({ where: { id } });
+    if (!requestType) throw new NotFoundException();
+
+    return requestType;
+  }
+
+  @Post('types')
+  @ApiOperation({ summary: 'Tạo loại yêu cầu' })
+  async createRequestType(@Body() body: CreateRequestTypeDto) {
+    const { name, appTypeId } = body;
+    const isExist = await this.requestsService.findOneRequestType({ where: { name, appTypeId } });
+    if (isExist) throw new BadRequestException(EXCEPTIONS.NAME_EXISTED);
+
+    return this.requestsService.saveRequestType(body);
+  }
+
+  @Patch('types/:id')
+  @ApiOperation({ summary: 'Cập nhật loại yêu cầu' })
+  async updateRequestType(@Param('id') id: number, @Body() body: CreateRequestTypeDto) {
+    const requestType = await this.requestsService.findOneRequestType({ where: { id } });
+    if (!requestType) throw new NotFoundException();
+
+    Object.assign(requestType, body);
+    return this.requestsService.saveRequestType(requestType);
+  }
+
+  @Delete('types/:id')
+  @ApiOperation({ summary: 'Xóa loại yêu cầu' })
+  async deleteRequestType(@Param('id') id: number) {
+    const requestType = await this.requestsService.findOneRequestType({ where: { id } });
+    if (!requestType) throw new NotFoundException();
+
+    return this.requestsService.removeRequestType(requestType);
+  }
 
   @Get('products')
   @ApiOperation({ summary: 'Danh sách yêu cầu duyệt sản phẩm' })
@@ -226,13 +293,8 @@ export class RequestsController {
 
   @Patch('drivers/:id/reject')
   @ApiOperation({ summary: 'Từ chối yêu cầu tài xế' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: { ids: { type: 'array', items: { type: 'number' } }, reason: { type: 'string' } },
-    },
-  })
-  async driverReject(@Body() reason: string, @CurrentUser() user: JwtPayload, @Param('id') id: number) {
+  @ApiBody({ schema: { type: 'object', properties: { reason: { type: 'string' } } } })
+  async driverReject(@Body() { reason }: { reason: string }, @CurrentUser() user: JwtPayload, @Param('id') id: number) {
     const request = await this.requestsService.findOneDriverRequest({
       where: { id, status: ERequestStatus.Pending },
     });
