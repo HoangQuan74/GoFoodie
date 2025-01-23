@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EOrderStatus } from 'src/common/enums/order.enum';
+import { EOrderCode, EOrderStatus } from 'src/common/enums/order.enum';
 import { CartProductEntity } from 'src/database/entities/cart-product.entity';
 import { CartEntity } from 'src/database/entities/cart.entity';
 import { OrderItemEntity } from 'src/database/entities/order-item.entity';
@@ -15,6 +15,7 @@ import { Group } from 'src/common/interfaces/order-item.interface';
 import { FcmService } from 'src/modules/fcm/fcm.service';
 import { FeeService } from 'src/modules/fee/fee.service';
 import { calculateDistance } from 'src/utils/distance';
+import { formatDate, generateShortUuid } from 'src/utils/common';
 
 @Injectable()
 export class OrderService {
@@ -34,7 +35,18 @@ export class OrderService {
   ) {}
 
   async create(createOrderDto: CreateOrderDto, clientId: number): Promise<OrderEntity> {
-    const { cartId, deliveryAddress, deliveryLatitude, deliveryLongitude, notes, tip, eatingTools } = createOrderDto;
+    const {
+      cartId,
+      deliveryAddress,
+      deliveryLatitude,
+      deliveryLongitude,
+      deliveryPhone,
+      deliveryName,
+      deliveryAddressNote,
+      notes,
+      tip,
+      eatingTools,
+    } = createOrderDto;
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -79,6 +91,9 @@ export class OrderService {
       );
       const deliveryFee = await this.feeService.getShippingFee(distance);
 
+      const formattedDate = formatDate(new Date());
+      const shortUuid = generateShortUuid();
+
       const newOrder = this.orderRepository.create({
         clientId,
         storeId: cart.store.id,
@@ -86,11 +101,15 @@ export class OrderService {
         deliveryAddress,
         deliveryLatitude,
         deliveryLongitude,
+        deliveryPhone,
+        deliveryName,
+        deliveryAddressNote,
         notes,
         tip,
         eatingTools,
         deliveryFee,
         status: EOrderStatus.Pending,
+        orderCode: `${EOrderCode.DeliveryNow}-${formattedDate}-${shortUuid.toLocaleUpperCase()}`,
       });
 
       const savedOrder = await queryRunner.manager.save(newOrder);
@@ -174,6 +193,7 @@ export class OrderService {
 
       this.eventGatewayService.notifyMerchantNewOrder(savedOrder.storeId, savedOrder);
       this.fcmService.notifyMerchantNewOrder(savedOrder.id);
+      this.eventGatewayService.handleOrderUpdated(savedOrder.id);
 
       return this.findOne(clientId, savedOrder.id);
     } catch (error) {
@@ -187,6 +207,8 @@ export class OrderService {
   async findAllByClient(clientId: number, queryOrderDto: QueryOrderDto) {
     const query = this.orderRepository
       .createQueryBuilder('order')
+      .leftJoinAndSelect('order.client', 'client')
+      .leftJoinAndSelect('order.driver', 'driver')
       .leftJoinAndSelect('order.orderItems', 'orderItems')
       .leftJoinAndSelect('order.activities', 'activities')
       .where('order.clientId = :clientId', { clientId });
@@ -200,7 +222,12 @@ export class OrderService {
     }
 
     if (queryOrderDto.search) {
-      query.andWhere('order.id::text ILIKE :search', { search: `%${queryOrderDto.search}%` });
+      query.andWhere(
+        '(client.name ILIKE :search OR driver.fullName ILIKE :search OR order.orderCode ILIKE :search OR CAST(order.id AS VARCHAR) ILIKE :search)',
+        {
+          search: `%${queryOrderDto.search}%`,
+        },
+      );
     }
 
     if (queryOrderDto.startDate && queryOrderDto.endDate) {
@@ -265,6 +292,8 @@ export class OrderService {
       await queryRunner.manager.save(OrderActivityEntity, orderActivity);
 
       await queryRunner.commitTransaction();
+
+      this.eventGatewayService.handleOrderUpdated(order.id);
 
       return this.findOne(clientId, orderId);
     } catch (error) {

@@ -8,6 +8,7 @@ import { DataSource, In, Repository } from 'typeorm';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderService as DriverOrderService } from '../../drivers/order/order.service';
+import { EventGatewayService } from 'src/events/event.gateway.service';
 
 @Injectable()
 export class OrderService {
@@ -20,6 +21,7 @@ export class OrderService {
     private orderActivityRepository: Repository<OrderActivityEntity>,
     private dataSource: DataSource,
     private driverOrderService: DriverOrderService,
+    private eventGatewayService: EventGatewayService,
   ) {}
 
   async queryOrders(merchantId: number, queryOrderDto: QueryOrderDto) {
@@ -29,6 +31,7 @@ export class OrderService {
     const query = this.orderRepository
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.client', 'client')
+      .leftJoinAndSelect('order.driver', 'driver')
       .leftJoinAndSelect('order.orderItems', 'orderItems')
       .leftJoinAndSelect('order.activities', 'activities')
       .where('order.storeId IN (:...storeIds)', { storeIds });
@@ -42,9 +45,12 @@ export class OrderService {
     }
 
     if (queryOrderDto.search) {
-      query.andWhere('(client.name ILIKE :search OR order.id::text ILIKE :search)', {
-        search: `%${queryOrderDto.search}%`,
-      });
+      query.andWhere(
+        '(client.name ILIKE :search OR driver.fullName ILIKE :search OR order.orderCode ILIKE :search OR CAST(order.id AS VARCHAR) ILIKE :search)',
+        {
+          search: `%${queryOrderDto.search}%`,
+        },
+      );
     }
 
     if (queryOrderDto.startDate && queryOrderDto.endDate) {
@@ -107,6 +113,8 @@ export class OrderService {
 
       await queryRunner.commitTransaction();
 
+      this.eventGatewayService.handleOrderUpdated(order.id);
+
       try {
         await this.driverOrderService.assignOrderToDriver(savedOrder.id);
       } catch (error) {
@@ -167,6 +175,7 @@ export class OrderService {
 
       await queryRunner.commitTransaction();
 
+      this.eventGatewayService.handleOrderUpdated(order.id);
       return order;
     } catch (error) {
       await queryRunner.rollbackTransaction();

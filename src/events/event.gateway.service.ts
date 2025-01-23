@@ -16,4 +16,8 @@ export class EventGatewayService {
   notifyOrderStatus(userId: number, orderId: number, status: string) {
     this.eventsGateway.notifyOrderStatus(userId, orderId, status);
   }
+
+  handleOrderUpdated(orderId: number) {
+    this.eventsGateway.handleOrderUpdated(orderId);
+  }
 }

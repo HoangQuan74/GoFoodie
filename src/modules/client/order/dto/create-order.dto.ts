@@ -17,6 +17,27 @@ export class CreateOrderDto {
   deliveryAddress: string;
 
   @ApiProperty({
+    description: 'The delivery phone for the order',
+    example: '012355646',
+  })
+  @IsString()
+  deliveryPhone: string;
+
+  @ApiProperty({
+    description: 'The delivery name for the order',
+    example: 'Joe Smith',
+  })
+  @IsString()
+  deliveryName: string;
+
+  @ApiProperty({
+    description: 'The delivery address notes for the order',
+    example: '123 Main St, Anytown, AN 12345',
+  })
+  @IsString()
+  deliveryAddressNote: string;
+
+  @ApiProperty({
     description: 'The latitude coordinate of the delivery location',
     example: 40.7128,
   })
