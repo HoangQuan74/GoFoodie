@@ -48,6 +48,12 @@ export class OrderEntity extends BaseEntity {
   @Column({ type: 'int8', nullable: true })
   tip: number;
 
+  @Column({ type: 'boolean', nullable: true, name: 'eating_tools', default: true })
+  eatingTools: boolean;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, name: 'delivery_fee', nullable: true })
+  deliveryFee: number;
+
   @Column({ nullable: true })
   notes: string;
 

@@ -104,7 +104,7 @@ export class OrderService {
   async getOrderDetailsForDriver(orderId: number, driverId: number): Promise<OrderEntity> {
     const order = await this.orderRepository.findOne({
       where: { id: orderId },
-      relations: ['store', 'client', 'orderItems'],
+      relations: ['orderItems', 'activities', 'store', 'client'],
     });
 
     if (!order) {

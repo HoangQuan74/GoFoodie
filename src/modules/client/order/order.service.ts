@@ -12,6 +12,8 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Group } from 'src/common/interfaces/order-item.interface';
+import { FeeService } from 'src/modules/fee/fee.service';
+import { calculateDistance } from 'src/utils/distance';
 
 @Injectable()
 export class OrderService {
@@ -26,10 +28,11 @@ export class OrderService {
     private orderActivityRepository: Repository<OrderActivityEntity>,
     private eventGatewayService: EventGatewayService,
     private dataSource: DataSource,
+    private feeService: FeeService,
   ) {}
 
   async create(createOrderDto: CreateOrderDto, clientId: number): Promise<OrderEntity> {
-    const { cartId, deliveryAddress, deliveryLatitude, deliveryLongitude, notes, tip } = createOrderDto;
+    const { cartId, deliveryAddress, deliveryLatitude, deliveryLongitude, notes, tip, eatingTools } = createOrderDto;
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -62,6 +65,18 @@ export class OrderService {
         return sum + (productPrice + optionsPrice) * cartProduct.quantity;
       }, 0);
 
+      if (!cart.store.latitude || !cart.store.longitude) {
+        throw new BadRequestException('Store location is not set');
+      }
+
+      const distance = calculateDistance(
+        cart.store.latitude,
+        cart.store.longitude,
+        deliveryLatitude,
+        deliveryLongitude,
+      );
+      const deliveryFee = await this.feeService.getShippingFee(distance);
+
       const newOrder = this.orderRepository.create({
         clientId,
         storeId: cart.store.id,
@@ -71,6 +86,8 @@ export class OrderService {
         deliveryLongitude,
         notes,
         tip,
+        eatingTools,
+        deliveryFee,
         status: EOrderStatus.Pending,
       });
 
