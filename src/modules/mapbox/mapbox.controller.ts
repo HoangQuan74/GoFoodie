@@ -5,7 +5,6 @@ import { AppGuard } from 'src/app.gaurd';
 import axios from 'axios';
 import { ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/common/decorators';
-import { PaginationQuery } from 'src/common/query';
 import { SearchReverseDto } from './dto/search-reverse.dto';
 import { SearchForwardDto } from './dto/search-forward.dto';
 

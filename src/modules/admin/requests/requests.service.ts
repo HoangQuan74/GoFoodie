@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ProductApprovalEntity } from 'src/database/entities/product-approval.entity';
-import { FindManyOptions, FindOneOptions, FindOptionsWhere, Repository } from 'typeorm';
+import { DeepPartial, FindManyOptions, FindOneOptions, FindOptionsWhere, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DriverRequestEntity } from 'src/database/entities/driver-request.entity';
 import { RequestTypeEntity } from 'src/database/entities/request-type.entity';
@@ -101,11 +101,11 @@ export class RequestsService {
     return this.requestTypeRepository.find(options);
   }
 
-  async findAndCountRequestTypes(options?: FindManyOptions<RequestTypeEntity>) {
-    return this.requestTypeRepository.findAndCount(options);
+  createRequestTypeQueryBuilder(alias?: string) {
+    return this.requestTypeRepository.createQueryBuilder(alias);
   }
 
-  async saveRequestType(entity: Partial<RequestTypeEntity>) {
+  async saveRequestType(entity: DeepPartial<RequestTypeEntity>) {
     return this.requestTypeRepository.save(entity);
   }
 

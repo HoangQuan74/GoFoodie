@@ -14,4 +14,12 @@ export class QueryRequestTypeDto extends PaginationQuery {
   @IsOptional()
   @Transform(({ value }) => (typeof value === 'string' && value ? value === 'true' : value))
   isActive: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  createdAtFrom: Date;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  createdAtTo: Date;
 }
