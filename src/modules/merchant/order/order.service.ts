@@ -41,9 +41,9 @@ export class OrderService {
       query.andWhere('order.paymentStatus = :paymentStatus', { paymentStatus: queryOrderDto.paymentStatus });
     }
 
-    if (queryOrderDto.keyword) {
-      query.andWhere('(client.name LIKE :keyword OR order.id::text LIKE :keyword)', {
-        keyword: `%${queryOrderDto.keyword}%`,
+    if (queryOrderDto.search) {
+      query.andWhere('(client.name ILIKE :search OR order.id::text ILIKE :search)', {
+        search: `%${queryOrderDto.search}%`,
       });
     }
 
@@ -193,7 +193,7 @@ export class OrderService {
         id: orderId,
         storeId: In(storeIds),
       },
-      relations: ['orderItems', 'activities', 'store', 'client'],
+      relations: ['orderItems', 'activities', 'store', 'client', 'driver'],
     });
 
     if (!order) {

@@ -13,6 +13,8 @@ import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Group } from 'src/common/interfaces/order-item.interface';
 import { FcmService } from 'src/modules/fcm/fcm.service';
+import { FeeService } from 'src/modules/fee/fee.service';
+import { calculateDistance } from 'src/utils/distance';
 
 @Injectable()
 export class OrderService {
@@ -27,11 +29,12 @@ export class OrderService {
     private eventGatewayService: EventGatewayService,
     private dataSource: DataSource,
 
+    private readonly feeService: FeeService,
     private readonly fcmService: FcmService,
   ) {}
 
   async create(createOrderDto: CreateOrderDto, clientId: number): Promise<OrderEntity> {
-    const { cartId, deliveryAddress, deliveryLatitude, deliveryLongitude, notes, tip } = createOrderDto;
+    const { cartId, deliveryAddress, deliveryLatitude, deliveryLongitude, notes, tip, eatingTools } = createOrderDto;
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -64,6 +67,18 @@ export class OrderService {
         return sum + (productPrice + optionsPrice) * cartProduct.quantity;
       }, 0);
 
+      if (!cart.store.latitude || !cart.store.longitude) {
+        throw new BadRequestException('Store location is not set');
+      }
+
+      const distance = calculateDistance(
+        cart.store.latitude,
+        cart.store.longitude,
+        deliveryLatitude,
+        deliveryLongitude,
+      );
+      const deliveryFee = await this.feeService.getShippingFee(distance);
+
       const newOrder = this.orderRepository.create({
         clientId,
         storeId: cart.store.id,
@@ -73,6 +88,8 @@ export class OrderService {
         deliveryLongitude,
         notes,
         tip,
+        eatingTools,
+        deliveryFee,
         status: EOrderStatus.Pending,
       });
 
@@ -97,7 +114,7 @@ export class OrderService {
         const itemPrice = productPrice + optionsPrice;
 
         return {
-          orderId: 100,
+          orderId: savedOrder.id,
           productId: cartProduct.product.id,
           productName: cartProduct.product.name ?? '',
           productImage: cartProduct.product?.imageId ?? '',
@@ -144,7 +161,7 @@ export class OrderService {
       const orderActivity = this.orderActivityRepository.create({
         orderId: savedOrder.id,
         status: EOrderStatus.Pending,
-        description: 'Order created',
+        description: 'order_created',
         performedBy: `client:${clientId}`,
       });
       await queryRunner.manager.save(OrderActivityEntity, orderActivity);
@@ -182,8 +199,8 @@ export class OrderService {
       query.andWhere('order.paymentStatus = :paymentStatus', { paymentStatus: queryOrderDto.paymentStatus });
     }
 
-    if (queryOrderDto.keyword) {
-      query.andWhere('order.id::text LIKE :keyword', { keyword: `%${queryOrderDto.keyword}%` });
+    if (queryOrderDto.search) {
+      query.andWhere('order.id::text ILIKE :search', { search: `%${queryOrderDto.search}%` });
     }
 
     if (queryOrderDto.startDate && queryOrderDto.endDate) {
@@ -212,7 +229,7 @@ export class OrderService {
   async findOne(clientId: number, orderId: number): Promise<OrderEntity> {
     const order = await this.orderRepository.findOne({
       where: { id: orderId, clientId },
-      relations: ['orderItems', 'activities'],
+      relations: ['orderItems', 'activities', 'store', 'client', 'driver'],
     });
 
     if (!order) {
@@ -240,7 +257,7 @@ export class OrderService {
       const orderActivity = this.orderActivityRepository.create({
         orderId: order.id,
         status: EOrderStatus.Cancelled,
-        description: 'Order cancelled by client',
+        description: 'order_cancelled_by_client',
         performedBy: `client:${clientId}`,
         cancellationReason: updateOrderDto.reasons || '',
         cancellationType: 'client',
