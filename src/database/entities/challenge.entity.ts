@@ -5,6 +5,7 @@ import { BannerPositionEntity } from './banner-position.entity';
 import { BaseEntity } from './base.entity';
 import { FileEntity } from './file.entity';
 import { ChallengeCriteriaEntity } from './challenge-criteria.entity';
+import { AdminEntity } from './admin.entity';
 
 @Entity('challenges')
 export class ChallengeEntity extends BaseEntity {
@@ -47,6 +48,9 @@ export class ChallengeEntity extends BaseEntity {
   @Column({ name: 'service_type_id' })
   serviceTypeId: number;
 
+  @Column({ name: 'created_by_id', nullable: true })
+  createdById: number;
+
   @ManyToOne(() => ChallengeTypeEntity, (type) => type.id)
   @JoinColumn({ name: 'type_id' })
   type: ChallengeTypeEntity;
@@ -65,4 +69,8 @@ export class ChallengeEntity extends BaseEntity {
 
   @OneToMany(() => ChallengeCriteriaEntity, (criteria) => criteria.challenge, { cascade: true })
   criteria: ChallengeCriteriaEntity[];
+
+  @ManyToOne(() => AdminEntity, (admin) => admin.id)
+  @JoinColumn({ name: 'created_by_id' })
+  createdBy: AdminEntity;
 }

@@ -21,6 +21,8 @@ import { AuthGuard } from '../auth/auth.guard';
 import { QueryChallengeDto } from './dto/query-challenge.dto';
 import { EChallengeStatus } from 'src/common/enums/challenge.enum';
 import { EXCEPTIONS } from 'src/common/constants';
+import { CurrentUser } from 'src/common/decorators';
+import { JwtPayload } from 'src/common/interfaces';
 
 @Controller('challenges')
 @ApiTags('Challenges')
@@ -37,7 +39,7 @@ export class ChallengesController {
   }
 
   @Post()
-  create(@Body() body: CreateChallengeDto) {
+  create(@Body() body: CreateChallengeDto, @CurrentUser() user: JwtPayload) {
     return this.dataSource.transaction(async (manager) => {
       const { code } = body;
 
@@ -46,6 +48,7 @@ export class ChallengesController {
 
       const challenge = new ChallengeEntity();
       Object.assign(challenge, body);
+      challenge.createdById = user.id;
 
       return manager.save(challenge);
     });
@@ -57,8 +60,10 @@ export class ChallengesController {
 
     const queryBuilder = this.challengesService
       .createQueryBuilder('challenge')
+      .addSelect(['createdBy.id', 'createdBy.name'])
       .leftJoinAndSelect('challenge.type', 'type')
       .leftJoinAndSelect('challenge.serviceType', 'serviceType')
+      .leftJoin('challenge.createdBy', 'createdBy')
       .orderBy('challenge.id', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
