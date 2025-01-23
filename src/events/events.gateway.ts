@@ -8,6 +8,7 @@ import { SocketUser } from 'src/common/interfaces/socket.interface';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ERoleType } from 'src/common/enums';
+import { ESocketEvent } from 'src/common/enums/socket.enum';
 
 @WebSocketGateway()
 @Injectable()
@@ -157,7 +158,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
 
     socketIds.forEach((socketId) => {
-      this.server.to(socketId).emit('orderUpdated', { orderId });
+      this.server.to(socketId).emit(ESocketEvent.orderUpdated, { orderId });
     });
   }
 
