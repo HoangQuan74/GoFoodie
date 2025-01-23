@@ -12,6 +12,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Group } from 'src/common/interfaces/order-item.interface';
+import { FcmService } from 'src/modules/fcm/fcm.service';
 import { FeeService } from 'src/modules/fee/fee.service';
 import { calculateDistance } from 'src/utils/distance';
 
@@ -20,15 +21,16 @@ export class OrderService {
   constructor(
     @InjectRepository(OrderEntity)
     private orderRepository: Repository<OrderEntity>,
-    @InjectRepository(OrderItemEntity)
-    private orderItemRepository: Repository<OrderItemEntity>,
+
     @InjectRepository(CartEntity)
     private cartRepository: Repository<CartEntity>,
     @InjectRepository(OrderActivityEntity)
     private orderActivityRepository: Repository<OrderActivityEntity>,
     private eventGatewayService: EventGatewayService,
     private dataSource: DataSource,
-    private feeService: FeeService,
+
+    private readonly feeService: FeeService,
+    private readonly fcmService: FcmService,
   ) {}
 
   async create(createOrderDto: CreateOrderDto, clientId: number): Promise<OrderEntity> {
@@ -171,6 +173,7 @@ export class OrderService {
       await queryRunner.commitTransaction();
 
       this.eventGatewayService.notifyMerchantNewOrder(savedOrder.storeId, savedOrder);
+      this.fcmService.notifyMerchantNewOrder(savedOrder.id);
 
       return this.findOne(clientId, savedOrder.id);
     } catch (error) {

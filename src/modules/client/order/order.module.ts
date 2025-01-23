@@ -11,6 +11,7 @@ import { StoreEntity } from 'src/database/entities/store.entity';
 import { ClientModule } from '../client.module';
 import { EventsModule } from 'src/events/events.module';
 import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
+import { FcmModule } from 'src/modules/fcm/fcm.module';
 import { FeeEntity } from 'src/database/entities/fee.entity';
 import { FeeService } from 'src/modules/fee/fee.service';
 
@@ -28,6 +29,7 @@ import { FeeService } from 'src/modules/fee/fee.service';
     ]),
     forwardRef(() => ClientModule),
     EventsModule,
+    FcmModule,
   ],
   providers: [OrderService, FeeService],
   controllers: [OrderController],
