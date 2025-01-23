@@ -1,16 +1,13 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import {
-  SubscribeMessage,
-  WebSocketGateway,
-  OnGatewayConnection,
-  OnGatewayDisconnect,
-  WebSocketServer,
-} from '@nestjs/websockets';
+import { WebSocketGateway, OnGatewayConnection, OnGatewayDisconnect, WebSocketServer } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { OrderEntity } from '../database/entities/order.entity';
 import { JwtPayload } from 'src/common/interfaces';
 import { SocketUser } from 'src/common/interfaces/socket.interface';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ERoleType } from 'src/common/enums';
 
 @WebSocketGateway()
 @Injectable()
@@ -18,7 +15,15 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
   private connectedUsers: Map<number, SocketUser> = new Map();
 
-  constructor(private readonly jwtService: JwtService) {}
+  private connected: Map<string, string> = new Map();
+
+  constructor(
+    private readonly jwtService: JwtService,
+    @InjectRepository(OrderEntity)
+    private orderRepository: Repository<OrderEntity>,
+  ) {
+    this.handleOrderUpdated(51);
+  }
 
   handleConnection(client: Socket, ...args: any[]) {
     try {
@@ -31,6 +36,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (!userId || !type) throw new BadRequestException('Invalid token');
 
       this.connectedUsers.set(userId, { id: userId, type, socket: client });
+      this.connected.set(`${type}-${userId}`, client.id);
       console.log(`${type.charAt(0).toUpperCase() + type.slice(1)} connected:`, userId);
 
       // Join a room based on the user type
@@ -46,6 +52,13 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (user.socket === client) {
         this.connectedUsers.delete(userId);
         console.log(`${user.type.charAt(0).toUpperCase() + user.type.slice(1)} disconnected:`, userId);
+        break;
+      }
+    }
+
+    for (const [key, value] of this.connected.entries()) {
+      if (value === client.id) {
+        this.connected.delete(key);
         break;
       }
     }
@@ -106,9 +119,46 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  @SubscribeMessage('message')
-  handleMessage(client: Socket, payload: any): string {
-    return 'Hello world!';
+  async handleOrderUpdated(orderId: number) {
+    const order = await this.orderRepository.findOne({
+      select: {
+        id: true,
+        clientId: true,
+        driverId: true,
+        store: { merchantId: true, staffs: { id: true }, merchant: { id: true } },
+      },
+      where: { id: orderId },
+      relations: { store: { staffs: true } },
+    });
+    if (!order) return;
+
+    const socketIds = [];
+    const { clientId, driverId, store } = order;
+    const { merchantId, staffs } = store;
+
+    if (clientId) {
+      const socketId = this.connected.get(`${ERoleType.Client}-${clientId}`);
+      socketId && socketIds.push(socketId);
+    }
+
+    if (driverId) {
+      const socketId = this.connected.get(`${ERoleType.Driver}-${driverId}`);
+      socketId && socketIds.push(socketId);
+    }
+
+    if (merchantId) {
+      const socketId = this.connected.get(`${ERoleType.Merchant}-${merchantId}`);
+      socketId && socketIds.push(socketId);
+    }
+
+    staffs?.forEach((staff) => {
+      const socketId = this.connected.get(`${ERoleType.Merchant}-${staff.id}`);
+      socketId && socketIds.push(socketId);
+    });
+
+    socketIds.forEach((socketId) => {
+      this.server.to(socketId).emit('orderUpdated', { orderId });
+    });
   }
 
   // New method to broadcast to all users of a specific type
