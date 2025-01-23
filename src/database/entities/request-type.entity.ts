@@ -22,6 +22,10 @@ export class RequestTypeEntity extends BaseEntity {
   createdBy: AdminEntity;
 
   @ManyToMany(() => AppTypeEntity, (appType) => appType.value, { cascade: true })
-  @JoinTable({ name: 'app_request_types' })
+  @JoinTable({
+    name: 'app_request_types',
+    joinColumn: { name: 'request_type_id' },
+    inverseJoinColumn: { name: 'app_type_id' },
+  })
   appTypes: AppTypeEntity[];
 }
