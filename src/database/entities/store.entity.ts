@@ -66,10 +66,10 @@ export class StoreEntity extends BaseEntity {
   @Column({ nullable: true })
   address: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'float' })
   latitude: number;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'float' })
   longitude: number;
 
   @Column({ name: 'status', type: 'enum', enum: EStoreStatus, default: EStoreStatus.Active })

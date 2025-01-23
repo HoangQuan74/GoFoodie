@@ -183,7 +183,7 @@ export class RequestsController {
     const approvedPromise = countQuery.where(`request.status = '${ERequestStatus.Approved}'`).getCount();
     const rejectedPromise = countQuery.where(`request.status = '${ERequestStatus.Rejected}'`).getCount();
 
-    const [[items, total], pending, approved, rejected] = await Promise.all([
+    const [items, total, pending, approved, rejected] = await Promise.all([
       itemsPromise,
       totalPromise,
       pendingPromise,
