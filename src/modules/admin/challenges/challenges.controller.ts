@@ -17,7 +17,6 @@ import { CreateChallengeDto } from './dto/create-challenge.dto';
 import { UpdateChallengeDto } from './dto/update-challenge.dto';
 import { ChallengeEntity } from 'src/database/entities/challenge.entity';
 import { ApiTags } from '@nestjs/swagger';
-import { PaginationQuery } from 'src/common/query';
 import { AuthGuard } from '../auth/auth.guard';
 import { QueryChallengeDto } from './dto/query-challenge.dto';
 import { EChallengeStatus } from 'src/common/enums/challenge.enum';
@@ -112,6 +111,7 @@ export class ChallengesController {
     if (!challenge) throw new NotFoundException();
 
     Object.assign(challenge, body);
+    challenge.endTime = challenge.startTime > challenge.endTime ? challenge.startTime : challenge.endTime;
     return this.challengesService.save(challenge);
   }
 
