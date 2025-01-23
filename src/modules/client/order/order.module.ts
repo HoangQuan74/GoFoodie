@@ -11,6 +11,8 @@ import { StoreEntity } from 'src/database/entities/store.entity';
 import { ClientModule } from '../client.module';
 import { EventsModule } from 'src/events/events.module';
 import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
+import { FeeEntity } from 'src/database/entities/fee.entity';
+import { FeeService } from 'src/modules/fee/fee.service';
 
 @Module({
   imports: [
@@ -22,11 +24,12 @@ import { OrderActivityEntity } from 'src/database/entities/order-activities.enti
       CartProductOptionEntity,
       StoreEntity,
       OrderActivityEntity,
+      FeeEntity,
     ]),
     forwardRef(() => ClientModule),
     EventsModule,
   ],
-  providers: [OrderService],
+  providers: [OrderService, FeeService],
   controllers: [OrderController],
   exports: [OrderService],
 })
