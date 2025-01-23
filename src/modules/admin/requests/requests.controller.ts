@@ -149,6 +149,7 @@ export class RequestsController {
       .createDriverRequestQueryBuilder('request')
       .select(['request.id as id', 'request.code as code', 'request.status as status', 'type.name as "typeName"'])
       .addSelect(['request.createdAt as "createdAt"', 'request.description as "description"'])
+      .addSelect(['request.reason as "reason"'])
       .addSelect(['driver.fullName as "driverName"', 'driver.phoneNumber as "driverPhone"'])
       .addSelect(['approvedBy.name as "approvedByName"', 'request.approvedAt as "approvedAt"'])
       .innerJoin('request.driver', 'driver')
@@ -219,7 +220,7 @@ export class RequestsController {
     });
     if (requests.length !== ids.length) throw new NotFoundException();
 
-    const data = { approvedById: user.id, status: ERequestStatus.Approved, processedAt: new Date() };
+    const data = { approvedById: user.id, status: ERequestStatus.Approved, approvedAt: new Date() };
     await this.requestsService.updateDriverRequest({ id: In(ids) }, data);
   }
 
@@ -228,7 +229,7 @@ export class RequestsController {
   @ApiBody({
     schema: {
       type: 'object',
-      properties: { ids: { type: 'array', items: { type: 'number' } }, rejectReason: { type: 'string' } },
+      properties: { ids: { type: 'array', items: { type: 'number' } }, reason: { type: 'string' } },
     },
   })
   async driverReject(@Body() reason: string, @CurrentUser() user: JwtPayload, @Param('id') id: number) {
