@@ -111,10 +111,7 @@ export class OrderService {
       throw new NotFoundException(`Order with ID ${orderId} not found`);
     }
 
-    if (
-      ![EOrderStatus.Confirmed, EOrderStatus.DriverAccepted, EOrderStatus.SearchingForDriver].includes(order.status) ||
-      order.driverId !== driverId
-    ) {
+    if ([EOrderStatus.Pending].includes(order.status) || order.driverId !== driverId) {
       throw new BadRequestException('You do not have permission to view this order');
     }
 
@@ -131,15 +128,7 @@ export class OrderService {
       throw new NotFoundException(`Order with ID ${orderId} not found`);
     }
 
-    if (
-      ![
-        EOrderStatus.Confirmed,
-        EOrderStatus.DriverAccepted,
-        EOrderStatus.SearchingForDriver,
-        EOrderStatus.OfferSentToDriver,
-      ].includes(order.status) ||
-      order.driverId !== driverId
-    ) {
+    if ([EOrderStatus.Pending].includes(order.status) || order.driverId !== driverId) {
       throw new BadRequestException('You cannot accept this order');
     }
 
@@ -168,15 +157,7 @@ export class OrderService {
       throw new NotFoundException(`Order with ID ${orderId} not found`);
     }
 
-    if (
-      ![
-        EOrderStatus.Confirmed,
-        EOrderStatus.DriverAccepted,
-        EOrderStatus.SearchingForDriver,
-        EOrderStatus.OfferSentToDriver,
-      ].includes(order.status) ||
-      order.driverId !== driverId
-    ) {
+    if ([EOrderStatus.Pending].includes(order.status) || order.driverId !== driverId) {
       throw new BadRequestException('You cannot reject this order');
     }
 
@@ -237,9 +218,11 @@ export class OrderService {
   async findAllByClient(clientId: number, queryOrderDto: QueryOrderDto) {
     const query = this.orderRepository
       .createQueryBuilder('order')
+      .leftJoinAndSelect('order.client', 'client')
+      .leftJoinAndSelect('order.driver', 'driver')
       .leftJoinAndSelect('order.orderItems', 'orderItems')
-      .leftJoinAndSelect('order.activities', 'activities');
-    // .where('order.clientId = :clientId', { clientId });
+      .leftJoinAndSelect('order.activities', 'activities')
+      .where('order.clientId = :clientId', { clientId });
 
     if (queryOrderDto.status) {
       query.andWhere('order.status = :status', { status: queryOrderDto.status });
@@ -250,7 +233,12 @@ export class OrderService {
     }
 
     if (queryOrderDto.search) {
-      query.andWhere('order.id::text ILIKE :search', { search: `%${queryOrderDto.search}%` });
+      query.andWhere(
+        '(client.name ILIKE :search OR driver.fullName ILIKE :search OR order.orderCode ILIKE :search OR CAST(order.id AS VARCHAR) ILIKE :search)',
+        {
+          search: `%${queryOrderDto.search}%`,
+        },
+      );
     }
 
     if (queryOrderDto.startDate && queryOrderDto.endDate) {

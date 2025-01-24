@@ -21,6 +21,9 @@ export class OrderEntity extends BaseEntity {
   @Column({ type: 'decimal', precision: 10, scale: 2, name: 'total_amount', nullable: true })
   totalAmount: number;
 
+  @Column({ name: 'order_code', default: '###' })
+  orderCode: string;
+
   @Column({
     type: 'enum',
     enum: EOrderStatus,
