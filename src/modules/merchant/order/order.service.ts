@@ -1,14 +1,14 @@
-import { BadRequestException, Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EOrderStatus } from 'src/common/enums/order.enum';
+import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { StoreEntity } from 'src/database/entities/store.entity';
-import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
-import { DataSource, In, Repository } from 'typeorm';
+import { EventGatewayService } from 'src/events/event.gateway.service';
+import { DataSource, Repository } from 'typeorm';
+import { OrderService as DriverOrderService } from '../../drivers/order/order.service';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { OrderService as DriverOrderService } from '../../drivers/order/order.service';
-import { EventGatewayService } from 'src/events/event.gateway.service';
 
 @Injectable()
 export class OrderService {
@@ -197,16 +197,27 @@ export class OrderService {
     const stores = await this.getStoresByMerchantId(merchantId);
     const storeIds = stores.map((store) => store.id);
 
-    const order = await this.orderRepository.findOne({
-      where: {
-        id: orderId,
-        storeId: In(storeIds),
-      },
-      relations: ['orderItems', 'activities', 'store', 'client', 'driver'],
+    const queryBuilder = this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.orderItems', 'orderItems')
+      .leftJoinAndSelect('order.activities', 'activities')
+      .leftJoinAndSelect('order.store', 'store')
+      .leftJoinAndSelect('order.client', 'client')
+      .where('order.id = :orderId', { orderId })
+      .andWhere('order.storeId IN (:...storeIds)', { storeIds });
+
+    queryBuilder.leftJoinAndSelect('order.driver', 'driver', 'order.status != :offerSentStatus', {
+      offerSentStatus: 'offer_sent_to_driver',
     });
+
+    const order = await queryBuilder.getOne();
 
     if (!order) {
       throw new NotFoundException(`Order with ID ${orderId} not found for this merchant`);
+    }
+
+    if (order.status === 'offer_sent_to_driver') {
+      order.driver = null;
     }
 
     return order;
