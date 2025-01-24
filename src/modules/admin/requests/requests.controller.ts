@@ -37,7 +37,9 @@ export class RequestsController {
 
     const queryBuilder = this.requestsService
       .createRequestTypeQueryBuilder('requestType')
+      .addSelect(['createdBy.id', 'createdBy.name'])
       .leftJoinAndSelect('requestType.appTypes', 'appTypes')
+      .leftJoin('requestType.createdBy', 'createdBy')
       .orderBy('requestType.id', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
@@ -63,12 +65,12 @@ export class RequestsController {
 
   @Post('types')
   @ApiOperation({ summary: 'Tạo loại yêu cầu' })
-  async createRequestType(@Body() body: CreateRequestTypeDto) {
+  async createRequestType(@Body() body: CreateRequestTypeDto, @CurrentUser() user: JwtPayload) {
     const { name } = body;
     const isExist = await this.requestsService.findOneRequestType({ where: { name } });
     if (isExist) throw new BadRequestException(EXCEPTIONS.NAME_EXISTED);
 
-    return this.requestsService.saveRequestType(body);
+    return this.requestsService.saveRequestType({ ...body, createdById: user.id });
   }
 
   @Patch('types/:id')
