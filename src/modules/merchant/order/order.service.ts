@@ -8,6 +8,7 @@ import { DataSource, In, Repository } from 'typeorm';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderService as DriverOrderService } from '../../drivers/order/order.service';
+import { EventGatewayService } from 'src/events/event.gateway.service';
 
 @Injectable()
 export class OrderService {
@@ -20,6 +21,7 @@ export class OrderService {
     private orderActivityRepository: Repository<OrderActivityEntity>,
     private dataSource: DataSource,
     private driverOrderService: DriverOrderService,
+    private eventGatewayService: EventGatewayService,
   ) {}
 
   async queryOrders(merchantId: number, queryOrderDto: QueryOrderDto) {
@@ -111,6 +113,8 @@ export class OrderService {
 
       await queryRunner.commitTransaction();
 
+      this.eventGatewayService.handleOrderUpdated(order.id);
+
       try {
         await this.driverOrderService.assignOrderToDriver(savedOrder.id);
       } catch (error) {
@@ -171,6 +175,7 @@ export class OrderService {
 
       await queryRunner.commitTransaction();
 
+      this.eventGatewayService.handleOrderUpdated(order.id);
       return order;
     } catch (error) {
       await queryRunner.rollbackTransaction();

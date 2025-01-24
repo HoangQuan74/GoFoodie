@@ -75,6 +75,8 @@ export class CartsController {
         'store.storeAvatarId as "storeAvatarId"',
         'store.specialDish as "specialDish"',
         'store.streetName as "streetName"',
+        'store.latitude as "latitude"',
+        'store.longitude as "longitude"',
       ])
       .addSelect('SUM(cartProducts.quantity)', 'totalQuantity')
       .addSelect('COUNT(cartProducts.id)', 'totalItems')
