@@ -18,7 +18,7 @@ export class OrderEntity extends BaseEntity {
   @Column({ name: 'driver_id', nullable: true })
   driverId: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, name: 'total_amount', nullable: true })
+  @Column({ type: 'decimal', precision: 10, scale: 0, name: 'total_amount', nullable: true })
   totalAmount: number;
 
   @Column({ name: 'order_code', default: '###' })
@@ -63,7 +63,7 @@ export class OrderEntity extends BaseEntity {
   @Column({ type: 'boolean', name: 'eating_tools', default: true })
   eatingTools: boolean;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, name: 'delivery_fee', default: 0 })
+  @Column({ type: 'decimal', precision: 10, scale: 0, name: 'delivery_fee', default: 0 })
   deliveryFee: number;
 
   @Column({ nullable: true })

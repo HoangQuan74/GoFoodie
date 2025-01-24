@@ -20,13 +20,13 @@ export class OrderItemEntity {
   @Column({ name: 'product_name', nullable: true })
   productName: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: 'decimal', precision: 10, scale: 0 })
   price: number;
 
   @Column({ name: 'quantity' })
   quantity: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: 'decimal', precision: 10, scale: 0 })
   subtotal: number;
 
   @Column({ name: 'note', nullable: true })
