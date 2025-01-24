@@ -86,7 +86,7 @@ export class ChallengesController {
         break;
       case EChallengeStatus.NotStarted:
         queryBuilder.andWhere('challenge.startTime > :now', { now: new Date() });
-        queryBuilder.andWhere('challenge.endTime > :now', { now: new Date() });
+        queryBuilder.andWhere('challenge.endTime >= :now', { now: new Date() });
         break;
       case EChallengeStatus.Ended:
         queryBuilder.andWhere('challenge.endTime < :now', { now: new Date() });
