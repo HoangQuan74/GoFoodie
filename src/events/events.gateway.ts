@@ -20,11 +20,10 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   constructor(
     private readonly jwtService: JwtService,
+
     @InjectRepository(OrderEntity)
     private orderRepository: Repository<OrderEntity>,
-  ) {
-    // this.handleOrderUpdated(51);
-  }
+  ) {}
 
   handleConnection(client: Socket, ...args: any[]) {
     try {
@@ -126,7 +125,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         id: true,
         clientId: true,
         driverId: true,
-        store: { merchantId: true, staffs: { id: true }, merchant: { id: true } },
+        store: { merchantId: true, staffs: { id: true } },
       },
       where: { id: orderId },
       relations: { store: { staffs: true } },
