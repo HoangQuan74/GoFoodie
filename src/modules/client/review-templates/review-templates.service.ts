@@ -1,26 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { CreateReviewTemplateDto } from './dto/create-review-template.dto';
-import { UpdateReviewTemplateDto } from './dto/update-review-template.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ReviewTemplateEntity } from 'src/database/entities/review-template.entity';
+import { FindManyOptions, Repository } from 'typeorm';
 
 @Injectable()
 export class ReviewTemplatesService {
-  create(createReviewTemplateDto: CreateReviewTemplateDto) {
-    return 'This action adds a new reviewTemplate';
-  }
+  constructor(
+    @InjectRepository(ReviewTemplateEntity)
+    private reviewTemplateRepository: Repository<ReviewTemplateEntity>,
+  ) {}
 
-  findAll() {
-    return `This action returns all reviewTemplates`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} reviewTemplate`;
-  }
-
-  update(id: number, updateReviewTemplateDto: UpdateReviewTemplateDto) {
-    return `This action updates a #${id} reviewTemplate`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} reviewTemplate`;
+  async find(options?: FindManyOptions<ReviewTemplateEntity>): Promise<ReviewTemplateEntity[]> {
+    return this.reviewTemplateRepository.find(options);
   }
 }

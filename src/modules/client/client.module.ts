@@ -14,6 +14,7 @@ import { CartsModule } from './carts/carts.module';
 import { OrdersModule } from './order/order.module';
 import { CancelOrderReasonsModule } from './cancel-order-reasons/cancel-order-reasons.module';
 import { ReviewTemplatesModule } from './review-templates/review-templates.module';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { ReviewTemplatesModule } from './review-templates/review-templates.modul
       { path: 'client', module: AddressesModule },
       { path: 'client', module: OrdersModule },
       { path: 'client', module: CancelOrderReasonsModule },
+      { path: 'client', module: ReviewTemplatesModule },
     ]),
     AuthModule,
     TypeOrmModule.forFeature([ClientEntity]),
@@ -36,6 +38,7 @@ import { ReviewTemplatesModule } from './review-templates/review-templates.modul
     OrdersModule,
     CancelOrderReasonsModule,
     ReviewTemplatesModule,
+    ReviewsModule,
   ],
   controllers: [ClientController],
   providers: [ClientService],

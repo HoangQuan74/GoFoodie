@@ -1,12 +1,14 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
 import { ReviewTemplatesService } from './review-templates.service';
 import { CreateReviewTemplateDto } from './dto/create-review-template.dto';
 import { QueryReviewTemplateDto } from './dto/query-review-template.dto';
 import { In, Not } from 'typeorm';
 import { ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('review-templates')
 @ApiTags('Review Templates')
+@UseGuards(AuthGuard)
 export class ReviewTemplatesController {
   constructor(private readonly reviewTemplatesService: ReviewTemplatesService) {}
 

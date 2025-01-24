@@ -1,34 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ReviewTemplatesService } from './review-templates.service';
-import { CreateReviewTemplateDto } from './dto/create-review-template.dto';
-import { UpdateReviewTemplateDto } from './dto/update-review-template.dto';
+import { ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '../auth/auth.guard';
+import { QueryReviewTemplateDto } from './dto/query-review-template.dto';
 
 @Controller('review-templates')
+@ApiTags('Review Templates')
+@UseGuards(AuthGuard)
 export class ReviewTemplatesController {
   constructor(private readonly reviewTemplatesService: ReviewTemplatesService) {}
 
-  @Post()
-  create(@Body() createReviewTemplateDto: CreateReviewTemplateDto) {
-    return this.reviewTemplatesService.create(createReviewTemplateDto);
-  }
-
   @Get()
-  findAll() {
-    return this.reviewTemplatesService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.reviewTemplatesService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateReviewTemplateDto: UpdateReviewTemplateDto) {
-    return this.reviewTemplatesService.update(+id, updateReviewTemplateDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.reviewTemplatesService.remove(+id);
+  find(@Query() query: QueryReviewTemplateDto) {
+    const { type, isFiveStar } = query;
+    return this.reviewTemplatesService.find({ where: { type, isFiveStar } });
   }
 }
