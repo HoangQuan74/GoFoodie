@@ -95,7 +95,7 @@ export class OrderService {
         eatingTools,
         deliveryFee,
         status: EOrderStatus.Pending,
-        orderCode: `${EOrderCode.DeliveryNow.toLocaleUpperCase()}-${formattedDate}-${shortUuid.toLocaleUpperCase()}`,
+        orderCode: `${EOrderCode.DeliveryNow}-${formattedDate}-${shortUuid.toLocaleUpperCase()}`,
       });
 
       const savedOrder = await queryRunner.manager.save(newOrder);

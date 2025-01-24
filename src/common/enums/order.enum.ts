@@ -16,6 +16,6 @@ export enum EPaymentStatus {
 }
 
 export enum EOrderCode {
-  PreOrder = 'pre',
-  DeliveryNow = 'now',
+  PreOrder = 'PRE',
+  DeliveryNow = 'NOW',
 }
