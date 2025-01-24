@@ -224,6 +224,7 @@ export class RequestsController {
 
     const queryBuilder = this.requestsService
       .createDriverRequestQueryBuilder('request')
+      .withDeleted()
       .select(['request.id as id', 'request.code as code', 'request.status as status', 'type.name as "typeName"'])
       .addSelect(['request.createdAt as "createdAt"', 'request.description as "description"'])
       .addSelect(['request.reason as "reason"'])
@@ -233,6 +234,7 @@ export class RequestsController {
       .innerJoin('request.type', 'type')
       .leftJoin('request.approvedBy', 'approvedBy')
       .orderBy('request.id', 'DESC')
+      .where('request.deletedAt IS NULL')
       .limit(limit)
       .offset((page - 1) * limit);
 
@@ -282,6 +284,7 @@ export class RequestsController {
       },
       where: { id },
       relations: ['files', 'driver', 'approvedBy'],
+      withDeleted: true,
     };
     const request = await this.requestsService.findOneDriverRequest(options);
     if (!request) throw new NotFoundException();
@@ -322,6 +325,7 @@ export class RequestsController {
 
     const queryBuilder = this.requestsService
       .createMerchantRequestQueryBuilder('request')
+      .withDeleted()
       .addSelect(['type.id', 'type.name'])
       .addSelect(['merchant.id', 'merchant.name'])
       .addSelect(['store.storeCode', 'store.name'])
@@ -330,6 +334,7 @@ export class RequestsController {
       .innerJoin('request.merchant', 'merchant')
       .innerJoin('request.store', 'store')
       .leftJoin('request.approvedBy', 'approvedBy')
+      .where('request.deletedAt IS NULL')
       .orderBy('request.id', 'DESC')
       .limit(limit)
       .offset((page - 1) * limit);
@@ -378,6 +383,7 @@ export class RequestsController {
   async getDetailStoreRequest(@Param('id') id: number) {
     const request = await this.requestsService
       .createMerchantRequestQueryBuilder('request')
+      .withDeleted()
       .addSelect(['merchant.id', 'merchant.name'])
       .addSelect(['store.storeCode', 'store.name'])
       .addSelect(['approvedBy.id', 'approvedBy.name'])

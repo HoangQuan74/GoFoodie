@@ -74,6 +74,7 @@ export class ChallengesController {
           qb.where('challenge.name ILIKE :search', { search: `%${search}%` });
           qb.orWhere('challenge.code ILIKE :search', { search: `%${search}%` });
           qb.orWhere('type.name ILIKE :search', { search: `%${search}%` });
+          qb.orWhere('serviceType.name ILIKE :search', { search: `%${search}%` });
         }),
       );
     }
@@ -85,6 +86,7 @@ export class ChallengesController {
         break;
       case EChallengeStatus.NotStarted:
         queryBuilder.andWhere('challenge.startTime > :now', { now: new Date() });
+        queryBuilder.andWhere('challenge.endTime > :now', { now: new Date() });
         break;
       case EChallengeStatus.Ended:
         queryBuilder.andWhere('challenge.endTime < :now', { now: new Date() });
@@ -116,7 +118,6 @@ export class ChallengesController {
     if (!challenge) throw new NotFoundException();
 
     Object.assign(challenge, body);
-    challenge.endTime = challenge.startTime > challenge.endTime ? challenge.startTime : challenge.endTime;
     return this.challengesService.save(challenge);
   }
 
