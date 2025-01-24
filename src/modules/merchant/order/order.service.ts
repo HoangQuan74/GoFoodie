@@ -29,6 +29,7 @@ export class OrderService {
     const query = this.orderRepository
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.client', 'client')
+      .leftJoinAndSelect('order.driver', 'driver')
       .leftJoinAndSelect('order.orderItems', 'orderItems')
       .leftJoinAndSelect('order.activities', 'activities')
       .where('order.storeId IN (:...storeIds)', { storeIds });
@@ -42,9 +43,12 @@ export class OrderService {
     }
 
     if (queryOrderDto.search) {
-      query.andWhere('(client.name ILIKE :search OR order.id::text ILIKE :search)', {
-        search: `%${queryOrderDto.search}%`,
-      });
+      query.andWhere(
+        '(client.name ILIKE :search OR driver.fullName ILIKE :search OR order.orderCode ILIKE :search OR CAST(order.id AS VARCHAR) ILIKE :search)',
+        {
+          search: `%${queryOrderDto.search}%`,
+        },
+      );
     }
 
     if (queryOrderDto.startDate && queryOrderDto.endDate) {

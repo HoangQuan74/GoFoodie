@@ -14,3 +14,8 @@ export enum EPaymentStatus {
   Paid = 'paid',
   Refunded = 'refunded',
 }
+
+export enum EOrderCode {
+  PreOrder = 'pre',
+  DeliveryNow = 'now',
+}
