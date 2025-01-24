@@ -105,6 +105,7 @@ export class StoresController {
               'product.price as price',
               'product.imageId as "imageId"',
               'product.storeId as "storeId"',
+              'product.status as "status"',
             ])
             .leftJoin('product.productWorkingTimes', 'productWorkingTime', 'product.isNormalTime = false')
             .where('product.status = :productStatus')
@@ -206,7 +207,7 @@ export class StoresController {
     const queryBuilder = this.productCategoriesService
       .createQueryBuilder('category')
       .select(['category.id', 'category.name', 'category.description'])
-      .addSelect(['product.id', 'product.name', 'product.price', 'product.imageId'])
+      .addSelect(['product.id', 'product.name', 'product.price', 'product.imageId', 'product.status'])
       .leftJoin('category.products', 'product', 'product.storeId = :storeId')
       .leftJoin('category.stores', 'store', 'store.id = :storeId')
       .where(

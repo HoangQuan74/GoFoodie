@@ -35,7 +35,18 @@ export class OrderService {
   ) {}
 
   async create(createOrderDto: CreateOrderDto, clientId: number): Promise<OrderEntity> {
-    const { cartId, deliveryAddress, deliveryLatitude, deliveryLongitude, notes, tip, eatingTools } = createOrderDto;
+    const {
+      cartId,
+      deliveryAddress,
+      deliveryLatitude,
+      deliveryLongitude,
+      deliveryPhone,
+      deliveryName,
+      deliveryAddressNote,
+      notes,
+      tip,
+      eatingTools,
+    } = createOrderDto;
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -90,6 +101,9 @@ export class OrderService {
         deliveryAddress,
         deliveryLatitude,
         deliveryLongitude,
+        deliveryPhone,
+        deliveryName,
+        deliveryAddressNote,
         notes,
         tip,
         eatingTools,
@@ -179,6 +193,7 @@ export class OrderService {
 
       this.eventGatewayService.notifyMerchantNewOrder(savedOrder.storeId, savedOrder);
       this.fcmService.notifyMerchantNewOrder(savedOrder.id);
+      this.eventGatewayService.handleOrderUpdated(savedOrder.id);
 
       return this.findOne(clientId, savedOrder.id);
     } catch (error) {
@@ -277,6 +292,8 @@ export class OrderService {
       await queryRunner.manager.save(OrderActivityEntity, orderActivity);
 
       await queryRunner.commitTransaction();
+
+      this.eventGatewayService.handleOrderUpdated(order.id);
 
       return this.findOne(clientId, orderId);
     } catch (error) {

@@ -137,6 +137,8 @@ export class OrderService {
 
     this.eventGatewayService.notifyMerchantNewOrder(order.store.id, order);
 
+    this.eventGatewayService.handleOrderUpdated(order.id);
+
     const orderActivity = this.orderActivityRepository.create({
       orderId: orderId,
       status: EOrderStatus.DriverAccepted,
@@ -175,7 +177,10 @@ export class OrderService {
       cancellationReason: updateOrderDto.reasons || '',
       performedBy: `driverId:${driverId}`,
     });
+
     await this.orderActivityRepository.save(orderActivity);
+
+    this.eventGatewayService.handleOrderUpdated(order.id);
   }
 
   async updateStatus(orderId: number, driverId: number, status: EOrderStatus): Promise<void> {
@@ -204,6 +209,8 @@ export class OrderService {
         performedBy: `driverId:${driverId}`,
       });
       await this.orderActivityRepository.save(orderActivity);
+
+      this.eventGatewayService.handleOrderUpdated(order.id);
     } else {
       const orderActivity = this.orderActivityRepository.create({
         orderId: orderId,
@@ -212,17 +219,19 @@ export class OrderService {
         performedBy: `driverId:${driverId}`,
       });
       await this.orderActivityRepository.save(orderActivity);
+
+      this.eventGatewayService.handleOrderUpdated(order.id);
     }
   }
 
-  async findAllByClient(clientId: number, queryOrderDto: QueryOrderDto) {
+  async findAllByClient(driverId: number, queryOrderDto: QueryOrderDto) {
     const query = this.orderRepository
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.client', 'client')
       .leftJoinAndSelect('order.driver', 'driver')
       .leftJoinAndSelect('order.orderItems', 'orderItems')
       .leftJoinAndSelect('order.activities', 'activities')
-      .where('order.clientId = :clientId', { clientId });
+      .where('order.driverId = :driverId', { driverId });
 
     if (queryOrderDto.status) {
       query.andWhere('order.status = :status', { status: queryOrderDto.status });

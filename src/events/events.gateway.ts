@@ -23,7 +23,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @InjectRepository(OrderEntity)
     private orderRepository: Repository<OrderEntity>,
   ) {
-    this.handleOrderUpdated(51);
+    // this.handleOrderUpdated(51);
   }
 
   handleConnection(client: Socket, ...args: any[]) {
