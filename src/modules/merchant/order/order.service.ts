@@ -96,7 +96,7 @@ export class OrderService {
         throw new NotFoundException(`Order with ID ${orderId} not found or does not belong to this merchant`);
       }
 
-      if (order.status !== EOrderStatus.Pending) {
+      if (![EOrderStatus.OfferSentToDriver, EOrderStatus.Pending, EOrderStatus.Confirmed].includes(order.status)) {
         throw new BadRequestException('Only pending orders can be confirmed');
       }
 
