@@ -349,6 +349,16 @@ export class OrderService {
     order.status = EOrderStatus.OfferSentToDriver;
     await this.orderRepository.save(order);
 
+    const orderActivity = this.orderActivityRepository.create({
+      orderId: order.id,
+      status: EOrderStatus.OfferSentToDriver,
+      description: 'offer_sent_to_driver',
+      cancellationReason: '',
+      performedBy: `driverId:${driver.id}`,
+    });
+
+    await this.orderActivityRepository.save(orderActivity);
+
     this.eventGatewayService.notifyDriverNewOrder(driver.id, order);
   }
 }
