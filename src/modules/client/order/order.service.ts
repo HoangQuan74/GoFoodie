@@ -1,21 +1,22 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EOrderCode, EOrderStatus } from 'src/common/enums/order.enum';
+import { Group } from 'src/common/interfaces/order-item.interface';
 import { CartProductEntity } from 'src/database/entities/cart-product.entity';
 import { CartEntity } from 'src/database/entities/cart.entity';
+import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
 import { OrderItemEntity } from 'src/database/entities/order-item.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
-import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
+import { StoreEntity } from 'src/database/entities/store.entity';
 import { EventGatewayService } from 'src/events/event.gateway.service';
+import { FcmService } from 'src/modules/fcm/fcm.service';
+import { FeeService } from 'src/modules/fee/fee.service';
+import { formatDate, generateShortUuid } from 'src/utils/common';
+import { calculateDistance } from 'src/utils/distance';
 import { DataSource, Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { Group } from 'src/common/interfaces/order-item.interface';
-import { FcmService } from 'src/modules/fcm/fcm.service';
-import { FeeService } from 'src/modules/fee/fee.service';
-import { calculateDistance } from 'src/utils/distance';
-import { formatDate, generateShortUuid } from 'src/utils/common';
 
 @Injectable()
 export class OrderService {
@@ -46,6 +47,7 @@ export class OrderService {
       notes,
       tip,
       eatingTools,
+      promoPrice,
     } = createOrderDto;
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -83,6 +85,8 @@ export class OrderService {
         throw new BadRequestException('Store location is not set');
       }
 
+      const totalQuantity = cart.cartProducts.reduce((sum, cartProduct) => sum + cartProduct.quantity, 0);
+
       const distance = calculateDistance(
         cart.store.latitude,
         cart.store.longitude,
@@ -94,10 +98,16 @@ export class OrderService {
       const formattedDate = formatDate(new Date());
       const shortUuid = generateShortUuid();
 
+      // Calculate estimated pickup and delivery times
+      const now = new Date();
+      const estimatedPickupTime = this.calculateEstimatedPickupTime(now, cart.store);
+      const estimatedDeliveryTime = this.calculateEstimatedDeliveryTime(estimatedPickupTime, distance);
+
       const newOrder = this.orderRepository.create({
         clientId,
         storeId: cart.store.id,
         totalAmount,
+        totalQuantity,
         deliveryAddress,
         deliveryLatitude,
         deliveryLongitude,
@@ -108,8 +118,11 @@ export class OrderService {
         tip,
         eatingTools,
         deliveryFee,
+        promoPrice,
         status: EOrderStatus.Pending,
         orderCode: `${EOrderCode.DeliveryNow}${formattedDate}${shortUuid.toLocaleUpperCase()}`,
+        estimatedPickupTime,
+        estimatedDeliveryTime,
       });
 
       const savedOrder = await queryRunner.manager.save(newOrder);
@@ -254,13 +267,34 @@ export class OrderService {
   }
 
   async findOne(clientId: number, orderId: number): Promise<OrderEntity> {
-    const order = await this.orderRepository.findOne({
-      where: { id: orderId, clientId },
-      relations: ['orderItems', 'activities', 'store', 'client', 'driver'],
-    });
+    const queryBuilder = this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.orderItems', 'orderItems')
+      .leftJoinAndSelect('order.activities', 'activities')
+      .leftJoinAndSelect('order.store', 'store')
+      .leftJoinAndSelect('store.ward', 'ward')
+      .leftJoinAndSelect('store.district', 'district')
+      .leftJoinAndSelect('store.province', 'province')
+      .leftJoinAndSelect('order.client', 'client')
+      .leftJoinAndSelect('order.driver', 'driver')
+      .where('order.id = :orderId', { orderId })
+      .andWhere('order.clientId = :clientId', { clientId });
+
+    const order = await queryBuilder.getOne();
 
     if (!order) {
       throw new NotFoundException(`Order with ID ${orderId} not found for this client`);
+    }
+
+    if (order.store) {
+      const addressParts = [
+        order.store.address,
+        order.store.ward?.name,
+        order.store.district?.name,
+        order.store.province?.name,
+      ].filter(Boolean);
+
+      order.store.address = addressParts.join(', ');
     }
 
     return order;
@@ -270,7 +304,7 @@ export class OrderService {
     const order = await this.findOne(clientId, orderId);
 
     if (order.status !== EOrderStatus.Pending) {
-      throw new BadRequestException('Only pending orders can be cancelled');
+      throw new BadRequestException('There is no permission to cancel orders', 'ORDER_NOT_CANCELLABLE');
     }
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -302,5 +336,36 @@ export class OrderService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  private calculateEstimatedPickupTime(orderTime: Date, store: StoreEntity): Date {
+    // t1: current time
+    // x: store preparation time (assumed to be stored in store entity)
+    // y: driver travel time to store (assumed to be 15 minutes for now)
+    // z: driver search time (assumed to be 5 minutes for now)
+
+    const t1 = orderTime;
+    const x = store.preparationTime || 20;
+    const y = 15;
+    const z = 5;
+
+    const estimatedPickupTime = new Date(t1.getTime() + (x + y + z) * 60000);
+
+    // Round up to the nearest 10 minutes
+    estimatedPickupTime.setMinutes(Math.ceil(estimatedPickupTime.getMinutes() / 10) * 10);
+
+    return estimatedPickupTime;
+  }
+
+  private calculateEstimatedDeliveryTime(pickupTime: Date, distance: number): Date {
+    // t: travel time from store to customer (assume 2 minutes per km for now)
+    const t = distance * 2;
+
+    const estimatedDeliveryTime = new Date(pickupTime.getTime() + t * 60000);
+
+    // Round up to the nearest 10 minutes
+    estimatedDeliveryTime.setMinutes(Math.ceil(estimatedDeliveryTime.getMinutes() / 10) * 10);
+
+    return estimatedDeliveryTime;
   }
 }

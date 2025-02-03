@@ -21,6 +21,9 @@ export class OrderEntity extends BaseEntity {
   @Column({ type: 'decimal', precision: 10, scale: 0, name: 'total_amount', nullable: true })
   totalAmount: number;
 
+  @Column({ type: 'int8', name: 'total_quantity', nullable: true })
+  totalQuantity: number;
+
   @Column({ name: 'order_code', default: '###' })
   orderCode: string;
 
@@ -60,6 +63,9 @@ export class OrderEntity extends BaseEntity {
   @Column({ type: 'int8', nullable: true })
   tip: number;
 
+  @Column({ type: 'decimal', precision: 10, scale: 0, name: 'promo_price', default: 0 })
+  promoPrice: number;
+
   @Column({ type: 'boolean', name: 'eating_tools', default: true })
   eatingTools: boolean;
 
@@ -68,6 +74,12 @@ export class OrderEntity extends BaseEntity {
 
   @Column({ nullable: true })
   notes: string;
+
+  @Column({ type: 'timestamp', name: 'estimated_pickup_time', nullable: true })
+  estimatedPickupTime: Date;
+
+  @Column({ type: 'timestamp', name: 'estimated_delivery_time', nullable: true })
+  estimatedDeliveryTime: Date;
 
   @ManyToOne(() => ClientEntity)
   @JoinColumn({ name: 'client_id' })
