@@ -1,4 +1,4 @@
-import { Column, Entity, Generated, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { StoreEntity } from './store.entity';
 import { ProductEntity } from './product.entity';
@@ -7,8 +7,7 @@ import { ServiceGroupEntity } from './service-group.entity';
 
 @Entity('product_categories')
 export class ProductCategoryEntity extends BaseEntity {
-  @Generated('increment')
-  @Column()
+  @Column({ default: '' })
   code: string;
 
   @Column()

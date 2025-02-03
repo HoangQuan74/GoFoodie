@@ -32,7 +32,7 @@ export class DriverRequestEntity extends BaseEntity {
   @Column({ name: 'driver_id' })
   driverId: number;
 
-  @ManyToOne(() => DriverEntity, (driver) => driver.id)
+  @ManyToOne(() => DriverEntity, (driver) => driver.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'driver_id' })
   driver: DriverEntity;
 

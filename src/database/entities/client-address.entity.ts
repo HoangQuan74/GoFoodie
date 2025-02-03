@@ -37,7 +37,7 @@ export class ClientAddressEntity extends BaseEntity {
   @Column({ name: 'is_default', default: false })
   isDefault: boolean;
 
-  @ManyToOne(() => ClientEntity, (client) => client.id)
+  @ManyToOne(() => ClientEntity, (client) => client.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'client_id' })
   client: ClientEntity;
 }
