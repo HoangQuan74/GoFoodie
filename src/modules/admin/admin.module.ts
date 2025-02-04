@@ -128,6 +128,10 @@ import { ReviewTemplatesModule } from './review-templates/review-templates.modul
         path: 'admin',
         module: OperationsModule,
       },
+      {
+        path: 'admin',
+        module: ReviewTemplatesModule,
+      },
     ]),
     AdminsModule,
     MerchantsModule,

@@ -13,6 +13,7 @@ import { AddressesModule } from './addresses/addresses.module';
 import { CartsModule } from './carts/carts.module';
 import { OrdersModule } from './order/order.module';
 import { CancelOrderReasonsModule } from './cancel-order-reasons/cancel-order-reasons.module';
+import { ReviewTemplatesModule } from './review-templates/review-templates.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { CancelOrderReasonsModule } from './cancel-order-reasons/cancel-order-re
     CartsModule,
     OrdersModule,
     CancelOrderReasonsModule,
+    ReviewTemplatesModule,
   ],
   controllers: [ClientController],
   providers: [ClientService],
