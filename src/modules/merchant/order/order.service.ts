@@ -48,6 +48,10 @@ export class OrderService {
       query.andWhere('order.status = :status', { status: queryOrderDto.status });
     }
 
+    if (queryOrderDto.orderType) {
+      query.andWhere('order.orderType = :orderType', { orderType: queryOrderDto.orderType });
+    }
+
     if (queryOrderDto.paymentStatus) {
       query.andWhere('order.paymentStatus = :paymentStatus', { paymentStatus: queryOrderDto.paymentStatus });
     }

@@ -9,12 +9,12 @@ import { join } from 'path';
   imports: [
     MailerModule.forRoot({
       transport: {
-        host: process.env.EMAIL_HOST || 'pro34.emailserver.vn',
-        port: +process.env.EMAIL_PORT || 465,
+        host: process.env.EMAIL_HOST,
+        port: +process.env.EMAIL_PORT,
         secure: true,
         auth: {
-          user: process.env.EMAIL_USER || 'cskh@oneshipdelivery.com',
-          pass: process.env.EMAIL_PASS || 'OneShip@123!!!@@@###',
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
         },
       },
       defaults: {

@@ -1,4 +1,4 @@
-import { EOrderStatus, EPaymentStatus } from 'src/common/enums/order.enum';
+import { EOrderCode, EOrderStatus, EPaymentStatus } from 'src/common/enums/order.enum';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { ClientEntity } from './client.entity';
@@ -41,6 +41,17 @@ export class OrderEntity extends BaseEntity {
     name: 'payment_status',
   })
   paymentStatus: EPaymentStatus;
+
+  @Column({
+    type: 'enum',
+    enum: EOrderCode,
+    default: EOrderCode.DeliveryNow,
+    name: 'order_type',
+  })
+  orderType: EOrderCode;
+
+  @Column({ type: 'timestamp', name: 'estimated_order_time', nullable: true })
+  estimatedOrderTime: Date;
 
   @Column({ nullable: true, name: 'delivery_address' })
   deliveryAddress: string;
