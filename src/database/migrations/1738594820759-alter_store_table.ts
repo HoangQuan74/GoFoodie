@@ -14,8 +14,6 @@ export class AlterStoreTable1738594820759 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "product_categories" ALTER COLUMN "code" DROP DEFAULT`);
         await queryRunner.query(`DROP SEQUENCE "product_categories_code_seq"`);
         await queryRunner.query(`ALTER TABLE "product_categories" ALTER COLUMN "code" SET DEFAULT ''`);
-        await queryRunner.query(`ALTER TABLE "driver_requests" ADD CONSTRAINT "FK_bac1db61b1363209e954bbdf55b" FOREIGN KEY ("driver_id") REFERENCES "drivers"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "client_addresses" ADD CONSTRAINT "FK_a88557f9d4f0eebd10e1c46af73" FOREIGN KEY ("client_id") REFERENCES "clients"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
@@ -29,8 +27,6 @@ export class AlterStoreTable1738594820759 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "orders" DROP COLUMN "promo_price"`);
         await queryRunner.query(`ALTER TABLE "orders" DROP COLUMN "total_quantity"`);
         await queryRunner.query(`ALTER TABLE "stores" DROP COLUMN "preparation_time"`);
-        await queryRunner.query(`ALTER TABLE "client_addresses" ADD CONSTRAINT "FK_a88557f9d4f0eebd10e1c46af73" FOREIGN KEY ("client_id") REFERENCES "clients"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "driver_requests" ADD CONSTRAINT "FK_bac1db61b1363209e954bbdf55b" FOREIGN KEY ("driver_id") REFERENCES "drivers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
     }
 
 }
