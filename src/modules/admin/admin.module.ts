@@ -26,6 +26,7 @@ import { CancelOrderReasonsModule } from './cancel-order-reasons/cancel-order-re
 import { OrderCriteriaModule } from './order-criteria/order-criteria.module';
 import { FlashSalesModule } from './flash-sales/flash-sales.module';
 import { ChallengesModule } from './challenges/challenges.module';
+import { ReviewTemplatesModule } from './review-templates/review-templates.module';
 
 @Module({
   imports: [
@@ -152,6 +153,7 @@ import { ChallengesModule } from './challenges/challenges.module';
     OrderCriteriaModule,
     FlashSalesModule,
     ChallengesModule,
+    ReviewTemplatesModule,
   ],
   providers: [
     {
