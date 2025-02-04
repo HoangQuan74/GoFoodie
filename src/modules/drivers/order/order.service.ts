@@ -19,14 +19,18 @@ export class OrderService {
   constructor(
     @InjectRepository(DriverEntity)
     private driverRepository: Repository<DriverEntity>,
+
     @InjectRepository(OrderCriteriaEntity)
     private orderCriteriaRepository: Repository<OrderCriteriaEntity>,
+
     @InjectRepository(DriverAvailabilityEntity)
     private driverAvailabilityRepository: Repository<DriverAvailabilityEntity>,
+
     @InjectRepository(OrderEntity)
     private orderRepository: Repository<OrderEntity>,
     @InjectRepository(OrderActivityEntity)
     private orderActivityRepository: Repository<OrderActivityEntity>,
+
     private eventGatewayService: EventGatewayService,
   ) {}
 

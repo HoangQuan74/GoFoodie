@@ -11,19 +11,25 @@ import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderResponse } from 'src/common/interfaces/order.interface';
 import { calculateStoreIncome } from 'src/utils/income';
+import { EXCEPTIONS } from 'src/common/constants';
+import { FcmService } from 'src/modules/fcm/fcm.service';
 
 @Injectable()
 export class OrderService {
   constructor(
     @InjectRepository(OrderEntity)
     private orderRepository: Repository<OrderEntity>,
+
     @InjectRepository(StoreEntity)
     private storeRepository: Repository<StoreEntity>,
+
     @InjectRepository(OrderActivityEntity)
     private orderActivityRepository: Repository<OrderActivityEntity>,
     private dataSource: DataSource,
-    private driverOrderService: DriverOrderService,
-    private eventGatewayService: EventGatewayService,
+
+    private readonly driverOrderService: DriverOrderService,
+    private readonly eventGatewayService: EventGatewayService,
+    private readonly fcmService: FcmService,
   ) {}
 
   async queryOrders(merchantId: number, queryOrderDto: QueryOrderDto) {
@@ -128,6 +134,7 @@ export class OrderService {
 
       try {
         await this.driverOrderService.assignOrderToDriver(savedOrder.id);
+        await this.fcmService.notifyDriverNewOrder(savedOrder.id);
       } catch (error) {
         const failureActivity = this.orderActivityRepository.create({
           orderId: savedOrder.id,
@@ -168,7 +175,7 @@ export class OrderService {
       }
 
       if (![EOrderStatus.Pending, EOrderStatus.OfferSentToDriver].includes(order.status)) {
-        throw new BadRequestException('There is no permission to cancel orders', 'ORDER_NOT_CANCELLABLE');
+        throw new BadRequestException(EXCEPTIONS.NO_PERMISSION_ACTIONS);
       }
 
       order.status = EOrderStatus.Cancelled;
