@@ -55,4 +55,27 @@ export class FcmService {
       this.sendToDevice(deviceToken, title, body, { orderId: orderId.toString() });
     });
   }
+
+  async notifyDriverNewOrder(orderId: number) {
+    const order = await this.orderRepository.findOne({
+      select: {
+        id: true,
+        driver: { id: true, deviceToken: true },
+      },
+      where: { id: orderId },
+      relations: ['driver'],
+    });
+    if (!order) return;
+
+    const title = 'New order';
+    const body = 'You have a new order';
+
+    const deviceTokens = new Set<string>();
+
+    order.driver?.deviceToken && deviceTokens.add(order.driver.deviceToken);
+
+    deviceTokens.forEach((deviceToken) => {
+      this.sendToDevice(deviceToken, title, body, { orderId: orderId.toString() });
+    });
+  }
 }

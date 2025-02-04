@@ -11,6 +11,7 @@ import { OrderService as DriverOrderService } from '../../drivers/order/order.se
 import { DriverEntity } from 'src/database/entities/driver.entity';
 import { OrderCriteriaEntity } from 'src/database/entities/order-criteria.entity';
 import { DriverAvailabilityEntity } from 'src/database/entities/driver-availability.entity';
+import { FcmModule } from 'src/modules/fcm/fcm.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { DriverAvailabilityEntity } from 'src/database/entities/driver-availabil
     ]),
     forwardRef(() => MerchantModule),
     EventsModule,
+    FcmModule,
   ],
   controllers: [OrderController],
   providers: [OrderService, DriverOrderService],
