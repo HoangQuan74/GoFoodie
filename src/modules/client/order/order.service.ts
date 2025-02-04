@@ -101,7 +101,10 @@ export class OrderService {
       // Calculate estimated pickup and delivery times
       const now = new Date();
       const estimatedPickupTime = this.calculateEstimatedPickupTime(now, cart.store);
+      console.log('🚀 ~ OrderService ~ create ~ estimatedPickupTime:', estimatedPickupTime);
       const estimatedDeliveryTime = this.calculateEstimatedDeliveryTime(estimatedPickupTime, distance);
+      console.log('🚀 ~ OrderService ~ create ~ distance:', distance);
+      console.log('🚀 ~ OrderService ~ create ~ estimatedDeliveryTime:', estimatedDeliveryTime);
 
       const newOrder = this.orderRepository.create({
         clientId,
@@ -358,10 +361,24 @@ export class OrderService {
   }
 
   private calculateEstimatedDeliveryTime(pickupTime: Date, distance: number): Date {
-    // t: travel time from store to customer (assume 2 minutes per km for now)
-    const t = distance * 2;
+    const MAX_DISTANCE = 1000; // Maximum allowed distance in km
+    const MINUTES_PER_KM = 2; // Assume 2 minutes per km
+    const DEFAULT_DELIVERY_TIME = 120; // Default to 2 hours for invalid distances
 
-    const estimatedDeliveryTime = new Date(pickupTime.getTime() + t * 60000);
+    if (distance < 0) {
+      throw new Error('Distance cannot be negative');
+    }
+
+    let travelTimeMinutes: number;
+
+    if (distance === Number.POSITIVE_INFINITY || distance > MAX_DISTANCE) {
+      console.warn(`Invalid distance: ${distance}. Using default delivery time.`);
+      travelTimeMinutes = DEFAULT_DELIVERY_TIME;
+    } else {
+      travelTimeMinutes = distance * MINUTES_PER_KM;
+    }
+
+    const estimatedDeliveryTime = new Date(pickupTime.getTime() + travelTimeMinutes * 60000);
 
     // Round up to the nearest 10 minutes
     estimatedDeliveryTime.setMinutes(Math.ceil(estimatedDeliveryTime.getMinutes() / 10) * 10);
