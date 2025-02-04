@@ -27,6 +27,7 @@ import { ReviewsModule } from './reviews/reviews.module';
       { path: 'client', module: OrdersModule },
       { path: 'client', module: CancelOrderReasonsModule },
       { path: 'client', module: ReviewTemplatesModule },
+      { path: 'client', module: ReviewsModule },
     ]),
     AuthModule,
     TypeOrmModule.forFeature([ClientEntity]),
