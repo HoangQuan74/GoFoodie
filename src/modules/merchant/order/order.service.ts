@@ -9,6 +9,8 @@ import { DataSource, Repository } from 'typeorm';
 import { OrderService as DriverOrderService } from '../../drivers/order/order.service';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { OrderResponse } from 'src/common/interfaces/order.interface';
+import { calculateStoreIncome } from 'src/utils/income';
 
 @Injectable()
 export class OrderService {
@@ -67,8 +69,13 @@ export class OrderService {
 
     const [orders, total] = await query.getManyAndCount();
 
+    const ordersWithIncome: OrderResponse[] = orders.map((order) => ({
+      ...order,
+      storeIncome: calculateStoreIncome(order),
+    }));
+
     return {
-      orders,
+      orders: ordersWithIncome,
       total,
       page: queryOrderDto.page,
       limit: queryOrderDto.limit,
@@ -156,8 +163,8 @@ export class OrderService {
         throw new NotFoundException(`Order with ID ${orderId} not found or does not belong to this merchant`);
       }
 
-      if (order.status !== EOrderStatus.Pending) {
-        throw new BadRequestException('Only pending orders can be cancelled');
+      if (![EOrderStatus.Pending, EOrderStatus.OfferSentToDriver].includes(order.status)) {
+        throw new BadRequestException('There is no permission to cancel orders', 'ORDER_NOT_CANCELLABLE');
       }
 
       order.status = EOrderStatus.Cancelled;
@@ -193,7 +200,7 @@ export class OrderService {
     return stores;
   }
 
-  async findOne(merchantId: number, orderId: number): Promise<OrderEntity> {
+  async findOne(merchantId: number, orderId: number): Promise<OrderResponse> {
     const stores = await this.getStoresByMerchantId(merchantId);
     const storeIds = stores.map((store) => store.id);
 
@@ -202,6 +209,9 @@ export class OrderService {
       .leftJoinAndSelect('order.orderItems', 'orderItems')
       .leftJoinAndSelect('order.activities', 'activities')
       .leftJoinAndSelect('order.store', 'store')
+      .leftJoinAndSelect('store.ward', 'ward')
+      .leftJoinAndSelect('store.district', 'district')
+      .leftJoinAndSelect('store.province', 'province')
       .leftJoinAndSelect('order.client', 'client')
       .where('order.id = :orderId', { orderId })
       .andWhere('order.storeId IN (:...storeIds)', { storeIds });
@@ -220,6 +230,20 @@ export class OrderService {
       order.driver = null;
     }
 
-    return order;
+    if (order.store) {
+      const addressParts = [
+        order.store.address,
+        order.store.ward?.name,
+        order.store.district?.name,
+        order.store.province?.name,
+      ].filter(Boolean);
+
+      order.store.address = addressParts.join(', ');
+    }
+
+    return {
+      ...order,
+      storeIncome: calculateStoreIncome(order),
+    };
   }
 }

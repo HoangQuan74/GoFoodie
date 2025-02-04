@@ -102,17 +102,36 @@ export class OrderService {
   }
 
   async getOrderDetailsForDriver(orderId: number, driverId: number): Promise<OrderEntity> {
-    const order = await this.orderRepository.findOne({
-      where: { id: orderId },
-      relations: ['orderItems', 'activities', 'store', 'client', 'driver'],
-    });
+    const order = await this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.orderItems', 'orderItems')
+      .leftJoinAndSelect('order.activities', 'activities')
+      .leftJoinAndSelect('order.store', 'store')
+      .leftJoinAndSelect('store.ward', 'ward')
+      .leftJoinAndSelect('store.district', 'district')
+      .leftJoinAndSelect('store.province', 'province')
+      .leftJoinAndSelect('order.client', 'client')
+      .leftJoinAndSelect('order.driver', 'driver')
+      .where('order.id = :orderId', { orderId })
+      .getOne();
 
     if (!order) {
       throw new NotFoundException(`Order with ID ${orderId} not found`);
     }
 
-    if ([EOrderStatus.Pending].includes(order.status) || order.driverId !== driverId) {
+    if (order.driverId !== driverId) {
       throw new BadRequestException('You do not have permission to view this order');
+    }
+
+    if (order.store) {
+      const addressParts = [
+        order.store.address,
+        order.store.ward?.name,
+        order.store.district?.name,
+        order.store.province?.name,
+      ].filter(Boolean);
+
+      order.store.address = addressParts.join(', ');
     }
 
     return order;
@@ -229,6 +248,7 @@ export class OrderService {
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.client', 'client')
       .leftJoinAndSelect('order.driver', 'driver')
+      .leftJoinAndSelect('order.store', 'store')
       .leftJoinAndSelect('order.orderItems', 'orderItems')
       .leftJoinAndSelect('order.activities', 'activities')
       .where('order.driverId = :driverId', { driverId });

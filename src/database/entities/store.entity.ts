@@ -129,6 +129,9 @@ export class StoreEntity extends BaseEntity {
   @Column({ name: 'reject_reason', nullable: true })
   rejectReason: string;
 
+  @Column({ name: 'preparation_time', type: 'int', default: 20 })
+  preparationTime: number;
+
   @ManyToOne(() => ServiceGroupEntity, (serviceGroup) => serviceGroup.id, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'service_group_id' })
   serviceGroup: ServiceGroupEntity;
