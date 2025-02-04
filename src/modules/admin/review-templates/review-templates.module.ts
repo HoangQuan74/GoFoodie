@@ -1,3 +1,4 @@
+import { AdminsModule } from './../admins/admins.module';
 import { Module } from '@nestjs/common';
 import { ReviewTemplatesService } from './review-templates.service';
 import { ReviewTemplatesController } from './review-templates.controller';
@@ -5,7 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ReviewTemplateEntity } from 'src/database/entities/review-template.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ReviewTemplateEntity])],
+  imports: [TypeOrmModule.forFeature([ReviewTemplateEntity]), AdminsModule],
   controllers: [ReviewTemplatesController],
   providers: [ReviewTemplatesService],
 })
