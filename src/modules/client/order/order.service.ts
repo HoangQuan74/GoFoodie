@@ -101,10 +101,7 @@ export class OrderService {
       // Calculate estimated pickup and delivery times
       const now = new Date();
       const estimatedPickupTime = this.calculateEstimatedPickupTime(now, cart.store);
-      console.log('🚀 ~ OrderService ~ create ~ estimatedPickupTime:', estimatedPickupTime);
       const estimatedDeliveryTime = this.calculateEstimatedDeliveryTime(estimatedPickupTime, distance);
-      console.log('🚀 ~ OrderService ~ create ~ distance:', distance);
-      console.log('🚀 ~ OrderService ~ create ~ estimatedDeliveryTime:', estimatedDeliveryTime);
 
       const newOrder = this.orderRepository.create({
         clientId,
