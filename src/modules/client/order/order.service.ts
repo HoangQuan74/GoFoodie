@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EOrderCode, EOrderStatus } from 'src/common/enums/order.enum';
+import { EOrderStatus } from 'src/common/enums/order.enum';
 import { Group } from 'src/common/interfaces/order-item.interface';
 import { CartProductEntity } from 'src/database/entities/cart-product.entity';
 import { CartEntity } from 'src/database/entities/cart.entity';
@@ -48,6 +48,8 @@ export class OrderService {
       tip,
       eatingTools,
       promoPrice,
+      orderType,
+      estimatedOrderTime,
     } = createOrderDto;
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -120,9 +122,11 @@ export class OrderService {
         deliveryFee,
         promoPrice,
         status: EOrderStatus.Pending,
-        orderCode: `${EOrderCode.DeliveryNow}${formattedDate}${shortUuid.toLocaleUpperCase()}`,
+        orderCode: `${orderType}${formattedDate}${shortUuid.toLocaleUpperCase()}`,
         estimatedPickupTime,
         estimatedDeliveryTime,
+        estimatedOrderTime,
+        orderType,
       });
 
       const savedOrder = await queryRunner.manager.save(newOrder);
@@ -228,6 +232,10 @@ export class OrderService {
 
     if (queryOrderDto.status) {
       query.andWhere('order.status = :status', { status: queryOrderDto.status });
+    }
+
+    if (queryOrderDto.orderType) {
+      query.andWhere('order.orderType = :orderType', { orderType: queryOrderDto.orderType });
     }
 
     if (queryOrderDto.paymentStatus) {
