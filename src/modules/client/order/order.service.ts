@@ -312,8 +312,12 @@ export class OrderService {
   async cancelOrder(clientId: number, orderId: number, updateOrderDto: UpdateOrderDto): Promise<OrderEntity> {
     const order = await this.findOne(clientId, orderId);
 
-    if (order.status !== EOrderStatus.Pending) {
-      throw new BadRequestException(EXCEPTIONS.NO_PERMISSION_ACTIONS);
+    if (order.status === EOrderStatus.Confirmed || order.status === EOrderStatus.OfferSentToDriver) {
+      throw new BadRequestException(EXCEPTIONS.ORDER_IS_ACCEPTED);
+    }
+
+    if (order.status === EOrderStatus.Cancelled) {
+      throw new BadRequestException(EXCEPTIONS.ORDER_IS_REJECTED);
     }
 
     const queryRunner = this.dataSource.createQueryRunner();
