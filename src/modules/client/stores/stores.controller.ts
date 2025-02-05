@@ -255,7 +255,9 @@ export class StoresController {
   @Get(':storeId/reviews')
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Get store reviews' })
-  async findReviews(@Param('storeId') storeId: number) {
+  async findReviews(@Param('storeId') storeId: number, @Query() query: PaginationQuery) {
+    const { limit, page } = query;
+
     const queryBuilder = this.storesService
       .createReviewStoreQueryBuilder('review')
       .select(['review.id', 'review.rating', 'review.comment', 'review.createdAt'])
@@ -267,7 +269,9 @@ export class StoresController {
       .leftJoin('review.files', 'file')
       .addSelect(['template.id', 'template.name'])
       .leftJoin('review.templates', 'template')
-      .setParameters({ storeId });
+      .setParameters({ storeId })
+      .take(limit)
+      .skip((page - 1) * limit);
 
     const [items, total] = await queryBuilder.getManyAndCount();
     return { items, total };
