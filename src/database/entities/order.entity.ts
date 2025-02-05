@@ -18,6 +18,9 @@ export class OrderEntity extends BaseEntity {
   @Column({ name: 'driver_id', nullable: true })
   driverId: number;
 
+  @Column({ name: 'cart_id', nullable: true })
+  cartId: number;
+
   @Column({ type: 'decimal', precision: 10, scale: 0, name: 'total_amount', nullable: true })
   totalAmount: number;
 
