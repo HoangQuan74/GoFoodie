@@ -1,4 +1,4 @@
-import { AfterLoad, Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
+import { AfterLoad, Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { NoticeEntity } from './notice.entity';
 import { BaseEntity } from './base.entity';
 import { ECriteriaType } from 'src/common/enums';

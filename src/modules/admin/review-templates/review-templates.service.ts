@@ -23,7 +23,7 @@ export class ReviewTemplatesService {
   }
 
   async delete(criteria: FindOptionsWhere<ReviewTemplateEntity>): Promise<void> {
-    await this.reviewTemplateRepository.delete(criteria);
+    await this.reviewTemplateRepository.softDelete(criteria);
   }
 
   async getReviewCriteria() {

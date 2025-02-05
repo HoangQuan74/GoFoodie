@@ -1,5 +1,5 @@
 import { ECriteriaType } from 'src/common/enums';
-import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { FeeEntity } from './fee.entity';
 

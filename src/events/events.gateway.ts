@@ -157,7 +157,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
 
     socketIds.forEach((socketId) => {
-      this.server.to(socketId).emit(ESocketEvent.orderUpdated, { orderId });
+      this.server.to(socketId).emit(ESocketEvent.OrderUpdated, { orderId });
     });
   }
 

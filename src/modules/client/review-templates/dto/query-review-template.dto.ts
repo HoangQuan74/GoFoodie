@@ -1,14 +1,14 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEnum, IsOptional } from 'class-validator';
-import { ERoleType } from 'src/common/enums';
+import { EUserType } from 'src/common/enums';
 import { PaginationQuery } from 'src/common/query';
 
 export class QueryReviewTemplateDto extends PaginationQuery {
-  @ApiPropertyOptional({ enum: ERoleType })
+  @ApiPropertyOptional({ enum: EUserType })
   @IsOptional()
-  @IsEnum(ERoleType)
-  type?: ERoleType;
+  @IsEnum(EUserType)
+  type?: EUserType;
 
   @ApiPropertyOptional()
   @IsOptional()
