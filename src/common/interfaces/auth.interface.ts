@@ -11,5 +11,5 @@ export interface JwtPayload {
   storeId?: number;
   iat?: number;
   exp?: number;
-  type?: ERoleType;
+  type: ERoleType;
 }

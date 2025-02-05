@@ -10,7 +10,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { ERoleType } from 'src/common/enums';
+import { EUserType } from 'src/common/enums';
 
 export class CreateReviewTemplateItemDto {
   @ApiPropertyOptional()
@@ -34,9 +34,9 @@ export class CreateReviewTemplateItemDto {
 }
 
 export class CreateReviewTemplateDto {
-  @ApiProperty({ enum: ERoleType })
-  @IsEnum(ERoleType)
-  type: ERoleType;
+  @ApiProperty({ enum: EUserType })
+  @IsEnum(EUserType)
+  type: EUserType;
 
   @ApiProperty()
   @IsBoolean()

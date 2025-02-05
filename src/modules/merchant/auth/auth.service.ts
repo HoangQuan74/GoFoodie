@@ -193,7 +193,7 @@ export class AuthService {
       const merchant = await this.merchantsService.findOne({ where: { id } });
       if (!merchant) throw new UnauthorizedException();
 
-      const newPayload: JwtPayload = { id: merchant.id, deviceToken, storeId };
+      const newPayload: JwtPayload = { id: merchant.id, deviceToken, storeId, type: ERoleType.Merchant };
       const newAccessToken = this.jwtService.sign(newPayload, { expiresIn: JWT_EXPIRATION });
 
       await this.refreshTokensService.revokeToken(merchant.id, refreshToken);
@@ -234,7 +234,7 @@ export class AuthService {
       .getOne();
     if (!merchant) throw new NotFoundException();
 
-    const payload: JwtPayload = { id: merchantId, deviceToken, storeId };
+    const payload: JwtPayload = { id: merchantId, deviceToken, storeId, type: ERoleType.Merchant };
     const accessToken = this.jwtService.sign(payload, { expiresIn: JWT_EXPIRATION });
     const { token: refreshToken } = await this.refreshTokensService.createRefreshToken(merchantId, deviceToken);
 

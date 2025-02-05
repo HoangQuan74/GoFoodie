@@ -1,12 +1,12 @@
-import { ERoleType } from 'src/common/enums';
+import { EUserType } from 'src/common/enums';
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { ReviewCriteriaEntity } from './review-criteria.entity';
 
 @Entity('review_templates')
 export class ReviewTemplateEntity extends BaseEntity {
-  @Column({ enum: ERoleType, type: 'enum' })
-  type: ERoleType;
+  @Column({ enum: EUserType, type: 'enum' })
+  type: EUserType;
 
   @Column()
   name: string;

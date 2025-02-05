@@ -391,6 +391,7 @@ export class RequestsController {
       .innerJoin('request.merchant', 'merchant')
       .innerJoin('request.store', 'store')
       .leftJoin('request.approvedBy', 'approvedBy')
+      .leftJoinAndSelect('request.files', 'files')
       .where('request.id = :id', { id })
       .getOne();
     if (!request) throw new NotFoundException();

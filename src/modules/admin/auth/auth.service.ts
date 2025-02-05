@@ -7,7 +7,7 @@ import { AdminsService } from '../admins/admins.service';
 import { AdminEntity } from 'src/database/entities/admin.entity';
 import { RefreshTokensService } from '../refresh-tokens/refresh-tokens.service';
 import { MailService } from 'src/modules/mail/mail.service';
-import { EAdminOtpType } from 'src/common/enums';
+import { EAdminOtpType, ERoleType } from 'src/common/enums';
 import { Response } from 'express';
 import { cookieConfig } from 'src/config/cookie.config';
 
@@ -30,7 +30,7 @@ export class AuthService {
     const isPasswordMatching = comparePassword(password, admin.password);
     if (!isPasswordMatching) throw new UnauthorizedException();
 
-    const payload: JwtPayload = { id: admin.id };
+    const payload: JwtPayload = { id: admin.id, type: ERoleType.Admin };
     const accessToken = this.jwtService.sign(payload, { secret: JWT_SECRET, expiresIn: JWT_EXPIRATION });
     const { token } = await this.refreshTokensService.createRefreshToken(admin.id);
 
@@ -87,7 +87,7 @@ export class AuthService {
     const admin = await this.adminsService.findOne({ where: { id: refreshTokenEntity.adminId } });
     if (!admin) throw new UnauthorizedException();
 
-    const payload: JwtPayload = { id: admin.id };
+    const payload: JwtPayload = { id: admin.id, type: ERoleType.Admin };
     const accessToken = this.jwtService.sign(payload, { secret: JWT_SECRET, expiresIn: JWT_EXPIRATION });
 
     this.refreshTokensService.revokeToken(admin.id, refreshToken);

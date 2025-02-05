@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { FirebaseService } from 'src/modules/firebase/firebase.service';
 import { RefreshTokensService } from '../refresh-tokens/refresh-tokens.service';
 import { Request } from 'express';
+import { ERoleType } from 'src/common/enums';
 
 @Injectable()
 export class AuthService {
@@ -40,7 +41,7 @@ export class AuthService {
 
     if (status !== EDriverStatus.Active) throw new UnauthorizedException(EXCEPTIONS.ACCOUNT_NOT_ACTIVE);
 
-    const payload: JwtPayload = { id, deviceToken };
+    const payload: JwtPayload = { id, deviceToken, type: ERoleType.Driver };
     const accessToken = this.jwtService.sign(payload, { expiresIn: JWT_EXPIRATION });
     const { token: refreshToken } = await this.refreshTokensService.createRefreshToken(driver.id, deviceToken);
 
@@ -68,7 +69,7 @@ export class AuthService {
 
       if (driver.status !== EDriverStatus.Active) throw new UnauthorizedException(EXCEPTIONS.ACCOUNT_NOT_ACTIVE);
 
-      const payload: JwtPayload = { id: driver.id, deviceToken };
+      const payload: JwtPayload = { id: driver.id, deviceToken, type: ERoleType.Driver };
       const accessToken = this.jwtService.sign(payload, { expiresIn: JWT_EXPIRATION });
       const { token: refreshToken } = await this.refreshTokensService.createRefreshToken(driver.id, deviceToken);
 
@@ -92,7 +93,7 @@ export class AuthService {
       const driver = await this.driversService.findOne({ where: { id } });
       if (!driver) throw new UnauthorizedException();
 
-      const newPayload: JwtPayload = { id: driver.id, deviceToken };
+      const newPayload: JwtPayload = { id: driver.id, deviceToken, type: ERoleType.Driver };
       const newAccessToken = this.jwtService.sign(newPayload, { expiresIn: JWT_EXPIRATION });
 
       await this.refreshTokensService.revokeToken(driver.id, refreshToken);

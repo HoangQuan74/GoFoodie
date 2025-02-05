@@ -4,9 +4,10 @@ import { AdminsController } from './admins.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AdminEntity } from 'src/database/entities/admin.entity';
 import { AdminOtpEntity } from 'src/database/entities/admin-otp.entity';
+import { EventsModule } from 'src/events/events.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([AdminEntity, AdminOtpEntity])],
+  imports: [TypeOrmModule.forFeature([AdminEntity, AdminOtpEntity]), EventsModule],
   controllers: [AdminsController],
   providers: [AdminsService],
   exports: [AdminsService],

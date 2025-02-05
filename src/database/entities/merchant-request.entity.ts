@@ -1,10 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { ERequestStatus } from 'src/common/enums';
 import { MerchantEntity } from './merchant.entity';
 import { RequestTypeEntity } from './request-type.entity';
 import { StoreEntity } from './store.entity';
 import { AdminEntity } from './admin.entity';
+import { FileEntity } from './file.entity';
 
 @Entity('merchant_requests')
 export class MerchantRequestEntity extends BaseEntity {
@@ -34,6 +35,14 @@ export class MerchantRequestEntity extends BaseEntity {
 
   @Column({ nullable: true })
   reason: string;
+
+  @ManyToMany(() => FileEntity, (file) => file.id)
+  @JoinTable({
+    name: 'merchant_request_files',
+    joinColumn: { name: 'merchant_request_id' },
+    inverseJoinColumn: { name: 'file_id' },
+  })
+  files: FileEntity[];
 
   @ManyToOne(() => MerchantEntity, (merchant) => merchant.id)
   @JoinColumn({ name: 'merchant_id' })
