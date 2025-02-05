@@ -251,4 +251,25 @@ export class StoresController {
   async unlikeStore(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
     return this.storesService.unlikeStore(id, user.id);
   }
+
+  @Get(':storeId/reviews')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Get store reviews' })
+  async findReviews(@Param('storeId') storeId: number) {
+    const queryBuilder = this.storesService
+      .createReviewStoreQueryBuilder('review')
+      .select(['review.id', 'review.rating', 'review.comment', 'review.createdAt'])
+      .where('review.storeId = :storeId')
+      .withDeleted()
+      .addSelect(['client.id', 'client.name', 'client.avatarId'])
+      .innerJoin('review.client', 'client')
+      .addSelect(['file.id', 'file.mimeType', 'file.name'])
+      .leftJoin('review.files', 'file')
+      .addSelect(['template.id', 'template.name'])
+      .leftJoin('review.templates', 'template')
+      .setParameters({ storeId });
+
+    const [items, total] = await queryBuilder.getManyAndCount();
+    return { items, total };
+  }
 }
