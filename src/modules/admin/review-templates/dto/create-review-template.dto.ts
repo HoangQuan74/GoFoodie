@@ -1,6 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { ERoleType } from 'src/common/enums';
 
 export class CreateReviewTemplateItemDto {
@@ -13,6 +22,11 @@ export class CreateReviewTemplateItemDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @ApiPropertyOptional()
+  @IsNumber()
+  @IsOptional()
+  criteriaId: number;
 
   @ApiProperty()
   @IsBoolean()

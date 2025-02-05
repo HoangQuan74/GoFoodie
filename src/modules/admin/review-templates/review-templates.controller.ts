@@ -12,10 +12,15 @@ import { AuthGuard } from '../auth/auth.guard';
 export class ReviewTemplatesController {
   constructor(private readonly reviewTemplatesService: ReviewTemplatesService) {}
 
+  @Get('criteria')
+  getReviewCriteria() {
+    return this.reviewTemplatesService.getReviewCriteria();
+  }
+
   @Get()
   find(@Query() query: QueryReviewTemplateDto) {
     const { type, isFiveStar } = query;
-    return this.reviewTemplatesService.find({ where: { type, isFiveStar } });
+    return this.reviewTemplatesService.find({ where: { type, isFiveStar }, relations: ['criteria'] });
   }
 
   @Post()
