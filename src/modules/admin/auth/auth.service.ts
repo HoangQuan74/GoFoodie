@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { comparePassword, generateOTP, hashPassword } from 'src/utils/bcrypt';
 import { JwtPayload, JwtSign } from 'src/common/interfaces';
-import { JWT_EXPIRATION, JWT_SECRET } from 'src/common/constants';
+import { EXCEPTIONS, JWT_EXPIRATION, JWT_SECRET } from 'src/common/constants';
 import { JwtService } from '@nestjs/jwt';
 import { AdminsService } from '../admins/admins.service';
 import { AdminEntity } from 'src/database/entities/admin.entity';
 import { RefreshTokensService } from '../refresh-tokens/refresh-tokens.service';
 import { MailService } from 'src/modules/mail/mail.service';
-import { EAdminOtpType, ERoleType } from 'src/common/enums';
+import { EAdminOtpType, EAdminStatus, ERoleType } from 'src/common/enums';
 import { Response } from 'express';
 import { cookieConfig } from 'src/config/cookie.config';
 
@@ -23,12 +23,13 @@ export class AuthService {
   async signIn(username: string, password: string, res: Response): Promise<Omit<AdminEntity, 'password'> & JwtSign> {
     const admin = await this.adminsService.findOne({
       where: { email: username },
-      select: ['id', 'email', 'password'],
+      select: ['id', 'email', 'password', 'status'],
     });
     if (!admin) throw new UnauthorizedException();
 
     const isPasswordMatching = comparePassword(password, admin.password);
     if (!isPasswordMatching) throw new UnauthorizedException();
+    if (admin.status === EAdminStatus.Inactive) throw new UnauthorizedException(EXCEPTIONS.ACCOUNT_NOT_ACTIVE);
 
     const payload: JwtPayload = { id: admin.id, type: ERoleType.Admin };
     const accessToken = this.jwtService.sign(payload, { secret: JWT_SECRET, expiresIn: JWT_EXPIRATION });
