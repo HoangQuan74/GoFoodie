@@ -1,14 +1,20 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { WebSocketGateway, OnGatewayConnection, OnGatewayDisconnect, WebSocketServer } from '@nestjs/websockets';
-import { Socket, Server } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
-import { OrderEntity } from '../database/entities/order.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import {
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
+import { ERoleType } from 'src/common/enums';
+import { ESocketEvent } from 'src/common/enums/socket.enum';
 import { JwtPayload } from 'src/common/interfaces';
 import { SocketUser } from 'src/common/interfaces/socket.interface';
 import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { ERoleType } from 'src/common/enums';
-import { ESocketEvent } from 'src/common/enums/socket.enum';
+import { OrderEntity } from '../database/entities/order.entity';
 
 @WebSocketGateway()
 @Injectable()
@@ -17,6 +23,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private connectedUsers: Map<number, SocketUser> = new Map();
 
   private connected: Map<string, string> = new Map();
+
+  private driverLocations: Map<number, { lat: number; lng: number }> = new Map();
 
   constructor(
     private readonly jwtService: JwtService,
@@ -164,5 +172,57 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // New method to broadcast to all users of a specific type
   broadcastToUserType(type: 'client' | 'merchant' | 'driver', event: string, data: any) {
     this.server.to(`${type}-*`).emit(event, data);
+  }
+
+  @SubscribeMessage('updateDriverLocation')
+  async handleUpdateDriverLocation(client: Socket, payload: { lat: number; lng: number }) {
+    const user = this.getUserFromSocket(client);
+    if (user && user.type === ERoleType.Driver) {
+      this.driverLocations.set(user.id, payload);
+
+      console.log(`Driver ${user.id} location update:`, payload);
+      await this.broadcastDriverLocation(user.id, payload);
+    }
+  }
+
+  private async broadcastDriverLocation(driverId: number, location: { lat: number; lng: number }) {
+    const order = await this.findActiveOrderForDriver(driverId);
+    if (order) {
+      this.server.to(`order-${order.id}`).emit(ESocketEvent.DriverLocationUpdate, { driverId, location });
+    }
+  }
+
+  private async findActiveOrderForDriver(driverId: number): Promise<OrderEntity | null> {
+    return this.orderRepository.findOne({
+      where: {
+        driverId: driverId,
+      },
+      relations: {
+        store: {
+          staffs: true,
+        },
+        client: true,
+        driver: true,
+      },
+    });
+  }
+
+  private getUserFromSocket(client: Socket): SocketUser | undefined {
+    for (const [, user] of this.connectedUsers.entries()) {
+      if (user.socket === client) {
+        return user;
+      }
+    }
+    return undefined;
+  }
+
+  @SubscribeMessage('subscribeToOrder')
+  handleSubscribeToOrder(client: Socket, orderId: number) {
+    client.join(`order-${orderId}`);
+  }
+
+  @SubscribeMessage('unsubscribeFromOrder')
+  handleUnsubscribeFromOrder(client: Socket, orderId: number) {
+    client.leave(`order-${orderId}`);
   }
 }
