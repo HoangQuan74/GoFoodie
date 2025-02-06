@@ -52,9 +52,9 @@ export class OrderController {
   @ApiOperation({ summary: 'Initiate reorder process' })
   @ApiResponse({ status: 200, description: 'Returns the ID of a new cart with items from the original order' })
   @ApiParam({ name: 'id', type: String, description: 'Original Order ID' })
-  async initiateReorder(@Param('id') id: string, @CurrentUser() user: JwtPayload): Promise<{ cartId: number }> {
+  async initiateReorder(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     const { id: clientId } = user;
-    const newCartId = await this.orderService.initiateReorder(clientId, +id);
-    return { cartId: newCartId };
+    const newCart = await this.orderService.initiateReorder(clientId, +id);
+    return newCart;
   }
 }
