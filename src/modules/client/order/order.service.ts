@@ -134,6 +134,7 @@ export class OrderService {
         estimatedDeliveryTime,
         estimatedOrderTime,
         orderType,
+        cartId,
       });
 
       const savedOrder = await queryRunner.manager.save(newOrder);
