@@ -1,3 +1,5 @@
+import { EventGatewayService } from 'src/events/event.gateway.service';
+import { EventsGateway } from './../../../events/events.gateway';
 import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
@@ -11,12 +13,16 @@ import { ApiTags } from '@nestjs/swagger';
 import { AdminRolesGuard } from 'src/common/guards';
 import { Roles } from 'src/common/decorators';
 import { OPERATIONS } from 'src/common/constants/operation.constant';
+import { ERoleType } from 'src/common/enums';
 
 @Controller('admins')
 @ApiTags('Admins')
 @UseGuards(AuthGuard, AdminRolesGuard)
 export class AdminsController {
-  constructor(private readonly adminsService: AdminsService) {}
+  constructor(
+    private readonly adminsService: AdminsService,
+    private readonly eventGatewayService: EventGatewayService,
+  ) {}
 
   @Get()
   async find(@Query() query: FindAdminsDto) {
@@ -79,6 +85,7 @@ export class AdminsController {
       body.password = hashedPassword;
     }
 
+    this.eventGatewayService.handleUpdateRole(ERoleType.Admin, id);
     return this.adminsService.save({ ...admin, ...body });
   }
 
