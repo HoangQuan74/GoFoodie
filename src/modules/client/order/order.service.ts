@@ -358,7 +358,7 @@ export class OrderService {
     }
   }
 
-  async initiateReorder(clientId: number, originalOrderId: number): Promise<number> {
+  async initiateReorder(clientId: number, originalOrderId: number): Promise<CartEntity> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -414,7 +414,7 @@ export class OrderService {
       }
 
       await queryRunner.commitTransaction();
-      return savedNewCart.id;
+      return savedNewCart;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
