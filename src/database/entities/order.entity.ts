@@ -12,6 +12,9 @@ export class OrderEntity extends BaseEntity {
   @Column({ name: 'client_id' })
   clientId: number;
 
+  @Column({ name: 'cart_id', nullable: true })
+  cartId: number;
+
   @Column({ name: 'store_id' })
   storeId: number;
 
