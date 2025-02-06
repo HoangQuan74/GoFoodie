@@ -133,8 +133,17 @@ export class OrderService {
       this.eventGatewayService.handleOrderUpdated(order.id);
 
       try {
-        await this.driverOrderService.assignOrderToDriver(savedOrder.id);
-        await this.fcmService.notifyDriverNewOrder(savedOrder.id);
+        const orderActivity = this.orderActivityRepository.create({
+          orderId: orderId,
+          status: EOrderStatus.SearchingForDriver,
+          description: 'searching_for_driver',
+          cancellationReason: '',
+          performedBy: '',
+        });
+
+        await this.orderActivityRepository.save(orderActivity);
+
+        await this.assignDriverWithTimeout(savedOrder.id, 3000);
       } catch (error) {
         const failureActivity = this.orderActivityRepository.create({
           orderId: savedOrder.id,
@@ -256,5 +265,23 @@ export class OrderService {
       ...order,
       storeIncome: calculateStoreIncome(order),
     };
+  }
+
+  private async assignDriverWithTimeout(orderId: number, timeout: number): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        reject(new Error('Driver assignment timed out'));
+      }, timeout);
+
+      try {
+        await this.driverOrderService.assignOrderToDriver(orderId);
+        await this.fcmService.notifyDriverNewOrder(orderId);
+        clearTimeout(timeoutId);
+        resolve();
+      } catch (error) {
+        clearTimeout(timeoutId);
+        reject(error);
+      }
+    });
   }
 }
