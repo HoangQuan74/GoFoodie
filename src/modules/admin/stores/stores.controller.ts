@@ -210,7 +210,9 @@ export class StoresController {
       const numberStore = latestStore ? +latestStore.storeCode.slice(-3) + 1 : 1;
       store.storeCode = `${preCode}${numberStore.toString().padStart(3, '0')}`;
 
-      await this.storesService.initStoreAddress(store.id, store.address, store.latitude, store.longitude);
+      if (store.address && store.latitude && store.longitude) {
+        await this.storesService.initStoreAddress(store.id, store.address, store.latitude, store.longitude);
+      }
       return manager.save(store);
     });
   }
