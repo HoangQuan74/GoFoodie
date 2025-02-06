@@ -20,8 +20,6 @@ import { OrderEntity } from '../database/entities/order.entity';
 @Injectable()
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
-  private connectedUsers: Map<number, SocketUser> = new Map();
-
   private connected: Map<string, string> = new Map();
 
   private driverLocations: Map<number, { lat: number; lng: number }> = new Map();
@@ -43,7 +41,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       if (!userId || !type) throw new BadRequestException('Invalid token');
 
-      this.connectedUsers.set(userId, { id: userId, type, socket: client });
       this.connected.set(`${type}-${userId}`, client.id);
       console.log(`${type.charAt(0).toUpperCase() + type.slice(1)} connected:`, userId);
 
@@ -56,14 +53,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   handleDisconnect(client: Socket) {
-    for (const [userId, user] of this.connectedUsers.entries()) {
-      if (user.socket === client) {
-        this.connectedUsers.delete(userId);
-        console.log(`${user.type.charAt(0).toUpperCase() + user.type.slice(1)} disconnected:`, userId);
-        break;
-      }
-    }
-
     for (const [key, value] of this.connected.entries()) {
       if (value === client.id) {
         this.connected.delete(key);
@@ -72,9 +61,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  notifyNewOrder(userId: number, order: OrderEntity) {
-    const user = this.connectedUsers.get(userId);
-    if (!user) return;
+  notifyNewOrder(merchantId: number, order: OrderEntity) {
+    const merchantSocketId = this.connected.get(`${ERoleType.Merchant}-${merchantId}`);
+    if (!merchantSocketId) return;
 
     const baseOrderInfo = {
       orderId: order.id,
@@ -85,46 +74,31 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       notes: order.notes,
     };
 
-    if (user && user.type === 'merchant') {
-      user.socket.emit('newOrder', {
-        ...baseOrderInfo,
-        clientName: order.client.name,
-        clientPhone: order.client.phone,
-        deliveryAddress: order.deliveryAddress,
-      });
-    }
-  }
-
-  notifyOrderStatus(userId: number, orderId: number, status: string) {
-    const user = this.connectedUsers.get(userId);
-    if (user && user.type === 'client') {
-      user.socket.emit('orderStatus', { orderId, status });
-    }
-    if (user && user.type === 'merchant') {
-      user.socket.emit('orderStatus', { orderId, status });
-    }
-    if (user && user.type === 'driver') {
-      user.socket.emit('orderStatus', { orderId, status });
-    }
+    this.server.to(merchantSocketId).emit('newOrder', {
+      ...baseOrderInfo,
+      clientName: order.client.name,
+      clientPhone: order.client.phone,
+      deliveryAddress: order.deliveryAddress,
+    });
   }
 
   notifyNewDelivery(driverId: number, order: OrderEntity) {
-    const user = this.connectedUsers.get(driverId);
-    if (user && user.type === 'driver') {
-      user.socket.emit('newDelivery', {
-        orderId: order.id,
-        pickupAddress: order.store.address,
-        deliveryAddress: order.deliveryAddress,
-        deliveryLatitude: order.deliveryLatitude,
-        deliveryLongitude: order.deliveryLongitude,
-        totalAmount: order.totalAmount,
-        status: order.status,
-        paymentStatus: order.paymentStatus,
-        clientName: order.client.name,
-        clientPhone: order.client.phone,
-        notes: order.notes,
-      });
-    }
+    const driverSocketId = this.connected.get(`${ERoleType.Driver}-${driverId}`);
+    if (!driverSocketId) return;
+
+    this.server.to(driverSocketId).emit('newDelivery', {
+      orderId: order.id,
+      pickupAddress: order.store.address,
+      deliveryAddress: order.deliveryAddress,
+      deliveryLatitude: order.deliveryLatitude,
+      deliveryLongitude: order.deliveryLongitude,
+      totalAmount: order.totalAmount,
+      status: order.status,
+      paymentStatus: order.paymentStatus,
+      clientName: order.client.name,
+      clientPhone: order.client.phone,
+      notes: order.notes,
+    });
   }
 
   async handleOrderUpdated(orderId: number) {
@@ -179,7 +153,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const user = this.getUserFromSocket(client);
     if (user && user.type === ERoleType.Driver) {
       this.driverLocations.set(user.id, payload);
-
       console.log(`Driver ${user.id} location update:`, payload);
       await this.broadcastDriverLocation(user.id, payload);
     }
@@ -212,12 +185,11 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   private getUserFromSocket(client: Socket): SocketUser | undefined {
-    for (const [, user] of this.connectedUsers.entries()) {
-      if (user.socket === client) {
-        return user;
-      }
-    }
-    return undefined;
+    const data = this.connected.get(client.id);
+    if (!data) return undefined;
+
+    const [type, id] = data.split('-');
+    return { id: +id, type, socketId: client.id };
   }
 
   @SubscribeMessage('subscribeToOrder')
