@@ -379,7 +379,7 @@ export class OrderService {
       const orderActivity = this.orderActivityRepository.create({
         orderId: order.id,
         status: newStatus,
-        description: `Order status updated to ${newStatus}`,
+        description: `pending_by_merchant`,
         performedBy: `${ERoleType.Client}:${userId}`,
       });
       await queryRunner.manager.save(OrderActivityEntity, orderActivity);
