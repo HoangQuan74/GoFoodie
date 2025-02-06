@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { EventsGateway } from './events.gateway';
 import { OrderEntity } from '../database/entities/order.entity';
+import { ERoleType } from 'src/common/enums';
 
 @Injectable()
 export class EventGatewayService {
@@ -19,5 +20,9 @@ export class EventGatewayService {
 
   handleOrderUpdated(orderId: number) {
     this.eventsGateway.handleOrderUpdated(orderId);
+  }
+
+  handleUpdateRole(type: ERoleType, userId: number) {
+    this.eventsGateway.handleUpdateRole(type, userId);
   }
 }

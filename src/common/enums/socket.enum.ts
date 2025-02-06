@@ -4,4 +4,5 @@ export enum ESocketEvent {
   NewDelivery = 'newDelivery',
   OrderUpdated = 'orderUpdated',
   DriverLocationUpdate = 'driverLocationUpdate',
+  RoleUpdated = 'roleUpdated',
 }

@@ -192,6 +192,10 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  async handleUpdateRole(type: ERoleType, userId: number) {
+    this.server.to(`${type}-${userId}`).emit(ESocketEvent.RoleUpdated);
+  }
+
   private async findActiveOrderForDriver(driverId: number): Promise<OrderEntity | null> {
     return this.orderRepository.findOne({
       where: {
