@@ -1,4 +1,4 @@
-import { MAPBOX_ACCESS_TOKEN, MAPBOX_URL } from './../../common/constants';
+import { GOONG_API_KEY, GOONG_URL, MAPBOX_ACCESS_TOKEN, MAPBOX_URL } from './../../common/constants';
 import { Controller, Get, Param, Query, ServiceUnavailableException, UseGuards } from '@nestjs/common';
 import { MapboxService } from './mapbox.service';
 import { AppGuard } from 'src/app.gaurd';
@@ -84,19 +84,19 @@ export class MapboxController {
   @Get('search/forward')
   async searchAddress(@Query() query: SearchForwardDto) {
     const { search, limit } = query;
-    const { data } = await axios.get(`${MAPBOX_URL}/search/geocode/v6/forward`, {
+
+    const { data } = await axios.get(`${GOONG_URL}/geocode`, {
       params: {
-        access_token: MAPBOX_ACCESS_TOKEN,
-        q: search,
+        api_key: GOONG_API_KEY,
+        address: search,
         limit,
-        country: 'vn',
       },
     });
 
-    const result = data.features.map((feature) => ({
-      id: feature.id,
-      address: feature.properties?.full_address,
-      coordinates: feature.geometry?.coordinates,
+    const result = data.results.map((result) => ({
+      id: result.place_id,
+      address: result.formatted_address,
+      location: result.geometry.location,
     }));
 
     return result;
@@ -106,20 +106,17 @@ export class MapboxController {
   async reverseAddress(@Query() query: SearchReverseDto) {
     const { latitude, longitude } = query;
 
-    const { data } = await axios.get(`${MAPBOX_URL}/search/geocode/v6/reverse`, {
+    const { data } = await axios.get(`${GOONG_URL}/Geocode`, {
       params: {
-        access_token: MAPBOX_ACCESS_TOKEN,
-        latitude,
-        longitude,
-        country: 'vn',
-        limit: 1,
+        api_key: GOONG_API_KEY,
+        latlng: latitude + ',' + longitude,
       },
     });
 
-    const result = data.features.map((feature) => ({
-      id: feature.id,
-      address: feature.properties?.full_address,
-      coordinates: feature.geometry?.coordinates,
+    const result = data.results.map((result) => ({
+      id: result.place_id,
+      address: result.formatted_address,
+      location: result.geometry.location,
     }));
 
     return result;
