@@ -15,6 +15,7 @@ import { ProductEntity } from 'src/database/entities/product.entity';
 import { AuthGuard } from '../auth/auth.guard';
 import { AdminRolesGuard } from 'src/common/guards';
 import { OPERATIONS } from 'src/common/constants/operation.constant';
+import { StoreAddressEntity } from 'src/database/entities/store-address.entity';
 
 @Controller('stores')
 @ApiTags('Stores')
@@ -209,6 +210,7 @@ export class StoresController {
       const numberStore = latestStore ? +latestStore.storeCode.slice(-3) + 1 : 1;
       store.storeCode = `${preCode}${numberStore.toString().padStart(3, '0')}`;
 
+      await this.storesService.initStoreAddress(store.id, store.address, store.latitude, store.longitude);
       return manager.save(store);
     });
   }

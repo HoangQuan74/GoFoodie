@@ -18,7 +18,7 @@ export class EventGatewayService {
     this.eventsGateway.handleOrderUpdated(orderId);
   }
 
-  handleUpdateRole(type: ERoleType, userId: number) {
-    this.eventsGateway.handleUpdateRole(type, userId);
+  handleUpdateRole(type: ERoleType, userIds: number[]) {
+    this.eventsGateway.handleUpdateRole(type, userIds);
   }
 }
