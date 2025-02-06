@@ -21,12 +21,17 @@ import { AuthGuard } from '../auth/auth.guard';
 import { AdminRolesGuard } from 'src/common/guards';
 import { OPERATIONS } from 'src/common/constants/operation.constant';
 import { ApiTags } from '@nestjs/swagger';
+import { EventGatewayService } from 'src/events/event.gateway.service';
+import { ERoleType } from 'src/common/enums';
 
 @Controller('roles')
 @ApiTags('Roles')
 @UseGuards(AuthGuard, AdminRolesGuard)
 export class RolesController {
-  constructor(private readonly rolesService: RolesService) {}
+  constructor(
+    private readonly rolesService: RolesService,
+    private readonly eventGatewayService: EventGatewayService,
+  ) {}
 
   @Post()
   @Roles(OPERATIONS.ROLE.CREATE)
@@ -71,7 +76,11 @@ export class RolesController {
   @Patch(':id')
   @Roles(OPERATIONS.ROLE.UPDATE)
   async update(@Param('id') id: number, @Body() updateRoleDto: UpdateRoleDto) {
-    const role = await this.rolesService.findOne({ where: { id } });
+    const role = await this.rolesService.findOne({
+      select: { admins: { id: true } },
+      where: { id },
+      relations: ['admins'],
+    });
     if (!role) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
 
     const { name } = updateRoleDto;
@@ -80,6 +89,8 @@ export class RolesController {
       if (existedRole) throw new BadRequestException(EXCEPTIONS.NAME_EXISTED);
     }
 
+    const adminIds = role.admins.map((admin) => admin.id);
+    this.eventGatewayService.handleUpdateRole(ERoleType.Admin, adminIds);
     return this.rolesService.save({ ...role, ...updateRoleDto });
   }
 

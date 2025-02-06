@@ -1,7 +1,8 @@
-import { Column, Entity, JoinTable, ManyToMany } from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { OperationEntity } from './operation.entity';
 import { ERoleStatus } from 'src/common/enums';
+import { AdminEntity } from './admin.entity';
 
 @Entity('roles')
 export class RoleEntity extends BaseEntity {
@@ -17,4 +18,7 @@ export class RoleEntity extends BaseEntity {
   @ManyToMany(() => OperationEntity, (operation) => operation.id)
   @JoinTable({ name: 'roles_operations', joinColumn: { name: 'role_id' }, inverseJoinColumn: { name: 'operation_id' } })
   operations: OperationEntity[];
+
+  @OneToMany(() => AdminEntity, (admin) => admin.role)
+  admins: AdminEntity[];
 }

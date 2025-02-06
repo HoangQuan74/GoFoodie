@@ -85,7 +85,7 @@ export class AdminsController {
       body.password = hashedPassword;
     }
 
-    this.eventGatewayService.handleUpdateRole(ERoleType.Admin, id);
+    this.eventGatewayService.handleUpdateRole(ERoleType.Admin, [id]);
     return this.adminsService.save({ ...admin, ...body });
   }
 
