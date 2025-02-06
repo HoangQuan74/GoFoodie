@@ -8,5 +8,6 @@ export const corsConfig: CorsOptions = {
     'https://admin.oneship.com.vn',
   ],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  allowedHeaders: 'Content-Type, Accept, Authorization',
   credentials: true,
 };
