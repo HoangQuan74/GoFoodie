@@ -19,6 +19,7 @@ import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { EXCEPTIONS } from 'src/common/constants';
 import { CartProductOptionEntity } from 'src/database/entities/cart-product-option.entity';
+import { ERoleType } from 'src/common/enums';
 
 @Injectable()
 export class OrderService {
@@ -128,7 +129,7 @@ export class OrderService {
         eatingTools,
         deliveryFee,
         promoPrice,
-        status: EOrderStatus.Pending,
+        status: EOrderStatus.OrderCreated,
         orderCode: `${orderType}${formattedDate}${shortUuid.toLocaleUpperCase()}`,
         estimatedPickupTime,
         estimatedDeliveryTime,
@@ -204,7 +205,7 @@ export class OrderService {
       // Create initial order activity
       const orderActivity = this.orderActivityRepository.create({
         orderId: savedOrder.id,
-        status: EOrderStatus.Pending,
+        status: EOrderStatus.OrderCreated,
         description: 'order_created',
         performedBy: `client:${clientId}`,
       });
@@ -354,6 +355,48 @@ export class OrderService {
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException('Failed to cancel order: ' + error.message);
     } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async updateOrderStatus(orderId: number, newStatus: EOrderStatus, userId: number): Promise<OrderEntity> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const order = await this.orderRepository.findOne({ where: { id: orderId } });
+
+      if (!order) {
+        throw new NotFoundException(`Order with ID ${orderId} not found`);
+      }
+
+      // Update order status
+      order.status = newStatus;
+      await queryRunner.manager.save(OrderEntity, order);
+
+      // Create order activity
+      const orderActivity = this.orderActivityRepository.create({
+        orderId: order.id,
+        status: newStatus,
+        description: `Order status updated to ${newStatus}`,
+        performedBy: `${ERoleType.Client}:${userId}`,
+      });
+      await queryRunner.manager.save(OrderActivityEntity, orderActivity);
+
+      // Commit transaction
+      await queryRunner.commitTransaction();
+
+      // Notify clients about the order update
+      this.eventGatewayService.handleOrderUpdated(orderId);
+
+      return order;
+    } catch (error) {
+      // Rollback transaction in case of error
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      // Release query runner
       await queryRunner.release();
     }
   }

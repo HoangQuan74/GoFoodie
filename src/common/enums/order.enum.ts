@@ -1,4 +1,5 @@
 export enum EOrderStatus {
+  OrderCreated = 'order_created',
   Pending = 'pending',
   Confirmed = 'confirmed',
   InDelivery = 'in_delivery',
