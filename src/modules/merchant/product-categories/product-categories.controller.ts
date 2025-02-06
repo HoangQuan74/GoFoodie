@@ -64,7 +64,10 @@ export class ProductCategoriesController {
       const isExist = await this.productCategoriesService.findOne({ where: { name, storeId } });
       if (isExist) throw new BadRequestException(EXCEPTIONS.NAME_EXISTED);
 
-      return this.productCategoriesService.save({ name, storeId, serviceGroupId: store.serviceGroupId, parentId });
+      const newCategory = { name, storeId, serviceGroupId: store.serviceGroupId, parentId };
+      const category = await this.productCategoriesService.save(newCategory);
+      const categoryCode = category.id.toString().padStart(4, '0');
+      return this.productCategoriesService.save({ ...category, code: categoryCode });
     }
   }
 
