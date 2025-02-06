@@ -36,6 +36,11 @@ export class CreateWorkingTimeDto {
   @Min(0)
   @Max(24 * 60 - 1)
   closeTime: number;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsOptional()
+  isOpen: boolean;
 }
 
 export class CreateStoreSpecialWorkingTimeDto {

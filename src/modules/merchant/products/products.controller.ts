@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, NotFoundException, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, NotFoundException, Query, ConflictException } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -15,6 +15,7 @@ import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { QueryProductDto } from './dto/query-product.dto';
 import { OptionGroupsService } from '../option-groups/option-groups.service';
+import { EXCEPTIONS } from 'src/common/constants';
 
 @Controller('products')
 @ApiTags('Products')
@@ -32,9 +33,12 @@ export class ProductsController {
     const { id: merchantId } = user;
 
     return this.dataSource.transaction(async (manager) => {
-      const { optionIds = [] } = createProductDto;
+      const { optionIds = [], name } = createProductDto;
       const store = await manager.findOne(StoreEntity, { where: { id: storeId } });
       if (!store) throw new NotFoundException();
+
+      const isExist = await manager.findOne(ProductEntity, { where: { name, storeId } });
+      if (isExist) throw new ConflictException(EXCEPTIONS.NAME_EXISTED);
 
       const lastProduct = await manager.findOne(ProductEntity, {
         where: { storeId },

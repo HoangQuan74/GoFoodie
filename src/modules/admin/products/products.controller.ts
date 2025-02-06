@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  NotFoundException,
+  Query,
+  UseGuards,
+  ConflictException,
+} from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -12,6 +24,7 @@ import { OptionGroupsService } from '../option-groups/option-groups.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { EProductApprovalStatus, EProductStatus } from 'src/common/enums';
 import { ProductCategoriesService } from '../product-categories/product-categories.service';
+import { EXCEPTIONS } from 'src/common/constants';
 
 @Controller('products')
 @ApiTags('Quản lý sản phẩm')
@@ -29,9 +42,12 @@ export class ProductsController {
     const { storeId } = createProductDto;
 
     return this.dataSource.transaction(async (manager) => {
-      const { optionIds = [], productCategoryId } = createProductDto;
+      const { optionIds = [], productCategoryId, name } = createProductDto;
       const store = await manager.findOne(StoreEntity, { where: { id: storeId } });
       if (!store) throw new NotFoundException();
+
+      const isExist = await manager.findOne(ProductEntity, { where: { name, storeId } });
+      if (isExist) throw new ConflictException(EXCEPTIONS.NAME_EXISTED);
 
       await this.productCategoriesService.createProductCategoryIfNotExist(productCategoryId, storeId);
 
