@@ -33,7 +33,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleConnection(client: Socket, ...args: any[]) {
     try {
-      const accessToken = client.handshake.headers.authorization as string;
+      const accessToken = client.handshake.headers.authorization || (client.handshake.query.token as string);
       if (!accessToken) throw new BadRequestException('No access token provided');
 
       const payload = this.jwtService.verify(accessToken) as JwtPayload;
