@@ -105,7 +105,7 @@ export class OrderService {
     return this.driverAvailabilityRepository.save(availability);
   }
 
-  async getOrderDetailsForDriver(orderId: number, driverId: number): Promise<OrderEntity> {
+  async getOrderDetailsForDriver(orderId: number, driverId: number) {
     const order = await this.orderRepository
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.orderItems', 'orderItems')
@@ -114,6 +114,7 @@ export class OrderService {
       .leftJoinAndSelect('store.ward', 'ward')
       .leftJoinAndSelect('store.district', 'district')
       .leftJoinAndSelect('store.province', 'province')
+      .leftJoinAndSelect('store.serviceType', 'serviceType')
       .leftJoinAndSelect('order.client', 'client')
       .leftJoinAndSelect('order.driver', 'driver')
       .where('order.id = :orderId', { orderId })
@@ -138,7 +139,15 @@ export class OrderService {
       order.store.address = addressParts.join(', ');
     }
 
-    return order;
+    const criteria = await this.orderCriteriaRepository.findOne({
+      where: { serviceTypeId: order.store.serviceType.id },
+      relations: ['serviceType'],
+    });
+
+    return {
+      ...order,
+      criteria,
+    };
   }
 
   async acceptOrderByDriver(orderId: number, driverId: number): Promise<OrderEntity> {
