@@ -47,10 +47,12 @@ export class RolesController {
   @Get()
   // @Roles(OPERATIONS.ROLE.READ)
   async find(@Query() query: FindRolesDto) {
-    const { page, limit, search, status, createdAtFrom, createdAtTo } = query;
+    const { page, limit, search, status, createdAtFrom, createdAtTo, provinceId, serviceTypeId } = query;
 
     const queryBuilder = this.rolesService
       .createQueryBuilder('role')
+      .leftJoinAndSelect('role.provinces', 'province')
+      .leftJoinAndSelect('role.serviceTypes', 'serviceType')
       .orderBy('role.id', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
@@ -59,6 +61,8 @@ export class RolesController {
     status && queryBuilder.andWhere('role.status = :status', { status });
     createdAtFrom && queryBuilder.andWhere('role.createdAt >= :createdAtFrom', { createdAtFrom });
     createdAtTo && queryBuilder.andWhere('role.createdAt <= :createdAtTo', { createdAtTo });
+    provinceId && queryBuilder.andWhere('province.id = :provinceId', { provinceId });
+    serviceTypeId && queryBuilder.andWhere('serviceType.id = :serviceTypeId', { serviceTypeId });
 
     const [items, total] = await queryBuilder.getManyAndCount();
 
