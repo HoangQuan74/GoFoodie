@@ -15,7 +15,7 @@ import { DriversService } from './drivers.service';
 import { CreateDriverDto } from './dto/create-driver.dto';
 import { DriverEntity } from 'src/database/entities/driver.entity';
 import { CurrentUser, Roles } from 'src/common/decorators';
-import { JwtPayload } from 'src/common/interfaces';
+import { IAdmin, JwtPayload } from 'src/common/interfaces';
 import { EDriverApprovalStatus } from 'src/common/enums/driver.enum';
 import { QueryDriverDto } from './dto/query-driver.dto';
 import { Brackets } from 'typeorm';
@@ -25,12 +25,16 @@ import { AuthGuard } from '../auth/auth.guard';
 import { UpdateDriverDto } from './dto/update-driver.dto';
 import { AdminRolesGuard } from 'src/common/guards';
 import { OPERATIONS } from 'src/common/constants/operation.constant';
+import { AdminsService } from '../admins/admins.service';
 
 @Controller('drivers')
 @ApiTags('Drivers')
 @UseGuards(AuthGuard, AdminRolesGuard)
 export class DriversController {
-  constructor(private readonly driversService: DriversService) {}
+  constructor(
+    private readonly driversService: DriversService,
+    private readonly adminsService: AdminsService,
+  ) {}
 
   @Post()
   @Roles(OPERATIONS.DRIVER.CREATE)
@@ -56,7 +60,7 @@ export class DriversController {
   }
 
   @Get()
-  async find(@Query() query: QueryDriverDto) {
+  async find(@Query() query: QueryDriverDto, @CurrentUser() user: IAdmin) {
     const { page, limit, search, status, approvalStatus, serviceTypeId } = query;
     const { createdAtFrom, createdAtTo, approvedAtFrom, approvedAtTo, activeAreaId } = query;
 
@@ -78,6 +82,16 @@ export class DriversController {
     approvedAtTo && queryBuilder.andWhere('driver.approvedAt <= :approvedAtTo', { approvedAtTo });
     activeAreaId && queryBuilder.andWhere('driver.activeAreaId = :activeAreaId', { activeAreaId });
     serviceTypeId && queryBuilder.andWhere('serviceTypes.id = :serviceTypeId', { serviceTypeId });
+
+    if (user.isRoot === false) {
+      const { provinces, serviceTypes } = await this.adminsService.getAdminProvincesAndServiceTypes(user.id);
+      if (!provinces.length || !serviceTypes.length) {
+        return { items: [], total: 0 };
+      }
+
+      queryBuilder.andWhere('driver.activeAreaId IN (:...provinces)', { provinces });
+      queryBuilder.andWhere('serviceTypes.id IN (:...serviceTypes)', { serviceTypes });
+    }
 
     if (search) {
       queryBuilder

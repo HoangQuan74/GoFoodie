@@ -8,14 +8,14 @@ import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { Brackets, DataSource, In, Like } from 'typeorm';
 import { CurrentUser, Roles } from 'src/common/decorators';
-import { JwtPayload } from 'src/common/interfaces';
+import { JwtPayload, IAdmin } from 'src/common/interfaces';
 import { IdentityQuery } from 'src/common/query';
 import { EStoreApprovalStatus } from 'src/common/enums';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { AuthGuard } from '../auth/auth.guard';
 import { AdminRolesGuard } from 'src/common/guards';
 import { OPERATIONS } from 'src/common/constants/operation.constant';
-import { StoreAddressEntity } from 'src/database/entities/store-address.entity';
+import { AdminsService } from '../admins/admins.service';
 
 @Controller('stores')
 @ApiTags('Stores')
@@ -25,6 +25,7 @@ export class StoresController {
     private readonly storesService: StoresService,
     private readonly dataSource: DataSource,
     private readonly wardsService: WardsService,
+    private readonly adminsService: AdminsService,
   ) {}
 
   @Post()
@@ -50,7 +51,8 @@ export class StoresController {
   }
 
   @Get()
-  async find(@Query() query: QueryStoreDto) {
+  async find(@Query() query: QueryStoreDto, @CurrentUser() user: IAdmin) {
+    console.log('user', JSON.stringify(user, null, 2));
     const { search, page, limit, sort, serviceTypeId, businessAreaId, approvalStatus, status, merchantId } = query;
     const { createdAtFrom, createdAtTo, approvedAtFrom, approvedAtTo, serviceGroupIds } = query;
 
@@ -88,6 +90,16 @@ export class StoresController {
           }),
         )
         .setParameters({ search: `%${search}%` });
+    }
+
+    if (user.isRoot === false) {
+      const { provinces, serviceTypes } = await this.adminsService.getAdminProvincesAndServiceTypes(user.id);
+      if (!provinces.length || !serviceTypes.length) {
+        return { items: [], total: 0 };
+      }
+
+      queryBuilder.andWhere('store.provinceId IN (:...provinces)', { provinces });
+      queryBuilder.andWhere('store.serviceTypeId IN (:...serviceTypes)', { serviceTypes });
     }
 
     merchantId && queryBuilder.andWhere('store.merchantId = :merchantId');

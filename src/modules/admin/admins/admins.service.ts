@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OTP_EXPIRATION } from 'src/common/constants';
-import { EAdminOtpType } from 'src/common/enums';
+import { EAdminOtpType, ERoleStatus } from 'src/common/enums';
 import { AdminOtpEntity } from 'src/database/entities/admin-otp.entity';
 import { AdminEntity } from 'src/database/entities/admin.entity';
 import { FindManyOptions, FindOneOptions, MoreThan, Repository } from 'typeorm';
@@ -46,5 +46,22 @@ export class AdminsService {
       where: { adminId, otp, expiredAt: MoreThan(new Date()), isUsed: false },
     });
     return !!otpEntity;
+  }
+
+  async getAdminProvincesAndServiceTypes(adminId: number) {
+    const admin = await this.adminsRepository.findOne({
+      select: { id: true, role: { provinces: true, serviceTypes: true } },
+      where: { id: adminId },
+      relations: ['role', 'role.provinces', 'role.serviceTypes'],
+    });
+
+    if (admin.role?.status !== ERoleStatus.Active) {
+      return { provinces: [], serviceTypes: [] };
+    }
+
+    return {
+      provinces: admin.role?.provinces || [],
+      serviceTypes: admin.role?.serviceTypes || [],
+    };
   }
 }
