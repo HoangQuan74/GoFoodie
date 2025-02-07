@@ -18,6 +18,8 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { EXCEPTIONS } from 'src/common/constants';
+import { CartProductOptionEntity } from 'src/database/entities/cart-product-option.entity';
+import { ERoleType } from 'src/common/enums';
 
 @Injectable()
 export class OrderService {
@@ -29,6 +31,11 @@ export class OrderService {
     private cartRepository: Repository<CartEntity>,
     @InjectRepository(OrderActivityEntity)
     private orderActivityRepository: Repository<OrderActivityEntity>,
+    @InjectRepository(CartProductEntity)
+    private cartProductRepository: Repository<CartProductEntity>,
+    @InjectRepository(CartProductOptionEntity)
+    private cartProductOptionRepository: Repository<CartProductOptionEntity>,
+
     private eventGatewayService: EventGatewayService,
     private dataSource: DataSource,
 
@@ -122,12 +129,13 @@ export class OrderService {
         eatingTools,
         deliveryFee,
         promoPrice,
-        status: EOrderStatus.Pending,
+        status: EOrderStatus.OrderCreated,
         orderCode: `${orderType}${formattedDate}${shortUuid.toLocaleUpperCase()}`,
         estimatedPickupTime,
         estimatedDeliveryTime,
         estimatedOrderTime,
         orderType,
+        cartId,
       });
 
       const savedOrder = await queryRunner.manager.save(newOrder);
@@ -197,7 +205,7 @@ export class OrderService {
       // Create initial order activity
       const orderActivity = this.orderActivityRepository.create({
         orderId: savedOrder.id,
-        status: EOrderStatus.Pending,
+        status: EOrderStatus.OrderCreated,
         description: 'order_created',
         performedBy: `client:${clientId}`,
       });
@@ -227,6 +235,7 @@ export class OrderService {
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.client', 'client')
       .leftJoinAndSelect('order.driver', 'driver')
+      .leftJoinAndSelect('order.store', 'store')
       .leftJoinAndSelect('order.orderItems', 'orderItems')
       .leftJoinAndSelect('order.activities', 'activities')
       .where('order.clientId = :clientId', { clientId });
@@ -346,6 +355,113 @@ export class OrderService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException('Failed to cancel order: ' + error.message);
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async updateOrderStatus(orderId: number, newStatus: EOrderStatus, userId: number): Promise<OrderEntity> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const order = await this.orderRepository.findOne({ where: { id: orderId } });
+
+      if (!order) {
+        throw new NotFoundException(`Order with ID ${orderId} not found`);
+      }
+
+      // Update order status
+      order.status = newStatus;
+      await queryRunner.manager.save(OrderEntity, order);
+
+      // Create order activity
+      const orderActivity = this.orderActivityRepository.create({
+        orderId: order.id,
+        status: newStatus,
+        description: `pending_by_merchant`,
+        performedBy: `${ERoleType.Client}:${userId}`,
+      });
+      await queryRunner.manager.save(OrderActivityEntity, orderActivity);
+
+      // Commit transaction
+      await queryRunner.commitTransaction();
+
+      // Notify clients about the order update
+      this.eventGatewayService.handleOrderUpdated(orderId);
+
+      return order;
+    } catch (error) {
+      // Rollback transaction in case of error
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      // Release query runner
+      await queryRunner.release();
+    }
+  }
+
+  async initiateReorder(clientId: number, originalOrderId: number): Promise<CartEntity> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const originalOrder = await this.orderRepository.findOne({
+        where: { id: originalOrderId, clientId },
+      });
+
+      if (!originalOrder) {
+        throw new NotFoundException(`Order with ID ${originalOrderId} not found for this client`);
+      }
+
+      const originalCart = await this.cartRepository.findOne({
+        where: { id: originalOrder.cartId },
+        withDeleted: true,
+      });
+
+      if (!originalCart) {
+        throw new NotFoundException(`Cart with ID ${originalOrder.cartId} not found`);
+      }
+
+      const newCart = this.cartRepository.create({
+        clientId: originalCart.clientId,
+        storeId: originalCart.storeId,
+      });
+      const savedNewCart = await queryRunner.manager.save(newCart);
+
+      const originalCartProducts = await this.cartProductRepository.find({
+        where: { cartId: originalOrder.cartId },
+        relations: ['cartProductOptions'],
+        withDeleted: true,
+      });
+
+      for (const originalProduct of originalCartProducts) {
+        const newCartProduct = this.cartProductRepository.create({
+          cartId: savedNewCart.id,
+          productId: originalProduct.productId,
+          quantity: originalProduct.quantity,
+          note: originalProduct.note,
+        });
+        const savedNewCartProduct = await queryRunner.manager.save(newCartProduct);
+
+        if (originalProduct.cartProductOptions && originalProduct.cartProductOptions.length > 0) {
+          const newCartProductOptions = originalProduct.cartProductOptions.map((option) =>
+            this.cartProductOptionRepository.create({
+              cartProductId: savedNewCartProduct.id,
+              optionId: option.optionId,
+            }),
+          );
+          await queryRunner.manager.save(CartProductOptionEntity, newCartProductOptions);
+        }
+      }
+
+      await queryRunner.commitTransaction();
+      return savedNewCart;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
     } finally {
       await queryRunner.release();
     }
