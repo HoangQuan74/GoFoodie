@@ -44,7 +44,7 @@ export class AuthGuard implements CanActivate {
           },
         },
         where: { id },
-        relations: ['role', 'role.operations'],
+        relations: ['role', 'role.operations', 'role.provinces', 'role.serviceTypes'],
       });
       if (admin.status === EAdminStatus.Inactive) throw new ForbiddenException();
 
