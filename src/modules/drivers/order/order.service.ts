@@ -202,10 +202,12 @@ export class OrderService {
 
     await this.assignOrderToDriver(orderId);
 
+    const wasAcceptedBefore = order.activities.some((activity) => activity.status === EOrderStatus.DriverAccepted);
+
     const orderActivity = this.orderActivityRepository.create({
       orderId: orderId,
       status: EOrderStatus.SearchingForDriver,
-      description: 'driver_rejected_the_order',
+      description: wasAcceptedBefore ? 'driver_approved_and_rejected_the_order' : 'driver_rejected_the_order',
       cancellationReason: updateOrderDto.reasons || '',
       performedBy: `driverId:${driverId}`,
     });
