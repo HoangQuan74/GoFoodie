@@ -61,9 +61,10 @@ export class FcmService {
       select: {
         id: true,
         driver: { id: true, deviceToken: true },
+        store: { id: true, latitude: true, longitude: true },
       },
       where: { id: orderId },
-      relations: ['driver'],
+      relations: ['driver', 'store'],
     });
     if (!order) return;
 
@@ -75,7 +76,7 @@ export class FcmService {
     order.driver?.deviceToken && deviceTokens.add(order.driver.deviceToken);
 
     deviceTokens.forEach((deviceToken) => {
-      this.sendToDevice(deviceToken, title, body, { orderId: orderId.toString() });
+      this.sendToDevice(deviceToken, title, body, { order: JSON.stringify(order) });
     });
   }
 }
