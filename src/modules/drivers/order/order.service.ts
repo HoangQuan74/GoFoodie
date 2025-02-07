@@ -185,6 +185,7 @@ export class OrderService {
   async rejectOrderByDriver(orderId: number, driverId: number, updateOrderDto: UpdateOrderDto): Promise<void> {
     const order = await this.orderRepository.findOne({
       where: { id: orderId },
+      relations: ['activities'],
     });
 
     if (!order) {
