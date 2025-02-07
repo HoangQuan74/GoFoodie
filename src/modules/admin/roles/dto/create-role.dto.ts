@@ -30,17 +30,20 @@ export class CreateRoleDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => IdDto)
+  @IsOptional()
   operations: IdDto[];
 
   @ApiPropertyOptional({ type: [IdDto] })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => IdDto)
+  @IsOptional()
   provinces: IdDto[];
 
   @ApiPropertyOptional({ type: [IdDto] })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => IdDto)
+  @IsOptional()
   serviceTypes: IdDto[];
 }
