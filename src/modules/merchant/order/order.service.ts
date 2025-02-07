@@ -143,7 +143,8 @@ export class OrderService {
 
         await this.orderActivityRepository.save(orderActivity);
 
-        await this.assignDriverWithTimeout(savedOrder.id, 3000);
+        await this.driverOrderService.assignOrderToDriver(orderId);
+        await this.fcmService.notifyDriverNewOrder(orderId);
       } catch (error) {
         const failureActivity = this.orderActivityRepository.create({
           orderId: savedOrder.id,

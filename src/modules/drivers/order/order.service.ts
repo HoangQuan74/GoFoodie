@@ -309,7 +309,7 @@ export class OrderService {
   private async findEligibleDrivers(order: OrderEntity): Promise<DriverEntity[]> {
     const availableDrivers = await this.driverAvailabilityRepository.find({
       where: { isAvailable: true },
-      relations: ['driver', 'driver.serviceTypes', 'driver.vehicle'],
+      relations: ['driver', 'driver.serviceTypes', 'driver.vehicle', 'driver.driverAvailability'],
     });
 
     return availableDrivers
