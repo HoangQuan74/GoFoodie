@@ -13,3 +13,8 @@ export interface JwtPayload {
   exp?: number;
   type: ERoleType;
 }
+
+export interface IAdmin {
+  id: number;
+  isRoot: boolean;
+}
