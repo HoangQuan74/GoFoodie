@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { ERoleStatus } from 'src/common/enums';
+import { IdDto } from 'src/common/query';
 
 export class CreateRoleOperationDto {
   @ApiProperty()
@@ -25,10 +26,21 @@ export class CreateRoleDto {
   @IsEnum(ERoleStatus)
   status: ERoleStatus;
 
-  @ApiPropertyOptional({ type: [CreateRoleOperationDto] })
+  @ApiPropertyOptional({ type: [IdDto] })
   @IsArray()
   @ValidateNested({ each: true })
-  @IsOptional()
-  @Type(() => CreateRoleOperationDto)
-  operations: CreateRoleOperationDto[];
+  @Type(() => IdDto)
+  operations: IdDto[];
+
+  @ApiPropertyOptional({ type: [IdDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => IdDto)
+  provinces: IdDto[];
+
+  @ApiPropertyOptional({ type: [IdDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => IdDto)
+  serviceTypes: IdDto[];
 }

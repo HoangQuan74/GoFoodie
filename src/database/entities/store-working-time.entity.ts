@@ -13,6 +13,9 @@ export class StoreWorkingTimeEntity extends BaseEntity {
   @Column({ name: 'close_time' })
   closeTime: number;
 
+  @Column({ name: 'is_open', default: true })
+  isOpen: boolean;
+
   @Column({ name: 'store_id', select: false })
   storeId: number;
 
