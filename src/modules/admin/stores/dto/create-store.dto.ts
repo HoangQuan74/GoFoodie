@@ -37,7 +37,7 @@ export class CreateWorkingTimeDto {
   @Max(24 * 60 - 1)
   closeTime: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsBoolean()
   @IsOptional()
   isOpen: boolean;
