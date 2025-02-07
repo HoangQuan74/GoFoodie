@@ -1,6 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsInt, IsNotEmpty, IsString, Max, Min, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min, ValidateNested } from 'class-validator';
 import { IdDto, IdUuidDto } from 'src/common/query';
 
 export class ReviewStoreDto {
@@ -15,9 +15,9 @@ export class ReviewStoreDto {
   @Max(5)
   rating: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   comment: string;
 
   @ApiProperty()
