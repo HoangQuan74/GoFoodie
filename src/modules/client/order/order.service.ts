@@ -235,6 +235,7 @@ export class OrderService {
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.client', 'client')
       .leftJoinAndSelect('order.driver', 'driver')
+      .leftJoinAndSelect('order.store', 'store')
       .leftJoinAndSelect('order.orderItems', 'orderItems')
       .leftJoinAndSelect('order.activities', 'activities')
       .where('order.clientId = :clientId', { clientId });
