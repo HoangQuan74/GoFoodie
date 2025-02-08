@@ -50,7 +50,7 @@ export class AdminsService {
 
   async getAdminProvincesAndServiceTypes(adminId: number) {
     const admin = await this.adminsRepository.findOne({
-      select: { id: true, role: { provinces: true, serviceTypes: true } },
+      select: { id: true, role: { id: true, status: true, provinces: { id: true }, serviceTypes: { id: true } } },
       where: { id: adminId },
       relations: ['role', 'role.provinces', 'role.serviceTypes'],
     });

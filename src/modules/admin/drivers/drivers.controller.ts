@@ -85,6 +85,7 @@ export class DriversController {
 
     if (user.isRoot === false) {
       const { provinces, serviceTypes } = await this.adminsService.getAdminProvincesAndServiceTypes(user.id);
+
       if (!provinces.length || !serviceTypes.length) {
         return { items: [], total: 0 };
       }
