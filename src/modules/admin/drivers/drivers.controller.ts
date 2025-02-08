@@ -89,8 +89,10 @@ export class DriversController {
         return { items: [], total: 0 };
       }
 
-      queryBuilder.andWhere('driver.activeAreaId IN (:...provinces)', { provinces });
-      queryBuilder.andWhere('serviceTypes.id IN (:...serviceTypes)', { serviceTypes });
+      const provinceIds = provinces.map((p) => p.id);
+      const serviceTypeIds = serviceTypes.map((s) => s.id);
+      queryBuilder.andWhere('driver.activeAreaId IN (:...provinceIds)', { provinceIds });
+      queryBuilder.andWhere('serviceTypes.id IN (:...serviceTypeIds)', { serviceTypeIds });
     }
 
     if (search) {
