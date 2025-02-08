@@ -98,8 +98,10 @@ export class StoresController {
         return { items: [], total: 0 };
       }
 
-      queryBuilder.andWhere('store.provinceId IN (:...provinces)', { provinces });
-      queryBuilder.andWhere('store.serviceTypeId IN (:...serviceTypes)', { serviceTypes });
+      const provinceIds = provinces.map((p) => p.id);
+      const serviceTypeIds = serviceTypes.map((s) => s.id);
+      queryBuilder.andWhere('store.provinceId IN (:...provinceIds)', { provinceIds });
+      queryBuilder.andWhere('store.serviceTypeId IN (:...serviceTypeIds)', { serviceTypeIds });
     }
 
     merchantId && queryBuilder.andWhere('store.merchantId = :merchantId');
