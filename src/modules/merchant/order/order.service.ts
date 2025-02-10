@@ -93,7 +93,7 @@ export class OrderService {
     };
   }
 
-  async confirmOrder(merchantId: number, orderId: number) {
+  async confirmOrder(merchantId: number, orderId: number): Promise<OrderEntity> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -132,28 +132,7 @@ export class OrderService {
 
       this.eventGatewayService.handleOrderUpdated(order.id);
 
-      try {
-        const orderActivity = this.orderActivityRepository.create({
-          orderId: orderId,
-          status: EOrderStatus.SearchingForDriver,
-          description: 'searching_for_driver',
-          cancellationReason: '',
-          performedBy: '',
-        });
-
-        await this.orderActivityRepository.save(orderActivity);
-
-        await this.driverOrderService.assignOrderToDriver(orderId);
-        await this.fcmService.notifyDriverNewOrder(orderId);
-      } catch (error) {
-        const failureActivity = this.orderActivityRepository.create({
-          orderId: savedOrder.id,
-          status: savedOrder.status,
-          description: 'failed_to_assign_driver_automatically',
-          performedBy: 'system',
-        });
-        await this.orderActivityRepository.save(failureActivity);
-      }
+      setTimeout(() => this.searchForDriver(orderId), 3000);
 
       return savedOrder;
     } catch (error) {
@@ -163,7 +142,6 @@ export class OrderService {
       await queryRunner.release();
     }
   }
-
   async cancelOrder(merchantId: number, orderId: number, updateOrderDto: UpdateOrderDto) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -268,21 +246,60 @@ export class OrderService {
     };
   }
 
-  private async assignDriverWithTimeout(orderId: number, timeout: number): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-      const timeoutId = setTimeout(() => {
-        reject(new Error('Driver assignment timed out'));
-      }, timeout);
-
-      try {
-        await this.driverOrderService.assignOrderToDriver(orderId);
-        await this.fcmService.notifyDriverNewOrder(orderId);
-        clearTimeout(timeoutId);
-        resolve();
-      } catch (error) {
-        clearTimeout(timeoutId);
-        reject(error);
+  private async searchForDriver(orderId: number): Promise<void> {
+    try {
+      const order = await this.orderRepository.findOne({ where: { id: orderId } });
+      if (!order) {
+        throw new NotFoundException(`Order with ID ${orderId} not found`);
       }
-    });
+
+      order.status = EOrderStatus.SearchingForDriver;
+      await this.orderRepository.save(order);
+
+      const searchingActivity = this.orderActivityRepository.create({
+        orderId: orderId,
+        status: EOrderStatus.SearchingForDriver,
+        description: 'searching_for_driver',
+        performedBy: 'system',
+      });
+      await this.orderActivityRepository.save(searchingActivity);
+      this.eventGatewayService.handleOrderUpdated(orderId);
+
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      await this.driverOrderService.assignOrderToDriver(orderId);
+      await this.fcmService.notifyDriverNewOrder(orderId);
+
+      order.status = EOrderStatus.OfferSentToDriver;
+      await this.orderRepository.save(order);
+
+      const assignedActivity = this.orderActivityRepository.create({
+        orderId: orderId,
+        status: EOrderStatus.OfferSentToDriver,
+        description: 'offer_sent_to_driver',
+        performedBy: 'system',
+      });
+      await this.orderActivityRepository.save(assignedActivity);
+
+      this.eventGatewayService.handleOrderUpdated(orderId);
+    } catch (error) {
+      console.error('Error assigning driver:', error);
+
+      const order = await this.orderRepository.findOne({ where: { id: orderId } });
+      if (order) {
+        order.status = EOrderStatus.SearchingForDriver;
+        await this.orderRepository.save(order);
+      }
+
+      const failureActivity = this.orderActivityRepository.create({
+        orderId: orderId,
+        status: EOrderStatus.SearchingForDriver,
+        description: 'failed_to_assign_driver_automatically',
+        performedBy: 'system',
+      });
+      await this.orderActivityRepository.save(failureActivity);
+
+      this.eventGatewayService.handleOrderUpdated(orderId);
+    }
   }
 }
