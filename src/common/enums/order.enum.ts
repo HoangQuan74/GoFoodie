@@ -2,12 +2,12 @@ export enum EOrderStatus {
   OrderCreated = 'order_created',
   Pending = 'pending',
   Confirmed = 'confirmed',
+  SearchingForDriver = 'searching_for_driver',
+  OfferSentToDriver = 'offer_sent_to_driver',
+  DriverAccepted = 'driver_accepted',
   InDelivery = 'in_delivery',
   Delivered = 'delivered',
   Cancelled = 'cancelled',
-  OfferSentToDriver = 'offer_sent_to_driver',
-  DriverAccepted = 'driver_accepted',
-  SearchingForDriver = 'searching_for_driver',
 }
 
 export enum EPaymentStatus {
