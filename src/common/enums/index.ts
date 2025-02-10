@@ -10,3 +10,4 @@ export * from './banner.enum';
 export * from './online-training.enum';
 export * from './flash-sale.enum';
 export * from './fee.enum';
+export * from './notice.enum';
