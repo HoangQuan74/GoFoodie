@@ -283,8 +283,6 @@ export class OrderService {
 
       this.eventGatewayService.handleOrderUpdated(orderId);
     } catch (error) {
-      console.error('Error assigning driver:', error);
-
       const order = await this.orderRepository.findOne({ where: { id: orderId } });
       if (order) {
         order.status = EOrderStatus.SearchingForDriver;
