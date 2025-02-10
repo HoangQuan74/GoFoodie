@@ -27,6 +27,7 @@ import { OrderCriteriaModule } from './order-criteria/order-criteria.module';
 import { FlashSalesModule } from './flash-sales/flash-sales.module';
 import { ChallengesModule } from './challenges/challenges.module';
 import { ReviewTemplatesModule } from './review-templates/review-templates.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -158,6 +159,7 @@ import { ReviewTemplatesModule } from './review-templates/review-templates.modul
     FlashSalesModule,
     ChallengesModule,
     ReviewTemplatesModule,
+    NotificationsModule,
   ],
   providers: [
     {

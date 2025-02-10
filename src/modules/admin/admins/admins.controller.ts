@@ -11,9 +11,10 @@ import { Brackets, Not } from 'typeorm';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiTags } from '@nestjs/swagger';
 import { AdminRolesGuard } from 'src/common/guards';
-import { Roles } from 'src/common/decorators';
+import { CurrentUser, Roles } from 'src/common/decorators';
 import { OPERATIONS } from 'src/common/constants/operation.constant';
 import { ERoleType } from 'src/common/enums';
+import { IAdmin } from 'src/common/interfaces';
 
 @Controller('admins')
 @ApiTags('Admins')
@@ -69,11 +70,12 @@ export class AdminsController {
 
   @Patch(':id')
   @Roles(OPERATIONS.ADMIN.UPDATE)
-  async update(@Param('id') id: number, @Body() body: UpdateAdminDto) {
+  async update(@Param('id') id: number, @Body() body: UpdateAdminDto, @CurrentUser() user: IAdmin) {
     const admin = await this.adminsService.findOne({ where: { id, isRoot: false } });
     if (!admin) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
 
     const { email, password } = body;
+    if (user.id === id) delete body.roleId;
 
     if (email) {
       const admin = await this.adminsService.findOne({ where: { email, id: Not(id) } });
