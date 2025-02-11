@@ -11,6 +11,7 @@ import { BannersModule } from './banners/banners.module';
 import { WorkingSessionsModule } from './working-sessions/working-sessions.module';
 import { CancelOrderReasonsModule } from './cancel-order-reasons/cancel-order-reasons.module';
 import { OrdersModule } from './order/order.module';
+import { BanksModule } from './banks/banks.module';
 
 @Module({
   imports: [
@@ -24,12 +25,14 @@ import { OrdersModule } from './order/order.module';
       { path: 'driver', module: WorkingSessionsModule },
       { path: 'driver', module: CancelOrderReasonsModule },
       { path: 'driver', module: OrdersModule },
+      { path: 'driver', module: BanksModule },
     ]),
     OnlineTrainingsModule,
     BannersModule,
     WorkingSessionsModule,
     CancelOrderReasonsModule,
     OrdersModule,
+    BanksModule,
   ],
   controllers: [DriversController],
   providers: [DriversService],
