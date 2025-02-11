@@ -231,6 +231,8 @@ export class OrderService {
   }
 
   async findAllByClient(clientId: number, queryOrderDto: QueryOrderDto) {
+    const { status } = queryOrderDto;
+
     const query = this.orderRepository
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.client', 'client')
@@ -240,8 +242,8 @@ export class OrderService {
       .leftJoinAndSelect('order.activities', 'activities')
       .where('order.clientId = :clientId', { clientId });
 
-    if (queryOrderDto.status) {
-      query.andWhere('order.status = :status', { status: queryOrderDto.status });
+    if (status && status.length > 0) {
+      query.andWhere('order.status IN (:...status)', { status });
     }
 
     if (queryOrderDto.orderType) {
