@@ -25,6 +25,7 @@ export class NotificationsController {
         'notification.path',
         'notification.readAt',
         'notification.createdAt',
+        'notification.imageId',
       ])
       .orderBy('notification.id', 'DESC')
       .skip((page - 1) * limit)
