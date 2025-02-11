@@ -21,7 +21,7 @@ export class StoresController {
   constructor(
     private readonly storesService: StoresService,
     private readonly productCategoriesService: ProductCategoriesService,
-  ) {}
+  ) { }
 
   @Get('nearby')
   async findNearby(@Query() query: PaginationQuery) {
@@ -71,6 +71,71 @@ export class StoresController {
       .setParameters({ dayOfWeek, currentTime })
       .setParameters({ storeStatus: EStoreStatus.Active, storeApprovalStatus: EStoreApprovalStatus.Approved })
       .setParameters({ productStatus: EProductStatus.Active, productApprovalStatus: EStoreApprovalStatus.Approved })
+      .take(limit)
+      .skip((page - 1) * limit);
+
+    const [items, total] = await queryBuilder.getManyAndCount();
+    return { items, total };
+  }
+
+  @Get('suggestions')
+  @UseGuards(AuthGuard)
+  async findSuggestions(@Query() query: PaginationQuery, @CurrentUser() user: JwtPayload) {
+    const { limit, page } = query;
+
+    const now = moment().tz(TIMEZONE);
+    const dayOfWeek = now.day();
+    const currentTime = now.hours() * 60 + now.minutes();
+
+    const queryBuilder = this.storesService
+      .createQueryBuilder('store')
+      .select([
+        'store.id',
+        'store.name',
+        'store.specialDish',
+        'store.streetName',
+        'store.storeAvatarId',
+        'store.storeCoverId',
+      ])
+      .innerJoin(
+        'store.workingTimes',
+        'workingTime',
+        'workingTime.dayOfWeek = :dayOfWeek AND workingTime.openTime <= :currentTime AND workingTime.closeTime >= :currentTime',
+      )
+      .addSelect(['product.id', 'product.name', 'product.price', 'product.imageId'])
+      .innerJoin(
+        'store.products',
+        'product',
+        'product.status = :productStatus AND product.approvalStatus = :productApprovalStatus',
+      )
+      .leftJoin('product.productWorkingTimes', 'productWorkingTime', 'product.isNormalTime = false')
+      .where(
+        new Brackets((qb) => {
+          qb.where('product.isNormalTime = true');
+          qb.orWhere(
+            new Brackets((qb) => {
+              qb.where('productWorkingTime.dayOfWeek = :dayOfWeek', { dayOfWeek });
+              qb.andWhere('productWorkingTime.openTime <= :currentTime', { currentTime });
+              qb.andWhere('productWorkingTime.closeTime >= :currentTime', { currentTime });
+            }),
+          );
+        }),
+      )
+      .leftJoin('store.orders', 'order', 'order.clientId = :clientId', { clientId: user.id })
+      .addSelect('CASE WHEN COUNT(order.id) > 0 THEN 1 ELSE 0 END', 'has_order')
+      .leftJoin('store.likes', 'storeLike', 'storeLike.clientId = :clientId', { clientId: user.id })
+      .addSelect('CASE WHEN storeLike.storeId IS NULL THEN 0 ELSE 1 END', 'has_like')
+      .andWhere('store.isPause = false')
+      .andWhere('store.status = :storeStatus')
+      .andWhere('store.approvalStatus = :storeApprovalStatus')
+      .setParameters({ dayOfWeek, currentTime })
+      .setParameters({ storeStatus: EStoreStatus.Active, storeApprovalStatus: EStoreApprovalStatus.Approved })
+      .setParameters({ productStatus: EProductStatus.Active, productApprovalStatus: EStoreApprovalStatus.Approved })
+      .groupBy('store.id')
+      .addGroupBy('product.id')
+      .addGroupBy('storeLike.storeId')
+      .orderBy('has_order', 'DESC', 'NULLS LAST')
+      .addOrderBy('has_like', 'DESC', 'NULLS LAST')
       .take(limit)
       .skip((page - 1) * limit);
 
