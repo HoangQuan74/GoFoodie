@@ -133,6 +133,10 @@ import { NotificationsModule } from './notifications/notifications.module';
         path: 'admin',
         module: ReviewTemplatesModule,
       },
+      {
+        path: 'admin',
+        module: NotificationsModule,
+      },
     ]),
     AdminsModule,
     MerchantsModule,
