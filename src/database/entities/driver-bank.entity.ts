@@ -21,6 +21,9 @@ export class DriverBankEntity extends BaseEntity {
   @Column({ name: 'account_name', nullable: true })
   accountName: string;
 
+  @Column({ name: 'is_default', default: true })
+  isDefault: boolean;
+
   @ManyToOne(() => DriverEntity, (driver) => driver.banks, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
   @JoinColumn({ name: 'driver_id' })
   driver: DriverEntity;
