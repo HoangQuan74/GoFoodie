@@ -3,9 +3,13 @@ import { BaseEntity } from './base.entity';
 import { EUserType } from 'src/common/enums';
 import { ProvinceEntity } from './province.entity';
 import { ENotificationRelatedType } from 'src/common/enums';
+import { FileEntity } from './file.entity';
 
 @Entity('admin_notifications')
 export class AdminNotificationEntity extends BaseEntity {
+  @Column({ name: 'image_id', nullable: true })
+  imageId: number;
+
   @Column({ name: 'from' })
   from: string;
 
@@ -33,4 +37,8 @@ export class AdminNotificationEntity extends BaseEntity {
   @ManyToOne(() => ProvinceEntity, (province) => province.id)
   @JoinColumn({ name: 'province_id' })
   province: ProvinceEntity;
+
+  @ManyToOne(() => FileEntity, (file) => file.id)
+  @JoinColumn({ name: 'image_id' })
+  image: FileEntity;
 }
