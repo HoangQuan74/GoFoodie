@@ -1,9 +1,11 @@
 import { compareSync, hashSync, genSaltSync } from 'bcrypt';
 import { ENCRYPTION_IV, ENCRYPTION_KEY, SALT_ROUNDS } from 'src/common/constants';
-import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
+import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
 
 const saltRounds = genSaltSync(SALT_ROUNDS);
 const ALGORITHM = 'aes-256-cbc';
+const key = scryptSync(ENCRYPTION_KEY, 'salt', 32);
+const iv = Buffer.from(ENCRYPTION_IV);
 
 export const hashPassword = (password: string): string => {
   return hashSync(password, saltRounds);
@@ -23,16 +25,22 @@ export const generateOTP = (): string => {
 };
 
 export const encrypt = (text: string): string => {
-  const cipher = createCipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY), ENCRYPTION_IV);
-  let encrypted = cipher.update(text);
-  encrypted = Buffer.concat([encrypted, cipher.final()]);
-  return encrypted.toString('hex');
+  if (!text) return '';
+
+  const cipher = createCipheriv(ALGORITHM, key, iv);
+  let encrypted = cipher.update(text, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+
+  console.log('Encrypted:', encrypted);
+  return encrypted;
 };
 
 export const decrypt = (text: string): string => {
-  const encryptedText = Buffer.from(text, 'hex');
-  const decipher = createDecipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY), ENCRYPTION_IV);
-  let decrypted = decipher.update(encryptedText);
-  decrypted = Buffer.concat([decrypted, decipher.final()]);
-  return decrypted.toString();
+  if (!text) return '';
+
+  const decipher = createDecipheriv(ALGORITHM, key, iv);
+  let decrypted = decipher.update(text, 'hex', 'utf8');
+  decrypted += decipher.final('utf8');
+  console.log('Decrypted:', decrypted);
+  return decrypted;
 };

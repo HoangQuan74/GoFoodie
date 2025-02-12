@@ -14,15 +14,11 @@ export class DriverCardEntity extends BaseEntity {
   @Column({ name: 'card_holder' })
   cardHolder: string;
 
-  @Column({ name: 'expired_date' })
-  expiredDate: Date;
+  @Column({ name: 'expiry_date' })
+  expiryDate: string;
 
-  @Column({
-    name: 'cvc_code',
-    transformer: { to: (value) => encrypt(value), from: (value) => decrypt(value) },
-    select: false,
-  })
-  cvcCode: string;
+  @Column({ name: 'cvv', transformer: { to: (value) => encrypt(value), from: (value) => decrypt(value) } })
+  cvv: string;
 
   @Column()
   address: string;

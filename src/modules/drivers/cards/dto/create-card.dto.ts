@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, Matches } from 'class-validator';
+import { IsNotEmpty, IsNumberString, IsPhoneNumber, IsString, Matches } from 'class-validator';
 
 export class CreateCardDto {
   @ApiProperty()
-  @IsString()
+  @IsNumberString()
   @IsNotEmpty()
   cardNumber: string;
 
@@ -43,7 +43,7 @@ export class CreateCardDto {
   postalCode: string;
 
   @ApiProperty()
-  @IsString()
+  @IsPhoneNumber('VN')
   @IsNotEmpty()
   phoneNumber: string;
 }

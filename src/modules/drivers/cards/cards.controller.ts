@@ -21,7 +21,7 @@ export class CardsController {
   @Get()
   find(@CurrentUser() user: JwtPayload) {
     return this.cardsService.find({
-      select: ['id', 'cardNumber', 'cardHolder', 'expiredDate'],
+      select: ['id', 'cardNumber', 'cardHolder', 'expiryDate'],
       where: { driverId: user.id },
     });
   }
