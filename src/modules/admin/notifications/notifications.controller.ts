@@ -18,15 +18,6 @@ export class NotificationsController {
 
     const queryBuilder = this.notificationsService
       .createQueryBuilder('notification')
-      .select([
-        'notification.id',
-        'notification.from',
-        'notification.userType',
-        'notification.path',
-        'notification.readAt',
-        'notification.createdAt',
-        'notification.imageId',
-      ])
       .orderBy('notification.id', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);

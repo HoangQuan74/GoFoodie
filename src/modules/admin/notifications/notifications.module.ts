@@ -9,5 +9,6 @@ import { AdminsModule } from '../admins/admins.module';
   imports: [TypeOrmModule.forFeature([AdminNotificationEntity]), forwardRef(() => AdminsModule)],
   controllers: [NotificationsController],
   providers: [NotificationsService],
+  exports: [NotificationsService],
 })
 export class NotificationsModule {}

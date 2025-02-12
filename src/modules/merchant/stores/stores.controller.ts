@@ -4,13 +4,15 @@ import { CreateStoreDto } from './dto/create-store.dto';
 import { Brackets, DataSource, FindOptionsWhere, Not } from 'typeorm';
 import { WardsService } from 'src/modules/wards/wards.service';
 import { StoreEntity } from 'src/database/entities/store.entity';
-import { EStoreApprovalStatus } from 'src/common/enums';
+import { ENotificationType, EStoreApprovalStatus, EUserType } from 'src/common/enums';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiTags } from '@nestjs/swagger';
 import { QueryStoreDto } from './dto/query-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
+import { AdminNotificationEntity } from 'src/database/entities/admin-notification.entity';
+import { APPROVE_PATH } from 'src/common/constants/common.constant';
 
 @Controller('stores')
 @ApiTags('Merchant Stores')
@@ -39,7 +41,21 @@ export class StoresController {
         newStore.provinceId = provinceId;
       }
 
-      return manager.save(newStore);
+      const store = await manager.save(newStore);
+
+      if (!isDraft) {
+        const newNotification = new AdminNotificationEntity();
+        newNotification.imageId = newStore.storeAvatarId;
+        newNotification.from = newStore.name;
+        newNotification.userType = EUserType.Merchant;
+        newNotification.path = APPROVE_PATH.storeDetail(store.id);
+        newNotification.type = ENotificationType.StoreCreate;
+        newNotification.relatedId = store.id;
+        newNotification.provinceId = newStore.provinceId;
+        await manager.save(newNotification);
+      }
+
+      return store;
     });
   }
 
@@ -143,6 +159,18 @@ export class StoresController {
 
     if (typeof isDraft === 'boolean' && store.approvalStatus !== EStoreApprovalStatus.Approved) {
       store.approvalStatus = isDraft ? EStoreApprovalStatus.Draft : EStoreApprovalStatus.Pending;
+
+      if (!isDraft) {
+        const newNotification = new AdminNotificationEntity();
+        newNotification.imageId = store.storeAvatarId;
+        newNotification.from = store.name;
+        newNotification.userType = EUserType.Merchant;
+        newNotification.path = APPROVE_PATH.storeDetail(store.id);
+        newNotification.type = ENotificationType.StoreCreate;
+        newNotification.relatedId = store.id;
+        newNotification.provinceId = store.provinceId;
+        await this.storesService.save(newNotification);
+      }
     }
 
     return this.storesService.save(store);
