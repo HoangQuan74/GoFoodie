@@ -30,6 +30,7 @@ import { OptionGroupsService } from '../option-groups/option-groups.service';
 import { EXCEPTIONS } from 'src/common/constants';
 import { AdminNotificationEntity } from 'src/database/entities/admin-notification.entity';
 import { APPROVE_PATH } from 'src/common/constants/common.constant';
+import { NotificationsService } from 'src/modules/admin/notifications/notifications.service';
 
 @Controller('products')
 @ApiTags('Products')
@@ -39,6 +40,7 @@ export class ProductsController {
     private readonly productsService: ProductsService,
     private readonly dataSource: DataSource,
     private readonly optionGroupsService: OptionGroupsService,
+    private readonly notificationService: NotificationsService,
   ) {}
 
   @Post()
@@ -228,7 +230,7 @@ export class ProductsController {
       newNotification.path = APPROVE_PATH.requestProduct(request.id);
       newNotification.relatedId = product.id;
       newNotification.provinceId = product.store.provinceId;
-      await this.productsService.save(newNotification);
+      await this.notificationService.save(newNotification);
     } else {
       Object.assign(product, updateProductDto);
     }
