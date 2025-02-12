@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, NotFoundException, Query, ConflictException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  NotFoundException,
+  Query,
+  ConflictException,
+} from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -10,12 +22,15 @@ import { DataSource, In, Like } from 'typeorm';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { OptionEntity } from 'src/database/entities/option.entity';
 import { ProductApprovalEntity } from 'src/database/entities/product-approval.entity';
-import { EProductApprovalStatus, ERequestType } from 'src/common/enums';
+import { ENotificationType, EProductApprovalStatus, ERequestType, EUserType } from 'src/common/enums';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { QueryProductDto } from './dto/query-product.dto';
 import { OptionGroupsService } from '../option-groups/option-groups.service';
 import { EXCEPTIONS } from 'src/common/constants';
+import { AdminNotificationEntity } from 'src/database/entities/admin-notification.entity';
+import { APPROVE_PATH } from 'src/common/constants/common.constant';
+import { NotificationsService } from 'src/modules/admin/notifications/notifications.service';
 
 @Controller('products')
 @ApiTags('Products')
@@ -25,6 +40,7 @@ export class ProductsController {
     private readonly productsService: ProductsService,
     private readonly dataSource: DataSource,
     private readonly optionGroupsService: OptionGroupsService,
+    private readonly notificationService: NotificationsService,
   ) {}
 
   @Post()
@@ -85,7 +101,17 @@ export class ProductsController {
       productApproval.productId = product.id;
       productApproval.type = ERequestType.Create;
       productApproval.merchantId = merchantId;
-      await manager.save(productApproval);
+      const request = await manager.save(productApproval);
+
+      const newNotification = new AdminNotificationEntity();
+      newNotification.imageId = product.imageId;
+      newNotification.from = product.name;
+      newNotification.userType = EUserType.Merchant;
+      newNotification.path = APPROVE_PATH.requestProduct(request.id);
+      newNotification.type = ENotificationType.ProductCreate;
+      newNotification.relatedId = product.id;
+      newNotification.provinceId = store.provinceId;
+      await manager.save(newNotification);
 
       return product;
     });
@@ -149,7 +175,7 @@ export class ProductsController {
   ) {
     const { optionIds = [], name, description, imageId, ...rest } = updateProductDto;
     const product = await this.productsService.findOne({
-      select: { store: { id: true, storeCode: true } },
+      select: { store: { id: true, storeCode: true, provinceId: true } },
       where: { id: +id, storeId },
       relations: ['store'],
     });
@@ -177,6 +203,8 @@ export class ProductsController {
       const approvalCode = `${product.store.storeCode}-${numberApproval.toString().padStart(2, '0')}`;
 
       const productApproval = new ProductApprovalEntity();
+      const newNotification = new AdminNotificationEntity();
+
       productApproval.code = approvalCode;
       productApproval.productId = +id;
       productApproval.merchantId = user.id;
@@ -187,12 +215,22 @@ export class ProductsController {
       if (product.approvalStatus === EProductApprovalStatus.Approved) {
         Object.assign(product, rest);
         productApproval.type = ERequestType.Update;
+        newNotification.type = ENotificationType.ProductUpdate;
       } else {
         Object.assign(product, updateProductDto);
         productApproval.type = ERequestType.Create;
+        newNotification.type = ENotificationType.ProductCreate;
       }
 
-      await this.productsService.saveProductApproval(productApproval);
+      const request = await this.productsService.saveProductApproval(productApproval);
+
+      newNotification.imageId = product.imageId;
+      newNotification.from = product.name;
+      newNotification.userType = EUserType.Merchant;
+      newNotification.path = APPROVE_PATH.requestProduct(request.id);
+      newNotification.relatedId = product.id;
+      newNotification.provinceId = product.store.provinceId;
+      await this.notificationService.save(newNotification);
     } else {
       Object.assign(product, updateProductDto);
     }
