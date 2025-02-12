@@ -24,4 +24,7 @@ export const MAPBOX_ACCESS_TOKEN: string = process.env.MAPBOX_ACCESS_TOKEN || ''
 export const GOONG_API_KEY: string = process.env.GOONG_API_KEY || '';
 export const GOONG_URL: string = process.env.GOONG_URL || '';
 
+export const ENCRYPTION_KEY: string = process.env.ENCRYPTION_KEY || '';
+export const ENCRYPTION_IV: string = process.env.ENCRYPTION_IV || '';
+
 export const CRONJOB: boolean = process.env.CRONJOB === 'true';
