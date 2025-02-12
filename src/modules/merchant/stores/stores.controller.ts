@@ -13,6 +13,7 @@ import { QueryStoreDto } from './dto/query-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import { AdminNotificationEntity } from 'src/database/entities/admin-notification.entity';
 import { APPROVE_PATH } from 'src/common/constants/common.constant';
+import { NotificationsService } from 'src/modules/admin/notifications/notifications.service';
 
 @Controller('stores')
 @ApiTags('Merchant Stores')
@@ -22,6 +23,7 @@ export class StoresController {
     private readonly storesService: StoresService,
     private readonly dataSource: DataSource,
     private readonly wardsService: WardsService,
+    private readonly notificationService: NotificationsService,
   ) {}
 
   @Post()
@@ -30,8 +32,8 @@ export class StoresController {
 
     return this.dataSource.transaction(async (manager) => {
       const newStore = new StoreEntity();
-      newStore.merchantId = user.id;
       Object.assign(newStore, createStoreDto);
+      newStore.merchantId = user.id;
       newStore.approvalStatus = isDraft ? EStoreApprovalStatus.Draft : EStoreApprovalStatus.Pending;
 
       if (wardId) {
@@ -169,7 +171,7 @@ export class StoresController {
         newNotification.type = ENotificationType.StoreCreate;
         newNotification.relatedId = store.id;
         newNotification.provinceId = store.provinceId;
-        await this.storesService.save(newNotification);
+        await this.notificationService.save(newNotification);
       }
     }
 
