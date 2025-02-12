@@ -5,9 +5,10 @@ import { DriversModule } from '../drivers.module';
 import { RefreshTokensModule } from '../refresh-tokens/refresh-tokens.module';
 import { FirebaseModule } from '../../firebase/firebase.module';
 import { UniformsModule } from '../uniforms/uniforms.module';
+import { NotificationsModule } from 'src/modules/admin/notifications/notifications.module';
 
 @Module({
-  imports: [forwardRef(() => DriversModule), RefreshTokensModule, FirebaseModule, UniformsModule],
+  imports: [forwardRef(() => DriversModule), RefreshTokensModule, FirebaseModule, UniformsModule, NotificationsModule],
   controllers: [AuthController],
   providers: [AuthService],
 })

@@ -8,3 +8,10 @@ export enum ENotificationRelatedType {
   Driver = 'driver',
   Product = 'product',
 }
+
+export enum ENotificationType {
+  StoreCreate = 'store_create',
+  DriverCreate = 'driver_create',
+  ProductCreate = 'product_create',
+  ProductUpdate = 'product_update'
+}

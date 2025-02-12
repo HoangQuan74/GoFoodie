@@ -11,6 +11,10 @@ import { EDriverApprovalStatus, EDriverContractStatus } from 'src/common/enums/d
 import { RefreshTokenDto } from './refresh-token.dto';
 import { Request } from 'express';
 import { UniformsService } from '../uniforms/uniforms.service';
+import { AdminNotificationEntity } from 'src/database/entities/admin-notification.entity';
+import { ENotificationType, EUserType } from 'src/common/enums';
+import { APPROVE_PATH } from 'src/common/constants/common.constant';
+import { NotificationsService } from 'src/modules/admin/notifications/notifications.service';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -20,6 +24,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly driversService: DriversService,
     private readonly uniformsService: UniformsService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   @Post('login')
@@ -131,7 +136,20 @@ export class AuthController {
 
     if (typeof isDraft === 'boolean' && driver.approvalStatus !== EDriverApprovalStatus.Approved) {
       driver.approvalStatus = isDraft ? EDriverApprovalStatus.Draft : EDriverApprovalStatus.Pending;
-      !isDraft && (driver.submittedAt = new Date());
+
+      if (!isDraft) {
+        driver.submittedAt = new Date();
+
+        const newNotification = new AdminNotificationEntity();
+        newNotification.imageId = driver.avatar;
+        newNotification.from = driver.fullName;
+        newNotification.userType = EUserType.Driver;
+        newNotification.path = APPROVE_PATH.driverDetail(driver.id);
+        newNotification.type = ENotificationType.DriverCreate;
+        newNotification.relatedId = driver.id;
+        newNotification.provinceId = driver.activeAreaId;
+        await this.notificationsService.save(newNotification);
+      }
     }
 
     return this.driversService.save(driver);

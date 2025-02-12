@@ -2,13 +2,13 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { EUserType } from 'src/common/enums';
 import { ProvinceEntity } from './province.entity';
-import { ENotificationRelatedType } from 'src/common/enums';
+import { ENotificationRelatedType, ENotificationType } from 'src/common/enums';
 import { FileEntity } from './file.entity';
 
 @Entity('admin_notifications')
 export class AdminNotificationEntity extends BaseEntity {
   @Column({ name: 'image_id', nullable: true })
-  imageId: number;
+  imageId: string;
 
   @Column({ name: 'from' })
   from: string;
@@ -18,6 +18,9 @@ export class AdminNotificationEntity extends BaseEntity {
 
   @Column({ name: 'path', nullable: true })
   path: string;
+
+  @Column({ type: 'enum', enum: ENotificationType })
+  type: ENotificationType;
 
   @Column({ name: 'related_type', type: 'enum', enum: ENotificationRelatedType, nullable: true })
   relatedType: ENotificationRelatedType;
