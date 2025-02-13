@@ -32,3 +32,13 @@ export enum EStoreAddressType {
   Receive = 'receive',
   Return = 'return',
 }
+
+export enum EStorePrintType {
+  Customer = 'customer',
+  Store = 'store',
+}
+
+export enum EStorePrintConfirmType {
+  AutoReceive = 'auto_receive',
+  StoreReceive = 'store_receive',
+}

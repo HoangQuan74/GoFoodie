@@ -16,6 +16,7 @@ import { StoreSpecialWorkingTimeEntity } from './store-special-working-time.enti
 import { ProductEntity } from './product.entity';
 import { StoreLikeEntity } from './store-like.entity';
 import { OrderEntity } from './order.entity';
+import { StorePreparationTimeEntity } from './store-preparation-time.entity';
 
 @Entity('stores')
 export class StoreEntity extends BaseEntity {
@@ -133,6 +134,9 @@ export class StoreEntity extends BaseEntity {
   @Column({ name: 'preparation_time', type: 'int', default: 20 })
   preparationTime: number;
 
+  @Column({ name: 'auto_accept_order', default: false })
+  autoAcceptOrder: boolean;
+
   @ManyToOne(() => ServiceGroupEntity, (serviceGroup) => serviceGroup.id, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'service_group_id' })
   serviceGroup: ServiceGroupEntity;
@@ -184,6 +188,9 @@ export class StoreEntity extends BaseEntity {
 
   @OneToMany(() => OrderEntity, (order) => order.store)
   orders: OrderEntity[];
+
+  @OneToMany(() => StorePreparationTimeEntity, (preparationTime) => preparationTime.store)
+  preparationTimes: StorePreparationTimeEntity[];
 
   productCount: number;
 }

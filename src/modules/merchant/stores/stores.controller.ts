@@ -1,3 +1,4 @@
+import { CurrentStore } from 'src/common/decorators/current-store.decorator';
 import { Controller, Get, Post, Body, Param, Delete, NotFoundException, UseGuards, Query, Patch } from '@nestjs/common';
 import { StoresService } from './stores.service';
 import { CreateStoreDto } from './dto/create-store.dto';
@@ -8,7 +9,7 @@ import { ENotificationType, EStoreApprovalStatus, EUserType } from 'src/common/e
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { AuthGuard } from '../auth/auth.guard';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { QueryStoreDto } from './dto/query-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import { AdminNotificationEntity } from 'src/database/entities/admin-notification.entity';
@@ -102,34 +103,26 @@ export class StoresController {
     return { items, total };
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
-    const queryBuilder = this.storesService
+  @Get('auto-accept-order')
+  async getAutoAcceptOrder(@Param('id') id: number) {
+    const store = await this.storesService
       .createQueryBuilder('store')
+      .select(['store.id', 'store.autoAcceptOrder'])
       .where('store.id = :id', { id })
-      .andWhere(
-        new Brackets((qb) => {
-          qb.where('store.merchantId = :merchantId', { merchantId: user.id });
-          user.storeId && qb.orWhere('store.id = :storeId', { storeId: user.storeId });
-        }),
-      )
-      .leftJoinAndSelect('store.representative', 'representative')
-      .leftJoinAndSelect('store.banks', 'banks')
-      .leftJoinAndSelect('banks.bank', 'bank')
-      .leftJoinAndSelect('banks.bankBranch', 'bankBranch')
-      .leftJoinAndSelect('store.serviceType', 'serviceType')
-      .leftJoinAndSelect('store.serviceGroup', 'serviceGroup')
-      .leftJoinAndSelect('store.businessArea', 'businessArea')
-      .leftJoinAndSelect('store.province', 'province')
-      .leftJoinAndSelect('store.district', 'district')
-      .leftJoinAndSelect('store.workingTimes', 'workingTimes')
-      .leftJoinAndSelect('store.specialWorkingTimes', 'specialWorkingTimes')
-      .leftJoinAndSelect('store.ward', 'ward');
-
-    const store = await queryBuilder.getOne();
+      .getOne();
     if (!store) throw new NotFoundException();
 
-    return store;
+    return store.autoAcceptOrder;
+  }
+
+  @Patch('auto-accept-order')
+  @ApiBody({ schema: { type: 'object', properties: { autoAcceptOrder: { type: 'boolean' } } } })
+  async updateAutoAcceptOrder(@Body() body: { autoAcceptOrder: boolean }, @CurrentStore() storeId: number) {
+    const store = await this.storesService.findOne({ where: { id: storeId } });
+    if (!store) throw new NotFoundException();
+
+    store.autoAcceptOrder = body.autoAcceptOrder;
+    return this.storesService.save(store);
   }
 
   @Patch(':id')
@@ -223,6 +216,36 @@ export class StoresController {
       )
       .leftJoinAndSelect('store.specialWorkingTimes', 'specialWorkingTimes')
       .getOne();
+    if (!store) throw new NotFoundException();
+
+    return store;
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
+    const queryBuilder = this.storesService
+      .createQueryBuilder('store')
+      .where('store.id = :id', { id })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('store.merchantId = :merchantId', { merchantId: user.id });
+          user.storeId && qb.orWhere('store.id = :storeId', { storeId: user.storeId });
+        }),
+      )
+      .leftJoinAndSelect('store.representative', 'representative')
+      .leftJoinAndSelect('store.banks', 'banks')
+      .leftJoinAndSelect('banks.bank', 'bank')
+      .leftJoinAndSelect('banks.bankBranch', 'bankBranch')
+      .leftJoinAndSelect('store.serviceType', 'serviceType')
+      .leftJoinAndSelect('store.serviceGroup', 'serviceGroup')
+      .leftJoinAndSelect('store.businessArea', 'businessArea')
+      .leftJoinAndSelect('store.province', 'province')
+      .leftJoinAndSelect('store.district', 'district')
+      .leftJoinAndSelect('store.workingTimes', 'workingTimes')
+      .leftJoinAndSelect('store.specialWorkingTimes', 'specialWorkingTimes')
+      .leftJoinAndSelect('store.ward', 'ward');
+
+    const store = await queryBuilder.getOne();
     if (!store) throw new NotFoundException();
 
     return store;
