@@ -235,7 +235,7 @@ export class OrderService {
 
     const query = this.orderRepository
       .createQueryBuilder('order')
-      .select(['client.id', 'client.name', 'client.avatarId'])
+      .addSelect(['client.id', 'client.name', 'client.avatarId'])
       .leftJoin('order.client', 'client')
       .addSelect(['driver.id, driver.fullName, driver.avatar'])
       .leftJoin('order.driver', 'driver')
@@ -250,6 +250,12 @@ export class OrderService {
       .leftJoin('order.store', 'store')
       .leftJoinAndSelect('order.orderItems', 'orderItems')
       .leftJoinAndSelect('order.activities', 'activities')
+      // .loadRelationCountAndMap('order.storeReviews', 'order.storeReviews', 'storeReviews', (qb) =>
+      //   qb.andWhere('storeReviews.clientId = :clientId', { clientId }),
+      // )
+      // .loadRelationCountAndMap('order.driverReviews', 'order.driverReviews', 'driverReviews', (qb) =>
+      //   qb.andWhere('driverReviews.clientId = :clientId', { clientId }),
+      // )
       .where('order.clientId = :clientId', { clientId });
 
     cancellationType && query.andWhere('activities.cancellationType = :cancellationType', { cancellationType });

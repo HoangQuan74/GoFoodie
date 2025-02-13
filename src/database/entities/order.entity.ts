@@ -6,6 +6,8 @@ import { DriverEntity } from './driver.entity';
 import { OrderItemEntity } from './order-item.entity';
 import { StoreEntity } from './store.entity';
 import { OrderActivityEntity } from './order-activities.entity';
+import { ClientReviewDriverEntity } from './client-review-driver.entity';
+import { ClientReviewStoreEntity } from './client-review-store.entity';
 
 @Entity('orders')
 export class OrderEntity extends BaseEntity {
@@ -112,4 +114,10 @@ export class OrderEntity extends BaseEntity {
 
   @OneToMany(() => OrderActivityEntity, (activity) => activity.order)
   activities: OrderActivityEntity[];
+
+  @OneToMany(() => ClientReviewDriverEntity, (review) => review.order)
+  driverReviews: ClientReviewDriverEntity[];
+
+  @OneToMany(() => ClientReviewStoreEntity, (review) => review.order)
+  storeReviews: ClientReviewStoreEntity[];
 }
