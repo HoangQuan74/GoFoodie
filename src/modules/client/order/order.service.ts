@@ -13,7 +13,7 @@ import { FcmService } from 'src/modules/fcm/fcm.service';
 import { FeeService } from 'src/modules/fee/fee.service';
 import { formatDate, generateShortUuid } from 'src/utils/common';
 import { calculateDistance } from 'src/utils/distance';
-import { DataSource, Repository } from 'typeorm';
+import { Brackets, DataSource, Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -250,19 +250,30 @@ export class OrderService {
       .leftJoin('order.store', 'store')
       .leftJoinAndSelect('order.orderItems', 'orderItems')
       .leftJoinAndSelect('order.activities', 'activities')
-      // .loadRelationCountAndMap('order.storeReviews', 'order.storeReviews', 'storeReviews', (qb) =>
-      //   qb.andWhere('storeReviews.clientId = :clientId', { clientId }),
-      // )
-      // .loadRelationCountAndMap('order.driverReviews', 'order.driverReviews', 'driverReviews', (qb) =>
-      //   qb.andWhere('driverReviews.clientId = :clientId', { clientId }),
-      // )
-      .where('order.clientId = :clientId', { clientId });
+      .loadRelationCountAndMap('order.isStoreRated', 'order.storeReviews', 'storeReviews', (qb) =>
+        qb.andWhere('storeReviews.clientId = :clientId', { clientId }),
+      )
+      .loadRelationCountAndMap('order.isDriverRated', 'order.driverReviews', 'driverReviews', (qb) =>
+        qb.andWhere('driverReviews.clientId = :clientId', { clientId }),
+      )
+      .where('order.clientId = :clientId');
 
     cancellationType && query.andWhere('activities.cancellationType = :cancellationType', { cancellationType });
     status && status.length > 0 && query.andWhere('order.status IN (:...status)', { status });
 
-    if (isRated) {
-      // query.andWhere('order.isRated = :isRated', { isRated });
+    if (isRated === true) {
+      query
+        .innerJoin('order.storeReviews', 'storeReviews', 'storeReviews.clientId = :clientId')
+        .innerJoin('order.driverReviews', 'driverReviews', 'driverReviews.clientId = :clientId');
+    } else if (isRated === false) {
+      query
+        .leftJoin('order.storeReviews', 'storeReviews', 'storeReviews.clientId = :clientId')
+        .leftJoin('order.driverReviews', 'driverReviews', 'driverReviews.clientId = :clientId')
+        .andWhere(
+          new Brackets((qb) => {
+            qb.where('storeReviews.clientId IS NULL').orWhere('driverReviews.clientId IS NULL');
+          }),
+        );
     }
 
     orderType && query.andWhere('order.orderType = :orderType', { orderType: orderType });
@@ -288,6 +299,7 @@ export class OrderService {
     }
 
     query
+      .setParameters({ clientId })
       .orderBy(`order.${queryOrderDto.sortBy || 'createdAt'}`, queryOrderDto.sortOrder || 'DESC')
       .skip((queryOrderDto.page - 1) * queryOrderDto.limit)
       .take(queryOrderDto.limit);
