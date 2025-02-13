@@ -8,6 +8,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderService } from './order.service';
+import { In, Not } from 'typeorm';
 
 @Controller('orders')
 @ApiTags('Orders')
@@ -66,5 +67,14 @@ export class OrderController {
   updateOrderStatus(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     const { id: userId } = user;
     return this.orderService.updateOrderStatus(+id, EOrderStatus.Pending, userId);
+  }
+
+  @Get('delivery/count')
+  getDeliveryCount(@CurrentUser() user: JwtPayload) {
+    return this.orderService
+      .createQueryBuilder('order')
+      .where({ status: Not(In([EOrderStatus.Delivered, EOrderStatus.Cancelled])) })
+      .andWhere('order.clientId = :userId', { userId: user.id })
+      .getCount();
   }
 }

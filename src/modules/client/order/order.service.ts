@@ -530,4 +530,8 @@ export class OrderService {
 
     return estimatedDeliveryTime;
   }
+
+  createQueryBuilder(alias: string) {
+    return this.orderRepository.createQueryBuilder(alias);
+  }
 }
