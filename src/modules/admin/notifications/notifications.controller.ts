@@ -14,7 +14,7 @@ export class NotificationsController {
 
   @Get()
   async find(@Query() query: FindNotificationsDto) {
-    const { page, limit, isRead } = query;
+    const { page, limit, isRead, userType, createdAtFrom, createdAtTo } = query;
 
     const queryBuilder = this.notificationsService
       .createQueryBuilder('notification')
@@ -23,6 +23,9 @@ export class NotificationsController {
       .take(limit);
 
     typeof isRead === 'boolean' && queryBuilder.andWhere('notification.isRead = :isRead', { isRead });
+    userType && queryBuilder.andWhere('notification.userType = :userType', { userType });
+    createdAtFrom && queryBuilder.andWhere('notification.createdAt >= :createdAtFrom', { createdAtFrom });
+    createdAtTo && queryBuilder.andWhere('notification.createdAt <= :createdAtTo', { createdAtTo });
 
     const [items, total] = await queryBuilder.getManyAndCount();
     return { items, total };
@@ -41,13 +44,13 @@ export class NotificationsController {
     return this.notificationsService.createQueryBuilder().update().set({ isRead: true }).execute();
   }
 
+  @Post(':id/unread')
+  async unread(@CurrentUser() user: IAdmin, @Param('id') id: number) {
+    this.notificationsService.createQueryBuilder().update().set({ isRead: false }).where('id = :id', { id }).execute();
+  }
+
   @Post(':id/read')
   async read(@CurrentUser() user: IAdmin, @Param('id') id: number) {
-    return this.notificationsService
-      .createQueryBuilder()
-      .update()
-      .set({ isRead: true })
-      .where('id = :id', { id })
-      .execute();
+    this.notificationsService.createQueryBuilder().update().set({ isRead: true }).where('id = :id', { id }).execute();
   }
 }

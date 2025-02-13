@@ -32,6 +32,7 @@ import { EventsModule } from './events/events.module';
 import { FcmModule } from './modules/fcm/fcm.module';
 import { FcmHistoriesModule } from './modules/fcm-histories/fcm-histories.module';
 import { FeeModule } from './modules/fee/fee.module';
+import { PaymentModule } from './modules/payment/payment.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { FeeModule } from './modules/fee/fee.module';
     FcmModule,
     FcmHistoriesModule,
     FeeModule,
+    PaymentModule,
   ],
   controllers: [],
   providers: [],
