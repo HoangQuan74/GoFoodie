@@ -120,6 +120,8 @@ export class CartsController {
       .orderBy('cartProducts.id', 'ASC')
       .getOne();
 
+    if (!cart) return null;
+
     const { cartProducts = [] } = cart;
 
     cartProducts.forEach((cp: any) => {

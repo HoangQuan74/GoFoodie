@@ -2,6 +2,7 @@ import { EOrderStatus } from 'src/common/enums/order.enum';
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { OrderEntity } from './order.entity';
+import { EUserType } from 'src/common/enums';
 
 @Entity('order_activities')
 export class OrderActivityEntity extends BaseEntity {
@@ -24,7 +25,7 @@ export class OrderActivityEntity extends BaseEntity {
   cancellationReason: string;
 
   @Column({ nullable: true, name: 'cancellation_type' })
-  cancellationType: 'client' | 'merchant' | 'driver' | null;
+  cancellationType: EUserType;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
