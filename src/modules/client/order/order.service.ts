@@ -19,7 +19,7 @@ import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { EXCEPTIONS } from 'src/common/constants';
 import { CartProductOptionEntity } from 'src/database/entities/cart-product-option.entity';
-import { ERoleType } from 'src/common/enums';
+import { ERoleType, EUserType } from 'src/common/enums';
 
 @Injectable()
 export class OrderService {
@@ -231,24 +231,41 @@ export class OrderService {
   }
 
   async findAllByClient(clientId: number, queryOrderDto: QueryOrderDto) {
-    const { status } = queryOrderDto;
+    const { status, cancellationType, isRated, orderType } = queryOrderDto;
 
     const query = this.orderRepository
       .createQueryBuilder('order')
-      .leftJoinAndSelect('order.client', 'client')
-      .leftJoinAndSelect('order.driver', 'driver')
-      .leftJoinAndSelect('order.store', 'store')
+      .addSelect(['client.id', 'client.name', 'client.avatarId'])
+      .leftJoin('order.client', 'client')
+      .addSelect(['driver.id, driver.fullName, driver.avatar'])
+      .leftJoin('order.driver', 'driver')
+      .addSelect([
+        'store.id',
+        'store.name',
+        'store.storeCode',
+        'store.specialDish',
+        'store.streetName',
+        'store.storeAvatarId',
+      ])
+      .leftJoin('order.store', 'store')
       .leftJoinAndSelect('order.orderItems', 'orderItems')
       .leftJoinAndSelect('order.activities', 'activities')
+      // .loadRelationCountAndMap('order.storeReviews', 'order.storeReviews', 'storeReviews', (qb) =>
+      //   qb.andWhere('storeReviews.clientId = :clientId', { clientId }),
+      // )
+      // .loadRelationCountAndMap('order.driverReviews', 'order.driverReviews', 'driverReviews', (qb) =>
+      //   qb.andWhere('driverReviews.clientId = :clientId', { clientId }),
+      // )
       .where('order.clientId = :clientId', { clientId });
 
-    if (status && status.length > 0) {
-      query.andWhere('order.status IN (:...status)', { status });
+    cancellationType && query.andWhere('activities.cancellationType = :cancellationType', { cancellationType });
+    status && status.length > 0 && query.andWhere('order.status IN (:...status)', { status });
+
+    if (isRated) {
+      // query.andWhere('order.isRated = :isRated', { isRated });
     }
 
-    if (queryOrderDto.orderType) {
-      query.andWhere('order.orderType = :orderType', { orderType: queryOrderDto.orderType });
-    }
+    orderType && query.andWhere('order.orderType = :orderType', { orderType: orderType });
 
     if (queryOrderDto.paymentStatus) {
       query.andWhere('order.paymentStatus = :paymentStatus', { paymentStatus: queryOrderDto.paymentStatus });
@@ -345,7 +362,7 @@ export class OrderService {
         description: 'order_cancelled_by_client',
         performedBy: `client:${clientId}`,
         cancellationReason: updateOrderDto.reasons || '',
-        cancellationType: 'client',
+        cancellationType: EUserType.Client,
       });
       await queryRunner.manager.save(OrderActivityEntity, orderActivity);
 
