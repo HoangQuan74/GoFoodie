@@ -105,7 +105,7 @@ export class ProductsController {
 
       const newNotification = new AdminNotificationEntity();
       newNotification.imageId = product.imageId;
-      newNotification.from = product.name;
+      newNotification.from = store.name;
       newNotification.userType = EUserType.Merchant;
       newNotification.path = APPROVE_PATH.requestProduct(request.id);
       newNotification.type = ENotificationType.ProductCreate;
@@ -175,7 +175,7 @@ export class ProductsController {
   ) {
     const { optionIds = [], name, description, imageId, ...rest } = updateProductDto;
     const product = await this.productsService.findOne({
-      select: { store: { id: true, storeCode: true, provinceId: true } },
+      select: { store: { id: true, storeCode: true, provinceId: true, name: true } },
       where: { id: +id, storeId },
       relations: ['store'],
     });
@@ -225,7 +225,7 @@ export class ProductsController {
       const request = await this.productsService.saveProductApproval(productApproval);
 
       newNotification.imageId = product.imageId;
-      newNotification.from = product.name;
+      newNotification.from = product.store.name;
       newNotification.userType = EUserType.Merchant;
       newNotification.path = APPROVE_PATH.requestProduct(request.id);
       newNotification.relatedId = product.id;

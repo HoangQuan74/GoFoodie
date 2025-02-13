@@ -14,6 +14,8 @@ import { BannersModule } from './banners/banners.module';
 import { StoreAddressesModule } from './store-addresses/store-addresses.module';
 import { OrdersModule } from './order/order.module';
 import { CancelOrderReasonsModule } from './cancel-order-reasons/cancel-order-reasons.module';
+import { PreparationTimesModule } from './preparation-times/preparation-times.module';
+import { PrintSettingsModule } from './print_settings/print_settings.module';
 
 @Module({
   imports: [
@@ -39,6 +41,8 @@ import { CancelOrderReasonsModule } from './cancel-order-reasons/cancel-order-re
     StoreAddressesModule,
     OrdersModule,
     CancelOrderReasonsModule,
+    PreparationTimesModule,
+    PrintSettingsModule,
   ],
   providers: [MerchantsService],
   exports: [MerchantsService],
