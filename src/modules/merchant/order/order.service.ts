@@ -13,6 +13,7 @@ import { OrderResponse } from 'src/common/interfaces/order.interface';
 import { calculateStoreIncome } from 'src/utils/income';
 import { EXCEPTIONS } from 'src/common/constants';
 import { FcmService } from 'src/modules/fcm/fcm.service';
+import { EUserType } from 'src/common/enums';
 
 @Injectable()
 export class OrderService {
@@ -175,7 +176,7 @@ export class OrderService {
         description: 'order_cancelled_by_merchant',
         performedBy: `merchant:${merchantId}`,
         cancellationReason: updateOrderDto.reasons || '',
-        cancellationType: 'merchant',
+        cancellationType: EUserType.Merchant,
       });
       await queryRunner.manager.save(orderActivity);
 
