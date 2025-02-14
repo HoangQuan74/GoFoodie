@@ -88,6 +88,18 @@ export class OrderEntity extends BaseEntity {
   @Column({ type: 'decimal', precision: 10, scale: 0, name: 'delivery_fee', default: 0 })
   deliveryFee: number;
 
+  @Column({ type: 'decimal', precision: 10, scale: 0, name: 'parking_fee', default: 0 })
+  parkingFee: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 0, name: 'peak_hour_fee', default: 0 })
+  peakHourFee: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 0, name: 'transaction_fee', default: 0 })
+  transactionFee: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 0, name: 'app_fee', default: 0 })
+  appFee: number;
+
   @Column({ nullable: true })
   notes: string;
 

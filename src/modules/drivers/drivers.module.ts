@@ -13,6 +13,7 @@ import { CancelOrderReasonsModule } from './cancel-order-reasons/cancel-order-re
 import { OrdersModule } from './order/order.module';
 import { BanksModule } from './banks/banks.module';
 import { CardsModule } from './cards/cards.module';
+import { IncomeModule } from './income/income.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { CardsModule } from './cards/cards.module';
       { path: 'driver', module: OrdersModule },
       { path: 'driver', module: BanksModule },
       { path: 'driver', module: CardsModule },
+      { path: 'driver', module: IncomeModule },
     ]),
     OnlineTrainingsModule,
     BannersModule,
@@ -36,6 +38,7 @@ import { CardsModule } from './cards/cards.module';
     OrdersModule,
     BanksModule,
     CardsModule,
+    IncomeModule,
   ],
   controllers: [DriversController],
   providers: [DriversService],
