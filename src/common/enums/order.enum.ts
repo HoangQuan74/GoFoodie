@@ -20,3 +20,7 @@ export enum EOrderCode {
   PreOrder = 'PRE',
   DeliveryNow = 'NOW',
 }
+
+export enum EOrderProcessor {
+  CANCEL_ORDER = 'cancelOrder',
+}

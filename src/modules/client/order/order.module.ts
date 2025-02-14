@@ -14,6 +14,7 @@ import { OrderActivityEntity } from 'src/database/entities/order-activities.enti
 import { FcmModule } from 'src/modules/fcm/fcm.module';
 import { FeeEntity } from 'src/database/entities/fee.entity';
 import { FeeService } from 'src/modules/fee/fee.service';
+import { QueuesModule } from 'src/modules/queues/queues.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { FeeService } from 'src/modules/fee/fee.service';
     forwardRef(() => ClientModule),
     EventsModule,
     FcmModule,
+    QueuesModule,
   ],
   providers: [OrderService, FeeService],
   controllers: [OrderController],

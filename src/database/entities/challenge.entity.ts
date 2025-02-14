@@ -36,6 +36,9 @@ export class ChallengeEntity extends BaseEntity {
   @Column()
   budget: number;
 
+  @Column({ name: 'used_budget', default: 0 })
+  usedBudget: number;
+
   @Column()
   reward: number;
 
