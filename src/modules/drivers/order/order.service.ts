@@ -124,7 +124,7 @@ export class OrderService {
       throw new NotFoundException(`Order with ID ${orderId} not found`);
     }
 
-    if (order.driverId !== driverId) {
+    if (order.driverId && order.driverId !== driverId) {
       throw new BadRequestException('You do not have permission to view this order');
     }
 
