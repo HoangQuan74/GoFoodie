@@ -31,7 +31,7 @@ export class OrderService {
     private readonly driverOrderService: DriverOrderService,
     private readonly eventGatewayService: EventGatewayService,
     private readonly fcmService: FcmService,
-  ) {}
+  ) { }
 
   async queryOrders(merchantId: number, queryOrderDto: QueryOrderDto) {
     const stores = await this.getStoresByMerchantId(merchantId);
@@ -271,8 +271,7 @@ export class OrderService {
       await this.driverOrderService.assignOrderToDriver(orderId);
       await this.fcmService.notifyDriverNewOrder(orderId);
 
-      order.status = EOrderStatus.OfferSentToDriver;
-      await this.orderRepository.save(order);
+      await this.orderRepository.update({ id: orderId }, { status: EOrderStatus.OfferSentToDriver });
 
       const assignedActivity = this.orderActivityRepository.create({
         orderId: orderId,
