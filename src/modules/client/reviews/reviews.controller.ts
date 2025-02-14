@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiTags } from '@nestjs/swagger';
@@ -31,5 +31,11 @@ export class ReviewsController {
   ) {
     const { id: clientId } = user;
     return this.reviewsService.reviewStore(+orderId, clientId, reviewStoreDto);
+  }
+
+  // lấy phần thưởng khi đánh giá
+  @Get('reward')
+  getReward(@CurrentUser() user: JwtPayload) {
+    return this.reviewsService.getReward();
   }
 }

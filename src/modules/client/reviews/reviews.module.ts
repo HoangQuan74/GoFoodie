@@ -6,10 +6,11 @@ import { ClientReviewDriverEntity } from 'src/database/entities/client-review-dr
 import { ClientReviewStoreEntity } from 'src/database/entities/client-review-store.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { ClientModule } from '../client.module';
+import { ChallengeEntity } from 'src/database/entities/challenge.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ClientReviewDriverEntity, ClientReviewStoreEntity, OrderEntity]),
+    TypeOrmModule.forFeature([ClientReviewDriverEntity, ClientReviewStoreEntity, OrderEntity, ChallengeEntity]),
     forwardRef(() => ClientModule),
   ],
   controllers: [ReviewsController],

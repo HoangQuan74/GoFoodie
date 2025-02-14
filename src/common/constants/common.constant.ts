@@ -5,3 +5,5 @@ export const APPROVE_PATH = {
   requestDriver: (id: number) => `requests/drivers/${id}`,
   requestStore: (id: number) => `requests/stores/${id}`,
 };
+
+export const STORE_CONFIRM_TIME = 5 * 60 * 1000;

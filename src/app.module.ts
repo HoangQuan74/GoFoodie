@@ -33,6 +33,8 @@ import { FcmModule } from './modules/fcm/fcm.module';
 import { FcmHistoriesModule } from './modules/fcm-histories/fcm-histories.module';
 import { FeeModule } from './modules/fee/fee.module';
 import { PaymentModule } from './modules/payment/payment.module';
+import { BullModule } from '@nestjs/bullmq';
+import { QueuesModule } from './modules/queues/queues.module';
 
 @Module({
   imports: [
@@ -46,6 +48,13 @@ import { PaymentModule } from './modules/payment/payment.module';
     JwtModule.register({
       global: true,
       secret: JWT_SECRET,
+    }),
+    BullModule.forRoot({
+      connection: {
+        host: process.env.REDIS_HOST,
+        port: parseInt(process.env.REDIS_PORT),
+        password: process.env.REDIS_PASSWORD,
+      },
     }),
     AdminModule,
     MailModule,
@@ -72,6 +81,7 @@ import { PaymentModule } from './modules/payment/payment.module';
     FcmHistoriesModule,
     FeeModule,
     PaymentModule,
+    QueuesModule,
   ],
   controllers: [],
   providers: [],

@@ -1,12 +1,13 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ClientReviewDriverEntity } from 'src/database/entities/client-review-driver.entity';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { ReviewDriverDto } from './dto/review-driver.dto';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { EOrderStatus } from 'src/common/enums/order.enum';
 import { ReviewStoreDto } from './dto/review-store.dto';
 import { ClientReviewStoreEntity } from 'src/database/entities/client-review-store.entity';
+import { ChallengeEntity } from 'src/database/entities/challenge.entity';
 
 @Injectable()
 export class ReviewsService {
@@ -19,6 +20,9 @@ export class ReviewsService {
 
     @InjectRepository(OrderEntity)
     private readonly orderRepository: Repository<OrderEntity>,
+
+    @InjectRepository(ChallengeEntity)
+    private readonly challengeRepository: Repository<ChallengeEntity>,
   ) {}
 
   async reviewDriver(orderId: number, clientId: number, reviewDriverDto: ReviewDriverDto) {
@@ -43,5 +47,21 @@ export class ReviewsService {
     if (review) throw new ConflictException('You have already reviewed this store');
 
     return this.reviewStoreRepository.save({ orderId, clientId, storeId: order.storeId, ...reviewStoreDto });
+  }
+
+  async getReward() {
+    return this.challengeRepository
+      .createQueryBuilder('challenge')
+      .where('challenge.typeId = 1')
+      .andWhere('challenge.startTime <= :now', { now: new Date() })
+      .andWhere('challenge.endTime >= :now', { now: new Date() })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('challenge.isLimitedBudget = FALSE');
+          qb.orWhere('challenge.reward + challenge.usedBudget <= challenge.budget');
+        }),
+      )
+      .orderBy('challenge.id', 'DESC')
+      .getOne();
   }
 }

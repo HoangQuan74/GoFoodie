@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EOrderStatus } from 'src/common/enums/order.enum';
+import { EOrderProcessor, EOrderStatus } from 'src/common/enums/order.enum';
 import { Group } from 'src/common/interfaces/order-item.interface';
 import { CartProductEntity } from 'src/database/entities/cart-product.entity';
 import { CartEntity } from 'src/database/entities/cart.entity';
@@ -20,6 +20,9 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { EXCEPTIONS } from 'src/common/constants';
 import { CartProductOptionEntity } from 'src/database/entities/cart-product-option.entity';
 import { ERoleType, EUserType } from 'src/common/enums';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
+import { STORE_CONFIRM_TIME } from 'src/common/constants/common.constant';
 
 @Injectable()
 export class OrderService {
@@ -29,16 +32,20 @@ export class OrderService {
 
     @InjectRepository(CartEntity)
     private cartRepository: Repository<CartEntity>,
+
     @InjectRepository(OrderActivityEntity)
     private orderActivityRepository: Repository<OrderActivityEntity>,
+
     @InjectRepository(CartProductEntity)
     private cartProductRepository: Repository<CartProductEntity>,
+
     @InjectRepository(CartProductOptionEntity)
     private cartProductOptionRepository: Repository<CartProductOptionEntity>,
 
+    @InjectQueue('orderQueue') private orderQueue: Queue,
+
     private eventGatewayService: EventGatewayService,
     private dataSource: DataSource,
-
     private readonly feeService: FeeService,
     private readonly fcmService: FcmService,
   ) {}
@@ -220,6 +227,7 @@ export class OrderService {
       this.eventGatewayService.notifyMerchantNewOrder(savedOrder.storeId, savedOrder);
       this.fcmService.notifyMerchantNewOrder(savedOrder.id);
       this.eventGatewayService.handleOrderUpdated(savedOrder.id);
+      this.orderQueue.add(EOrderProcessor.CANCEL_ORDER, { orderId: savedOrder.id }, { delay: STORE_CONFIRM_TIME });
 
       return this.findOne(clientId, savedOrder.id);
     } catch (error) {
