@@ -7,10 +7,11 @@ import { StoreLikeEntity } from 'src/database/entities/store-like.entity';
 import { ProductCategoriesModule } from '../product-categories/product-categories.module';
 import { ClientReviewStoreEntity } from 'src/database/entities/client-review-store.entity';
 import { ClientModule } from '../client.module';
+import { StoreAvailableView } from 'src/database/views/store-available.view';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([StoreEntity, StoreLikeEntity, ClientReviewStoreEntity]),
+    TypeOrmModule.forFeature([StoreEntity, StoreAvailableView, StoreLikeEntity, ClientReviewStoreEntity]),
     ProductCategoriesModule,
     forwardRef(() => ClientModule),
   ],

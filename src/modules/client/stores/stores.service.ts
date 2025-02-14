@@ -1,3 +1,4 @@
+import { StoreAvailableView } from './../../../database/views/store-available.view';
 import { Injectable } from '@nestjs/common';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { Repository } from 'typeorm';
@@ -16,6 +17,9 @@ export class StoresService {
 
     @InjectRepository(ClientReviewStoreEntity)
     private reviewStoreRepository: Repository<ClientReviewStoreEntity>,
+
+    @InjectRepository(StoreAvailableView)
+    private storeAvailableViewRepository: Repository<StoreAvailableView>,
   ) {}
 
   createQueryBuilder(alias: string) {
@@ -32,5 +36,9 @@ export class StoresService {
 
   createReviewStoreQueryBuilder(alias: string) {
     return this.reviewStoreRepository.createQueryBuilder(alias);
+  }
+
+  createAvailableStoreQueryBuilder(alias: string) {
+    return this.storeAvailableViewRepository.createQueryBuilder(alias);
   }
 }
