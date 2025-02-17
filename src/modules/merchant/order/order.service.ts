@@ -200,10 +200,7 @@ export class OrderService {
     return stores;
   }
 
-  async findOne(merchantId: number, orderId: number): Promise<OrderResponse> {
-    const stores = await this.getStoresByMerchantId(merchantId);
-    const storeIds = stores.map((store) => store.id);
-
+  async findOne(orderId: number, storeId: number): Promise<OrderResponse> {
     const queryBuilder = this.orderRepository
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.orderItems', 'orderItems')
@@ -214,7 +211,7 @@ export class OrderService {
       .leftJoinAndSelect('store.province', 'province')
       .leftJoinAndSelect('order.client', 'client')
       .where('order.id = :orderId', { orderId })
-      .andWhere('order.storeId IN (:...storeIds)', { storeIds });
+      .andWhere('store.id = :storeId', { storeId });
 
     queryBuilder.leftJoinAndSelect('order.driver', 'driver', 'order.status != :offerSentStatus', {
       offerSentStatus: 'offer_sent_to_driver',

@@ -5,7 +5,6 @@ import {
   IsArray,
   IsBoolean,
   IsEnum,
-  IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -13,12 +12,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { EOptionGroupStatus, EOptionStatus } from 'src/common/enums';
-
-export class UpdateProductOptionGroupDto {
-  @ApiProperty()
-  @IsInt()
-  id: number;
-}
+import { IdDto } from 'src/common/query';
 
 export class CreateOptionDto {
   @ApiProperty({ description: 'Tên tùy chọn' })
@@ -57,10 +51,10 @@ export class CreateOptionGroupDto {
   @Type(() => CreateOptionDto)
   options: CreateOptionDto[];
 
-  @ApiPropertyOptional({ type: [UpdateProductOptionGroupDto], description: 'Danh sách sản phẩm liên kết' })
+  @ApiPropertyOptional({ type: [IdDto], description: 'Danh sách sản phẩm liên kết' })
   @ValidateNested({ each: true })
-  @Type(() => UpdateProductOptionGroupDto)
+  @Type(() => IdDto)
   @IsArray()
   @IsOptional()
-  products: UpdateProductOptionGroupDto[];
+  products: IdDto[];
 }

@@ -1,3 +1,4 @@
+import { CurrentStore } from 'src/common/decorators/current-store.decorator';
 import { Body, Controller, Get, Param, Patch, Query, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/common/decorators';
@@ -25,9 +26,8 @@ export class OrderController {
   @ApiOperation({ summary: 'Get details of a specific order' })
   @ApiResponse({ status: 200, description: 'Returns the details of the specified order' })
   @ApiParam({ name: 'id', type: String, description: 'Order ID' })
-  getOrderDetails(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    const { id: merchantId } = user;
-    return this.orderService.findOne(merchantId, +id);
+  getOrderDetails(@Param('id') id: string, @CurrentStore() storeId: number) {
+    return this.orderService.findOne(+id, storeId);
   }
 
   @Patch(':id/confirm')
