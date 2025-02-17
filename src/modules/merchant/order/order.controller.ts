@@ -17,9 +17,8 @@ export class OrderController {
   @Get()
   @ApiOperation({ summary: 'Query orders for merchant' })
   @ApiResponse({ status: 200, description: 'Returns a list of orders based on query parameters' })
-  queryOrders(@Query() queryOrderDto: QueryOrderDto, @CurrentUser() user: JwtPayload) {
-    const { id: merchantId } = user;
-    return this.orderService.queryOrders(merchantId, queryOrderDto);
+  queryOrders(@Query() queryOrderDto: QueryOrderDto, @CurrentStore() storeId: number) {
+    return this.orderService.queryOrders(queryOrderDto, storeId);
   }
 
   @Get(':id')

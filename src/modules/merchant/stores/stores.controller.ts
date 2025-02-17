@@ -221,6 +221,30 @@ export class StoresController {
     return store;
   }
 
+  @Patch(':id/avatar')
+  @ApiBody({ schema: { type: 'object', properties: { storeAvatarId: { type: 'string' } } } })
+  async updateAvatar(
+    @Param('id') id: number,
+    @Body() body: { storeAvatarId: string },
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const store = await this.storesService
+      .createQueryBuilder('store')
+      .select(['store.id', 'store.storeAvatarId'])
+      .where('store.id = :id', { id })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('store.merchantId = :merchantId', { merchantId: user.id });
+          user.storeId && qb.orWhere('store.id = :storeId', { storeId: user.storeId });
+        }),
+      )
+      .getOne();
+    if (!store) throw new NotFoundException();
+
+    store.storeAvatarId = body.storeAvatarId;
+    return this.storesService.save(store);
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
     const queryBuilder = this.storesService
