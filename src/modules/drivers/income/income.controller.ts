@@ -14,7 +14,7 @@ import { EOrderStatus } from 'src/common/enums/order.enum';
 @Controller('income')
 @UseGuards(AuthGuard)
 export class IncomeController {
-  constructor(private readonly incomeService: IncomeService) { }
+  constructor(private readonly incomeService: IncomeService) {}
 
   @Get()
   @ApiOperation({ summary: 'Get income for the driver' })
@@ -54,7 +54,7 @@ export class IncomeController {
       incomeCurrentMonth,
       incomeByFilter,
       incomeBefore,
-      ...this.normalizeIncomeResult(incomeData)
+      ...this.normalizeIncomeResult(incomeData),
     };
   }
 
@@ -97,24 +97,20 @@ export class IncomeController {
     }
   }
 
-
-
   @Get('/orders')
   @ApiOperation({ summary: 'Get list order for the driver' })
   @ApiResponse({ status: 200, description: 'Returns income' })
   async getIncomeOrders(@Query() query: QueryIncomeDto, @CurrentUser() user: JwtPayload) {
-    const { startDate, endDate } = query
+    const { startDate, endDate } = query;
     const { id: driverId } = user;
-    const queryBuilder = this.incomeService.createQueryBuilder('order')
+    const queryBuilder = this.incomeService
+      .createQueryBuilder('order')
       .where('order.driverId = :driverId', { driverId })
       .andWhere('order.status = :orderStatus', { orderStatus: EOrderStatus.Delivered })
       .andWhere('order.createdAt BETWEEN :startDate AND :endDate', { startDate, endDate })
       .select('order.id', 'id')
       .addSelect('order.orderCode', 'orderCode')
-      .addSelect(
-        'order.deliveryFee + order.tip + order.peakHourFee + order.parkingFee',
-        'incomeOfOrder'
-      )
+      .addSelect('order.deliveryFee + order.tip + order.peakHourFee + order.parkingFee', 'incomeOfOrder');
     const result = await queryBuilder.getRawMany();
     return result;
   }
@@ -124,7 +120,8 @@ export class IncomeController {
   @ApiResponse({ status: 200, description: 'Returns income' })
   async getIncomeOrderDetails(@Param('orderId') orderId: number, @CurrentUser() user: JwtPayload) {
     const { id: driverId } = user;
-    const queryBuilder = this.incomeService.createQueryBuilder('order')
+    const queryBuilder = this.incomeService
+      .createQueryBuilder('order')
       .where('order.driverId = :driverId', { driverId })
       .andWhere('order.status = :orderStatus', { orderStatus: EOrderStatus.Delivered })
       .andWhere('order.id = :orderId', { orderId })
@@ -137,11 +134,10 @@ export class IncomeController {
         'order.parkingFee',
         'order.transactionFee',
         'order.appFee',
-      ])
+      ]);
     const result = await queryBuilder.getOne();
 
-    if (!result)
-      throw new BadRequestException(EXCEPTIONS.NOT_FOUND)
+    if (!result) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
 
     return {
       ...result,

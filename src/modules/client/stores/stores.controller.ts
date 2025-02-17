@@ -14,6 +14,7 @@ import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { AuthGuard } from '../auth/auth.guard';
 import { StoreLikeEntity } from 'src/database/entities/store-like.entity';
+import { ProductView } from 'src/database/views/product.view';
 
 @Controller('stores')
 @ApiTags('Client Stores')
@@ -21,7 +22,7 @@ export class StoresController {
   constructor(
     private readonly storesService: StoresService,
     private readonly productCategoriesService: ProductCategoriesService,
-  ) { }
+  ) {}
 
   @Get('nearby')
   async findNearby(@Query() query: PaginationQuery) {
@@ -272,16 +273,17 @@ export class StoresController {
   async findProductCategories(@Param('id') storeId: number) {
     const queryBuilder = this.productCategoriesService
       .createQueryBuilder('category')
-      .select(['category.id', 'category.name', 'category.description'])
+      .select(['category.id as id', 'category.name as name', 'category.description as description'])
       .addSelect([
-        'product.id',
-        'product.name',
-        'product.price',
-        'product.imageId',
-        'product.status',
-        'product.approvalStatus',
+        'product.id as "productId"',
+        'product.name as "productName"',
+        'product.price as "productPrice"',
+        'product.imageId as "productImageId"',
+        'product.liked as "productLiked"',
+        'product.sold as "productSold"',
+        'product.status as "productStatus"',
+        'product.approvalStatus as "productApprovalStatus"',
       ])
-      .leftJoin('category.products', 'product', 'product.storeId = :storeId')
       .leftJoin('category.stores', 'store', 'store.id = :storeId')
       .where(
         new Brackets((qb) => {
@@ -289,9 +291,36 @@ export class StoresController {
           qb.orWhere('store.id = :storeId');
         }),
       )
-      .setParameters({ storeId });
+      .leftJoin(ProductView, 'product', 'product.productCategoryId = category.id AND product.storeId = :storeId')
+      .andWhere('product.status = :productStatus')
+      .andWhere('product.approvalStatus = :productApprovalStatus')
+      .setParameters({
+        storeId,
+        productStatus: EProductStatus.Active,
+        productApprovalStatus: EStoreApprovalStatus.Approved,
+      });
 
-    return queryBuilder.getMany();
+    const categories = await queryBuilder.getRawMany();
+    const items = lodash.groupBy(categories, 'id');
+
+    return Object.values(items).map((category: any[]) => {
+      const [first] = category;
+      return {
+        id: first.id,
+        name: first.name,
+        description: first.description,
+        products: category.map((item) => ({
+          id: item.productId,
+          name: item.productName,
+          price: item.productPrice,
+          imageId: item.productImageId,
+          liked: parseInt(item.productLiked),
+          sold: parseInt(item.productSold),
+          status: item.productStatus,
+          approvalStatus: item.productApprovalStatus,
+        })),
+      };
+    });
   }
 
   @Get(':id/working-times')

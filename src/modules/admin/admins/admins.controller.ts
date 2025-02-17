@@ -1,5 +1,4 @@
 import { EventGatewayService } from 'src/events/event.gateway.service';
-import { EventsGateway } from './../../../events/events.gateway';
 import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
