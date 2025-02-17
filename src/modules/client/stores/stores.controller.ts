@@ -21,7 +21,7 @@ export class StoresController {
   constructor(
     private readonly storesService: StoresService,
     private readonly productCategoriesService: ProductCategoriesService,
-  ) { }
+  ) {}
 
   @Get('nearby')
   async findNearby(@Query() query: PaginationQuery) {

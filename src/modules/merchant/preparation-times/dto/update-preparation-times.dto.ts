@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsIn, IsInt, IsNotEmpty, IsPositive, IsString, Max, Min, ValidateNested } from 'class-validator';
+import { IsArray, IsIn, IsInt, IsNotEmpty, IsPositive, Max, Min, ValidateNested } from 'class-validator';
 
 export class UpdatePreparationTimeDto {
   @ApiProperty({ description: 'Thứ trong tuần (0: Chủ nhật, 1: Thứ 2, ..., 6: Thứ 7)' })
