@@ -4,7 +4,7 @@ import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { AuthGuard } from '../auth/auth.guard';
 import { AssignOrderDto } from './dto/assign-order.dto';
-import { QueryOrderDto } from './dto/query-order.dto';
+import { QueryOrderDto, QueryOrderHistoryDto } from './dto/query-order.dto';
 import { UpdateDriverAvailabilityDto } from './dto/update-driver-availability.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { UpdateStatusDto } from './dto/update-status-order.dto';
@@ -41,6 +41,16 @@ export class OrderController {
     const { id: driverId } = user;
     return this.orderService.findAllByClient(driverId, queryOrderDto);
   }
+
+  @Get('/history')
+  @ApiOperation({ summary: 'Get all history orders for a drivers' })
+  @ApiResponse({ status: 200, description: 'Returns a list of orders for the drivers' })
+  getOrderHistory(@Query() queryOrderDto: QueryOrderHistoryDto, @CurrentUser() user: JwtPayload) {
+    const { id: driverId } = user;
+    return this.orderService.getOrderHistory(driverId, queryOrderDto);
+  }
+
+
 
   @Get(':id')
   @ApiOperation({ summary: 'Get order details for driver' })

@@ -133,5 +133,6 @@ export class OrderEntity extends BaseEntity {
   @OneToMany(() => ClientReviewStoreEntity, (review) => review.order)
   storeReviews: ClientReviewStoreEntity[];
 
-  
+  driverIncome: number;
+  storeRevenue: number;
 }

@@ -37,3 +37,11 @@ export class QueryOrderDto extends PaginationQuery {
   @IsOptional()
   sortOrder?: 'ASC' | 'DESC';
 }
+
+export class QueryOrderHistoryDto extends PaginationQuery {
+  @ApiPropertyOptional({ enum: EOrderStatus })
+  @IsEnum(EOrderStatus)
+  @ValidateIf((o) => o.status !== undefined)
+  @IsOptional()
+  status?: EOrderStatus;
+}

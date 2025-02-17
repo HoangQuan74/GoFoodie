@@ -8,6 +8,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { EXCEPTIONS } from 'src/common/constants';
 import * as moment from 'moment';
 import { TimeRange } from 'src/common/enums';
+import { EOrderStatus } from 'src/common/enums/order.enum';
 
 @ApiTags('Income')
 @Controller('income')
@@ -29,6 +30,7 @@ export class IncomeController {
       return await this.incomeService
         .createQueryBuilder('order')
         .where('order.driverId = :driverId', { driverId })
+        .andWhere('order.status = :orderStatus', { orderStatus: EOrderStatus.Delivered })
         .andWhere('order.createdAt BETWEEN :startDate AND :endDate', { startDate: start, endDate: end })
         .select('COALESCE(SUM(order.deliveryFee), 0)', 'deliveryFee')
         .addSelect('COALESCE(SUM(order.tip), 0)', 'tip')
@@ -105,6 +107,7 @@ export class IncomeController {
     const { id: driverId } = user;
     const queryBuilder = this.incomeService.createQueryBuilder('order')
       .where('order.driverId = :driverId', { driverId })
+      .andWhere('order.status = :orderStatus', { orderStatus: EOrderStatus.Delivered })
       .andWhere('order.createdAt BETWEEN :startDate AND :endDate', { startDate, endDate })
       .select('order.id', 'id')
       .addSelect('order.orderCode', 'orderCode')
@@ -123,6 +126,7 @@ export class IncomeController {
     const { id: driverId } = user;
     const queryBuilder = this.incomeService.createQueryBuilder('order')
       .where('order.driverId = :driverId', { driverId })
+      .andWhere('order.status = :orderStatus', { orderStatus: EOrderStatus.Delivered })
       .andWhere('order.id = :orderId', { orderId })
       .select([
         'order.id',
