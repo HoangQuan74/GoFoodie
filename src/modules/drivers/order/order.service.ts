@@ -11,7 +11,7 @@ import { OrderEntity } from 'src/database/entities/order.entity';
 import { EventGatewayService } from 'src/events/event.gateway.service';
 import { calculateDistance } from 'src/utils/distance';
 import { Repository } from 'typeorm';
-import { QueryOrderDto } from './dto/query-order.dto';
+import { QueryOrderDto, QueryOrderHistoryDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 
 @Injectable()
@@ -32,7 +32,7 @@ export class OrderService {
     private orderActivityRepository: Repository<OrderActivityEntity>,
 
     private eventGatewayService: EventGatewayService,
-  ) {}
+  ) { }
 
   async assignOrderToDriver(orderId: number): Promise<void> {
     const order = await this.orderRepository.findOne({
@@ -115,9 +115,25 @@ export class OrderService {
       .leftJoinAndSelect('store.district', 'district')
       .leftJoinAndSelect('store.province', 'province')
       .leftJoinAndSelect('store.serviceType', 'serviceType')
-      .leftJoinAndSelect('order.client', 'client')
-      .leftJoinAndSelect('order.driver', 'driver')
+      .leftJoin('order.client', 'client')
+      .leftJoin('order.driver', 'driver')
       .where('order.id = :orderId', { orderId })
+      .addSelect([
+        'client.id',
+        'client.name',
+        'client.email',
+        'client.phone',
+        'client.latitude',
+        'client.longitude',
+        'client.address',
+        'client.avatarId',
+        'driver.id',
+        'driver.fullName',
+        'driver.phoneNumber',
+        'driver.email',
+        'driver.avatar',
+        'driver.temporaryAddress',
+      ])
       .getOne();
 
     if (!order) {
@@ -396,5 +412,79 @@ export class OrderService {
     await this.orderActivityRepository.save(orderActivity);
 
     this.eventGatewayService.notifyDriverNewOrder(driver.id, order);
+  }
+
+  async getOrderHistory(driverId: number, queryOrderDto: QueryOrderHistoryDto) {
+    const { limit, page, status } = queryOrderDto;
+    const queryBuilder = this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoin('order.store', 'store')
+      .leftJoin('order.client', 'client')
+      .leftJoinAndMapOne(
+        'order.orderInDelivery',
+        'order.activities',
+        'orderInDelivery',
+        'orderInDelivery.orderId = order.id AND orderInDelivery.status = :statusInDelivery',
+        { statusInDelivery: EOrderStatus.InDelivery },
+      )
+      .leftJoinAndMapOne(
+        'order.orderDelivered',
+        'order.activities',
+        'orderDelivered',
+        'orderDelivered.orderId = order.id AND orderDelivered.status = :statusDelivered',
+        { statusDelivered: EOrderStatus.Delivered },
+      )
+      .select([
+        'order.id',
+        'order.orderCode',
+        'order.createdAt',
+        'order.totalAmount',
+        'store.id',
+        'store.name',
+        'store.address',
+        'client.id',
+        'client.name',
+        'client.address',
+        'orderInDelivery.createdAt',
+        'orderDelivered.createdAt',
+      ])
+      .addSelect(
+        'COALESCE(order.deliveryFee, 0) + COALESCE(order.tip, 0) + COALESCE(order.parkingFee, 0) + COALESCE(order.peakHourFee, 0) - COALESCE(order.transactionFee, 0) - COALESCE(order.appFee, 0)',
+        'driverIncome'
+      )
+      .addSelect('order.totalAmount', 'storeRevenue')
+      .where('order.driverId = :driverId', { driverId })
+      .andWhere('order.status = :status', { status });
+
+    if (status === EOrderStatus.Cancelled) {
+      queryBuilder.leftJoinAndMapOne(
+        'order.orderCancelled',
+        'order.activities',
+        'orderCancelled',
+        'orderCancelled.orderId = order.id AND orderCancelled.status = :statusCancelled',
+        { statusCancelled: EOrderStatus.Cancelled },
+      )
+        .addSelect([
+          'orderCancelled.createdAt',
+          'orderCancelled.cancellationReason',
+          'orderCancelled.cancellationType',
+        ])
+    }
+
+    const count = await queryBuilder.clone().getCount();
+
+    const { entities, raw } = await queryBuilder
+      .orderBy('order.createdAt', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getRawAndEntities();
+
+    entities.forEach((order) => {
+      order.driverIncome = Number(raw.find((ord) => ord.order_id === order.id).driverIncome) || 0;
+      order.storeRevenue = Number(raw.find((ord) => ord.order_id === order.id).storeRevenue) || 0;
+      order.totalAmount = Number(order.totalAmount) || 0;
+    })
+
+    return { orders: entities, total: count }
   }
 }
