@@ -14,6 +14,7 @@ import { OrdersModule } from './order/order.module';
 import { BanksModule } from './banks/banks.module';
 import { CardsModule } from './cards/cards.module';
 import { IncomeModule } from './income/income.module';
+import { RequestsModule } from './requests/requests.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { IncomeModule } from './income/income.module';
       { path: 'driver', module: BanksModule },
       { path: 'driver', module: CardsModule },
       { path: 'driver', module: IncomeModule },
+      { path: 'driver', module: RequestsModule },
     ]),
     OnlineTrainingsModule,
     BannersModule,
@@ -39,6 +41,7 @@ import { IncomeModule } from './income/income.module';
     BanksModule,
     CardsModule,
     IncomeModule,
+    RequestsModule,
   ],
   controllers: [DriversController],
   providers: [DriversService],

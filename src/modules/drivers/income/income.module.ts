@@ -11,4 +11,4 @@ import { DriversModule } from '../drivers.module';
   providers: [IncomeService],
   exports: [IncomeService],
 })
-export class IncomeModule { }
+export class IncomeModule {}
