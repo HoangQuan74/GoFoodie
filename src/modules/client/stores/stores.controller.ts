@@ -281,6 +281,8 @@ export class StoresController {
         'product.imageId as "productImageId"',
         'product.liked as "productLiked"',
         'product.sold as "productSold"',
+        'product.status as "productStatus"',
+        'product.approvalStatus as "productApprovalStatus"',
       ])
       .leftJoin('category.stores', 'store', 'store.id = :storeId')
       .where(
@@ -314,6 +316,8 @@ export class StoresController {
           imageId: item.productImageId,
           liked: parseInt(item.productLiked),
           sold: parseInt(item.productSold),
+          status: item.productStatus,
+          approvalStatus: item.productApprovalStatus,
         })),
       };
     });
