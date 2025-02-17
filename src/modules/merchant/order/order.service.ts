@@ -33,17 +33,14 @@ export class OrderService {
     private readonly fcmService: FcmService,
   ) { }
 
-  async queryOrders(merchantId: number, queryOrderDto: QueryOrderDto) {
-    const stores = await this.getStoresByMerchantId(merchantId);
-    const storeIds = stores.map((store) => store.id);
-
+  async queryOrders(queryOrderDto: QueryOrderDto, storeId: number) {
     const query = this.orderRepository
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.client', 'client')
       .leftJoinAndSelect('order.driver', 'driver')
       .leftJoinAndSelect('order.orderItems', 'orderItems')
       .leftJoinAndSelect('order.activities', 'activities')
-      .where('order.storeId IN (:...storeIds)', { storeIds });
+      .where('order.storeId = :storeId', { storeId });
 
     if (queryOrderDto.status) {
       query.andWhere('order.status = :status', { status: queryOrderDto.status });
@@ -190,14 +187,6 @@ export class OrderService {
     } finally {
       await queryRunner.release();
     }
-  }
-
-  private async getStoresByMerchantId(merchantId: number): Promise<StoreEntity[]> {
-    const stores = await this.storeRepository.find({ where: { merchantId } });
-    if (!stores || stores.length === 0) {
-      throw new NotFoundException(`No stores found for merchant with ID ${merchantId}`);
-    }
-    return stores;
   }
 
   async findOne(orderId: number, storeId: number): Promise<OrderResponse> {
