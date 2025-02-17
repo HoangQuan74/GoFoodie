@@ -6,9 +6,15 @@ import { CartEntity } from 'src/database/entities/cart.entity';
 import { ProductsModule } from '../products/products.module';
 import { ClientModule } from '../client.module';
 import { CartProductEntity } from 'src/database/entities/cart-product.entity';
+import { OrdersModule } from '../order/order.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CartEntity, CartProductEntity]), ProductsModule, forwardRef(() => ClientModule)],
+  imports: [
+    TypeOrmModule.forFeature([CartEntity, CartProductEntity]),
+    ProductsModule,
+    forwardRef(() => ClientModule),
+    OrdersModule,
+  ],
   controllers: [CartsController],
   providers: [CartsService],
 })
