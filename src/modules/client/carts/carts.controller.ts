@@ -10,6 +10,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { CartProductOptionEntity } from 'src/database/entities/cart-product-option.entity';
 import { ApiTags } from '@nestjs/swagger';
 import * as _ from 'lodash';
+import { OrderService } from '../order/order.service';
 
 @Controller('carts')
 @ApiTags('Client Carts')
@@ -18,6 +19,7 @@ export class CartsController {
   constructor(
     private readonly cartsService: CartsService,
     private readonly productsService: ProductsService,
+    private readonly orderService: OrderService,
   ) {}
 
   @Post()
@@ -186,5 +188,11 @@ export class CartsController {
     if (!cartProduct) throw new NotFoundException();
 
     return this.cartsService.removeCartProduct(cartProduct);
+  }
+
+  // tạo giỏ hàng từ đơn đã đặt trước đó
+  @Post('from-order/:orderId')
+  async createFromOrder(@Param('orderId') orderId: string, @CurrentUser() user: JwtPayload) {
+    // return this.cartsService.createFromOrder(+orderId, user.id);
   }
 }
