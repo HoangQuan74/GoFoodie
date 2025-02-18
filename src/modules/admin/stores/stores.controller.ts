@@ -1,5 +1,5 @@
 import { WardsService } from './../../wards/wards.service';
-import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { StoresService } from './stores.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
@@ -16,7 +16,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { AdminRolesGuard } from 'src/common/guards';
 import { OPERATIONS } from 'src/common/constants/operation.constant';
 import { AdminsService } from '../admins/admins.service';
-import { ApproveStoreDto } from './dto/approve-store.dto';
+import { EXCEPTIONS } from 'src/common/constants';
 
 @Controller('stores')
 @ApiTags('Stores')
@@ -204,9 +204,8 @@ export class StoresController {
 
   @Patch(':id/approve')
   @Roles(OPERATIONS.STORE.APPROVE)
-  async approve(@Param('id') id: number, @CurrentUser() user: JwtPayload, @Body() body: ApproveStoreDto) {
+  async approve(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
     return this.dataSource.transaction(async (manager) => {
-      const { latitude, longitude, address } = body;
       const store = await manager.findOne(StoreEntity, {
         where: { id, approvalStatus: EStoreApprovalStatus.Pending },
         relations: { serviceType: true, businessArea: true },
@@ -223,15 +222,14 @@ export class StoresController {
       store.approvedById = user.id;
       store.approvedAt = new Date();
       store.approvalStatus = EStoreApprovalStatus.Approved;
-      store.address = address;
-      store.latitude = latitude;
-      store.longitude = longitude;
       const numberStore = latestStore ? +latestStore.storeCode.slice(-3) + 1 : 1;
       store.storeCode = `${preCode}${numberStore.toString().padStart(3, '0')}`;
 
-      if (store.address && store.latitude && store.longitude) {
-        await this.storesService.initStoreAddress(store.id, store.address, store.latitude, store.longitude);
+      if (!store.address || !store.latitude || !store.longitude) {
+        throw new BadRequestException(EXCEPTIONS.STORE_ADDRESS_REQUIRED);
       }
+      await this.storesService.initStoreAddress(store.id, store.address, store.latitude, store.longitude);
+
       return manager.save(store);
     });
   }
