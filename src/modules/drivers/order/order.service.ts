@@ -10,7 +10,7 @@ import { OrderCriteriaEntity } from 'src/database/entities/order-criteria.entity
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { EventGatewayService } from 'src/events/event.gateway.service';
 import { calculateDistance } from 'src/utils/distance';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { QueryOrderDto, QueryOrderHistoryDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import * as moment from 'moment-timezone';
@@ -416,7 +416,7 @@ export class OrderService {
   }
 
   async getOrderHistory(driverId: number, queryOrderDto: QueryOrderHistoryDto) {
-    const { limit, page, status } = queryOrderDto;
+    const { limit, page, status, search } = queryOrderDto;
     const queryBuilder = this.orderRepository
       .createQueryBuilder('order')
       .leftJoin('order.store', 'store')
@@ -454,6 +454,16 @@ export class OrderService {
         'driverIncome'
       )
       .addSelect('order.totalAmount', 'storeRevenue')
+
+    if (search) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.orWhere('client.name ILIKE :search')
+            .orWhere('order.orderCode ILIKE :search')
+            .orWhere('store.name ILIKE :search');
+        })
+      ).setParameters({ search: `%${search}%` });
+    }
 
     if (status === EOrderStatus.Cancelled) {
       queryBuilder.innerJoinAndMapOne(
