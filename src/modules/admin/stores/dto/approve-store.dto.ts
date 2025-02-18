@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsLatitude, IsLongitude } from 'class-validator';
+import { IsLatitude, IsLongitude, IsString } from 'class-validator';
 
 export class ApproveStoreDto {
   @ApiProperty()
-  @IsInt()
+  @IsString()
   address: string;
 
   @ApiProperty()
