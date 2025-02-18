@@ -73,6 +73,16 @@ export class OrderController {
     return this.orderService.getOrderDetailsForDriver(id, driverId);
   }
 
+  @Get(':id/cancel')
+  @ApiOperation({ summary: 'Get order cancel details for driver' })
+  @ApiResponse({ status: 200, description: 'Returns the order cancelcancel details' })
+  @ApiResponse({ status: 404, description: 'Order not found' })
+  @ApiParam({ name: 'id', type: String, description: 'Order ID' })
+  async getOrderCancelDetails(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
+    const { id: driverId } = user;
+    return this.orderService.getOrderCancelDetailsForDriver(id, driverId);
+  }
+
   @Put(':id/accept')
   @ApiOperation({ summary: 'Accept an order' })
   @ApiResponse({ status: 200, description: 'Order accepted successfully' })
