@@ -32,7 +32,7 @@ export class CreateOrderDto {
     description: 'The delivery phone for the order',
     example: '012355646',
   })
-  @IsPhoneNumber('VN')
+  @IsString()
   @IsOptional()
   deliveryPhone: string;
 
