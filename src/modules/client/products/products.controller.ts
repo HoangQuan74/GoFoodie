@@ -11,8 +11,16 @@ export class ProductsController {
   @Get(':id')
   async getProduct(@Param('id') id: number) {
     const queryBuilder = this.productsService
-      .createQueryBuilder('product')
-      .select(['product.id', 'product.name', 'product.price', 'product.description', 'product.imageId'])
+      .createQueryBuilderView('product')
+      .select([
+        'product.id',
+        'product.name',
+        'product.price',
+        'product.description',
+        'product.imageId',
+        'product.sold',
+        'product.liked',
+      ])
       .addSelect(['productOptionGroups.id'])
       .addSelect(['optionGroup.id', 'optionGroup.name', 'optionGroup.isMultiple', 'optionGroup.status'])
       .addSelect(['options.id', 'options.name', 'options.price'])
@@ -26,6 +34,8 @@ export class ProductsController {
     const product = await queryBuilder.getOne();
     if (!product) throw new NotFoundException();
 
+    product.liked = Number(product.liked);
+    product.sold = Number(product.sold);
     product.productOptionGroups = product.productOptionGroups.filter(
       (item) => item.options.length && item.optionGroup.status === EOptionGroupStatus.Active,
     );

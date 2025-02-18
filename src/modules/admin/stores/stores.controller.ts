@@ -1,5 +1,17 @@
 import { WardsService } from './../../wards/wards.service';
-import { BadRequestException, Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { StoresService } from './stores.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
@@ -228,9 +240,11 @@ export class StoresController {
       if (!store.address || !store.latitude || !store.longitude) {
         throw new BadRequestException(EXCEPTIONS.STORE_ADDRESS_REQUIRED);
       }
+
+      await manager.save(store);
       await this.storesService.initStoreAddress(store.id, store.address, store.latitude, store.longitude);
 
-      return manager.save(store);
+      return store;
     });
   }
 
