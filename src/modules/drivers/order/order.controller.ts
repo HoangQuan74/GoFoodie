@@ -14,7 +14,7 @@ import { OrderService } from './order.service';
 @ApiTags('Orders')
 @UseGuards(AuthGuard)
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(private readonly orderService: OrderService) { }
 
   @Put()
   @ApiOperation({ summary: 'Update driver availability' })
@@ -49,6 +49,17 @@ export class OrderController {
     const { id: driverId } = user;
     return this.orderService.getOrderHistory(driverId, queryOrderDto);
   }
+
+  @Get('/delivered/today-count')
+  @ApiOperation({ summary: 'Get the number of orders delivered today for a driver' })
+  @ApiResponse({ status: 200, description: 'Returns the number of delivered orders today for the driver' })
+  getDeliveredOrdersCountToday(
+    @CurrentUser() user: JwtPayload
+  ) {
+    const { id: driverId } = user;
+    return this.orderService.getDeliveredOrdersCountToday(driverId);
+  }
+
 
 
 
