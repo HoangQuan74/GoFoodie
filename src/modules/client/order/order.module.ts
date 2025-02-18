@@ -7,7 +7,6 @@ import { CartProductEntity } from 'src/database/entities/cart-product.entity';
 import { CartEntity } from 'src/database/entities/cart.entity';
 import { OrderItemEntity } from 'src/database/entities/order-item.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
-import { StoreEntity } from 'src/database/entities/store.entity';
 import { ClientModule } from '../client.module';
 import { EventsModule } from 'src/events/events.module';
 import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
@@ -15,6 +14,7 @@ import { FcmModule } from 'src/modules/fcm/fcm.module';
 import { FeeEntity } from 'src/database/entities/fee.entity';
 import { FeeService } from 'src/modules/fee/fee.service';
 import { QueuesModule } from 'src/modules/queues/queues.module';
+import { StoresModule } from '../stores/stores.module';
 
 @Module({
   imports: [
@@ -24,7 +24,6 @@ import { QueuesModule } from 'src/modules/queues/queues.module';
       CartEntity,
       CartProductEntity,
       CartProductOptionEntity,
-      StoreEntity,
       OrderActivityEntity,
       FeeEntity,
     ]),
@@ -32,6 +31,7 @@ import { QueuesModule } from 'src/modules/queues/queues.module';
     EventsModule,
     FcmModule,
     QueuesModule,
+    StoresModule,
   ],
   providers: [OrderService, FeeService],
   controllers: [OrderController],

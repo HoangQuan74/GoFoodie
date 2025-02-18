@@ -1,5 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, Max, Min, ValidateIf } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsPhoneNumber,
+  IsString,
+  Max,
+  Min,
+  ValidateIf,
+} from 'class-validator';
 import { EOrderCode, EPaymentStatus } from 'src/common/enums/order.enum';
 
 export class CreateOrderDto {
@@ -21,7 +32,7 @@ export class CreateOrderDto {
     description: 'The delivery phone for the order',
     example: '012355646',
   })
-  @IsString()
+  @IsPhoneNumber('VN')
   deliveryPhone: string;
 
   @ApiProperty({

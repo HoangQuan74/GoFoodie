@@ -17,6 +17,7 @@ import { ProductEntity } from './product.entity';
 import { StoreLikeEntity } from './store-like.entity';
 import { OrderEntity } from './order.entity';
 import { StorePreparationTimeEntity } from './store-preparation-time.entity';
+import { StoreAddressEntity } from './store-address.entity';
 
 @Entity('stores')
 export class StoreEntity extends BaseEntity {
@@ -194,6 +195,9 @@ export class StoreEntity extends BaseEntity {
 
   @OneToMany(() => StorePreparationTimeEntity, (preparationTime) => preparationTime.store)
   preparationTimes: StorePreparationTimeEntity[];
+
+  @OneToMany(() => StoreAddressEntity, (address) => address.store)
+  addresses: StoreAddressEntity[];
 
   productCount: number;
 }

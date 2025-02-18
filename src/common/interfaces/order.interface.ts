@@ -11,3 +11,10 @@ export interface PaginatedOrderResponse {
   limit: number;
   totalPages: number;
 }
+
+export interface IOrderTime {
+  orderTime: Date;
+  storeConfirmTime: Date;
+  estimatedPickupTime: Date;
+  estimatedDeliveryTime: Date;
+}
