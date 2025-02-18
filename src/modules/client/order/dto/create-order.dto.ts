@@ -32,8 +32,8 @@ export class CreateOrderDto {
     description: 'The delivery phone for the order',
     example: '012355646',
   })
-  @IsString()
-  @IsOptional()
+  @IsPhoneNumber('VN')
+  @ValidateIf((o) => o.deliveryPhone)
   deliveryPhone: string;
 
   @ApiProperty({
