@@ -33,6 +33,7 @@ export class CreateOrderDto {
     example: '012355646',
   })
   @IsPhoneNumber('VN')
+  @IsOptional()
   deliveryPhone: string;
 
   @ApiProperty({
