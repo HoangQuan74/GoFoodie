@@ -8,7 +8,6 @@ import { ProductWorkingTimeEntity } from './product-working-time.entity';
 import { OptionGroupEntity } from './option-group.entity';
 import { ProductOptionGroupEntity } from './product-option-group.entity';
 import { EProductApprovalStatus } from 'src/common/enums/product.enum';
-import { ProductView } from '../views/product.view';
 
 @Entity('products')
 export class ProductEntity extends BaseEntity {
@@ -70,9 +69,6 @@ export class ProductEntity extends BaseEntity {
 
   @OneToMany(() => ProductOptionGroupEntity, (productOptionGroup) => productOptionGroup.product, { cascade: true })
   productOptionGroups: ProductOptionGroupEntity[];
-
-  @OneToMany(() => ProductView, (productView) => productView.id)
-  productView: ProductView;
 
   sold: number = 0;
   liked: number = 0;

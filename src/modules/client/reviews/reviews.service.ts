@@ -8,6 +8,9 @@ import { EOrderStatus } from 'src/common/enums/order.enum';
 import { ReviewStoreDto } from './dto/review-store.dto';
 import { ClientReviewStoreEntity } from 'src/database/entities/client-review-store.entity';
 import { ChallengeEntity } from 'src/database/entities/challenge.entity';
+import * as _ from 'lodash';
+import { DriverView } from 'src/database/views/driver.view';
+import { StoreView } from 'src/database/views/store.view';
 
 @Injectable()
 export class ReviewsService {
@@ -47,6 +50,53 @@ export class ReviewsService {
     if (review) throw new ConflictException('You have already reviewed this store');
 
     return this.reviewStoreRepository.save({ orderId, clientId, storeId: order.storeId, ...reviewStoreDto });
+  }
+
+  async getDriverReview(orderId: number, clientId: number) {
+    const review = await this.reviewDriverRepository
+      .createQueryBuilder('review')
+      .select([
+        'review.id as id',
+        'review.rating as rating',
+        'review.comment as comment',
+        'review.createdAt as "createdAt"',
+        'templates.id as "templateId"',
+        'templates.name as "templateName"',
+        'driver.id as "driverId"',
+        'driver.avatar as "driverAvatar"',
+        'driver.avgRating as "driverAvgRating"',
+        'driver.fullName as "driverFullName"',
+      ])
+      .where('review.orderId = :orderId', { orderId })
+      .andWhere('review.clientId = :clientId', { clientId })
+      .leftJoin('review.templates', 'templates')
+      .leftJoin(DriverView, 'driver', 'driver.id = review.driverId')
+      .getRawMany();
+
+    if (!review.length) return null;
+
+    const groupedReview = _.groupBy(review, 'id');
+    return Object.values(groupedReview).map((reviews: any[]) => {
+      const templates = reviews.map((r) => ({ id: r.templateId, name: r.templateName }));
+      delete reviews[0].templateId;
+      delete reviews[0].templateName;
+
+      return { ...reviews[0], templates };
+    });
+  }
+
+  async getStoreReview(orderId: number, clientId: number) {
+    return await this.reviewStoreRepository
+      .createQueryBuilder('review')
+      .select(['review.id', 'review.rating', 'review.comment', 'review.createdAt', 'templates.id', 'templates.name'])
+      .addSelect(['store.id', 'store.storeAvatarId', 'store.name', 'store.specialDish', 'store.streetName'])
+      .addSelect(['files.id', 'files.name'])
+      .where('review.orderId = :orderId', { orderId })
+      .andWhere('review.clientId = :clientId', { clientId })
+      .leftJoin('review.templates', 'templates')
+      .leftJoin('review.store', 'store')
+      .leftJoin('review.files', 'files')
+      .getOne();
   }
 
   async getReward() {

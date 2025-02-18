@@ -190,9 +190,42 @@ export class CartsController {
     return this.cartsService.removeCartProduct(cartProduct);
   }
 
-  // tạo giỏ hàng từ đơn đã đặt trước đó
   @Post('from-order/:orderId')
-  async createFromOrder(@Param('orderId') orderId: string, @CurrentUser() user: JwtPayload) {
-    // return this.cartsService.createFromOrder(+orderId, user.id);
+  async createFromOrder(@Param('orderId') orderId: number, @CurrentUser() user: JwtPayload) {
+    orderId = 7;
+    const order = await this.orderService
+      .createQueryBuilder('order')
+      .select(['order.id', 'order.storeId'])
+      .addSelect([
+        'orderItems.id',
+        'orderItems.productId',
+        'orderItems.quantity',
+        'orderItems.note',
+        'orderItems.cartProductOptions',
+      ])
+      .innerJoin('order.orderItems', 'orderItems')
+      .where('order.id = :orderId', { orderId: +orderId })
+      .andWhere('order.clientId = :clientId', { clientId: user.id })
+      .getOne();
+
+    if (!order) throw new NotFoundException();
+
+    let cart = await this.cartsService.findOne({ where: { clientId: user.id, storeId: order.storeId } });
+    if (!cart) cart = await this.cartsService.save({ clientId: user.id, storeId: order.storeId });
+
+    for (const orderItem of order.orderItems) {
+      const { productId, quantity, note, cartProductOptions } = orderItem;
+
+      // cart.cartProducts.push({
+
+      const newCart = new CreateCartDto();
+      newCart.productId = productId;
+      newCart.quantity = quantity;
+      newCart.note = note;
+
+      await this.create(newCart, user);
+    }
+
+    return cart.id;
   }
 }
