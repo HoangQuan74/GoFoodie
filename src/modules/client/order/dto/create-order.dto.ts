@@ -33,7 +33,7 @@ export class CreateOrderDto {
     example: '012355646',
   })
   @IsPhoneNumber('VN')
-  @IsOptional()
+  @ValidateIf((o) => o.deliveryPhone)
   deliveryPhone: string;
 
   @ApiProperty({
