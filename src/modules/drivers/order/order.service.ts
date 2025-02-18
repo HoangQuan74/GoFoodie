@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { EDriverApprovalStatus, EDriverStatus } from 'src/common/enums/driver.enum';
 import { EOrderCriteriaType } from 'src/common/enums/order-criteria.enum';
-import { EOrderStatus } from 'src/common/enums/order.enum';
+import { EOrderActivityStatus, EOrderStatus } from 'src/common/enums/order.enum';
 import { DriverAvailabilityEntity } from 'src/database/entities/driver-availability.entity';
 import { DriverEntity } from 'src/database/entities/driver.entity';
 import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
@@ -10,9 +10,11 @@ import { OrderCriteriaEntity } from 'src/database/entities/order-criteria.entity
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { EventGatewayService } from 'src/events/event.gateway.service';
 import { calculateDistance } from 'src/utils/distance';
-import { Repository } from 'typeorm';
-import { QueryOrderDto } from './dto/query-order.dto';
+import { Brackets, Repository } from 'typeorm';
+import { QueryOrderDto, QueryOrderHistoryDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import * as moment from 'moment-timezone';
+import { EXCEPTIONS } from 'src/common/constants';
 
 @Injectable()
 export class OrderService {
@@ -32,7 +34,7 @@ export class OrderService {
     private orderActivityRepository: Repository<OrderActivityEntity>,
 
     private eventGatewayService: EventGatewayService,
-  ) {}
+  ) { }
 
   async assignOrderToDriver(orderId: number): Promise<void> {
     const order = await this.orderRepository.findOne({
@@ -115,16 +117,32 @@ export class OrderService {
       .leftJoinAndSelect('store.district', 'district')
       .leftJoinAndSelect('store.province', 'province')
       .leftJoinAndSelect('store.serviceType', 'serviceType')
-      .leftJoinAndSelect('order.client', 'client')
-      .leftJoinAndSelect('order.driver', 'driver')
+      .leftJoin('order.client', 'client')
+      .leftJoin('order.driver', 'driver')
       .where('order.id = :orderId', { orderId })
+      .addSelect([
+        'client.id',
+        'client.name',
+        'client.email',
+        'client.phone',
+        'client.latitude',
+        'client.longitude',
+        'client.address',
+        'client.avatarId',
+        'driver.id',
+        'driver.fullName',
+        'driver.phoneNumber',
+        'driver.email',
+        'driver.avatar',
+        'driver.temporaryAddress',
+      ])
       .getOne();
 
     if (!order) {
       throw new NotFoundException(`Order with ID ${orderId} not found`);
     }
 
-    if (order.driverId !== driverId) {
+    if (order.driverId && order.driverId !== driverId) {
       throw new BadRequestException('You do not have permission to view this order');
     }
 
@@ -148,6 +166,44 @@ export class OrderService {
       ...order,
       criteria,
     };
+  }
+
+  async getOrderCancelDetailsForDriver(id: number, driverId: number) {
+    const queryBuilder = this.orderRepository
+      .createQueryBuilder('order')
+      .where('order.id = :id', { id })
+      .innerJoinAndMapOne(
+        'order.orderActivityCancelled',
+        'order.activities',
+        'orderActivityCancelled',
+        'orderActivityCancelled.status = :activityStatus and orderActivityCancelled.description = :description and orderActivityCancelled.performedBy = :performedBy',
+        {
+          activityStatus: EOrderStatus.SearchingForDriver,
+          description: EOrderActivityStatus.DRIVER_APPROVED_AND_REJECTED,
+          performedBy: `driverId:${driverId}`,
+        }
+      )
+      .select([
+        'order.id',
+        'order.orderCode',
+        'order.totalAmount',
+        'orderActivityCancelled.id',
+        'orderActivityCancelled.createdAt',
+        'orderActivityCancelled.performedBy',
+        'orderActivityCancelled.cancellationReason',
+        'orderActivityCancelled.cancellationType',
+        'orderActivityCancelled.description',
+      ])
+      
+    const result = await queryBuilder.getOne();
+    if (!result) {
+      throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
+    }
+
+    return {
+      refundAmount: Number(result.totalAmount),
+      ...result,
+    }
   }
 
   async acceptOrderByDriver(orderId: number, driverId: number): Promise<OrderEntity> {
@@ -208,7 +264,7 @@ export class OrderService {
     const orderActivity = this.orderActivityRepository.create({
       orderId: orderId,
       status: EOrderStatus.SearchingForDriver,
-      description: wasAcceptedBefore ? 'driver_approved_and_rejected_the_order' : 'driver_rejected_the_order',
+      description: wasAcceptedBefore ? EOrderActivityStatus.DRIVER_APPROVED_AND_REJECTED : EOrderActivityStatus.DRIVER_REJECTED,
       cancellationReason: updateOrderDto.reasons || '',
       performedBy: `driverId:${driverId}`,
     });
@@ -396,5 +452,103 @@ export class OrderService {
     await this.orderActivityRepository.save(orderActivity);
 
     this.eventGatewayService.notifyDriverNewOrder(driver.id, order);
+  }
+
+  async getOrderHistory(driverId: number, queryOrderDto: QueryOrderHistoryDto) {
+    const { limit, page, status, search } = queryOrderDto;
+    const queryBuilder = this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoin('order.store', 'store')
+      .leftJoin('order.client', 'client')
+      .leftJoinAndMapOne(
+        'order.orderInDelivery',
+        'order.activities',
+        'orderInDelivery',
+        'orderInDelivery.orderId = order.id AND orderInDelivery.status = :statusInDelivery',
+        { statusInDelivery: EOrderStatus.InDelivery },
+      )
+      .leftJoinAndMapOne(
+        'order.orderDelivered',
+        'order.activities',
+        'orderDelivered',
+        'orderDelivered.orderId = order.id AND orderDelivered.status = :statusDelivered',
+        { statusDelivered: EOrderStatus.Delivered },
+      )
+      .select([
+        'order.id',
+        'order.orderCode',
+        'order.createdAt',
+        'order.totalAmount',
+        'store.id',
+        'store.name',
+        'store.address',
+        'client.id',
+        'client.name',
+        'client.address',
+        'orderInDelivery.createdAt',
+        'orderDelivered.createdAt',
+      ])
+      .addSelect(
+        'COALESCE(order.deliveryFee, 0) + COALESCE(order.tip, 0) + COALESCE(order.parkingFee, 0) + COALESCE(order.peakHourFee, 0) - COALESCE(order.transactionFee, 0) - COALESCE(order.appFee, 0)',
+        'driverIncome'
+      )
+      .addSelect('order.totalAmount', 'storeRevenue')
+
+    if (search) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.orWhere('client.name ILIKE :search')
+            .orWhere('order.orderCode ILIKE :search')
+            .orWhere('store.name ILIKE :search');
+        })
+      ).setParameters({ search: `%${search}%` });
+    }
+
+    if (status === EOrderStatus.Cancelled) {
+      queryBuilder.innerJoinAndMapOne(
+        'order.orderActivityCancelled',
+        'order.activities',
+        'orderActivityCancelled',
+        'orderActivityCancelled.status = :activityStatus and orderActivityCancelled.description = :description and orderActivityCancelled.performedBy = :performedBy',
+        {
+          activityStatus: EOrderStatus.SearchingForDriver,
+          description: EOrderActivityStatus.DRIVER_APPROVED_AND_REJECTED,
+          performedBy: `driverId:${driverId}`,
+        }
+      )
+    } else {
+      queryBuilder
+        .andWhere('order.driverId = :driverId', { driverId })
+        .andWhere('order.status = :status', { status });
+
+    }
+
+    const count = await queryBuilder.clone().getCount();
+
+    const { entities, raw } = await queryBuilder
+      .orderBy('order.createdAt', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getRawAndEntities();
+
+    entities.forEach((order) => {
+      order.driverIncome = Number(raw.find((ord) => ord.order_id === order.id).driverIncome) || 0;
+      order.storeRevenue = Number(raw.find((ord) => ord.order_id === order.id).storeRevenue) || 0;
+      order.totalAmount = Number(order.totalAmount) || 0;
+    })
+
+    return { orders: entities, total: count }
+  }
+
+  async getDeliveredOrdersCountToday(driverId: number) {
+    const startOfDay = moment().startOf('day').toDate();
+    const endOfDay = moment().endOf('day').toDate();
+
+    return this.orderRepository
+      .createQueryBuilder('order')
+      .where('order.driverId = :driverId', { driverId })
+      .andWhere('order.status = :status', { status: EOrderStatus.Delivered })
+      .andWhere('order.createdAt BETWEEN :startDate AND :endDate', { startDate: startOfDay, endDate: endOfDay })
+      .getCount();
   }
 }

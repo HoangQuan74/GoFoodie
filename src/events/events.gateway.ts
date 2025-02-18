@@ -87,15 +87,15 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     this.server.to(driverSocketId).emit('newDelivery', {
       orderId: order.id,
-      pickupAddress: order.store.address,
+      pickupAddress: order.store?.address,
       deliveryAddress: order.deliveryAddress,
       deliveryLatitude: order.deliveryLatitude,
       deliveryLongitude: order.deliveryLongitude,
       totalAmount: order.totalAmount,
       status: order.status,
       paymentStatus: order.paymentStatus,
-      clientName: order.client.name,
-      clientPhone: order.client.phone,
+      clientName: order.client?.name,
+      clientPhone: order.client?.phone,
       notes: order.notes,
     });
   }

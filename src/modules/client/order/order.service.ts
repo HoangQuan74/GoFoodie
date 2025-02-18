@@ -23,6 +23,7 @@ import { ERoleType, EUserType } from 'src/common/enums';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { STORE_CONFIRM_TIME } from 'src/common/constants/common.constant';
+import { ClientEntity } from 'src/database/entities/client.entity';
 
 @Injectable()
 export class OrderService {
@@ -72,6 +73,7 @@ export class OrderService {
     await queryRunner.startTransaction();
 
     try {
+      const client = await queryRunner.manager.findOneBy(ClientEntity, { id: clientId });
       const cart = await this.cartRepository.findOne({
         where: { id: cartId, clientId },
         relations: [
@@ -128,8 +130,8 @@ export class OrderService {
         deliveryAddress,
         deliveryLatitude,
         deliveryLongitude,
-        deliveryPhone,
-        deliveryName,
+        deliveryPhone: client.phone,
+        deliveryName: client.name,
         deliveryAddressNote,
         notes,
         tip,

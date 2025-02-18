@@ -10,6 +10,11 @@ export enum EOrderStatus {
   Cancelled = 'cancelled',
 }
 
+export enum EOrderActivityStatus {
+  DRIVER_APPROVED_AND_REJECTED = 'driver_approved_and_rejected_the_order',
+  DRIVER_REJECTED = 'driver_rejected_the_order',
+}
+
 export enum EPaymentStatus {
   Unpaid = 'unpaid',
   Paid = 'paid',

@@ -31,7 +31,7 @@ export class OrderService {
     private readonly driverOrderService: DriverOrderService,
     private readonly eventGatewayService: EventGatewayService,
     private readonly fcmService: FcmService,
-  ) {}
+  ) { }
 
   async queryOrders(queryOrderDto: QueryOrderDto, storeId: number) {
     const query = this.orderRepository
@@ -257,8 +257,7 @@ export class OrderService {
       await this.driverOrderService.assignOrderToDriver(orderId);
       await this.fcmService.notifyDriverNewOrder(orderId);
 
-      order.status = EOrderStatus.OfferSentToDriver;
-      await this.orderRepository.save(order);
+      await this.orderRepository.update({ id: orderId }, { status: EOrderStatus.OfferSentToDriver });
 
       const assignedActivity = this.orderActivityRepository.create({
         orderId: orderId,
@@ -270,6 +269,7 @@ export class OrderService {
 
       this.eventGatewayService.handleOrderUpdated(orderId);
     } catch (error) {
+      console.error(error);
       const order = await this.orderRepository.findOne({ where: { id: orderId } });
       if (order) {
         order.status = EOrderStatus.SearchingForDriver;
