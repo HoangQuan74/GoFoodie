@@ -10,7 +10,6 @@ import { ClientReviewStoreEntity } from 'src/database/entities/client-review-sto
 import { ChallengeEntity } from 'src/database/entities/challenge.entity';
 import * as _ from 'lodash';
 import { DriverView } from 'src/database/views/driver.view';
-import { StoreView } from 'src/database/views/store.view';
 
 @Injectable()
 export class ReviewsService {

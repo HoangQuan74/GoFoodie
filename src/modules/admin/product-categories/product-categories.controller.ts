@@ -45,7 +45,7 @@ export class ProductCategoriesController {
     const { name, serviceGroupId } = rest;
 
     if (!storeId) {
-      const exist = await this.productCategoriesService.findOne({ where: { name, serviceGroupId } });
+      const exist = await this.productCategoriesService.findOne({ where: { name, serviceGroupId, storeId: IsNull() } });
       if (exist) throw new ConflictException(EXCEPTIONS.NAME_EXISTED);
 
       const productCategory = await this.productCategoriesService.save(rest);

@@ -1,4 +1,4 @@
-import { EStoreApprovalStatus, EStoreStatus, EStoreAddressType } from 'src/common/enums';
+import { EStoreApprovalStatus, EStoreStatus } from 'src/common/enums';
 import { ViewEntity, ViewColumn } from 'typeorm';
 
 @ViewEntity({
