@@ -62,6 +62,9 @@ export class StoreEntity extends BaseEntity {
   @Column({ name: 'is_special_working_time', default: false })
   isSpecialWorkingTime: boolean;
 
+  @Column({ name: 'is_self_delivery', default: false })
+  isSelfDelivery: boolean;
+
   @Column({ name: 'ward_id', nullable: true })
   wardId: number;
 

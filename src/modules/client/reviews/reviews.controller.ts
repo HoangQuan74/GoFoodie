@@ -33,6 +33,18 @@ export class ReviewsController {
     return this.reviewsService.reviewStore(+orderId, clientId, reviewStoreDto);
   }
 
+  @Get(':orderId/driver')
+  getDriverReview(@Param('orderId') orderId: string, @CurrentUser() user: JwtPayload) {
+    const { id: clientId } = user;
+    return this.reviewsService.getDriverReview(+orderId, clientId);
+  }
+
+  @Get(':orderId/store')
+  getStoreReview(@Param('orderId') orderId: string, @CurrentUser() user: JwtPayload) {
+    const { id: clientId } = user;
+    return this.reviewsService.getStoreReview(+orderId, clientId);
+  }
+
   // lấy phần thưởng khi đánh giá
   @Get('reward')
   getReward(@CurrentUser() user: JwtPayload) {
