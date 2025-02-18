@@ -1,6 +1,6 @@
 export interface Group {
   optionGroup: OptionGroup;
-  options: Option | Option[];
+  options: Option[];
 }
 export interface OptionGroup {
   id: number;

@@ -192,7 +192,6 @@ export class CartsController {
 
   @Post('from-order/:orderId')
   async createFromOrder(@Param('orderId') orderId: number, @CurrentUser() user: JwtPayload) {
-    orderId = 7;
     const order = await this.orderService
       .createQueryBuilder('order')
       .select(['order.id', 'order.storeId'])
@@ -211,21 +210,27 @@ export class CartsController {
     if (!order) throw new NotFoundException();
 
     let cart = await this.cartsService.findOne({ where: { clientId: user.id, storeId: order.storeId } });
-    if (!cart) cart = await this.cartsService.save({ clientId: user.id, storeId: order.storeId });
+
+    if (cart) {
+      await this.cartsService.removeCartProductsByStoreId(order.storeId);
+    } else {
+      cart = await this.cartsService.save({ clientId: user.id, storeId: order.storeId });
+    }
 
     for (const orderItem of order.orderItems) {
       const { productId, quantity, note, cartProductOptions } = orderItem;
 
-      // cart.cartProducts.push({
+      const options = cartProductOptions.map((cpo) => cpo.options).flat();
+      const optionIds = options.map((option) => option.id);
 
       const newCart = new CreateCartDto();
       newCart.productId = productId;
       newCart.quantity = quantity;
       newCart.note = note;
-
+      newCart.optionIds = optionIds;
       await this.create(newCart, user);
     }
 
-    return cart.id;
+    return cart;
   }
 }
