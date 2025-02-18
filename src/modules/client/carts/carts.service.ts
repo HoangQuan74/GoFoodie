@@ -63,6 +63,15 @@ export class CartsService {
     await this.cartProductRepository.save(cartProduct);
   }
 
+  async removeCartProductsByStoreId(storeId: number) {
+    const cartProducts = await this.cartProductRepository.find({
+      where: { cart: { storeId } },
+      relations: ['cartProductOptions'],
+    });
+
+    await this.cartProductRepository.remove(cartProducts);
+  }
+
   async validateCart(cartId: number) {
     const cart = await this.cartRepository.findOne({
       select: {

@@ -196,15 +196,7 @@ export class OrderService {
                   createdAt: option.createdAt,
                   updateAt: option.updateAt,
                 }))
-              : {
-                  id: group.options.id,
-                  name: group.options.name,
-                  price: group.options.price,
-                  status: group.options.status,
-                  optionGroupId: group.options.optionGroupId,
-                  createdAt: group.options.createdAt,
-                  updateAt: group.options.updateAt,
-                },
+              : [],
           })),
         };
       });

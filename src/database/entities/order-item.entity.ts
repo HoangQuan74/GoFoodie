@@ -33,7 +33,7 @@ export class OrderItemEntity {
   note: string;
 
   @Column('json', { nullable: true })
-  cartProductOptions: Group | Group[];
+  cartProductOptions: Group[];
 
   @ManyToOne(() => OrderEntity, (order) => order.orderItems)
   @JoinColumn({ name: 'order_id' })
