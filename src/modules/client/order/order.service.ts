@@ -256,6 +256,7 @@ export class OrderService {
         'store.specialDish',
         'store.streetName',
         'store.storeAvatarId',
+        'store.preparationTime',
       ])
       .leftJoin('order.store', 'store')
       .leftJoinAndSelect('order.orderItems', 'orderItems')
