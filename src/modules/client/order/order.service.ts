@@ -26,6 +26,7 @@ import { STORE_CONFIRM_TIME } from 'src/common/constants/common.constant';
 import { IOrderTime } from 'src/common/interfaces/order.interface';
 import { StoresService } from '../stores/stores.service';
 import * as moment from 'moment-timezone';
+import { ClientEntity } from 'src/database/entities/client.entity';
 
 @Injectable()
 export class OrderService {
@@ -76,6 +77,7 @@ export class OrderService {
     await queryRunner.startTransaction();
 
     try {
+      const client = await queryRunner.manager.findOneBy(ClientEntity, { id: clientId });
       const cart = await this.cartRepository.findOne({
         where: { id: cartId, clientId },
         relations: [
@@ -132,8 +134,8 @@ export class OrderService {
         deliveryAddress,
         deliveryLatitude,
         deliveryLongitude,
-        deliveryPhone: deliveryPhone,
-        deliveryName: deliveryName,
+        deliveryPhone: deliveryPhone || client.phone,
+        deliveryName: deliveryName || client.name,
         deliveryAddressNote,
         notes,
         tip,

@@ -5,7 +5,7 @@ import { OrderActivityEntity } from 'src/database/entities/order-activities.enti
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { EventGatewayService } from 'src/events/event.gateway.service';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { OrderService as DriverOrderService } from '../../drivers/order/order.service';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -31,7 +31,7 @@ export class OrderService {
     private readonly driverOrderService: DriverOrderService,
     private readonly eventGatewayService: EventGatewayService,
     private readonly fcmService: FcmService,
-  ) { }
+  ) {}
 
   async queryOrders(queryOrderDto: QueryOrderDto, storeId: number) {
     const query = this.orderRepository
@@ -235,10 +235,13 @@ export class OrderService {
 
   private async searchForDriver(orderId: number): Promise<void> {
     try {
-      const order = await this.orderRepository.findOne({ where: { id: orderId } });
-      if (!order) {
-        throw new NotFoundException(`Order with ID ${orderId} not found`);
-      }
+      const order = await this.orderRepository.findOne({
+        where: {
+          id: orderId,
+          status: In([EOrderStatus.Pending, EOrderStatus.SearchingForDriver, EOrderStatus.Confirmed]),
+        },
+      });
+      if (!order) return;
 
       order.status = EOrderStatus.SearchingForDriver;
       await this.orderRepository.save(order);

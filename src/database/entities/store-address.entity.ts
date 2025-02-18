@@ -1,9 +1,10 @@
 import { BaseEntity } from './base.entity';
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm';
 import { StoreEntity } from './store.entity';
 import { EStoreAddressType } from 'src/common/enums';
 
 @Entity('store_address')
+@Unique(['storeId', 'type'])
 export class StoreAddressEntity extends BaseEntity {
   @Column({ name: 'store_id' })
   storeId: number;

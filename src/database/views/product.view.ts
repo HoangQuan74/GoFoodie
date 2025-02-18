@@ -1,5 +1,6 @@
 import { EStoreApprovalStatus, EStoreStatus } from 'src/common/enums';
-import { ViewEntity, ViewColumn } from 'typeorm';
+import { ViewEntity, ViewColumn, OneToMany } from 'typeorm';
+import { ProductOptionGroupEntity } from '../entities/product-option-group.entity';
 
 @ViewEntity({
   expression: `
@@ -64,4 +65,7 @@ export class ProductView {
 
   @ViewColumn()
   liked: number;
+
+  @OneToMany(() => ProductOptionGroupEntity, (productOptionGroup) => productOptionGroup.product)
+  productOptionGroups: ProductOptionGroupEntity[];
 }
