@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { EDriverApprovalStatus, EDriverStatus } from 'src/common/enums/driver.enum';
 import { EOrderCriteriaType } from 'src/common/enums/order-criteria.enum';
-import { EOrderStatus } from 'src/common/enums/order.enum';
+import { EOrderActivityStatus, EOrderStatus } from 'src/common/enums/order.enum';
 import { DriverAvailabilityEntity } from 'src/database/entities/driver-availability.entity';
 import { DriverEntity } from 'src/database/entities/driver.entity';
 import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
@@ -13,6 +13,7 @@ import { calculateDistance } from 'src/utils/distance';
 import { Repository } from 'typeorm';
 import { QueryOrderDto, QueryOrderHistoryDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import * as moment from 'moment-timezone';
 
 @Injectable()
 export class OrderService {
@@ -224,7 +225,7 @@ export class OrderService {
     const orderActivity = this.orderActivityRepository.create({
       orderId: orderId,
       status: EOrderStatus.SearchingForDriver,
-      description: wasAcceptedBefore ? 'driver_approved_and_rejected_the_order' : 'driver_rejected_the_order',
+      description: wasAcceptedBefore ? EOrderActivityStatus.DRIVER_APPROVED_AND_REJECTED : EOrderActivityStatus.DRIVER_REJECTED,
       cancellationReason: updateOrderDto.reasons || '',
       performedBy: `driverId:${driverId}`,
     });
@@ -453,22 +454,24 @@ export class OrderService {
         'driverIncome'
       )
       .addSelect('order.totalAmount', 'storeRevenue')
-      .where('order.driverId = :driverId', { driverId })
-      .andWhere('order.status = :status', { status });
 
     if (status === EOrderStatus.Cancelled) {
-      queryBuilder.leftJoinAndMapOne(
-        'order.orderCancelled',
+      queryBuilder.innerJoinAndMapOne(
+        'order.orderActivityCancelled',
         'order.activities',
-        'orderCancelled',
-        'orderCancelled.orderId = order.id AND orderCancelled.status = :statusCancelled',
-        { statusCancelled: EOrderStatus.Cancelled },
+        'orderActivityCancelled',
+        'orderActivityCancelled.status = :activityStatus and orderActivityCancelled.description = :description and orderActivityCancelled.performedBy = :performedBy',
+        {
+          activityStatus: EOrderStatus.SearchingForDriver,
+          description: EOrderActivityStatus.DRIVER_APPROVED_AND_REJECTED,
+          performedBy: `driverId:${driverId}`,
+        }
       )
-        .addSelect([
-          'orderCancelled.createdAt',
-          'orderCancelled.cancellationReason',
-          'orderCancelled.cancellationType',
-        ])
+    } else {
+      queryBuilder
+        .andWhere('order.driverId = :driverId', { driverId })
+        .andWhere('order.status = :status', { status });
+
     }
 
     const count = await queryBuilder.clone().getCount();
@@ -486,5 +489,17 @@ export class OrderService {
     })
 
     return { orders: entities, total: count }
+  }
+
+  async getDeliveredOrdersCountToday(driverId: number) {
+    const startOfDay = moment().startOf('day').toDate();
+    const endOfDay = moment().endOf('day').toDate();
+
+    return this.orderRepository
+      .createQueryBuilder('order')
+      .where('order.driverId = :driverId', { driverId })
+      .andWhere('order.status = :status', { status: EOrderStatus.Delivered })
+      .andWhere('order.createdAt BETWEEN :startDate AND :endDate', { startDate: startOfDay, endDate: endOfDay })
+      .getCount();
   }
 }
