@@ -17,5 +17,6 @@ import { StoreAvailableView } from 'src/database/views/store-available.view';
   ],
   controllers: [StoresController],
   providers: [StoresService],
+  exports: [StoresService],
 })
 export class StoresModule {}

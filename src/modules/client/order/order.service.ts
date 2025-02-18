@@ -17,13 +17,15 @@ import { Brackets, DataSource, Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { EXCEPTIONS } from 'src/common/constants';
+import { EXCEPTIONS, TIMEZONE } from 'src/common/constants';
 import { CartProductOptionEntity } from 'src/database/entities/cart-product-option.entity';
-import { ERoleType, EUserType } from 'src/common/enums';
+import { ERoleType, EStoreAddressType, EUserType } from 'src/common/enums';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { STORE_CONFIRM_TIME } from 'src/common/constants/common.constant';
-import { ClientEntity } from 'src/database/entities/client.entity';
+import { IOrderTime } from 'src/common/interfaces/order.interface';
+import { StoresService } from '../stores/stores.service';
+import * as moment from 'moment-timezone';
 
 @Injectable()
 export class OrderService {
@@ -49,6 +51,7 @@ export class OrderService {
     private dataSource: DataSource,
     private readonly feeService: FeeService,
     private readonly fcmService: FcmService,
+    private readonly storesService: StoresService,
   ) {}
 
   async create(createOrderDto: CreateOrderDto, clientId: number): Promise<OrderEntity> {
@@ -73,7 +76,6 @@ export class OrderService {
     await queryRunner.startTransaction();
 
     try {
-      const client = await queryRunner.manager.findOneBy(ClientEntity, { id: clientId });
       const cart = await this.cartRepository.findOne({
         where: { id: cartId, clientId },
         relations: [
@@ -130,8 +132,8 @@ export class OrderService {
         deliveryAddress,
         deliveryLatitude,
         deliveryLongitude,
-        deliveryPhone: client.phone,
-        deliveryName: client.name,
+        deliveryPhone: deliveryPhone,
+        deliveryName: deliveryName,
         deliveryAddressNote,
         notes,
         tip,
@@ -329,6 +331,12 @@ export class OrderService {
       .leftJoinAndSelect('store.province', 'province')
       .leftJoinAndSelect('order.client', 'client')
       .leftJoinAndSelect('order.driver', 'driver')
+      .loadRelationCountAndMap('order.isStoreRated', 'order.storeReviews', 'storeReviews', (qb) =>
+        qb.andWhere('storeReviews.clientId = :clientId', { clientId }),
+      )
+      .loadRelationCountAndMap('order.isDriverRated', 'order.driverReviews', 'driverReviews', (qb) =>
+        qb.andWhere('driverReviews.clientId = :clientId', { clientId }),
+      )
       .where('order.id = :orderId', { orderId })
       .andWhere('order.clientId = :clientId', { clientId });
 
@@ -548,5 +556,38 @@ export class OrderService {
 
   createQueryBuilder(alias: string) {
     return this.orderRepository.createQueryBuilder(alias);
+  }
+
+  // tính đoán thời gian giao hàng dự kiến cửa 1 cửa hàng
+  async calculateEstimatedOrderTime(
+    storeId: number,
+    time: Date,
+    deliveryLatitude: number,
+    deliveryLongitude: number,
+  ): Promise<IOrderTime> {
+    const now = moment(time).tz(TIMEZONE);
+    const dayOfWeek = now.day();
+    const currentTime = now.hours() * 60 + now.minutes();
+
+    // lấy tọa độ của cửa hàng
+    const store = await this.storesService
+      .createQueryBuilder('store')
+      .select(['store.id', 'store.preparationTime'])
+      .addSelect(['preparationTimes.id', 'preparationTimes.preparationTime'])
+      .leftJoin(
+        'store.preparationTimes',
+        'preparationTimes',
+        'preparationTimes.dayOfWeek = :dayOfWeek AND preparationTimes.startTime <= :currentTime AND preparationTimes.endTime >= :currentTime',
+      )
+      .addSelect(['addresses.id', 'addresses.lat', 'addresses.lng'])
+      .leftJoin('store.addresses', 'addresses', 'addresses.type = :type')
+      .setParameters({ type: EStoreAddressType.Receive, dayOfWeek, currentTime })
+      .where('store.id = :storeId', { storeId })
+      // .andWhere('preparationTimes.startTime <= :currentTime', { currentTime })
+      // .andWhere('preparationTimes.endTime >= :currentTime', { currentTime })
+      .getOne();
+
+    console.log('store', store);
+    return null;
   }
 }

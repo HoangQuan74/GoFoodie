@@ -16,6 +16,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { AdminRolesGuard } from 'src/common/guards';
 import { OPERATIONS } from 'src/common/constants/operation.constant';
 import { AdminsService } from '../admins/admins.service';
+import { ApproveStoreDto } from './dto/approve-store.dto';
 
 @Controller('stores')
 @ApiTags('Stores')
@@ -203,8 +204,9 @@ export class StoresController {
 
   @Patch(':id/approve')
   @Roles(OPERATIONS.STORE.APPROVE)
-  async approve(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
+  async approve(@Param('id') id: number, @CurrentUser() user: JwtPayload, @Body() body: ApproveStoreDto) {
     return this.dataSource.transaction(async (manager) => {
+      const { latitude, longitude, address } = body;
       const store = await manager.findOne(StoreEntity, {
         where: { id, approvalStatus: EStoreApprovalStatus.Pending },
         relations: { serviceType: true, businessArea: true },
@@ -221,6 +223,9 @@ export class StoresController {
       store.approvedById = user.id;
       store.approvedAt = new Date();
       store.approvalStatus = EStoreApprovalStatus.Approved;
+      store.address = address;
+      store.latitude = latitude;
+      store.longitude = longitude;
       const numberStore = latestStore ? +latestStore.storeCode.slice(-3) + 1 : 1;
       store.storeCode = `${preCode}${numberStore.toString().padStart(3, '0')}`;
 
