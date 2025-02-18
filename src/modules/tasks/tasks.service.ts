@@ -14,6 +14,8 @@ import { MailHistoryEntity } from 'src/database/entities/mail-history.entity';
 import { EDriverApprovalStatus, EDriverStatus } from 'src/common/enums/driver.enum';
 import { DriverEntity } from 'src/database/entities/driver.entity';
 import { CRONJOB } from 'src/common/constants';
+import { OrderEntity } from 'src/database/entities/order.entity';
+import { STORE_CONFIRM_TIME } from 'src/common/constants/common.constant';
 
 @Injectable()
 export class TasksService {
@@ -33,8 +35,12 @@ export class TasksService {
     @InjectRepository(DriverEntity)
     private readonly driverRepository: Repository<DriverEntity>,
 
+    @InjectRepository(OrderEntity)
+    private readonly orderRepository: Repository<OrderEntity>,
+
     private readonly dataSource: DataSource,
     private readonly mailHistoriesService: MailHistoriesService,
+    // private readonly orderService: OrderService,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, {
@@ -198,5 +204,27 @@ export class TasksService {
         await this.mailHistoriesService.sendMail(mailHistory);
       }
     }
+  }
+
+  @Cron(CronExpression.EVERY_5_MINUTES, {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    disabled: !CRONJOB,
+  })
+  async autoCancelOrders() {
+    const now = new Date();
+    const limit = new Date(now.getTime() - STORE_CONFIRM_TIME * 60 * 1000);
+
+    // const orders = await this.orderService
+    //   .createQueryBuilder('order')
+    //   .select(['order.id', 'order.clientId'])
+    //   .addSelect(['store.id', 'store.merchantId'])
+    //   .innerJoin('order.store', 'store')
+    //   .where('order.status = :status', { status: EOrderStatus.Pending })
+    //   .andWhere('order.createdAt < :limit', { limit })
+    //   .getMany();
+
+    // for (const order of orders) {
+    // await this.orderService.cancelOrder(order.store.merchantId, order.id, { reasons: 'auto_cancel' });
+    // }
   }
 }

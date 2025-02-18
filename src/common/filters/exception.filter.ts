@@ -15,6 +15,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const { message: exceptionMessage } = exceptionResponse;
 
     const message = typeof exceptionMessage === 'string' ? exceptionMessage : exceptionMessage[0] ?? null;
+    console.log({ statusCode, message });
     response.status(statusCode).json({ statusCode, message, data: null });
   }
 }
