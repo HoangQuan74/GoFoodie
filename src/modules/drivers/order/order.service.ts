@@ -14,6 +14,7 @@ import { Brackets, Repository } from 'typeorm';
 import { QueryOrderDto, QueryOrderHistoryDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import * as moment from 'moment-timezone';
+import { EXCEPTIONS } from 'src/common/constants';
 
 @Injectable()
 export class OrderService {
@@ -165,6 +166,44 @@ export class OrderService {
       ...order,
       criteria,
     };
+  }
+
+  async getOrderCancelDetailsForDriver(id: number, driverId: number) {
+    const queryBuilder = this.orderRepository
+      .createQueryBuilder('order')
+      .where('order.id = :id', { id })
+      .innerJoinAndMapOne(
+        'order.orderActivityCancelled',
+        'order.activities',
+        'orderActivityCancelled',
+        'orderActivityCancelled.status = :activityStatus and orderActivityCancelled.description = :description and orderActivityCancelled.performedBy = :performedBy',
+        {
+          activityStatus: EOrderStatus.SearchingForDriver,
+          description: EOrderActivityStatus.DRIVER_APPROVED_AND_REJECTED,
+          performedBy: `driverId:${driverId}`,
+        }
+      )
+      .select([
+        'order.id',
+        'order.orderCode',
+        'order.totalAmount',
+        'orderActivityCancelled.id',
+        'orderActivityCancelled.createdAt',
+        'orderActivityCancelled.performedBy',
+        'orderActivityCancelled.cancellationReason',
+        'orderActivityCancelled.cancellationType',
+        'orderActivityCancelled.description',
+      ])
+      
+    const result = await queryBuilder.getOne();
+    if (!result) {
+      throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
+    }
+
+    return {
+      refundAmount: Number(result.totalAmount),
+      ...result,
+    }
   }
 
   async acceptOrderByDriver(orderId: number, driverId: number): Promise<OrderEntity> {
