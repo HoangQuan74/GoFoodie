@@ -104,12 +104,8 @@ export class StoresController {
   }
 
   @Get('auto-accept-order')
-  async getAutoAcceptOrder(@Param('id') id: number) {
-    const store = await this.storesService
-      .createQueryBuilder('store')
-      .select(['store.id', 'store.autoAcceptOrder'])
-      .where('store.id = :id', { id })
-      .getOne();
+  async getAutoAcceptOrder(@CurrentStore() storeId: number) {
+    const store = await this.storesService.findOne({ select: ['id', 'autoAcceptOrder'], where: { id: storeId } });
     if (!store) throw new NotFoundException();
 
     return store.autoAcceptOrder;
@@ -122,6 +118,24 @@ export class StoresController {
     if (!store) throw new NotFoundException();
 
     store.autoAcceptOrder = body.autoAcceptOrder;
+    return this.storesService.save(store);
+  }
+
+  @Get('self-delivery')
+  async getSelfDelivery(@CurrentStore() storeId: number) {
+    const store = await this.storesService.findOne({ select: ['id', 'isSelfDelivery'], where: { id: storeId } });
+    if (!store) throw new NotFoundException();
+
+    return store.isSelfDelivery;
+  }
+
+  @Patch('self-delivery')
+  @ApiBody({ schema: { type: 'object', properties: { isSelfDelivery: { type: 'boolean' } } } })
+  async updateSelfDelivery(@Body() body: { isSelfDelivery: boolean }, @CurrentStore() storeId: number) {
+    const store = await this.storesService.findOne({ where: { id: storeId } });
+    if (!store) throw new NotFoundException();
+
+    store.isSelfDelivery = body.isSelfDelivery;
     return this.storesService.save(store);
   }
 
