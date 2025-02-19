@@ -28,6 +28,7 @@ import { FlashSalesModule } from './flash-sales/flash-sales.module';
 import { ChallengesModule } from './challenges/challenges.module';
 import { ReviewTemplatesModule } from './review-templates/review-templates.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { DriverTitleConfigsModule } from './title-configs/title-configs.module';
 
 @Module({
   imports: [
@@ -137,6 +138,10 @@ import { NotificationsModule } from './notifications/notifications.module';
         path: 'admin',
         module: NotificationsModule,
       },
+      {
+        path: 'admin',
+        module: DriverTitleConfigsModule,
+      }
     ]),
     AdminsModule,
     MerchantsModule,
@@ -164,6 +169,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     ChallengesModule,
     ReviewTemplatesModule,
     NotificationsModule,
+    DriverTitleConfigsModule,
   ],
   providers: [
     {
