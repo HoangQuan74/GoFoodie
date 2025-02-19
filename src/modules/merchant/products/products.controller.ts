@@ -31,6 +31,7 @@ import { EXCEPTIONS } from 'src/common/constants';
 import { AdminNotificationEntity } from 'src/database/entities/admin-notification.entity';
 import { APPROVE_PATH } from 'src/common/constants/common.constant';
 import { NotificationsService } from 'src/modules/admin/notifications/notifications.service';
+import { EventGatewayService } from 'src/events/event.gateway.service';
 
 @Controller('products')
 @ApiTags('Products')
@@ -41,6 +42,7 @@ export class ProductsController {
     private readonly dataSource: DataSource,
     private readonly optionGroupsService: OptionGroupsService,
     private readonly notificationService: NotificationsService,
+    private readonly eventGatewayService: EventGatewayService,
   ) {}
 
   @Post()
@@ -111,6 +113,7 @@ export class ProductsController {
       newNotification.type = ENotificationType.ProductCreate;
       newNotification.relatedId = product.id;
       newNotification.provinceId = store.provinceId;
+      this.eventGatewayService.handleNewNotification();
       await manager.save(newNotification);
 
       return product;
