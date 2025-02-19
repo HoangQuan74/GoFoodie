@@ -15,6 +15,7 @@ import { QueryOrderDto, QueryOrderHistoryDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import * as moment from 'moment-timezone';
 import { EXCEPTIONS } from 'src/common/constants';
+import { DRIVER_SPEED } from 'src/common/constants/common.constant';
 
 @Injectable()
 export class OrderService {
@@ -34,7 +35,7 @@ export class OrderService {
     private orderActivityRepository: Repository<OrderActivityEntity>,
 
     private eventGatewayService: EventGatewayService,
-  ) { }
+  ) {}
 
   async assignOrderToDriver(orderId: number): Promise<void> {
     const order = await this.orderRepository.findOne({
@@ -181,7 +182,7 @@ export class OrderService {
           activityStatus: EOrderStatus.SearchingForDriver,
           description: EOrderActivityStatus.DRIVER_APPROVED_AND_REJECTED,
           performedBy: `driverId:${driverId}`,
-        }
+        },
       )
       .select([
         'order.id',
@@ -193,8 +194,8 @@ export class OrderService {
         'orderActivityCancelled.cancellationReason',
         'orderActivityCancelled.cancellationType',
         'orderActivityCancelled.description',
-      ])
-      
+      ]);
+
     const result = await queryBuilder.getOne();
     if (!result) {
       throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
@@ -203,7 +204,7 @@ export class OrderService {
     return {
       refundAmount: Number(result.totalAmount),
       ...result,
-    }
+    };
   }
 
   async acceptOrderByDriver(orderId: number, driverId: number): Promise<OrderEntity> {
@@ -264,7 +265,9 @@ export class OrderService {
     const orderActivity = this.orderActivityRepository.create({
       orderId: orderId,
       status: EOrderStatus.SearchingForDriver,
-      description: wasAcceptedBefore ? EOrderActivityStatus.DRIVER_APPROVED_AND_REJECTED : EOrderActivityStatus.DRIVER_REJECTED,
+      description: wasAcceptedBefore
+        ? EOrderActivityStatus.DRIVER_APPROVED_AND_REJECTED
+        : EOrderActivityStatus.DRIVER_REJECTED,
       cancellationReason: updateOrderDto.reasons || '',
       performedBy: `driverId:${driverId}`,
     });
@@ -427,9 +430,7 @@ export class OrderService {
       order.deliveryLongitude,
     );
 
-    const averageSpeed = 30;
-
-    return (distance / averageSpeed) * 60;
+    return (distance / DRIVER_SPEED) * 60;
   }
 
   private selectBestDriver(scoredDrivers: { driver: DriverEntity; score: number }[]): DriverEntity | null {
@@ -490,18 +491,20 @@ export class OrderService {
       ])
       .addSelect(
         'COALESCE(order.deliveryFee, 0) + COALESCE(order.tip, 0) + COALESCE(order.parkingFee, 0) + COALESCE(order.peakHourFee, 0) - COALESCE(order.transactionFee, 0) - COALESCE(order.appFee, 0)',
-        'driverIncome'
+        'driverIncome',
       )
-      .addSelect('order.totalAmount', 'storeRevenue')
+      .addSelect('order.totalAmount', 'storeRevenue');
 
     if (search) {
-      queryBuilder.andWhere(
-        new Brackets((qb) => {
-          qb.orWhere('client.name ILIKE :search')
-            .orWhere('order.orderCode ILIKE :search')
-            .orWhere('store.name ILIKE :search');
-        })
-      ).setParameters({ search: `%${search}%` });
+      queryBuilder
+        .andWhere(
+          new Brackets((qb) => {
+            qb.orWhere('client.name ILIKE :search')
+              .orWhere('order.orderCode ILIKE :search')
+              .orWhere('store.name ILIKE :search');
+          }),
+        )
+        .setParameters({ search: `%${search}%` });
     }
 
     if (status === EOrderStatus.Cancelled) {
@@ -514,13 +517,10 @@ export class OrderService {
           activityStatus: EOrderStatus.SearchingForDriver,
           description: EOrderActivityStatus.DRIVER_APPROVED_AND_REJECTED,
           performedBy: `driverId:${driverId}`,
-        }
-      )
+        },
+      );
     } else {
-      queryBuilder
-        .andWhere('order.driverId = :driverId', { driverId })
-        .andWhere('order.status = :status', { status });
-
+      queryBuilder.andWhere('order.driverId = :driverId', { driverId }).andWhere('order.status = :status', { status });
     }
 
     const count = await queryBuilder.clone().getCount();
@@ -535,9 +535,9 @@ export class OrderService {
       order.driverIncome = Number(raw.find((ord) => ord.order_id === order.id).driverIncome) || 0;
       order.storeRevenue = Number(raw.find((ord) => ord.order_id === order.id).storeRevenue) || 0;
       order.totalAmount = Number(order.totalAmount) || 0;
-    })
+    });
 
-    return { orders: entities, total: count }
+    return { orders: entities, total: count };
   }
 
   async getDeliveredOrdersCountToday(driverId: number) {

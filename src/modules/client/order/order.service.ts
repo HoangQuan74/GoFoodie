@@ -22,7 +22,7 @@ import { CartProductOptionEntity } from 'src/database/entities/cart-product-opti
 import { ERoleType, EStoreAddressType, EUserType } from 'src/common/enums';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import { STORE_CONFIRM_TIME } from 'src/common/constants/common.constant';
+import { SCAN_DRIVER_TIME, STORE_CONFIRM_TIME } from 'src/common/constants/common.constant';
 import { IOrderTime } from 'src/common/interfaces/order.interface';
 import { StoresService } from '../stores/stores.service';
 import * as moment from 'moment-timezone';
@@ -53,7 +53,9 @@ export class OrderService {
     private readonly feeService: FeeService,
     private readonly fcmService: FcmService,
     private readonly storesService: StoresService,
-  ) {}
+  ) {
+    this.calculateEstimatedOrderTime(10003, new Date(), 1, 1);
+  }
 
   async create(createOrderDto: CreateOrderDto, clientId: number): Promise<OrderEntity> {
     const {
@@ -585,11 +587,27 @@ export class OrderService {
       .leftJoin('store.addresses', 'addresses', 'addresses.type = :type')
       .setParameters({ type: EStoreAddressType.Receive, dayOfWeek, currentTime })
       .where('store.id = :storeId', { storeId })
-      // .andWhere('preparationTimes.startTime <= :currentTime', { currentTime })
-      // .andWhere('preparationTimes.endTime >= :currentTime', { currentTime })
       .getOne();
 
+    let preparationTime = store.preparationTime;
+    if (store.preparationTimes && store.preparationTimes.length > 0) {
+      preparationTime = store.preparationTimes[0].preparationTime;
+    }
+
+    // thời gian tìm tài xế
+    const driverSearchTime = SCAN_DRIVER_TIME;
+    // const storeConfirmTime = now.clone().add(STORE_CONFIRM_TIME, 'minutes').toDate();  
+
+    const storeConfirmTime = now.clone().add(STORE_CONFIRM_TIME, 'minutes').toDate();
+    const result: IOrderTime = {
+      orderTime: now.toDate(),
+      storeConfirmTime: storeConfirmTime,
+      estimatedPickupTime: null,
+      estimatedDeliveryTime: null,
+    };
+
     console.log('store', store);
-    return null;
+    console.log('result', result);
+    return result;
   }
 }

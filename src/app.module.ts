@@ -35,6 +35,7 @@ import { FeeModule } from './modules/fee/fee.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { BullModule } from '@nestjs/bullmq';
 import { QueuesModule } from './modules/queues/queues.module';
+import { OrderCriteriaModule } from './modules/order-criteria/order-criteria.module';
 
 @Module({
   imports: [
@@ -82,6 +83,7 @@ import { QueuesModule } from './modules/queues/queues.module';
     FeeModule,
     PaymentModule,
     QueuesModule,
+    OrderCriteriaModule,
   ],
   controllers: [],
   providers: [],
