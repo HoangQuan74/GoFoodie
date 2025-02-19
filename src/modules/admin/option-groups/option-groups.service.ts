@@ -15,7 +15,23 @@ export class OptionGroupsService {
   ) {}
 
   async save(entity?: DeepPartial<OptionGroupEntity>): Promise<OptionGroupEntity> {
-    return this.optionGroupRepository.save(entity);
+    if (!entity.id) return this.optionGroupRepository.save(entity);
+
+    const { options, ...rest } = entity;
+
+    if (options) {
+      const optionNames = options.map((option) => option.name);
+      const oldOptions = await this.optionRepository.find({ where: { optionGroupId: entity.id } });
+      const oldOptionNames = oldOptions.map((option) => option.name);
+
+      const removeOptions = oldOptions.filter((option) => !optionNames.includes(option.name));
+      const addOptions = options.filter((option) => !oldOptionNames.includes(option.name));
+
+      await this.optionRepository.softRemove(removeOptions);
+      await this.optionRepository.save(addOptions);
+    }
+
+    return this.optionGroupRepository.save(rest);
   }
 
   async find(options?: FindManyOptions<OptionGroupEntity>): Promise<OptionGroupEntity[]> {

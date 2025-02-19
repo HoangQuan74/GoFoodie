@@ -6,4 +6,6 @@ export const APPROVE_PATH = {
   requestStore: (id: number) => `requests/stores/${id}`,
 };
 
-export const STORE_CONFIRM_TIME = 5 * 60 * 1000;
+export const STORE_CONFIRM_TIME = 5 * 60 * 1000; // 5 minutes
+export const SCAN_DRIVER_TIME = 5 * 60 * 1000; // 5 minutes
+export const DRIVER_SPEED = 30; // 30 km/h
