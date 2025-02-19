@@ -480,6 +480,7 @@ export class OrderService {
         'order.orderCode',
         'order.createdAt',
         'order.totalAmount',
+        'order.estimatedDeliveryTime',
         'store.id',
         'store.name',
         'store.address',
@@ -490,7 +491,7 @@ export class OrderService {
         'orderDelivered.createdAt',
       ])
       .addSelect(
-        'COALESCE(order.deliveryFee, 0) + COALESCE(order.tip, 0) + COALESCE(order.parkingFee, 0) + COALESCE(order.peakHourFee, 0) - COALESCE(order.transactionFee, 0) - COALESCE(order.appFee, 0)',
+        'COALESCE(order.deliveryFee, 0) + COALESCE(order.tip, 0) + COALESCE(order.parkingFee, 0) + COALESCE(order.peakHourFee, 0)',
         'driverIncome',
       )
       .addSelect('order.totalAmount', 'storeRevenue');
