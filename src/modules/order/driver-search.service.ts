@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { DriverEntity } from 'src/database/entities/driver.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { DriverAvailabilityEntity } from 'src/database/entities/driver-availability.entity';
@@ -11,6 +11,7 @@ import { calculateDistance } from 'src/utils/distance';
 import { EOrderStatus } from 'src/common/enums';
 import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
 import { EventGatewayService } from 'src/events/event.gateway.service';
+import { isEmpty } from 'lodash';
 
 @Injectable()
 export class DriverSearchService {
@@ -23,11 +24,14 @@ export class DriverSearchService {
     @InjectRepository(OrderEntity)
     private orderRepository: Repository<OrderEntity>,
 
+    @InjectRepository(DriverEntity)
+    private driverRepository: Repository<DriverEntity>,
+
     @InjectRepository(OrderActivityEntity)
     private orderActivityRepository: Repository<OrderActivityEntity>,
 
     private eventGatewayService: EventGatewayService,
-  ) {}
+  ) { }
 
   async assignOrderToDriver(orderId: number): Promise<void> {
     const order = await this.orderRepository.findOne({
@@ -45,8 +49,6 @@ export class DriverSearchService {
 
     if (bestDriver) {
       await this.offerOrderToDriver(order, bestDriver);
-    } else {
-      throw new BadRequestException('No eligible drivers found for this order');
     }
   }
 
@@ -69,19 +71,55 @@ export class DriverSearchService {
   }
 
   async findEligibleDrivers(order: OrderEntity): Promise<DriverEntity[]> {
-    const availableDrivers = await this.driverAvailabilityRepository.find({
-      where: { isAvailable: true },
-      relations: ['driver', 'driver.serviceTypes', 'driver.vehicle', 'driver.driverAvailability'],
-    });
+    const orderCriteria = await this.orderCriteriaRepository.findOne({ where: { type: EOrderCriteriaType.Distance } });
+    const distanceCriteria = orderCriteria.value ?? 1000;
 
-    return availableDrivers
-      .filter(
-        (availability) =>
-          availability.driver.status === EDriverStatus.Active &&
-          availability.driver.approvalStatus === EDriverApprovalStatus.Approved &&
-          availability.driver.serviceTypes.some((st) => st.id === order.store.serviceType.id),
+    const drivers = await this.driverAvailabilityRepository
+      .createQueryBuilder('driverAvailability')
+      .select(
+        `
+        ST_DistanceSphere(
+          ST_MakePoint(driverAvailability.longitude, driverAvailability.latitude),
+          ST_MakePoint(:longtitudeOfPoint, :latitudeOfPoint)
+        )`,
+        'distance',
       )
-      .map((availability) => availability.driver);
+      .addSelect('driverAvailability.driverId', 'driverId')
+      .where(
+        `
+        ST_DistanceSphere(
+          ST_MakePoint(driverAvailability.longitude, driverAvailability.latitude),
+          ST_MakePoint(:longtitudeOfPoint, :latitudeOfPoint)
+        ) <= :distanceCriteria`,
+      )
+      .andWhere('driverAvailability.isAvailable IS TRUE')
+      .setParameters({
+        longtitudeOfPoint: order.store.longitude,
+        latitudeOfPoint: order.store.latitude,
+        distanceCriteria: distanceCriteria,
+      })
+      .getRawMany();
+    console.log(drivers);
+
+    if (isEmpty(drivers)) {
+      return [];
+    }
+
+    const driverIds = drivers.map((driver) => driver.driverId);
+    const driverAvailabilities = await this.driverRepository.find({
+      where: {
+        id: In(driverIds),
+        status: EDriverStatus.Active,
+        approvalStatus: EDriverApprovalStatus.Approved,
+      },
+      relations: {
+        serviceTypes: true,
+        driverAvailability: true,
+      }
+    });
+    return driverAvailabilities.filter((driverAvailabilities) =>
+      driverAvailabilities.serviceTypes.some((service) => service.id === order.store.serviceTypeId),
+    );
   }
 
   async scoreDrivers(drivers: DriverEntity[], order: OrderEntity): Promise<{ driver: DriverEntity; score: number }[]> {

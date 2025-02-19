@@ -8,7 +8,10 @@ import { RequestTypeEntity } from 'src/database/entities/request-type.entity';
 import { OrderGroupEntity } from 'src/database/entities/order-group.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([DriverRequestEntity, RequestTypeEntity, OrderGroupEntity]), forwardRef(() => DriversModule)],
+  imports: [
+    TypeOrmModule.forFeature([DriverRequestEntity, RequestTypeEntity, OrderGroupEntity]),
+    forwardRef(() => DriversModule),
+  ],
   controllers: [RequestsController],
   providers: [RequestsService],
 })
