@@ -120,7 +120,7 @@ export class IncomeController {
     return result;
   }
 
-  @Get('/oredrs/:orderId')
+  @Get('/orders/:orderId')
   @ApiOperation({ summary: 'Get order detail for the driver' })
   @ApiResponse({ status: 200, description: 'Returns income' })
   async getIncomeOrderDetails(@Param('orderId') orderId: number, @CurrentUser() user: JwtPayload) {
