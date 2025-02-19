@@ -142,13 +142,13 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
   }
 
-  // New method to broadcast to all users of a specific type
-  broadcastToUserType(type: 'client' | 'merchant' | 'driver', event: string, data: any) {
-    this.server.to(`${type}-*`).emit(event, data);
-  }
-
   async handleNewNotification() {
-    this.server.to(`${ERoleType.Admin}-*`).emit(ESocketEvent.NewNotification);
+    const roms = this.server.sockets.adapter.rooms;
+    const adminRoms = [...roms.keys()].filter((key) => key.startsWith(ERoleType.Admin));
+
+    adminRoms.forEach((room) => {
+      this.server.to(room).emit(ESocketEvent.NewNotification);
+    });
   }
 
   async handleUpdateRole(type: ERoleType, userIds: number[]) {
