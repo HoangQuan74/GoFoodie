@@ -14,7 +14,7 @@ import { EOrderStatus } from 'src/common/enums/order.enum';
 @Controller('income')
 @UseGuards(AuthGuard)
 export class IncomeController {
-  constructor(private readonly incomeService: IncomeService) {}
+  constructor(private readonly incomeService: IncomeService) { }
 
   @Get()
   @ApiOperation({ summary: 'Get income for the driver' })
@@ -105,12 +105,17 @@ export class IncomeController {
     const { id: driverId } = user;
     const queryBuilder = this.incomeService
       .createQueryBuilder('order')
+      .leftJoin('order.store', 'store')
+      .leftJoin('store.serviceType', 'serviceType')
       .where('order.driverId = :driverId', { driverId })
       .andWhere('order.status = :orderStatus', { orderStatus: EOrderStatus.Delivered })
       .andWhere('order.createdAt BETWEEN :startDate AND :endDate', { startDate, endDate })
       .select('order.id', 'id')
       .addSelect('order.orderCode', 'orderCode')
-      .addSelect('order.deliveryFee + order.tip + order.peakHourFee + order.parkingFee', 'incomeOfOrder');
+      .addSelect('COALESCE(order.deliveryFee, 0) + COALESCE(order.tip, 0) + COALESCE(order.parkingFee, 0) + COALESCE(order.peakHourFee, 0)', 'incomeOfOrder')
+      .addSelect('store.id', 'storeId')
+      .addSelect('serviceType.name', 'serviceType');
+
     const result = await queryBuilder.getRawMany();
     return result;
   }
@@ -147,6 +152,7 @@ export class IncomeController {
       parkingFee: Number(result.parkingFee),
       transactionFee: Number(result.transactionFee),
       appFee: Number(result.appFee),
+      incomeOfOrder: this.sumIncomeFields(result),
     };
   }
 }

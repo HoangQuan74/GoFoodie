@@ -7,6 +7,7 @@ import { ProductEntity } from 'src/database/entities/product.entity';
 import { OptionGroupsModule } from '../option-groups/option-groups.module';
 import { ProductApprovalEntity } from 'src/database/entities/product-approval.entity';
 import { NotificationsModule } from 'src/modules/admin/notifications/notifications.module';
+import { EventsModule } from 'src/events/events.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { NotificationsModule } from 'src/modules/admin/notifications/notificatio
     TypeOrmModule.forFeature([ProductEntity, ProductApprovalEntity]),
     OptionGroupsModule,
     NotificationsModule,
+    EventsModule,
   ],
   controllers: [ProductsController],
   providers: [ProductsService],

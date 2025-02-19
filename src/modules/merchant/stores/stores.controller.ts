@@ -15,6 +15,7 @@ import { UpdateStoreDto } from './dto/update-store.dto';
 import { AdminNotificationEntity } from 'src/database/entities/admin-notification.entity';
 import { APPROVE_PATH } from 'src/common/constants/common.constant';
 import { NotificationsService } from 'src/modules/admin/notifications/notifications.service';
+import { EventGatewayService } from 'src/events/event.gateway.service';
 
 @Controller('stores')
 @ApiTags('Merchant Stores')
@@ -25,6 +26,7 @@ export class StoresController {
     private readonly dataSource: DataSource,
     private readonly wardsService: WardsService,
     private readonly notificationService: NotificationsService,
+    private readonly eventGatewayService: EventGatewayService,
   ) {}
 
   @Post()
@@ -55,6 +57,7 @@ export class StoresController {
         newNotification.type = ENotificationType.StoreCreate;
         newNotification.relatedId = store.id;
         newNotification.provinceId = newStore.provinceId;
+        this.eventGatewayService.handleNewNotification();
         await manager.save(newNotification);
       }
 

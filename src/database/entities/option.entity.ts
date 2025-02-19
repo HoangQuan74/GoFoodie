@@ -18,10 +18,7 @@ export class OptionEntity extends BaseEntity {
   @Column({ name: 'option_group_id' })
   optionGroupId: number;
 
-  @ManyToOne(() => OptionGroupEntity, (optionGroup) => optionGroup.id, {
-    onDelete: 'CASCADE',
-    orphanedRowAction: 'delete',
-  })
+  @ManyToOne(() => OptionGroupEntity, (optionGroup) => optionGroup.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'option_group_id' })
   optionGroup: OptionGroupEntity;
 }

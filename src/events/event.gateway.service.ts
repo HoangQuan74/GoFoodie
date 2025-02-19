@@ -21,4 +21,8 @@ export class EventGatewayService {
   handleUpdateRole(type: ERoleType, userIds: number[]) {
     this.eventsGateway.handleUpdateRole(type, userIds);
   }
+
+  handleNewNotification() {
+    this.eventsGateway.handleNewNotification();
+  }
 }
