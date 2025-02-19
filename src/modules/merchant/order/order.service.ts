@@ -6,7 +6,6 @@ import { OrderEntity } from 'src/database/entities/order.entity';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { EventGatewayService } from 'src/events/event.gateway.service';
 import { DataSource, In, Repository } from 'typeorm';
-import { OrderService as DriverOrderService } from '../../drivers/order/order.service';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderResponse } from 'src/common/interfaces/order.interface';
@@ -14,6 +13,7 @@ import { calculateStoreIncome } from 'src/utils/income';
 import { EXCEPTIONS } from 'src/common/constants';
 import { FcmService } from 'src/modules/fcm/fcm.service';
 import { EUserType } from 'src/common/enums';
+import { DriverSearchService } from 'src/modules/order/driver-search.service';
 
 @Injectable()
 export class OrderService {
@@ -28,7 +28,7 @@ export class OrderService {
     private orderActivityRepository: Repository<OrderActivityEntity>,
     private dataSource: DataSource,
 
-    private readonly driverOrderService: DriverOrderService,
+    private readonly driverSearchService: DriverSearchService,
     private readonly eventGatewayService: EventGatewayService,
     private readonly fcmService: FcmService,
   ) {}
@@ -257,7 +257,7 @@ export class OrderService {
 
       await new Promise((resolve) => setTimeout(resolve, 3000));
 
-      await this.driverOrderService.assignOrderToDriver(orderId);
+      await this.driverSearchService.assignOrderToDriver(orderId);
       await this.fcmService.notifyDriverNewOrder(orderId);
 
       await this.orderRepository.update({ id: orderId }, { status: EOrderStatus.OfferSentToDriver });

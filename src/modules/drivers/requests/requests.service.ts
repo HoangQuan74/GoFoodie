@@ -7,6 +7,7 @@ import { TIMEZONE } from 'src/common/constants';
 import { generateRandomString } from 'src/utils/bcrypt';
 import { RequestTypeEntity } from 'src/database/entities/request-type.entity';
 import { EAppType } from 'src/common/enums/config.enum';
+import { OrderGroupEntity } from 'src/database/entities/order-group.entity';
 
 @Injectable()
 export class RequestsService {
@@ -16,6 +17,9 @@ export class RequestsService {
 
     @InjectRepository(RequestTypeEntity)
     private readonly requestTypeRepository: Repository<RequestTypeEntity>,
+
+    @InjectRepository(OrderGroupEntity)
+    private orderGroupRepository: Repository<OrderGroupEntity>,
   ) {}
 
   save(entity: DeepPartial<DriverRequestEntity>) {

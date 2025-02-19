@@ -15,6 +15,7 @@ import { BanksModule } from './banks/banks.module';
 import { CardsModule } from './cards/cards.module';
 import { IncomeModule } from './income/income.module';
 import { RequestsModule } from './requests/requests.module';
+import { OrderGroupModule } from './order-group/order-group.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { RequestsModule } from './requests/requests.module';
       { path: 'driver', module: CardsModule },
       { path: 'driver', module: IncomeModule },
       { path: 'driver', module: RequestsModule },
+      { path: 'driver', module: OrderGroupModule },
     ]),
     OnlineTrainingsModule,
     BannersModule,
@@ -42,9 +44,10 @@ import { RequestsModule } from './requests/requests.module';
     CardsModule,
     IncomeModule,
     RequestsModule,
+    OrderGroupModule,
   ],
   controllers: [DriversController],
   providers: [DriversService],
   exports: [DriversService],
 })
-export class DriversModule {}
+export class DriversModule { }

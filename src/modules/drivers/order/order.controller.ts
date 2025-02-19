@@ -9,12 +9,16 @@ import { UpdateDriverAvailabilityDto } from './dto/update-driver-availability.dt
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { UpdateStatusDto } from './dto/update-status-order.dto';
 import { OrderService } from './order.service';
+import { DriverSearchService } from 'src/modules/order/driver-search.service';
 
 @Controller('order')
 @ApiTags('Orders')
 @UseGuards(AuthGuard)
 export class OrderController {
-  constructor(private readonly orderService: OrderService) { }
+  constructor(
+    private readonly orderService: OrderService,
+    private readonly driverSearchService: DriverSearchService,
+  ) {}
 
   @Put()
   @ApiOperation({ summary: 'Update driver availability' })
@@ -53,15 +57,10 @@ export class OrderController {
   @Get('/delivered/today-count')
   @ApiOperation({ summary: 'Get the number of orders delivered today for a driver' })
   @ApiResponse({ status: 200, description: 'Returns the number of delivered orders today for the driver' })
-  getDeliveredOrdersCountToday(
-    @CurrentUser() user: JwtPayload
-  ) {
+  getDeliveredOrdersCountToday(@CurrentUser() user: JwtPayload) {
     const { id: driverId } = user;
     return this.orderService.getDeliveredOrdersCountToday(driverId);
   }
-
-
-
 
   @Get(':id')
   @ApiOperation({ summary: 'Get order details for driver' })
@@ -124,7 +123,7 @@ export class OrderController {
       return this.orderService.assignOrderToSpecificDriver(assignOrderDto.orderId, assignOrderDto.driverId);
     } else {
       // If no driver is specified, use the automatic assignment logic
-      return this.orderService.assignOrderToDriver(assignOrderDto.orderId);
+      return this.driverSearchService.assignOrderToDriver(assignOrderDto.orderId);
     }
   }
 }

@@ -1,20 +1,19 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EDriverApprovalStatus, EDriverStatus } from 'src/common/enums/driver.enum';
-import { EOrderCriteriaType } from 'src/common/enums/order-criteria.enum';
+import * as moment from 'moment-timezone';
+import { EXCEPTIONS } from 'src/common/constants';
 import { EOrderActivityStatus, EOrderStatus } from 'src/common/enums/order.enum';
 import { DriverAvailabilityEntity } from 'src/database/entities/driver-availability.entity';
 import { DriverEntity } from 'src/database/entities/driver.entity';
 import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
 import { OrderCriteriaEntity } from 'src/database/entities/order-criteria.entity';
+import { OrderGroupEntity } from 'src/database/entities/order-group.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { EventGatewayService } from 'src/events/event.gateway.service';
-import { calculateDistance } from 'src/utils/distance';
 import { Brackets, Repository } from 'typeorm';
 import { QueryOrderDto, QueryOrderHistoryDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import * as moment from 'moment-timezone';
-import { EXCEPTIONS } from 'src/common/constants';
+import { DriverSearchService } from 'src/modules/order/driver-search.service';
 import { DRIVER_SPEED } from 'src/common/constants/common.constant';
 
 @Injectable()
@@ -33,30 +32,13 @@ export class OrderService {
     private orderRepository: Repository<OrderEntity>,
     @InjectRepository(OrderActivityEntity)
     private orderActivityRepository: Repository<OrderActivityEntity>,
+    @InjectRepository(OrderGroupEntity)
+    private orderGroupRepository: Repository<OrderGroupEntity>,
 
     private eventGatewayService: EventGatewayService,
+
+    private driverSearchService: DriverSearchService,
   ) {}
-
-  async assignOrderToDriver(orderId: number): Promise<void> {
-    const order = await this.orderRepository.findOne({
-      where: { id: orderId },
-      relations: ['store', 'store.serviceType'],
-    });
-
-    if (!order) {
-      throw new NotFoundException(`Order with ID ${orderId} not found`);
-    }
-
-    const eligibleDrivers = await this.findEligibleDrivers(order);
-    const scoredDrivers = await this.scoreDrivers(eligibleDrivers, order);
-    const bestDriver = this.selectBestDriver(scoredDrivers);
-
-    if (bestDriver) {
-      await this.offerOrderToDriver(order, bestDriver);
-    } else {
-      throw new BadRequestException('No eligible drivers found for this order');
-    }
-  }
 
   async assignOrderToSpecificDriver(orderId: number, driverId: number): Promise<void> {
     const order = await this.orderRepository.findOne({
@@ -85,7 +67,7 @@ export class OrderService {
       throw new BadRequestException('Driver is not currently available');
     }
 
-    await this.offerOrderToDriver(order, driver);
+    await this.driverSearchService.offerOrderToDriver(order, driver);
   }
 
   async updateDriverAvailability(
@@ -258,7 +240,7 @@ export class OrderService {
 
     await this.orderRepository.save(order);
 
-    await this.assignOrderToDriver(orderId);
+    await this.driverSearchService.assignOrderToDriver(orderId);
 
     const wasAcceptedBefore = order.activities.some((activity) => activity.status === EOrderStatus.DriverAccepted);
 
@@ -366,93 +348,6 @@ export class OrderService {
       limit: queryOrderDto.limit,
       totalPages: Math.ceil(total / queryOrderDto.limit),
     };
-  }
-
-  private async findEligibleDrivers(order: OrderEntity): Promise<DriverEntity[]> {
-    const availableDrivers = await this.driverAvailabilityRepository.find({
-      where: { isAvailable: true },
-      relations: ['driver', 'driver.serviceTypes', 'driver.vehicle', 'driver.driverAvailability'],
-    });
-
-    return availableDrivers
-      .filter(
-        (availability) =>
-          availability.driver.status === EDriverStatus.Active &&
-          availability.driver.approvalStatus === EDriverApprovalStatus.Approved &&
-          availability.driver.serviceTypes.some((st) => st.id === order.store.serviceType.id),
-      )
-      .map((availability) => availability.driver);
-  }
-
-  private async scoreDrivers(
-    drivers: DriverEntity[],
-    order: OrderEntity,
-  ): Promise<{ driver: DriverEntity; score: number }[]> {
-    const criteria = await this.orderCriteriaRepository.find({
-      where: { serviceTypeId: order.store.serviceType.id },
-    });
-
-    return drivers.map((driver) => ({
-      driver,
-      score: this.calculateDriverScore(driver, criteria, order),
-    }));
-  }
-
-  private calculateDriverScore(driver: DriverEntity, criteria: OrderCriteriaEntity[], order: OrderEntity): number {
-    return criteria.reduce((score, criterion) => {
-      switch (criterion.type) {
-        case EOrderCriteriaType.Distance:
-          const driverAvailability = driver.driverAvailability[0];
-          const distance = calculateDistance(
-            driverAvailability.latitude,
-            driverAvailability.longitude,
-            order.deliveryLatitude,
-            order.deliveryLongitude,
-          );
-          return score + (criterion.value / (distance + 1)) * criterion.priority;
-
-        case EOrderCriteriaType.Time:
-          const estimatedTime = this.estimateDeliveryTime(driver, order);
-          return score + (criterion.value / (estimatedTime + 1)) * criterion.priority;
-
-        default:
-          return score;
-      }
-    }, 0);
-  }
-
-  private estimateDeliveryTime(driver: DriverEntity, order: OrderEntity): number {
-    const driverAvailability = driver.driverAvailability[0];
-    const distance = calculateDistance(
-      driverAvailability.latitude,
-      driverAvailability.longitude,
-      order.deliveryLatitude,
-      order.deliveryLongitude,
-    );
-
-    return (distance / DRIVER_SPEED) * 60;
-  }
-
-  private selectBestDriver(scoredDrivers: { driver: DriverEntity; score: number }[]): DriverEntity | null {
-    return scoredDrivers.sort((a, b) => b.score - a.score)[0]?.driver || null;
-  }
-
-  private async offerOrderToDriver(order: OrderEntity, driver: DriverEntity): Promise<void> {
-    order.driverId = driver.id;
-    order.status = EOrderStatus.OfferSentToDriver;
-    await this.orderRepository.save(order);
-
-    const orderActivity = this.orderActivityRepository.create({
-      orderId: order.id,
-      status: EOrderStatus.OfferSentToDriver,
-      description: 'offer_sent_to_driver',
-      cancellationReason: '',
-      performedBy: `driverId:${driver.id}`,
-    });
-
-    await this.orderActivityRepository.save(orderActivity);
-
-    this.eventGatewayService.notifyDriverNewOrder(driver.id, order);
   }
 
   async getOrderHistory(driverId: number, queryOrderDto: QueryOrderHistoryDto) {
