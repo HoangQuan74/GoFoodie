@@ -9,6 +9,8 @@ import { OrderService } from './order.service';
 import { DriversModule } from '../drivers.module';
 import { EventsModule } from 'src/events/events.module';
 import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
+import { OrderGroupEntity } from 'src/database/entities/order-group.entity';
+import { OrderGroupItemEntity } from 'src/database/entities/order-group-item.entity';
 
 @Module({
   imports: [
@@ -18,6 +20,7 @@ import { OrderActivityEntity } from 'src/database/entities/order-activities.enti
       OrderCriteriaEntity,
       DriverAvailabilityEntity,
       OrderActivityEntity,
+      OrderGroupEntity,
     ]),
     forwardRef(() => DriversModule),
     EventsModule,

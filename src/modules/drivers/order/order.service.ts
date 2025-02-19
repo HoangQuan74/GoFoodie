@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EDriverApprovalStatus, EDriverStatus } from 'src/common/enums/driver.enum';
 import { EOrderCriteriaType } from 'src/common/enums/order-criteria.enum';
@@ -15,6 +15,8 @@ import { QueryOrderDto, QueryOrderHistoryDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import * as moment from 'moment-timezone';
 import { EXCEPTIONS } from 'src/common/constants';
+import { OrderGroupEntity } from 'src/database/entities/order-group.entity';
+import { OrderGroupItemEntity } from 'src/database/entities/order-group-item.entity';
 
 @Injectable()
 export class OrderService {
@@ -32,6 +34,8 @@ export class OrderService {
     private orderRepository: Repository<OrderEntity>,
     @InjectRepository(OrderActivityEntity)
     private orderActivityRepository: Repository<OrderActivityEntity>,
+    @InjectRepository(OrderGroupEntity)
+    private orderGroupRepository: Repository<OrderGroupEntity>,
 
     private eventGatewayService: EventGatewayService,
   ) { }
@@ -194,7 +198,7 @@ export class OrderService {
         'orderActivityCancelled.cancellationType',
         'orderActivityCancelled.description',
       ])
-      
+
     const result = await queryBuilder.getOne();
     if (!result) {
       throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
