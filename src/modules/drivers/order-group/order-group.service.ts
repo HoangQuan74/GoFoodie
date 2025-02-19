@@ -9,74 +9,71 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class OrderGroupService {
-    constructor(
-        // @InjectRepository(OrderGroupEntity)
-        // private orderGroupRepository: Repository<OrderGroupEntity>,
+  constructor() // @InjectRepository(OrderGroupEntity)
+  // private orderGroupRepository: Repository<OrderGroupEntity>,
 
-        // @InjectRepository(OrderGroupItemEntity)
-        // private orderGroupItemRepository: Repository<OrderGroupItemEntity>,
+  // @InjectRepository(OrderGroupItemEntity)
+  // private orderGroupItemRepository: Repository<OrderGroupItemEntity>,
 
-        // @InjectRepository(OrderEntity)
-        // private orderRepository: Repository<OrderEntity>,
-    ) { }
+  // @InjectRepository(OrderEntity)
+  // private orderRepository: Repository<OrderEntity>,
+  {}
 
-    async getCurrentOrderGroup(driverId: number) {
-        // const queryBuilder = this.orderGroupItemRepository.createQueryBuilder('orderGroupItem')
-        //     .innerJoin('orderGroupItem.orderGroup', 'orderGroup')
-        //     .innerJoin('orderGroupItem.order', 'order')
-        //     .leftJoin('order.client', 'client')
-        //     .leftJoin('order.store', 'store')
-        //     .where('orderGroup.driverId = :driverId', { driverId })
-        //     .andWhere('orderGroup.status = :status', { status: EOrderGroupStatus.InDelivery })
-        //     .select([
-        //         'orderGroupItem.id',
-        //         'order.id',
-        //         'order.orderCode',
-        //         'order.estimatedOrderTime',
-        //         'order.estimatedPickupTime',
-        //         'order.deliveryAddress',
-        //         'order.deliveryLatitude',
-        //         'order.deliveryLongitude',
-        //         'client.id',
-        //         'client.name',
-        //         'store.id',
-        //         'store.name',
-        //         'store.address',
-        //         'store.streetName',
-        //         'store.latitude',
-        //         'store.longitude',
-        //     ]);
+  async getCurrentOrderGroup(driverId: number) {
+    // const queryBuilder = this.orderGroupItemRepository.createQueryBuilder('orderGroupItem')
+    //     .innerJoin('orderGroupItem.orderGroup', 'orderGroup')
+    //     .innerJoin('orderGroupItem.order', 'order')
+    //     .leftJoin('order.client', 'client')
+    //     .leftJoin('order.store', 'store')
+    //     .where('orderGroup.driverId = :driverId', { driverId })
+    //     .andWhere('orderGroup.status = :status', { status: EOrderGroupStatus.InDelivery })
+    //     .select([
+    //         'orderGroupItem.id',
+    //         'order.id',
+    //         'order.orderCode',
+    //         'order.estimatedOrderTime',
+    //         'order.estimatedPickupTime',
+    //         'order.deliveryAddress',
+    //         'order.deliveryLatitude',
+    //         'order.deliveryLongitude',
+    //         'client.id',
+    //         'client.name',
+    //         'store.id',
+    //         'store.name',
+    //         'store.address',
+    //         'store.streetName',
+    //         'store.latitude',
+    //         'store.longitude',
+    //     ]);
+    // const result = await queryBuilder
+    //     .orderBy('order.createdAt', 'DESC')
+    //     .getMany();
+    // return result;
+  }
 
-        // const result = await queryBuilder
-        //     .orderBy('order.createdAt', 'DESC')
-        //     .getMany();
+  // async upsertOrderGroup(orderId: number, driverId: number) {
+  //     const order = await this.orderRepository.findOneBy({ id: orderId });
+  //     if (!order) {
+  //         throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
+  //     }
 
-        // return result;
-    }
+  //     let orderGroup = await this.orderGroupRepository.findOne({
+  //         where: {
+  //             driverId: driverId,
+  //             status: EOrderGroupStatus.InDelivery,
+  //         }
+  //     });
 
-    // async upsertOrderGroup(orderId: number, driverId: number) {
-    //     const order = await this.orderRepository.findOneBy({ id: orderId });
-    //     if (!order) {
-    //         throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
-    //     }
+  //     if (!orderGroup) {
+  //         orderGroup = await this.orderGroupRepository.save({
+  //             driverId: driverId,
+  //             status: EOrderGroupStatus.InDelivery,
+  //         });
+  //     }
 
-    //     let orderGroup = await this.orderGroupRepository.findOne({
-    //         where: {
-    //             driverId: driverId,
-    //             status: EOrderGroupStatus.InDelivery,
-    //         }
-    //     });
-
-    //     if (!orderGroup) {
-    //         orderGroup = await this.orderGroupRepository.save({
-    //             driverId: driverId,
-    //             status: EOrderGroupStatus.InDelivery,
-    //         });
-    //     }
-
-    //     return await this.orderGroupItemRepository.save({
-    //         orderGroup: orderGroup,
-    //         order: order,
-    //     });
-    // }
+  //     return await this.orderGroupItemRepository.save({
+  //         orderGroup: orderGroup,
+  //         order: order,
+  //     });
+  // }
 }

@@ -23,4 +23,4 @@ import { OrdersModule } from 'src/modules/merchant/order/order.module';
   providers: [OrderGroupService],
   exports: [OrderGroupService],
 })
-export class OrderGroupModule { }
+export class OrderGroupModule {}

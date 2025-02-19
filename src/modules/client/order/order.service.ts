@@ -596,7 +596,7 @@ export class OrderService {
 
     // thời gian tìm tài xế
     const driverSearchTime = SCAN_DRIVER_TIME;
-    // const storeConfirmTime = now.clone().add(STORE_CONFIRM_TIME, 'minutes').toDate();  
+    // const storeConfirmTime = now.clone().add(STORE_CONFIRM_TIME, 'minutes').toDate();
 
     const storeConfirmTime = now.clone().add(STORE_CONFIRM_TIME, 'minutes').toDate();
     const result: IOrderTime = {

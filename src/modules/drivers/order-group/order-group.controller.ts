@@ -9,7 +9,7 @@ import { JwtPayload } from 'src/common/interfaces';
 @ApiTags('Order-Group')
 @UseGuards(AuthGuard)
 export class OrderGroupController {
-  constructor(private readonly orderGroupService: OrderGroupService) { }
+  constructor(private readonly orderGroupService: OrderGroupService) {}
 
   @Get()
   @ApiOperation({ summary: 'Get current order group' })

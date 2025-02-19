@@ -14,7 +14,7 @@ import { EOrderStatus } from 'src/common/enums/order.enum';
 @Controller('income')
 @UseGuards(AuthGuard)
 export class IncomeController {
-  constructor(private readonly incomeService: IncomeService) { }
+  constructor(private readonly incomeService: IncomeService) {}
 
   @Get()
   @ApiOperation({ summary: 'Get income for the driver' })
@@ -112,7 +112,10 @@ export class IncomeController {
       .andWhere('order.createdAt BETWEEN :startDate AND :endDate', { startDate, endDate })
       .select('order.id', 'id')
       .addSelect('order.orderCode', 'orderCode')
-      .addSelect('COALESCE(order.deliveryFee, 0) + COALESCE(order.tip, 0) + COALESCE(order.parkingFee, 0) + COALESCE(order.peakHourFee, 0)', 'incomeOfOrder')
+      .addSelect(
+        'COALESCE(order.deliveryFee, 0) + COALESCE(order.tip, 0) + COALESCE(order.parkingFee, 0) + COALESCE(order.peakHourFee, 0)',
+        'incomeOfOrder',
+      )
       .addSelect('store.id', 'storeId')
       .addSelect('serviceType.name', 'serviceType');
 
