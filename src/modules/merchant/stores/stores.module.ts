@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { MerchantModule } from '../merchant.module';
 import { NotificationsModule } from 'src/modules/admin/notifications/notifications.module';
+import { EventsModule } from 'src/events/events.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { NotificationsModule } from 'src/modules/admin/notifications/notificatio
     TypeOrmModule.forFeature([StoreEntity]),
     forwardRef(() => MerchantModule),
     NotificationsModule,
+    EventsModule,
   ],
   controllers: [StoresController],
   providers: [StoresService],

@@ -147,6 +147,10 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.to(`${type}-*`).emit(event, data);
   }
 
+  async handleNewNotification() {
+    this.server.to(`${ERoleType.Admin}-*`).emit(ESocketEvent.NewNotification);
+  }
+
   async handleUpdateRole(type: ERoleType, userIds: number[]) {
     userIds.forEach((userId) => {
       const socketId = this.connected.get(`${type}-${userId}`);
