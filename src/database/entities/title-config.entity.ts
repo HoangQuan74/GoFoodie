@@ -18,7 +18,7 @@ export class TitleConfigEntity {
   type: EAppType;
 
   @OneToMany(() => TitleEntity, (title) => title.titleConfig, { cascade: true })
-  driverTitles: TitleEntity[];
+  titles: TitleEntity[];
 
   @ManyToMany(() => ServiceTypeEntity, (serviceType) => serviceType.id)
   @JoinTable({

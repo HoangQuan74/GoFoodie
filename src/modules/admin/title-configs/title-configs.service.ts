@@ -19,7 +19,7 @@ export class DriverTitleConfigsService {
   ) {}
 
   async create(data: DeepPartial<TitleConfigEntity>): Promise<TitleConfigEntity> {
-    let driverTitleConfig = await this.driverTitleConfigRepository.findOne({ where: {}, relations: ['driverTitles'] });
+    let driverTitleConfig = await this.driverTitleConfigRepository.findOne({ where: {} });
     if (!driverTitleConfig) driverTitleConfig = new TitleConfigEntity();
     this.driverTitleConfigRepository.merge(driverTitleConfig, data);
     return this.driverTitleConfigRepository.save(driverTitleConfig);

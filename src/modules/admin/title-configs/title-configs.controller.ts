@@ -20,7 +20,7 @@ export class DriverTitleConfigsController {
   find() {
     return this.driverTitleConfigsService.findOne({
       where: { type: EAppType.AppDriver },
-      relations: ['serviceTypes', 'driverTitles', 'driverTitles.policies'],
+      relations: ['serviceTypes', 'titles', 'titles.policies'],
     });
   }
 
