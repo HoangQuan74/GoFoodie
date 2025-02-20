@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
@@ -7,6 +7,7 @@ import {
   IsEnum,
   IsInt,
   IsNotEmpty,
+  IsOptional,
   IsPositive,
   IsString,
   ValidateNested,
@@ -101,9 +102,9 @@ export class UpsertTitleConfigDto {
   @Type(() => Date)
   startTime: Date;
 
-  @ApiProperty({ type: Date })
+  @ApiPropertyOptional({ type: Date })
   @IsDate()
-  @IsNotEmpty()
+  @IsOptional()
   @Type(() => Date)
   endTime: Date;
 

@@ -11,7 +11,7 @@ export class TitleConfigEntity {
   @Column({ name: 'start_time' })
   startTime: Date;
 
-  @Column({ name: 'end_time' })
+  @Column({ name: 'end_time', nullable: true })
   endTime: Date;
 
   @Column({ name: 'app_type', type: 'enum', enum: EAppType })
