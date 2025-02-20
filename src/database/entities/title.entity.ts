@@ -18,6 +18,9 @@ export class TitleEntity {
   @Column()
   title: string;
 
+  @Column({ name: 'benefit_id', default: 1 })
+  benefitId: number;
+
   @Column()
   level: number;
 
