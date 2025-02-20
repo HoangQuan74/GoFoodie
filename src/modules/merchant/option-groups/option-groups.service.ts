@@ -29,9 +29,11 @@ export class OptionGroupsService {
   async save(entity: DeepPartial<OptionGroupEntity>) {
     if (!entity.id) return this.optionGroupRepository.save(entity);
 
-    const { options, ...rest } = entity;
+    const { options: tempOptions, ...rest } = entity;
+    let options = tempOptions;
 
     if (options) {
+      options = options.map((option) => ({ ...option, optionGroupId: entity.id }));
       const optionNames = options.map((option) => option.name);
       const oldOptions = await this.optionRepository.find({ where: { optionGroupId: entity.id } });
       const oldOptionNames = oldOptions.map((option) => option.name);
