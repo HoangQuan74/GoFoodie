@@ -17,7 +17,7 @@ export class TitleConfigEntity {
   @Column({ name: 'app_type', type: 'enum', enum: EAppType })
   type: EAppType;
 
-  @OneToMany(() => TitleEntity, (driverTitle) => driverTitle.driverTitleConfig, { cascade: true })
+  @OneToMany(() => TitleEntity, (title) => title.titleConfig, { cascade: true })
   driverTitles: TitleEntity[];
 
   @ManyToMany(() => ServiceTypeEntity, (serviceType) => serviceType.id)

@@ -10,7 +10,10 @@ export class TitleEntity {
   id: number;
 
   @Column({ name: 'title_config_id' })
-  driverTitleConfigId: number;
+  titleConfigId: number;
+
+  @Column({ default: true })
+  status: boolean;
 
   @Column()
   title: string;
@@ -33,10 +36,10 @@ export class TitleEntity {
   @ManyToOne(() => FileEntity, (file) => file.id, { onDelete: 'CASCADE' })
   icon: FileEntity;
 
-  @OneToMany(() => TitlePolicyEntity, (policy) => policy.driverTitle, { cascade: true })
+  @OneToMany(() => TitlePolicyEntity, (policy) => policy.title, { cascade: true })
   policies: TitlePolicyEntity[];
 
   @ManyToOne(() => TitleConfigEntity, (config) => config.id, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
   @JoinColumn({ name: 'title_config_id' })
-  driverTitleConfig: TitleConfigEntity;
+  titleConfig: TitleConfigEntity;
 }
