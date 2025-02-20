@@ -576,7 +576,6 @@ export class OrderService {
     const dayOfWeek = now.day();
     const currentTime = now.hours() * 60 + now.minutes();
 
-    // lấy tọa độ của cửa hàng
     const store = await this.storesService
       .createQueryBuilder('store')
       .select(['store.id', 'store.preparationTime', 'store.autoAcceptOrder'])
@@ -610,7 +609,7 @@ export class OrderService {
     const origin = { lat: store.addresses[0].lat, lng: store.addresses[0].lng };
     const destination = { lat: deliveryLatitude, lng: deliveryLongitude };
     const { duration } = await this.mapboxService.getDistanceAndDuration(origin, destination);
-    const estimatedDeliveryTime = now.clone().add(duration, 'seconds');
+    const estimatedDeliveryTime = estimatedPickupTime.clone().add(duration, 'seconds');
 
     const result: IOrderTime = {
       orderTime: now.toDate(),
