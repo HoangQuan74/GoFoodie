@@ -15,6 +15,7 @@ import { QueryOrderDto, QueryOrderHistoryDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { DriverSearchService } from 'src/modules/order/driver-search.service';
 import { DRIVER_SPEED } from 'src/common/constants/common.constant';
+import { OrderGroupService } from '../order-group/order-group.service';
 
 @Injectable()
 export class OrderService {
@@ -36,7 +37,7 @@ export class OrderService {
     private orderGroupRepository: Repository<OrderGroupEntity>,
 
     private eventGatewayService: EventGatewayService,
-
+    private orderGroupService: OrderGroupService,
     private driverSearchService: DriverSearchService,
   ) {}
 
@@ -203,6 +204,8 @@ export class OrderService {
       throw new BadRequestException('You cannot accept this order');
     }
 
+    await this.orderGroupService.upsertOrderGroup(orderId, driverId);
+
     order.status = EOrderStatus.DriverAccepted;
     await this.orderRepository.save(order);
 
@@ -239,7 +242,7 @@ export class OrderService {
     order.status = EOrderStatus.SearchingForDriver;
 
     await this.orderRepository.save(order);
-
+    await this.orderGroupService.updateOrderGroupByOrderId(orderId, driverId);
     await this.driverSearchService.assignOrderToDriver(orderId);
 
     const wasAcceptedBefore = order.activities.some((activity) => activity.status === EOrderStatus.DriverAccepted);
@@ -295,6 +298,7 @@ export class OrderService {
         performedBy: `driverId:${driverId}`,
       });
       await this.orderActivityRepository.save(orderActivity);
+      await this.orderGroupService.updateOrderGroupByOrderId(orderId, driverId);
 
       this.eventGatewayService.handleOrderUpdated(order.id);
     }

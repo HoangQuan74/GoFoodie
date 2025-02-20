@@ -15,7 +15,7 @@ export class OrderGroupController {
   @ApiOperation({ summary: 'Get current order group' })
   @ApiResponse({ status: 200, description: 'Returns a list of orders for the drivers' })
   getCurrentOrderGroup(@CurrentUser() user: JwtPayload) {
-    // const { id: driverId } = user;
-    // return this.orderGroupService.getCurrentOrderGroup(driverId);
+    const { id: driverId } = user;
+    return this.orderGroupService.getCurrentOrderGroup(driverId);
   }
 }
