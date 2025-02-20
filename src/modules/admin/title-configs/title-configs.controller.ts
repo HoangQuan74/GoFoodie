@@ -20,7 +20,7 @@ export class DriverTitleConfigsController {
   find() {
     return this.driverTitleConfigsService.findOne({
       where: { type: EAppType.AppDriver },
-      relations: ['driverTitles', 'driverTitles.policies'],
+      relations: ['serviceTypes', 'driverTitles', 'driverTitles.policies'],
     });
   }
 
@@ -33,7 +33,7 @@ export class DriverTitleConfigsController {
   findStore() {
     return this.driverTitleConfigsService.findOne({
       where: { type: EAppType.AppMerchant },
-      relations: ['driverTitles', 'driverTitles.policies'],
+      relations: ['serviceTypes', 'driverTitles', 'driverTitles.policies'],
     });
   }
 }

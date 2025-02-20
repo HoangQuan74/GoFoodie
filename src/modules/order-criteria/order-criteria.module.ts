@@ -7,5 +7,6 @@ import { OrderCriteriaEntity } from 'src/database/entities/order-criteria.entity
   imports: [TypeOrmModule.forFeature([OrderCriteriaEntity])],
   controllers: [],
   providers: [OrderCriteriaService],
+  exports: [OrderCriteriaService],
 })
 export class OrderCriteriaModule {}
