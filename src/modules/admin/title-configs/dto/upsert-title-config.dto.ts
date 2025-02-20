@@ -67,6 +67,11 @@ export class TitleDto {
   iconId: string;
 
   @ApiProperty()
+  @IsInt()
+  @IsPositive()
+  benefitId: number;
+
+  @ApiProperty()
   @IsBoolean()
   @IsNotEmpty()
   status: boolean;
