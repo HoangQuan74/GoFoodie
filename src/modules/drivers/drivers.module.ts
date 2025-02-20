@@ -50,4 +50,4 @@ import { OrderGroupModule } from './order-group/order-group.module';
   providers: [DriversService],
   exports: [DriversService],
 })
-export class DriversModule { }
+export class DriversModule {}

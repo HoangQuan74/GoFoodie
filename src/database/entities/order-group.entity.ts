@@ -5,17 +5,17 @@ import { EOrderGroupStatus } from 'src/common/enums';
 
 @Entity('order_groups')
 export class OrderGroupEntity extends BaseEntity {
-    @Column({ name: 'driver_id' })
-    driverId: number;
+  @Column({ name: 'driver_id' })
+  driverId: number;
 
-    @Column({
-        type: 'enum',
-        enum: EOrderGroupStatus,
-        default: EOrderGroupStatus.InDelivery
-    })
-    status: EOrderGroupStatus;
+  @Column({
+    type: 'enum',
+    enum: EOrderGroupStatus,
+    default: EOrderGroupStatus.InDelivery,
+  })
+  status: EOrderGroupStatus;
 
-    @ManyToOne(() => DriverEntity, (driver) => driver.id)
-    @JoinColumn({ name: 'driver_id' })
-    driver: DriverEntity;
+  @ManyToOne(() => DriverEntity, (driver) => driver.id)
+  @JoinColumn({ name: 'driver_id' })
+  driver: DriverEntity;
 }
