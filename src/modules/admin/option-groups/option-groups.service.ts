@@ -24,13 +24,15 @@ export class OptionGroupsService {
       options = options.map((option) => ({ ...option, optionGroupId: entity.id }));
       const optionNames = options.map((option) => option.name);
       const oldOptions = await this.optionRepository.find({ where: { optionGroupId: entity.id } });
-      const oldOptionNames = oldOptions.map((option) => option.name);
 
       const removeOptions = oldOptions.filter((option) => !optionNames.includes(option.name));
-      const addOptions = options.filter((option) => !oldOptionNames.includes(option.name));
+      const upsertOptions = options.map((option) => {
+        const oldOption = oldOptions.find((oldOption) => oldOption.name === option.name);
+        return oldOption ? { ...oldOption, ...option } : option;
+      });
 
       await this.optionRepository.softRemove(removeOptions);
-      await this.optionRepository.save(addOptions);
+      await this.optionRepository.save(upsertOptions);
     }
 
     return this.optionGroupRepository.save(rest);
