@@ -1,3 +1,4 @@
+import { MapboxService } from './../../mapbox/mapbox.service';
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EOrderProcessor, EOrderStatus } from 'src/common/enums/order.enum';
@@ -22,11 +23,12 @@ import { CartProductOptionEntity } from 'src/database/entities/cart-product-opti
 import { ERoleType, EStoreAddressType, EUserType } from 'src/common/enums';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import { SCAN_DRIVER_TIME, STORE_CONFIRM_TIME } from 'src/common/constants/common.constant';
+import { DRIVER_SPEED, SCAN_DRIVER_TIME, STORE_CONFIRM_TIME } from 'src/common/constants/common.constant';
 import { IOrderTime } from 'src/common/interfaces/order.interface';
 import { StoresService } from '../stores/stores.service';
 import * as moment from 'moment-timezone';
 import { ClientEntity } from 'src/database/entities/client.entity';
+import { OrderCriteriaService } from 'src/modules/order-criteria/order-criteria.service';
 
 @Injectable()
 export class OrderService {
@@ -53,6 +55,8 @@ export class OrderService {
     private readonly feeService: FeeService,
     private readonly fcmService: FcmService,
     private readonly storesService: StoresService,
+    private readonly orderCriteriaService: OrderCriteriaService,
+    private readonly mapboxService: MapboxService,
   ) {
     this.calculateEstimatedOrderTime(10003, new Date(), 1, 1);
   }
@@ -562,7 +566,6 @@ export class OrderService {
     return this.orderRepository.createQueryBuilder(alias);
   }
 
-  // tính đoán thời gian giao hàng dự kiến cửa 1 cửa hàng
   async calculateEstimatedOrderTime(
     storeId: number,
     time: Date,
@@ -576,7 +579,7 @@ export class OrderService {
     // lấy tọa độ của cửa hàng
     const store = await this.storesService
       .createQueryBuilder('store')
-      .select(['store.id', 'store.preparationTime'])
+      .select(['store.id', 'store.preparationTime', 'store.autoAcceptOrder'])
       .addSelect(['preparationTimes.id', 'preparationTimes.preparationTime'])
       .leftJoin(
         'store.preparationTimes',
@@ -594,20 +597,29 @@ export class OrderService {
       preparationTime = store.preparationTimes[0].preparationTime;
     }
 
-    // thời gian tìm tài xế
     const driverSearchTime = SCAN_DRIVER_TIME;
-    // const storeConfirmTime = now.clone().add(STORE_CONFIRM_TIME, 'minutes').toDate();  
+    const storeConfirmTime = store.autoAcceptOrder ? 0 : STORE_CONFIRM_TIME;
+    const scanDriverDistance = await this.orderCriteriaService.getDistanceScanDriver();
+    const driverToStoreTime = (scanDriverDistance * 60) / 1000 / DRIVER_SPEED;
 
-    const storeConfirmTime = now.clone().add(STORE_CONFIRM_TIME, 'minutes').toDate();
+    const estimatedPickupTime = moment.max(
+      now.clone().add(preparationTime, 'minutes'),
+      now.clone().add(storeConfirmTime + driverSearchTime + driverToStoreTime, 'minutes'),
+    );
+
+    const origin = { lat: store.addresses[0].lat, lng: store.addresses[0].lng };
+    const destination = { lat: deliveryLatitude, lng: deliveryLongitude };
+    const { duration } = await this.mapboxService.getDistanceAndDuration(origin, destination);
+    const estimatedDeliveryTime = now.clone().add(duration, 'seconds');
+
     const result: IOrderTime = {
       orderTime: now.toDate(),
-      storeConfirmTime: storeConfirmTime,
-      estimatedPickupTime: null,
-      estimatedDeliveryTime: null,
+      storeConfirmTime: now.clone().add(storeConfirmTime, 'minutes').toDate(),
+      estimatedPickupTime: estimatedPickupTime.toDate(),
+      estimatedDeliveryTime: estimatedDeliveryTime.toDate(),
+      totalEstimatedTime: moment.duration(estimatedDeliveryTime.diff(now)).asMinutes(),
     };
 
-    console.log('store', store);
-    console.log('result', result);
     return result;
   }
 }

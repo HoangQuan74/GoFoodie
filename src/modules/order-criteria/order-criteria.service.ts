@@ -13,6 +13,9 @@ export class OrderCriteriaService {
     this.getDistanceScanDriver();
   }
 
+  /**
+   * Get distance scan driver (m)
+   */
   async getDistanceScanDriver() {
     const orderCriteria = await this.orderCriteriaRepository.findOne({ where: { type: EOrderCriteriaType.Distance } });
     if (!orderCriteria) return 1000;

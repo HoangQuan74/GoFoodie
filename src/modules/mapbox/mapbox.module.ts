@@ -8,5 +8,6 @@ import { DistanceEntity } from 'src/database/entities/distance.entity';
   imports: [TypeOrmModule.forFeature([DistanceEntity])],
   controllers: [MapboxController],
   providers: [MapboxService],
+  exports: [MapboxService],
 })
 export class MapboxModule {}

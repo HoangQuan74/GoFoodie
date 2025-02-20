@@ -9,6 +9,7 @@ import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderService } from './order.service';
 import { In, Not } from 'typeorm';
+import { EstimatedDeliveryTimeDto } from './dto/estimated-delivery-time.dto';
 
 @Controller('orders')
 @ApiTags('Orders')
@@ -76,5 +77,15 @@ export class OrderController {
       .where({ status: Not(In([EOrderStatus.Delivered, EOrderStatus.Cancelled])) })
       .andWhere('order.clientId = :userId', { userId: user.id })
       .getCount();
+  }
+
+  @Get('delivery/estimate/:storeId')
+  getDeliveryEstimate(
+    @CurrentUser() user: JwtPayload,
+    @Param('storeId') storeId: number,
+    @Query() query: EstimatedDeliveryTimeDto,
+  ) {
+    const { lat, lng, orderDate } = query;
+    return this.orderService.calculateEstimatedOrderTime(storeId, orderDate, lat, lng);
   }
 }
