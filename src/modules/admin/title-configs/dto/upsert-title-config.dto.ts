@@ -82,7 +82,6 @@ export class TitleDto {
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
   description: string;
 
   @ApiProperty({ type: [TitlePolicyDto] })
