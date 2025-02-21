@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  NotFoundException,
+  UseGuards,
+  BadRequestException,
+} from '@nestjs/common';
 import { CartsService } from './carts.service';
 import { CreateCartDto } from './dto/create-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
@@ -11,6 +22,8 @@ import { CartProductOptionEntity } from 'src/database/entities/cart-product-opti
 import { ApiTags } from '@nestjs/swagger';
 import * as _ from 'lodash';
 import { OrderService } from '../order/order.service';
+import { EXCEPTIONS } from 'src/common/constants';
+import { StoresService } from '../stores/stores.service';
 
 @Controller('carts')
 @ApiTags('Client Carts')
@@ -20,6 +33,7 @@ export class CartsController {
     private readonly cartsService: CartsService,
     private readonly productsService: ProductsService,
     private readonly orderService: OrderService,
+    private readonly storeService: StoresService,
   ) {}
 
   @Post()
@@ -203,11 +217,16 @@ export class CartsController {
         'orderItems.cartProductOptions',
       ])
       .innerJoin('order.orderItems', 'orderItems')
+      .addSelect(['store.id', 'store.isPause'])
+      .innerJoin('order.store', 'store')
       .where('order.id = :orderId', { orderId: +orderId })
       .andWhere('order.clientId = :clientId', { clientId: user.id })
       .getOne();
 
     if (!order) throw new NotFoundException();
+    if (order.store.isPause) throw new BadRequestException(EXCEPTIONS.STORE_IS_PAUSE);
+    const isStoreAvailable = await this.storeService.checkStoreAvailable(order.storeId);
+    if (!isStoreAvailable) throw new BadRequestException(EXCEPTIONS.STORE_IS_CLOSED);
 
     let cart = await this.cartsService.findOne({ where: { clientId: user.id, storeId: order.storeId } });
 
@@ -231,6 +250,7 @@ export class CartsController {
       await this.create(newCart, user);
     }
 
-    return cart;
+    const changedProducts = await this.cartsService.validateCart(cart.id);
+    return { cart, changedProducts };
   }
 }
