@@ -28,3 +28,4 @@ export const ENCRYPTION_KEY: string = process.env.ENCRYPTION_KEY || '';
 export const ENCRYPTION_IV: string = process.env.ENCRYPTION_IV || '';
 
 export const CRONJOB: boolean = process.env.CRONJOB === 'true';
+export const ORM_LOGGING: boolean = process.env.ORM_LOGGING === 'true';
