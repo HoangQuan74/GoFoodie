@@ -106,7 +106,7 @@ export class CartsService {
     for (const cartProduct of cartProducts) {
       // Remove cart product if quantity is less than or equal to 0 or product is not active
       if (cartProduct.quantity <= 0 || cartProduct.product.status !== EProductStatus.Active) {
-        changedProducts.push(cartProduct.product);
+        changedProducts.push({ ...cartProduct.product, quantity: cartProduct.quantity });
         await this.removeCartProduct(cartProduct);
         continue;
       }
@@ -123,7 +123,7 @@ export class CartsService {
         if (!isMultiple && status === EOptionGroupStatus.Active) {
           const selectedOptionIds = cartProductOptions.map((cpo) => cpo.optionId);
           if (!optionIds.some((optionId) => selectedOptionIds.includes(optionId))) {
-            changedProducts.push(cartProduct.product);
+            changedProducts.push({ ...cartProduct.product, quantity: cartProduct.quantity });
             await this.removeCartProduct(cartProduct);
             break;
           }

@@ -16,6 +16,7 @@ import { DriverEntity } from 'src/database/entities/driver.entity';
 import { CRONJOB } from 'src/common/constants';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { STORE_CONFIRM_TIME } from 'src/common/constants/common.constant';
+import { TitleConfigEntity } from 'src/database/entities/title-config.entity';
 
 @Injectable()
 export class TasksService {
@@ -38,9 +39,11 @@ export class TasksService {
     @InjectRepository(OrderEntity)
     private readonly orderRepository: Repository<OrderEntity>,
 
+    @InjectRepository(TitleConfigEntity)
+    private readonly titleConfigRepository: Repository<TitleConfigEntity>,
+
     private readonly dataSource: DataSource,
     private readonly mailHistoriesService: MailHistoriesService,
-    // private readonly orderService: OrderService,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, {
@@ -214,6 +217,8 @@ export class TasksService {
     const now = new Date();
     const limit = new Date(now.getTime() - STORE_CONFIRM_TIME * 60 * 1000);
 
+    // TODO: Implement auto cancel order
+
     // const orders = await this.orderService
     //   .createQueryBuilder('order')
     //   .select(['order.id', 'order.clientId'])
@@ -226,5 +231,28 @@ export class TasksService {
     // for (const order of orders) {
     // await this.orderService.cancelOrder(order.store.merchantId, order.id, { reasons: 'auto_cancel' });
     // }
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    disabled: !CRONJOB,
+  })
+  async calculateRankingPoints() {
+    const now = new Date();
+
+    const titleConfigs = await this.titleConfigRepository
+      .createQueryBuilder('titleConfig')
+      .where('titleConfig.startTime <= :now')
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('titleConfig.endTime IS NULL');
+          qb.orWhere('titleConfig.endTime >= :now');
+        }),
+      )
+      .setParameters({ now })
+      .getMany();
+
+    for (const titleConfig of titleConfigs) {
+    }
   }
 }

@@ -224,9 +224,9 @@ export class CartsController {
       .getOne();
 
     if (!order) throw new NotFoundException();
-    if (order.store.isPause) throw new BadRequestException(EXCEPTIONS.STORE_IS_PAUSE);
+    if (order.store.isPause) return { data: { storeId: order.storeId }, message: EXCEPTIONS.STORE_IS_CLOSED };
     const isStoreAvailable = await this.storeService.checkStoreAvailable(order.storeId);
-    if (!isStoreAvailable) throw new BadRequestException(EXCEPTIONS.STORE_IS_CLOSED);
+    if (!isStoreAvailable) return { data: { storeId: order.storeId }, message: EXCEPTIONS.STORE_IS_CLOSED };
 
     let cart = await this.cartsService.findOne({ where: { clientId: user.id, storeId: order.storeId } });
 
