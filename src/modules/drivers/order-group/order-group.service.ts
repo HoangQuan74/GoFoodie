@@ -9,11 +9,7 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class OrderGroupService {
-  constructor() // @InjectRepository(OrderGroupEntity)
-  // private orderGroupRepository: Repository<OrderGroupEntity>,
-
-  // @InjectRepository(OrderGroupItemEntity)
-  // private orderGroupItemRepository: Repository<OrderGroupItemEntity>,
+  constructor() // private orderGroupItemRepository: Repository<OrderGroupItemEntity>, // @InjectRepository(OrderGroupItemEntity) // private orderGroupRepository: Repository<OrderGroupEntity>, // @InjectRepository(OrderGroupEntity)
 
   // @InjectRepository(OrderEntity)
   // private orderRepository: Repository<OrderEntity>,

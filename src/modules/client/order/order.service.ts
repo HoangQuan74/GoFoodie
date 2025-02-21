@@ -29,6 +29,7 @@ import { StoresService } from '../stores/stores.service';
 import * as moment from 'moment-timezone';
 import { ClientEntity } from 'src/database/entities/client.entity';
 import { OrderCriteriaService } from 'src/modules/order-criteria/order-criteria.service';
+import { OrderService as MerchantOrderService } from 'src/modules/merchant/order/order.service';
 
 @Injectable()
 export class OrderService {
@@ -57,6 +58,7 @@ export class OrderService {
     private readonly storesService: StoresService,
     private readonly orderCriteriaService: OrderCriteriaService,
     private readonly mapboxService: MapboxService,
+    private readonly merchantOrderService: MerchantOrderService,
   ) {
     this.calculateEstimatedOrderTime(10003, new Date(), 1, 1);
   }
@@ -227,6 +229,12 @@ export class OrderService {
       await queryRunner.manager.softDelete(CartProductEntity, { cartId });
 
       await queryRunner.commitTransaction();
+
+      if (cart.store.autoAcceptOrder && savedOrder.id) {
+        setTimeout(() => {
+          this.merchantOrderService.confirmOrder(cart.store.merchantId, savedOrder.id);
+        }, 3000);
+      }
 
       this.eventGatewayService.notifyMerchantNewOrder(savedOrder.storeId, savedOrder);
       this.fcmService.notifyMerchantNewOrder(savedOrder.id);

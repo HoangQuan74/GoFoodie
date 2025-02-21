@@ -31,7 +31,7 @@ export class DriverSearchService {
     private orderActivityRepository: Repository<OrderActivityEntity>,
 
     private eventGatewayService: EventGatewayService,
-  ) { }
+  ) {}
 
   async assignOrderToDriver(orderId: number): Promise<void> {
     const order = await this.orderRepository.findOne({
@@ -115,7 +115,7 @@ export class DriverSearchService {
       relations: {
         serviceTypes: true,
         driverAvailability: true,
-      }
+      },
     });
     return driverAvailabilities.filter((driverAvailabilities) =>
       driverAvailabilities.serviceTypes.some((service) => service.id === order.store.serviceTypeId),
