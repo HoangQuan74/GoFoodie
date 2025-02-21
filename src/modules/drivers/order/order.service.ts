@@ -235,26 +235,36 @@ export class OrderService {
       throw new BadRequestException('You cannot reject this order');
     }
 
+    const driverWasRejected = order.activities.some(
+      (activity) =>
+        activity.status === EOrderStatus.SearchingForDriver &&
+        activity.performedBy === `driver:${driverId}` &&
+        [EOrderActivityStatus.DRIVER_APPROVED_AND_REJECTED, EOrderActivityStatus.DRIVER_REJECTED].includes(
+          activity.description as EOrderActivityStatus,
+        ),
+    );
+
+    if (!driverWasRejected) {
+      const orderActivity = this.orderActivityRepository.create({
+        orderId: orderId,
+        status: EOrderStatus.SearchingForDriver,
+        description:
+          order.status === EOrderStatus.DriverAccepted
+            ? EOrderActivityStatus.DRIVER_APPROVED_AND_REJECTED
+            : EOrderActivityStatus.DRIVER_REJECTED,
+        cancellationReason: updateOrderDto.reasons || '',
+        performedBy: `driverId:${driverId}`,
+      });
+
+      await this.orderActivityRepository.save(orderActivity);
+    }
+
     order.driverId = null;
     order.status = EOrderStatus.SearchingForDriver;
 
     await this.orderRepository.save(order);
 
     await this.driverSearchService.assignOrderToDriver(orderId);
-
-    const wasAcceptedBefore = order.activities.some((activity) => activity.status === EOrderStatus.DriverAccepted);
-
-    const orderActivity = this.orderActivityRepository.create({
-      orderId: orderId,
-      status: EOrderStatus.SearchingForDriver,
-      description: wasAcceptedBefore
-        ? EOrderActivityStatus.DRIVER_APPROVED_AND_REJECTED
-        : EOrderActivityStatus.DRIVER_REJECTED,
-      cancellationReason: updateOrderDto.reasons || '',
-      performedBy: `driverId:${driverId}`,
-    });
-
-    await this.orderActivityRepository.save(orderActivity);
 
     this.eventGatewayService.handleOrderUpdated(order.id);
   }
