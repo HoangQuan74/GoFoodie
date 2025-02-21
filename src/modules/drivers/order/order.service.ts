@@ -235,14 +235,15 @@ export class OrderService {
       throw new BadRequestException('You cannot reject this order');
     }
 
-    const driverWasRejected = order.activities.some(
-      (activity) =>
+    const driverWasRejected = order.activities.some((activity) => {
+      return (
         activity.status === EOrderStatus.SearchingForDriver &&
-        activity.performedBy === `driver:${driverId}` &&
+        activity.performedBy === `driverId:${driverId}` &&
         [EOrderActivityStatus.DRIVER_APPROVED_AND_REJECTED, EOrderActivityStatus.DRIVER_REJECTED].includes(
           activity.description as EOrderActivityStatus,
-        ),
-    );
+        )
+      );
+    });
 
     if (!driverWasRejected) {
       const orderActivity = this.orderActivityRepository.create({
@@ -258,7 +259,7 @@ export class OrderService {
 
       await this.orderActivityRepository.save(orderActivity);
     }
-
+    delete order.activities;
     order.driverId = null;
     order.status = EOrderStatus.SearchingForDriver;
 

@@ -120,7 +120,7 @@ export class CartsService {
         const options = productOptionGroup.options.filter((option) => option.status === EOptionStatus.Active);
 
         if (isEmpty(options)) break;
-        
+
         const optionIds = options.map((option) => option.id);
 
         // Remove cart product if option group is not multiple and not all options are selected
