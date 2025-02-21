@@ -6,6 +6,7 @@ import { CreateCartDto } from './dto/create-cart.dto';
 import { CartProductEntity } from 'src/database/entities/cart-product.entity';
 import { CartProductOptionEntity } from 'src/database/entities/cart-product-option.entity';
 import { EOptionGroupStatus, EOptionStatus, EProductStatus } from 'src/common/enums';
+import { isEmpty } from 'lodash';
 
 @Injectable()
 export class CartsService {
@@ -117,6 +118,9 @@ export class CartsService {
       for (const productOptionGroup of productOptionGroups) {
         const { isMultiple, status } = productOptionGroup.optionGroup;
         const options = productOptionGroup.options.filter((option) => option.status === EOptionStatus.Active);
+
+        if (isEmpty(options)) break;
+        
         const optionIds = options.map((option) => option.id);
 
         // Remove cart product if option group is not multiple and not all options are selected
