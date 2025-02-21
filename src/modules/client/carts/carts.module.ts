@@ -7,6 +7,7 @@ import { ProductsModule } from '../products/products.module';
 import { ClientModule } from '../client.module';
 import { CartProductEntity } from 'src/database/entities/cart-product.entity';
 import { OrdersModule } from '../order/order.module';
+import { StoresModule } from '../stores/stores.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { OrdersModule } from '../order/order.module';
     ProductsModule,
     forwardRef(() => ClientModule),
     OrdersModule,
+    StoresModule,
   ],
   controllers: [CartsController],
   providers: [CartsService],

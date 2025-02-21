@@ -23,6 +23,7 @@ import { ApiTags } from '@nestjs/swagger';
 import * as _ from 'lodash';
 import { OrderService } from '../order/order.service';
 import { EXCEPTIONS } from 'src/common/constants';
+import { StoresService } from '../stores/stores.service';
 
 @Controller('carts')
 @ApiTags('Client Carts')
@@ -32,6 +33,7 @@ export class CartsController {
     private readonly cartsService: CartsService,
     private readonly productsService: ProductsService,
     private readonly orderService: OrderService,
+    private readonly storeService: StoresService,
   ) {}
 
   @Post()
@@ -223,6 +225,8 @@ export class CartsController {
 
     if (!order) throw new NotFoundException();
     if (order.store.isPause) throw new BadRequestException(EXCEPTIONS.STORE_IS_PAUSE);
+    const isStoreAvailable = await this.storeService.checkStoreAvailable(order.storeId);
+    if (!isStoreAvailable) throw new BadRequestException(EXCEPTIONS.STORE_IS_CLOSED);
 
     let cart = await this.cartsService.findOne({ where: { clientId: user.id, storeId: order.storeId } });
 

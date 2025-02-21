@@ -36,7 +36,6 @@ export const encrypt = (text: string): string => {
   let encrypted = cipher.update(text, 'utf8', 'hex');
   encrypted += cipher.final('hex');
 
-  console.log('Encrypted:', encrypted);
   return encrypted;
 };
 
@@ -46,6 +45,6 @@ export const decrypt = (text: string): string => {
   const decipher = createDecipheriv(ALGORITHM, key, iv);
   let decrypted = decipher.update(text, 'hex', 'utf8');
   decrypted += decipher.final('utf8');
-  console.log('Decrypted:', decrypted);
+
   return decrypted;
 };
