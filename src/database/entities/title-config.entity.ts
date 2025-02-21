@@ -11,14 +11,14 @@ export class TitleConfigEntity {
   @Column({ name: 'start_time' })
   startTime: Date;
 
-  @Column({ name: 'end_time' })
+  @Column({ name: 'end_time', nullable: true })
   endTime: Date;
 
   @Column({ name: 'app_type', type: 'enum', enum: EAppType })
   type: EAppType;
 
-  @OneToMany(() => TitleEntity, (driverTitle) => driverTitle.driverTitleConfig, { cascade: true })
-  driverTitles: TitleEntity[];
+  @OneToMany(() => TitleEntity, (title) => title.titleConfig, { cascade: true })
+  titles: TitleEntity[];
 
   @ManyToMany(() => ServiceTypeEntity, (serviceType) => serviceType.id)
   @JoinTable({
