@@ -224,7 +224,7 @@ export class CartsController {
       .getOne();
 
     if (!order) throw new NotFoundException();
-    if (order.store.isPause) return { data: { storeId: order.storeId }, message: EXCEPTIONS.STORE_IS_CLOSED };
+    if (order.store.isPause) return { data: { storeId: order.storeId }, message: EXCEPTIONS.STORE_IS_PAUSE };
     const isStoreAvailable = await this.storeService.checkStoreAvailable(order.storeId);
     if (!isStoreAvailable) return { data: { storeId: order.storeId }, message: EXCEPTIONS.STORE_IS_CLOSED };
 
