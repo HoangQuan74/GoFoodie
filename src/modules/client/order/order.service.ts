@@ -106,6 +106,11 @@ export class OrderService {
         throw new BadRequestException('Cannot create an order with an empty cart');
       }
 
+      const isStoreOpen = await this.storesService.checkStoreAvailable(cart.storeId);
+      if (!isStoreOpen) {
+        throw new BadRequestException(EXCEPTIONS.STORE_IS_CLOSED);
+      }
+
       const totalAmount = cart.cartProducts.reduce((sum, cartProduct) => {
         const productPrice = cartProduct.product.price;
         const optionsPrice = cartProduct.cartProductOptions.reduce((optSum, option) => optSum + option.option.price, 0);
@@ -244,7 +249,7 @@ export class OrderService {
       return this.findOne(clientId, savedOrder.id);
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      throw new InternalServerErrorException('Failed to create order: ' + error.message);
+      throw new BadRequestException(error);
     } finally {
       await queryRunner.release();
     }
