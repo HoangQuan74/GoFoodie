@@ -65,7 +65,6 @@ export class StoresController {
 
   @Get()
   async find(@Query() query: QueryStoreDto, @CurrentUser() user: IAdmin) {
-    console.log('user', JSON.stringify(user, null, 2));
     const { search, page, limit, sort, serviceTypeId, businessAreaId, approvalStatus, status, merchantId } = query;
     const { createdAtFrom, createdAtTo, approvedAtFrom, approvedAtTo, serviceGroupIds } = query;
 

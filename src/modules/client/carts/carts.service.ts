@@ -15,9 +15,7 @@ export class CartsService {
 
     @InjectRepository(CartProductEntity)
     private cartProductRepository: Repository<CartProductEntity>,
-  ) {
-    this.validateCart(10187);
-  }
+  ) {}
 
   async save(entity: DeepPartial<CartEntity>) {
     return this.cartRepository.save(entity);
@@ -102,7 +100,6 @@ export class CartsService {
       },
     });
     if (!cart) return;
-    console.log(JSON.stringify(cart, null, 2));
 
     const changedProducts = [];
     const cartProducts = cart.cartProducts;

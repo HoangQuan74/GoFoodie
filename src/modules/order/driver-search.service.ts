@@ -99,7 +99,6 @@ export class DriverSearchService {
         distanceCriteria: distanceCriteria,
       })
       .getRawMany();
-    console.log(drivers);
 
     if (isEmpty(drivers)) {
       return [];
