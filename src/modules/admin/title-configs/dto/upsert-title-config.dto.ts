@@ -81,9 +81,9 @@ export class TitleDto {
   iconPosition: ETitleIconPosition;
 
   @ApiProperty()
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  description: string;
+  description: string = '';
 
   @ApiProperty({ type: [TitlePolicyDto] })
   @IsArray()

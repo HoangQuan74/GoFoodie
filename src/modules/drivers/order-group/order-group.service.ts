@@ -9,15 +9,7 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class OrderGroupService {
-  constructor() // @InjectRepository(OrderGroupEntity)
-  // private orderGroupRepository: Repository<OrderGroupEntity>,
-
-  // @InjectRepository(OrderGroupItemEntity)
-  // private orderGroupItemRepository: Repository<OrderGroupItemEntity>,
-
-  // @InjectRepository(OrderEntity)
-  // private orderRepository: Repository<OrderEntity>,
-  {}
+  constructor() {} // private orderRepository: Repository<OrderEntity>, // @InjectRepository(OrderEntity) // private orderGroupItemRepository: Repository<OrderGroupItemEntity>, // @InjectRepository(OrderGroupItemEntity) // private orderGroupRepository: Repository<OrderGroupEntity>, // @InjectRepository(OrderGroupEntity)
 
   async getCurrentOrderGroup(driverId: number) {
     // const queryBuilder = this.orderGroupItemRepository.createQueryBuilder('orderGroupItem')

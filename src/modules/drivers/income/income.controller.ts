@@ -53,7 +53,7 @@ export class IncomeController {
     return {
       incomeCurrentMonth,
       incomeByFilter,
-      incomeBefore,
+      incomeChangePercentage: incomeBefore !== 0 ? ((incomeByFilter - incomeBefore) / incomeBefore) * 100 : null,
       ...this.normalizeIncomeResult(incomeData),
     };
   }

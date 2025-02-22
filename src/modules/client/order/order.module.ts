@@ -17,6 +17,7 @@ import { QueuesModule } from 'src/modules/queues/queues.module';
 import { StoresModule } from '../stores/stores.module';
 import { OrderCriteriaModule } from 'src/modules/order-criteria/order-criteria.module';
 import { MapboxModule } from 'src/modules/mapbox/mapbox.module';
+import { OrdersModule as MerchantOrdersModule } from 'src/modules/merchant/order/order.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { MapboxModule } from 'src/modules/mapbox/mapbox.module';
     StoresModule,
     OrderCriteriaModule,
     MapboxModule,
+    forwardRef(() => MerchantOrdersModule),
   ],
   providers: [OrderService, FeeService],
   controllers: [OrderController],

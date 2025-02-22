@@ -141,7 +141,7 @@ import { DriverTitleConfigsModule } from './title-configs/title-configs.module';
       {
         path: 'admin',
         module: DriverTitleConfigsModule,
-      }
+      },
     ]),
     AdminsModule,
     MerchantsModule,

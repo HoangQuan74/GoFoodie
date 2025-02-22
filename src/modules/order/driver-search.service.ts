@@ -31,7 +31,7 @@ export class DriverSearchService {
     private orderActivityRepository: Repository<OrderActivityEntity>,
 
     private eventGatewayService: EventGatewayService,
-  ) { }
+  ) {}
 
   async assignOrderToDriver(orderId: number): Promise<void> {
     const order = await this.orderRepository.findOne({
@@ -44,9 +44,11 @@ export class DriverSearchService {
     }
 
     const eligibleDrivers = await this.findEligibleDrivers(order);
+    console.log('EligibleDrivers', eligibleDrivers);
     const scoredDrivers = await this.scoreDrivers(eligibleDrivers, order);
     const bestDriver = this.selectBestDriver(scoredDrivers);
 
+    console.log('BestDriver', bestDriver);
     if (bestDriver) {
       await this.offerOrderToDriver(order, bestDriver);
     }
@@ -100,6 +102,8 @@ export class DriverSearchService {
       })
       .getRawMany();
 
+    console.log('get driver from database', drivers);
+
     if (isEmpty(drivers)) {
       return [];
     }
@@ -114,7 +118,7 @@ export class DriverSearchService {
       relations: {
         serviceTypes: true,
         driverAvailability: true,
-      }
+      },
     });
     return driverAvailabilities.filter((driverAvailabilities) =>
       driverAvailabilities.serviceTypes.some((service) => service.id === order.store.serviceTypeId),

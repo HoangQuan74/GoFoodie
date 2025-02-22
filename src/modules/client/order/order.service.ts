@@ -29,6 +29,7 @@ import { StoresService } from '../stores/stores.service';
 import * as moment from 'moment-timezone';
 import { ClientEntity } from 'src/database/entities/client.entity';
 import { OrderCriteriaService } from 'src/modules/order-criteria/order-criteria.service';
+import { OrderService as MerchantOrderService } from 'src/modules/merchant/order/order.service';
 
 @Injectable()
 export class OrderService {
@@ -57,6 +58,7 @@ export class OrderService {
     private readonly storesService: StoresService,
     private readonly orderCriteriaService: OrderCriteriaService,
     private readonly mapboxService: MapboxService,
+    private readonly merchantOrderService: MerchantOrderService,
   ) {
     this.calculateEstimatedOrderTime(10003, new Date(), 1, 1);
   }
@@ -102,6 +104,11 @@ export class OrderService {
 
       if (cart.cartProducts.length === 0) {
         throw new BadRequestException('Cannot create an order with an empty cart');
+      }
+
+      const isStoreOpen = await this.storesService.checkStoreAvailable(cart.storeId);
+      if (!isStoreOpen) {
+        throw new BadRequestException(EXCEPTIONS.STORE_IS_CLOSED);
       }
 
       const totalAmount = cart.cartProducts.reduce((sum, cartProduct) => {
@@ -228,6 +235,12 @@ export class OrderService {
 
       await queryRunner.commitTransaction();
 
+      if (cart.store.autoAcceptOrder && savedOrder.id) {
+        setTimeout(() => {
+          this.merchantOrderService.confirmOrder(cart.store.merchantId, savedOrder.id);
+        }, 3000);
+      }
+
       this.eventGatewayService.notifyMerchantNewOrder(savedOrder.storeId, savedOrder);
       this.fcmService.notifyMerchantNewOrder(savedOrder.id);
       this.eventGatewayService.handleOrderUpdated(savedOrder.id);
@@ -236,7 +249,7 @@ export class OrderService {
       return this.findOne(clientId, savedOrder.id);
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      throw new InternalServerErrorException('Failed to create order: ' + error.message);
+      throw new BadRequestException(error);
     } finally {
       await queryRunner.release();
     }
