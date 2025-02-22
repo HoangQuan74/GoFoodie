@@ -54,16 +54,16 @@ export class StoresService {
       .innerJoin(
         'store.workingTimes',
         'workingTime',
-        `workingTime.dayOfWeek = EXTRACT(DOW FROM CURRENT_DATE) 
-        AND workingTime.openTime <= EXTRACT(HOUR FROM CURRENT_TIME) * 60 + EXTRACT(MINUTE FROM CURRENT_TIME) 
-        AND workingTime.closeTime >= EXTRACT(HOUR FROM CURRENT_TIME) * 60 + EXTRACT(MINUTE FROM CURRENT_TIME)`,
+        `workingTime.dayOfWeek = EXTRACT(DOW FROM (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')) 
+        AND workingTime.openTime <= EXTRACT(HOUR FROM (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')) * 60 + EXTRACT(MINUTE FROM (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')) 
+        AND workingTime.closeTime >= EXTRACT(HOUR FROM (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')) * 60 + EXTRACT(MINUTE FROM (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh'))`,
       )
       .leftJoin(
         'store.specialWorkingTimes',
         'specialWorkingTime',
-        `specialWorkingTime.date = CURRENT_DATE 
-        AND specialWorkingTime.startTime <= EXTRACT(HOUR FROM CURRENT_TIME) * 60 + EXTRACT(MINUTE FROM CURRENT_TIME) 
-        AND specialWorkingTime.endTime >= EXTRACT(HOUR FROM CURRENT_TIME) * 60 + EXTRACT(MINUTE FROM CURRENT_TIME) 
+        `specialWorkingTime.date = CURRENT_DATE AT TIME ZONE 'Asia/Ho_Chi_Minh' 
+        AND specialWorkingTime.startTime <= EXTRACT(HOUR FROM (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')) * 60 + EXTRACT(MINUTE FROM (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')) 
+        AND specialWorkingTime.endTime >= EXTRACT(HOUR FROM (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')) * 60 + EXTRACT(MINUTE FROM (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')) 
         AND specialWorkingTime.isOpen = false`,
       )
       .andWhere('specialWorkingTime.id IS NULL')
