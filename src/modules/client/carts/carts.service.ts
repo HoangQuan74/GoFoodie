@@ -126,6 +126,7 @@ export class CartsService {
         // Remove cart product if option group is not multiple and not all options are selected
         if (!isMultiple && status === EOptionGroupStatus.Active) {
           const selectedOptionIds = cartProductOptions.map((cpo) => cpo.optionId);
+          // chọn ít nhất 1 option trong group
           if (!optionIds.some((optionId) => selectedOptionIds.includes(optionId))) {
             changedProducts.push({ ...cartProduct.product, quantity: cartProduct.quantity });
             await this.removeCartProduct(cartProduct);
