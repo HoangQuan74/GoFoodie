@@ -119,7 +119,7 @@ export class CartsService {
         const { isMultiple, status } = productOptionGroup.optionGroup;
         const options = productOptionGroup.options.filter((option) => option.status === EOptionStatus.Active);
 
-        if (isEmpty(options)) break;
+        if (isEmpty(options)) continue;
 
         const optionIds = options.map((option) => option.id);
 
