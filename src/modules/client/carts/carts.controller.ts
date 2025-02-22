@@ -32,7 +32,7 @@ export class CartsController {
 
     const product = await this.productsService.findOne({
       select: ['id', 'price', 'storeId', 'name'],
-      where: { id: productId, status: EProductStatus.Active, approvalStatus: EProductApprovalStatus.Approved },
+      where: { id: productId },
     });
     if (!product) throw new NotFoundException();
 
@@ -205,7 +205,7 @@ export class CartsController {
         'orderItems.note',
         'orderItems.cartProductOptions',
       ])
-      .leftJoin('order.orderItems', 'orderItems')
+      .innerJoin('order.orderItems', 'orderItems')
       .addSelect(['store.id', 'store.isPause'])
       .innerJoin('order.store', 'store')
       .where('order.id = :orderId', { orderId: +orderId })
