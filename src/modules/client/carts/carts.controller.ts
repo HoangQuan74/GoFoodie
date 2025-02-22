@@ -1,15 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  NotFoundException,
-  UseGuards,
-  BadRequestException,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, UseGuards } from '@nestjs/common';
 import { CartsService } from './carts.service';
 import { CreateCartDto } from './dto/create-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
@@ -216,7 +205,7 @@ export class CartsController {
         'orderItems.note',
         'orderItems.cartProductOptions',
       ])
-      .innerJoin('order.orderItems', 'orderItems')
+      .leftJoin('order.orderItems', 'orderItems')
       .addSelect(['store.id', 'store.isPause'])
       .innerJoin('order.store', 'store')
       .where('order.id = :orderId', { orderId: +orderId })
