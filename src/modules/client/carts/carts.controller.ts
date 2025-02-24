@@ -241,7 +241,7 @@ export class CartsController {
     return Object.keys(groupedCartProducts).map((key) => ({
       productId: +key,
       quantity: groupedCartProducts[key].reduce((acc, cp) => acc + cp.quantity, 0),
-      isMultiOptions: groupedCartProducts[key] > 1,
+      isMultiOptions: groupedCartProducts[key].length > 1,
     }));
   }
 
