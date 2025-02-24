@@ -87,7 +87,15 @@ export class ReviewsService {
   async getStoreReview(orderId: number, clientId: number) {
     return await this.reviewStoreRepository
       .createQueryBuilder('review')
-      .select(['review.id', 'review.rating', 'review.comment', 'review.createdAt', 'templates.id', 'templates.name'])
+      .select([
+        'review.id',
+        'review.rating',
+        'review.isAnonymous',
+        'review.comment',
+        'review.createdAt',
+        'templates.id',
+        'templates.name',
+      ])
       .addSelect(['store.id', 'store.storeAvatarId', 'store.name', 'store.specialDish', 'store.streetName'])
       .addSelect(['files.id', 'files.name'])
       .where('review.orderId = :orderId', { orderId })
