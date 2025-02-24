@@ -21,11 +21,11 @@ export class MapboxService {
   ): Promise<IDistanceAndDuration> {
     const distance = await this.distanceRepository
       .createQueryBuilder('distance')
-      .select()
-      .where('originLat = :originLat', { originLat: origin.lat })
-      .andWhere('originLng = :originLng', { originLng: origin.lng })
-      .andWhere('destinationLat = :destinationLat', { destinationLat: destination.lat })
-      .andWhere('destinationLng = :destinationLng', { destinationLng: destination.lng })
+      .select(['distance.distanceValue', 'distance.durationValue'])
+      .where('distance.originLat = :originLat', { originLat: origin.lat })
+      .andWhere('distance.originLong = :originLng', { originLng: origin.lng })
+      .andWhere('distance.destinationLat = :destinationLat', { destinationLat: destination.lat })
+      .andWhere('distance.destinationLong = :destinationLng', { destinationLng: destination.lng })
       .getOne();
 
     if (distance) {
@@ -51,9 +51,9 @@ export class MapboxService {
 
     await this.distanceRepository.save({
       originLat: origin.lat,
-      originLng: origin.lng,
+      originLong: origin.lng,
       destinationLat: destination.lat,
-      destinationLng: destination.lng,
+      destinationLong: destination.lng,
       distanceValue: result.distance,
       durationValue: result.duration,
     });

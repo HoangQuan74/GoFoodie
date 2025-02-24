@@ -17,4 +17,5 @@ export interface IOrderTime {
   storeConfirmTime: Date;
   estimatedPickupTime: Date;
   estimatedDeliveryTime: Date;
+  totalEstimatedTime: number;
 }

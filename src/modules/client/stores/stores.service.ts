@@ -5,6 +5,8 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StoreLikeEntity } from 'src/database/entities/store-like.entity';
 import { ClientReviewStoreEntity } from 'src/database/entities/client-review-store.entity';
+import { TIMEZONE } from 'src/common/constants';
+import * as moment from 'moment-timezone';
 
 @Injectable()
 export class StoresService {
@@ -40,5 +42,31 @@ export class StoresService {
 
   createAvailableStoreQueryBuilder(alias: string) {
     return this.storeAvailableViewRepository.createQueryBuilder(alias);
+  }
+
+  // check xem quán có đang hoạt động không
+  async checkStoreAvailable(storeId: number) {
+    return this.storeRepository
+      .createQueryBuilder('store')
+      .where('store.id = :storeId', { storeId })
+      .andWhere('store.status = :status', { status: 'active' })
+      .andWhere('store.isPause = false')
+      .innerJoin(
+        'store.workingTimes',
+        'workingTime',
+        `workingTime.dayOfWeek = EXTRACT(DOW FROM (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')) 
+        AND workingTime.openTime <= EXTRACT(HOUR FROM (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')) * 60 + EXTRACT(MINUTE FROM (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')) 
+        AND workingTime.closeTime >= EXTRACT(HOUR FROM (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')) * 60 + EXTRACT(MINUTE FROM (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh'))`,
+      )
+      .leftJoin(
+        'store.specialWorkingTimes',
+        'specialWorkingTime',
+        `specialWorkingTime.date = CURRENT_DATE AT TIME ZONE 'Asia/Ho_Chi_Minh' 
+        AND specialWorkingTime.startTime <= EXTRACT(HOUR FROM (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')) * 60 + EXTRACT(MINUTE FROM (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')) 
+        AND specialWorkingTime.endTime >= EXTRACT(HOUR FROM (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')) * 60 + EXTRACT(MINUTE FROM (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')) 
+        AND specialWorkingTime.isOpen = false`,
+      )
+      .andWhere('specialWorkingTime.id IS NULL')
+      .getExists();
   }
 }

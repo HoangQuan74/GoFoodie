@@ -11,6 +11,8 @@ import { CartProductOptionEntity } from 'src/database/entities/cart-product-opti
 import { ApiTags } from '@nestjs/swagger';
 import * as _ from 'lodash';
 import { OrderService } from '../order/order.service';
+import { EXCEPTIONS } from 'src/common/constants';
+import { StoresService } from '../stores/stores.service';
 
 @Controller('carts')
 @ApiTags('Client Carts')
@@ -20,6 +22,7 @@ export class CartsController {
     private readonly cartsService: CartsService,
     private readonly productsService: ProductsService,
     private readonly orderService: OrderService,
+    private readonly storeService: StoresService,
   ) {}
 
   @Post()
@@ -29,7 +32,7 @@ export class CartsController {
 
     const product = await this.productsService.findOne({
       select: ['id', 'price', 'storeId', 'name'],
-      where: { id: productId, status: EProductStatus.Active, approvalStatus: EProductApprovalStatus.Approved },
+      where: { id: productId },
     });
     if (!product) throw new NotFoundException();
 
@@ -176,6 +179,40 @@ export class CartsController {
     return this.cartsService.remove(cart);
   }
 
+  @Get('products/:productId')
+  async findProduct(@Param('productId') productId: string, @CurrentUser() user: JwtPayload) {
+    const carts = await this.cartsService
+      .createQueryBuilder('cart')
+      .addSelect(['cartProducts.id', 'cartProducts.quantity', 'cartProducts.note'])
+      .innerJoin('cart.cartProducts', 'cartProducts')
+      .addSelect(['product.id', 'product.name', 'product.price', 'product.imageId'])
+      .innerJoin('cartProducts.product', 'product')
+      .leftJoinAndSelect('cartProducts.cartProductOptions', 'cartProductOptions')
+      .leftJoinAndSelect('cartProductOptions.option', 'option', 'option.status = :optionStatus')
+      .leftJoinAndSelect('option.optionGroup', 'optionGroup', 'optionGroup.status = :optionGroupStatus')
+      .setParameter('optionStatus', EOptionStatus.Active)
+      .setParameter('optionGroupStatus', EOptionGroupStatus.Active)
+      .where('cart.clientId = :clientId', { clientId: user.id })
+      .andWhere('product.id = :productId', { productId: +productId })
+      .getOne();
+
+    if (!carts) return [];
+
+    const { cartProducts = [] } = carts;
+
+    cartProducts.forEach((cp: any) => {
+      const options = cp.cartProductOptions.map((cpo) => cpo.option).filter((option) => option?.optionGroup);
+      const groupedOptions = _.groupBy(options, 'optionGroupId');
+
+      cp.cartProductOptions = Object.keys(groupedOptions).map((key) => ({
+        optionGroup: groupedOptions[key][0].optionGroup,
+        options: groupedOptions[key].map((option) => _.omit(option, ['optionGroup'])),
+      }));
+    });
+
+    return cartProducts;
+  }
+
   @Delete('cart-products/:cartProductId')
   async removeProduct(@Param('cartProductId') cartProductId: string, @CurrentUser() user: JwtPayload) {
     const cart = await this.cartsService.findOne({
@@ -188,6 +225,22 @@ export class CartsController {
     if (!cartProduct) throw new NotFoundException();
 
     return this.cartsService.removeCartProduct(cartProduct);
+  }
+
+  @Get('store/:storeId/quantity')
+  async getQuantity(@Param('storeId') storeId: string, @CurrentUser() user: JwtPayload) {
+    const cart = await this.cartsService.findOne({
+      where: { clientId: user.id, storeId: +storeId },
+      relations: ['cartProducts'],
+    });
+
+    if (!cart) return [];
+
+    const groupedCartProducts = _.groupBy(cart.cartProducts, 'productId');
+    return Object.keys(groupedCartProducts).map((key) => ({
+      productId: +key,
+      quantity: groupedCartProducts[key].reduce((acc, cp) => acc + cp.quantity, 0),
+    }));
   }
 
   @Post('from-order/:orderId')
@@ -203,11 +256,16 @@ export class CartsController {
         'orderItems.cartProductOptions',
       ])
       .innerJoin('order.orderItems', 'orderItems')
+      .addSelect(['store.id', 'store.isPause'])
+      .innerJoin('order.store', 'store')
       .where('order.id = :orderId', { orderId: +orderId })
       .andWhere('order.clientId = :clientId', { clientId: user.id })
       .getOne();
 
     if (!order) throw new NotFoundException();
+    if (order.store.isPause) return { data: { storeId: order.storeId }, message: EXCEPTIONS.STORE_IS_PAUSE };
+    const isStoreAvailable = await this.storeService.checkStoreAvailable(order.storeId);
+    if (!isStoreAvailable) return { data: { storeId: order.storeId }, message: EXCEPTIONS.STORE_IS_CLOSED };
 
     let cart = await this.cartsService.findOne({ where: { clientId: user.id, storeId: order.storeId } });
 
@@ -231,6 +289,7 @@ export class CartsController {
       await this.create(newCart, user);
     }
 
-    return cart;
+    const changedProducts = await this.cartsService.validateCart(cart.id);
+    return { cart, changedProducts };
   }
 }

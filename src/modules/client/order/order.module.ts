@@ -15,6 +15,9 @@ import { FeeEntity } from 'src/database/entities/fee.entity';
 import { FeeService } from 'src/modules/fee/fee.service';
 import { QueuesModule } from 'src/modules/queues/queues.module';
 import { StoresModule } from '../stores/stores.module';
+import { OrderCriteriaModule } from 'src/modules/order-criteria/order-criteria.module';
+import { MapboxModule } from 'src/modules/mapbox/mapbox.module';
+import { OrdersModule as MerchantOrdersModule } from 'src/modules/merchant/order/order.module';
 
 @Module({
   imports: [
@@ -32,6 +35,9 @@ import { StoresModule } from '../stores/stores.module';
     FcmModule,
     QueuesModule,
     StoresModule,
+    OrderCriteriaModule,
+    MapboxModule,
+    forwardRef(() => MerchantOrdersModule),
   ],
   providers: [OrderService, FeeService],
   controllers: [OrderController],

@@ -1,10 +1,10 @@
 import { DataSource, DataSourceOptions, LoggerOptions } from 'typeorm';
 import * as dotenv from 'dotenv';
-import { ENV } from 'src/common/constants';
+import { ORM_LOGGING } from 'src/common/constants';
 import { join } from 'path';
 dotenv.config();
 
-const logging: LoggerOptions = ENV === 'development' ? 'all' : ['error', 'warn'];
+const logging: LoggerOptions = ORM_LOGGING ? 'all' : ['error', 'warn'];
 
 export const dataSourceOptions: DataSourceOptions = {
   type: process.env.DB_TYPE as 'mysql' | 'postgres',
