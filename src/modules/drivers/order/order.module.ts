@@ -11,6 +11,7 @@ import { DriversModule } from '../drivers.module';
 import { OrderController } from './order.controller';
 import { OrderService } from './order.service';
 import { DriverSearchService } from 'src/modules/order/driver-search.service';
+import { OrderGroupModule } from '../order-group/order-group.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { DriverSearchService } from 'src/modules/order/driver-search.service';
     ]),
     forwardRef(() => DriversModule),
     EventsModule,
+    OrderGroupModule,
   ],
   providers: [OrderService, DriverSearchService],
   controllers: [OrderController],
