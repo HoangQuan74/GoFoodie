@@ -18,6 +18,8 @@ import { StoreLikeEntity } from './store-like.entity';
 import { OrderEntity } from './order.entity';
 import { StorePreparationTimeEntity } from './store-preparation-time.entity';
 import { StoreAddressEntity } from './store-address.entity';
+import { TitleEntity } from './title.entity';
+import { ClientReviewStoreEntity } from './client-review-store.entity';
 
 @Entity('stores')
 export class StoreEntity extends BaseEntity {
@@ -104,6 +106,9 @@ export class StoreEntity extends BaseEntity {
 
   @Column({ name: 'store_menu_id', type: 'uuid', nullable: true })
   storeMenuId: string;
+
+  @Column({ name: 'title_id', nullable: true })
+  titleId: number;
 
   @ManyToOne(() => FileEntity, (file) => file.id)
   @JoinColumn({ name: 'store_avatar_id' })
@@ -198,6 +203,13 @@ export class StoreEntity extends BaseEntity {
 
   @OneToMany(() => StoreAddressEntity, (address) => address.store)
   addresses: StoreAddressEntity[];
+
+  @OneToMany(() => ClientReviewStoreEntity, (clientReviewStore) => clientReviewStore.store)
+  clientReviewStore: ClientReviewStoreEntity;
+
+  @ManyToOne(() => TitleEntity, (title) => title.id, { createForeignKeyConstraints: false })
+  @JoinColumn({ name: 'title_id' })
+  title: TitleEntity;
 
   productCount: number;
 }
