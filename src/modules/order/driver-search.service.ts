@@ -8,10 +8,14 @@ import { OrderCriteriaEntity } from 'src/database/entities/order-criteria.entity
 import { EDriverStatus, EDriverApprovalStatus } from 'src/common/enums/driver.enum';
 import { EOrderCriteriaType } from 'src/common/enums/order-criteria.enum';
 import { calculateDistance } from 'src/utils/distance';
-import { EOrderStatus } from 'src/common/enums';
+import { EOrderGroupStatus, EOrderStatus } from 'src/common/enums';
 import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
 import { EventGatewayService } from 'src/events/event.gateway.service';
 import { isEmpty } from 'lodash';
+import { EXCEPTIONS } from 'src/common/constants';
+import { OrderGroupEntity } from 'src/database/entities/order-group.entity';
+import { OrderGroupItemEntity } from 'src/database/entities/order-group-item.entity';
+import { ORDER_GROUP_FULL } from 'src/common/constants/common.constant';
 
 @Injectable()
 export class DriverSearchService {
@@ -29,6 +33,12 @@ export class DriverSearchService {
 
     @InjectRepository(OrderActivityEntity)
     private orderActivityRepository: Repository<OrderActivityEntity>,
+
+    @InjectRepository(OrderGroupEntity)
+    private orderGroupRepository: Repository<OrderGroupEntity>,
+
+    @InjectRepository(OrderGroupItemEntity)
+    private orderGroupItemRepository: Repository<OrderGroupItemEntity>,
 
     private eventGatewayService: EventGatewayService,
   ) {}
@@ -68,6 +78,7 @@ export class DriverSearchService {
     });
 
     await this.orderActivityRepository.save(orderActivity);
+    await this.upsertOrderGroup(order.id, driver.id);
 
     this.eventGatewayService.notifyDriverNewOrder(driver.id, order);
   }
@@ -78,6 +89,7 @@ export class DriverSearchService {
 
     const drivers = await this.driverAvailabilityRepository
       .createQueryBuilder('driverAvailability')
+      .leftJoin('driverAvailability.driver', 'driver')
       .select(
         `
         ST_DistanceSphere(
@@ -95,10 +107,19 @@ export class DriverSearchService {
         ) <= :distanceCriteria`,
       )
       .andWhere('driverAvailability.isAvailable IS TRUE')
+      .andWhere(
+        `Not exists (
+            select 1 from order_group_items ogi 
+            left join order_groups og on og.id = ogi.order_group_id 
+            where ogi.order_id = :orderId and og.driver_id = driver.id
+          )`,
+        { orderId: order.id },
+      )
       .setParameters({
         longtitudeOfPoint: order.store.longitude,
         latitudeOfPoint: order.store.latitude,
         distanceCriteria: distanceCriteria,
+        orderId: order.id,
       })
       .getRawMany();
 
@@ -109,9 +130,32 @@ export class DriverSearchService {
     }
 
     const driverIds = drivers.map((driver) => driver.driverId);
+
+    const driverOrders = await this.orderGroupRepository
+      .createQueryBuilder('orderGroup')
+      .select('orderGroup.driverId', 'driverId')
+      .addSelect('COUNT(orderGroupItem.id)', 'orderCount')
+      .leftJoin('orderGroup.orderGroupItems', 'orderGroupItem')
+      .where('orderGroup.driverId IN (:...driverIds)', { driverIds })
+      .andWhere('orderGroup.status = :status', { status: EOrderGroupStatus.InDelivery })
+      .groupBy('orderGroup.driverId')
+      .getRawMany();
+
+    const availableDriverIds = driverOrders
+      .filter((driver) => Number(driver.orderCount) < ORDER_GROUP_FULL)
+      .map((driver) => driver.driverId);
+
+    const driversWithoutOrders = driverIds.filter(
+      (driverId) => !driverOrders.some((order) => order.driverId === driverId),
+    );
+
+    const driverCanTakeIds = [...new Set([...availableDriverIds, ...driversWithoutOrders])];
+
+    console.log('driverCanTakeIds: ', driverCanTakeIds);
+
     const driverAvailabilities = await this.driverRepository.find({
       where: {
-        id: In(driverIds),
+        id: In(driverCanTakeIds),
         status: EDriverStatus.Active,
         approvalStatus: EDriverApprovalStatus.Approved,
       },
@@ -175,5 +219,42 @@ export class DriverSearchService {
 
   selectBestDriver(scoredDrivers: { driver: DriverEntity; score: number }[]): DriverEntity | null {
     return scoredDrivers.sort((a, b) => b.score - a.score)[0]?.driver || null;
+  }
+
+  async upsertOrderGroup(orderId: number, driverId: number) {
+    const order = await this.orderRepository.findOneBy({ id: orderId });
+    if (!order) {
+      throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
+    }
+
+    let orderGroup = await this.orderGroupRepository.findOne({
+      where: {
+        driverId: driverId,
+        status: EOrderGroupStatus.InDelivery,
+      },
+      relations: { orderGroupItems: true },
+      select: {
+        id: true,
+        orderGroupItems: {
+          id: true,
+        },
+      },
+    });
+
+    if (!orderGroup) {
+      orderGroup = await this.orderGroupRepository.save({
+        driverId: driverId,
+        status: EOrderGroupStatus.InDelivery,
+      });
+    } else {
+      if (orderGroup.orderGroupItems?.length >= ORDER_GROUP_FULL) {
+        throw new BadRequestException(EXCEPTIONS.ORDER_GROUP_FULL);
+      }
+    }
+
+    return await this.orderGroupItemRepository.save({
+      orderGroup: orderGroup,
+      order: order,
+    });
   }
 }
