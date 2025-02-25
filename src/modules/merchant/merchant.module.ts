@@ -16,6 +16,8 @@ import { OrdersModule } from './order/order.module';
 import { CancelOrderReasonsModule } from './cancel-order-reasons/cancel-order-reasons.module';
 import { PreparationTimesModule } from './preparation-times/preparation-times.module';
 import { PrintSettingsModule } from './print_settings/print_settings.module';
+import { FlashSalesModule } from './flash-sales/flash-sales.module';
+import { VouchersModule } from './vouchers/vouchers.module';
 
 @Module({
   imports: [
@@ -32,6 +34,7 @@ import { PrintSettingsModule } from './print_settings/print_settings.module';
       { path: 'merchant', module: StoreAddressesModule },
       { path: 'merchant', module: OrdersModule },
       { path: 'merchant', module: CancelOrderReasonsModule },
+      { path: 'merchant', module: VouchersModule },
     ]),
     ProductsModule,
     StoresModule,
@@ -43,6 +46,8 @@ import { PrintSettingsModule } from './print_settings/print_settings.module';
     CancelOrderReasonsModule,
     PreparationTimesModule,
     PrintSettingsModule,
+    FlashSalesModule,
+    VouchersModule,
   ],
   providers: [MerchantsService],
   exports: [MerchantsService],

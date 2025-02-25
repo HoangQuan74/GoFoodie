@@ -33,3 +33,4 @@ export const ORM_LOGGING: boolean = process.env.ORM_LOGGING === 'true';
 export const PAY_MERCHANT_KEY: string = process.env.PAY_MERCHANT_KEY || '';
 export const PAY_SECRET_KEY: string = process.env.PAY_SECRET_KEY || '';
 export const PAY_CHECKSUM_KEY: string = process.env.PAY_CHECKSUM_KEY || '';
+export const PAY_API_URL: string = process.env.PAY_API_URL || '';
