@@ -65,7 +65,7 @@ export class FlashSalesController {
       .where(
         new Brackets((qb) => {
           qb.where('flashSale.createdByStoreId = :storeId', { storeId });
-          qb.orWhere('flashSaleProduct.storeId = :storeId', { storeId });
+          qb.orWhere('product.storeId = :storeId', { storeId });
         }),
       )
       .orderBy('flashSale.id', 'DESC')

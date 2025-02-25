@@ -37,6 +37,7 @@ import { StatisticalModule } from './statistical/statistical.module';
       { path: 'merchant', module: CancelOrderReasonsModule },
       { path: 'merchant', module: VouchersModule },
       { path: 'merchant', module: StatisticalModule },
+      { path: 'merchant', module: FlashSalesModule },
     ]),
     ProductsModule,
     StoresModule,

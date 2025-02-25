@@ -36,7 +36,7 @@ export class VouchersController {
 
   @Post()
   create(@Body() body: CreateVoucherDto, @CurrentStore() storeId: number) {
-    const { code } = body;
+    const { code, typeId } = body;
 
     return this.dataSource.transaction(async (manager: EntityManager) => {
       const isExist = await manager.findOne(VoucherEntity, { where: { code } });
@@ -45,9 +45,13 @@ export class VouchersController {
       const voucher = new VoucherEntity();
       Object.assign(voucher, body);
       voucher.serviceTypeId = EServiceType.Food;
-      voucher.typeId = EVoucherType.Product;
       voucher.createdByStoreId = storeId;
       voucher.maxDiscountType = voucher.maxDiscountValue ? EMaxDiscountType.Limited : EMaxDiscountType.Unlimited;
+
+      if (typeId === EVoucherType.Store) {
+        Object.assign(voucher, { stores: [{ id: storeId }] });
+      }
+
       return manager.save(voucher);
     });
   }
@@ -63,23 +67,29 @@ export class VouchersController {
       .addSelect(['voucher.maxUseTime as "maxUseTime"', 'voucher.maxUseTimePerUser as "maxUseTimePerUser"'])
       .addSelect(['voucher.discountType as "discountType"', 'voucher.discountValue as "discountValue"'])
       .addSelect(['createdBy.name as "createdByName"', 'voucher.createdAt as "createdAt"'])
-      // .addSelect(['type.id as "typeId"', 'type.name as "typeName"'])
+      .addSelect(['type.id as "typeId"'])
       .addSelect((subQuery) => {
         return subQuery
           .select('COUNT(1)', 'count')
           .from('voucher_products', 'vp')
           .where('vp.voucher_id = voucher.id')
-          .innerJoin(ProductEntity, 'product', 'product.id = vp.product_id');
+          .innerJoin(ProductEntity, 'product', 'product.id = vp.product_id AND product.store_id = :storeId')
+          .setParameter('storeId', storeId);
       }, 'productsCount')
       .addSelect(['0 as "usedCount"'])
       .leftJoin('voucher.createdBy', 'createdBy')
-      // .leftJoin('voucher.type', 'type')
+      .leftJoin('voucher.type', 'type')
       .leftJoin('voucher.products', 'products')
       .orderBy('voucher.id', 'DESC')
       .groupBy('voucher.id')
       .addGroupBy('createdBy.id')
-      // .addGroupBy('type.id')
-      .where('voucher.createdByStoreId = :storeId', { storeId })
+      .addGroupBy('type.id')
+      .where(
+        new Brackets((qb) => {
+          qb.where('voucher.createdByStoreId = :storeId', { storeId });
+          qb.orWhere('products.storeId = :storeId', { storeId });
+        }),
+      )
       .limit(limit)
       .offset((page - 1) * limit);
 
