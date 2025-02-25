@@ -6,35 +6,35 @@ import {
   Patch,
   Param,
   Delete,
-  UseGuards,
   NotFoundException,
-  Query,
   ConflictException,
+  Query,
+  UseGuards,
 } from '@nestjs/common';
 import { FlashSalesService } from './flash-sales.service';
 import { CreateFlashSaleDto } from './dto/create-flash-sale.dto';
 import { UpdateFlashSaleDto } from './dto/update-flash-sale.dto';
-import { AuthGuard } from '../auth/auth.guard';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { QueryFlashSaleProductsDto } from './dto/query-flash-sale-products.dto';
 import { AddFlashSaleProductsDto } from './dto/add-flash-sale-products.dto';
-import { UpdateFlashSaleProductsDto } from './dto/update-flash-sale-products.dto';
-import { IdentityQuery } from 'src/common/query';
-import { Brackets, In } from 'typeorm';
-import { QueryFlashSaleDto } from './dto/query-flash-sale.dto';
+import { QueryFlashSaleProductsDto } from './dto/query-flash-sale-products.dto';
 import { EFlashSaleStatus } from 'src/common/enums';
+import { Brackets, In } from 'typeorm';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { QueryFlashSaleDto } from './dto/query-flash-sale.dto';
+import { IdentityQuery } from 'src/common/query';
 import * as moment from 'moment-timezone';
 import { TIMEZONE } from 'src/common/constants';
+import { AuthGuard } from '../auth/auth.guard';
+import { CurrentStore } from 'src/common/decorators/current-store.decorator';
 
 @Controller('flash-sales')
-@ApiTags('Admin Flash Sales')
+@ApiTags('Flash Sales')
 @UseGuards(AuthGuard)
 export class FlashSalesController {
   constructor(private readonly flashSalesService: FlashSalesService) {}
 
   @Post()
-  create(@Body() body: CreateFlashSaleDto) {
-    return this.flashSalesService.save(body);
+  create(@Body() body: CreateFlashSaleDto, @CurrentStore() storeId: number) {
+    return this.flashSalesService.save({ ...body, createdByStoreId: storeId });
   }
 
   @Get('time-frames')
@@ -45,7 +45,7 @@ export class FlashSalesController {
 
   @Get()
   @ApiOperation({ summary: 'Lấy danh sách flash sale' })
-  async find(@Query() query: QueryFlashSaleDto) {
+  async find(@Query() query: QueryFlashSaleDto, @CurrentStore() storeId: number) {
     const { limit, page, search, createdAtFrom, createdAtTo, status } = query;
 
     const queryBuilder = this.flashSalesService
@@ -59,13 +59,15 @@ export class FlashSalesController {
         'timeFrame.endTime as "endTime"',
       ])
       .addSelect('COUNT(DISTINCT flashSaleProduct.id)', 'totalProducts')
-      .addSelect('COUNT(DISTINCT product.storeId)', 'totalStores')
-      .addSelect('COUNT(DISTINCT store.serviceGroupId)', 'totalServiceGroups')
       .innerJoin('flashSale.timeFrame', 'timeFrame')
       .leftJoin('flashSale.products', 'flashSaleProduct')
       .leftJoin('flashSaleProduct.product', 'product')
-      .leftJoin('product.store', 'store')
-      .where('flashSale.createdByStoreId IS NULL')
+      .where(
+        new Brackets((qb) => {
+          qb.where('flashSale.createdByStoreId = :storeId', { storeId });
+          qb.orWhere('product.storeId = :storeId', { storeId });
+        }),
+      )
       .orderBy('flashSale.id', 'DESC')
       .groupBy('flashSale.id')
       .addGroupBy('timeFrame.id')
@@ -147,44 +149,50 @@ export class FlashSalesController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const flashSale = await this.flashSalesService.findOne({ where: { id: +id }, relations: ['timeFrame'] });
+  async findOne(@Param('id') id: number) {
+    const flashSale = await this.flashSalesService.findOne({
+      where: { id: id },
+      relations: ['timeFrame'],
+    });
     if (!flashSale) throw new NotFoundException();
 
     return flashSale;
   }
 
   @Delete(':id')
-  async delete(@Param('id') id: string) {
-    const flashSale = await this.flashSalesService.findOne({ where: { id: +id } });
+  async delete(@Param('id') id: number, @CurrentStore() storeId: number) {
+    const flashSale = await this.flashSalesService.findOne({ where: { id, createdByStoreId: storeId } });
     if (!flashSale) throw new NotFoundException();
 
     return this.flashSalesService.remove(flashSale);
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() body: UpdateFlashSaleDto) {
-    const flashSale = await this.flashSalesService.findOne({ where: { id: +id } });
+  async update(@Param('id') id: number, @Body() body: UpdateFlashSaleDto, @CurrentStore() storeId: number) {
+    const flashSale = await this.flashSalesService.findOne({ where: { id, createdByStoreId: storeId } });
     if (!flashSale) throw new NotFoundException();
 
     return this.flashSalesService.save({ ...flashSale, ...body });
   }
 
   @Get(':id/products')
-  async getProducts(@Param('id') id: number, @Query() query: QueryFlashSaleProductsDto) {
+  async getProducts(
+    @Param('id') id: number,
+    @Query() query: QueryFlashSaleProductsDto,
+    @CurrentStore() storeId: number,
+  ) {
     const { limit, page } = query;
 
     const queryBuilder = this.flashSalesService
       .createQueryBuilderProducts('flashSaleProduct')
       .addSelect(['product.id', 'product.name', 'product.price', 'product.imageId', 'product.code'])
-      .addSelect(['store.id', 'store.name'])
       .addSelect(['productCategory.id', 'productCategory.name'])
       .addSelect(['serviceGroup.id', 'serviceGroup.name'])
       .leftJoin('flashSaleProduct.product', 'product')
       .leftJoin('product.productCategory', 'productCategory')
       .leftJoin('productCategory.serviceGroup', 'serviceGroup')
-      .leftJoin('product.store', 'store')
       .where('flashSaleProduct.flashSaleId = :flashSaleId', { flashSaleId: id })
+      .andWhere('product.storeId = :storeId', { storeId: storeId })
       .skip(limit * (page - 1))
       .take(limit);
 
@@ -194,10 +202,14 @@ export class FlashSalesController {
   }
 
   @Post(':id/products')
-  async addProducts(@Param('id') flashSaleId: number, @Body() body: AddFlashSaleProductsDto) {
+  async addProducts(
+    @Param('id') flashSaleId: number,
+    @Body() body: AddFlashSaleProductsDto,
+    @CurrentStore() storeId: number,
+  ) {
     const { products } = body;
 
-    const flashSale = await this.flashSalesService.findOne({ where: { id: flashSaleId } });
+    const flashSale = await this.flashSalesService.findOne({ where: { id: flashSaleId, createdByStoreId: storeId } });
     if (!flashSale) throw new NotFoundException();
 
     const data = products.map((product) => ({ flashSaleId, ...product }));
@@ -211,20 +223,13 @@ export class FlashSalesController {
   }
 
   @Delete(':id/products')
-  async removeProducts(@Param('id') id: number, @Body() { ids }: IdentityQuery) {
+  async removeProducts(@Param('id') id: number, @Body() { ids }: IdentityQuery, @CurrentStore() storeId: number) {
+    const flashSale = await this.flashSalesService.findOne({ where: { id, createdByStoreId: storeId } });
+    if (!flashSale) throw new NotFoundException();
+
     const flashSaleProducts = await this.flashSalesService.findProducts({ where: { flashSaleId: id, id: In(ids) } });
     if (flashSaleProducts.length !== ids.length) throw new NotFoundException();
 
     return this.flashSalesService.removeProducts(flashSaleProducts);
-  }
-
-  @Patch(':id/products')
-  async updateProducts(@Param('id') id: number, @Body() body: UpdateFlashSaleProductsDto) {
-    const { products } = body;
-
-    const flashSale = await this.flashSalesService.findOne({ where: { id } });
-    if (!flashSale) throw new NotFoundException();
-
-    return this.flashSalesService.saveProducts(products);
   }
 }

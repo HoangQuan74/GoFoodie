@@ -18,3 +18,9 @@ export enum EVoucherStatus {
   InProgress = 'in-progress',
   Ended = 'ended',
 }
+
+export enum EVoucherType {
+  AllStore = 1,
+  Product = 2,
+  Store = 3,
+}

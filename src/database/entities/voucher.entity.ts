@@ -1,12 +1,13 @@
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { ServiceTypeEntity } from './service-type.entity';
-import { ERefundType, EDiscountType, EMaxDiscountType } from 'src/common/enums/voucher.enum';
+import { ERefundType, EDiscountType, EMaxDiscountType, EVoucherType } from 'src/common/enums/voucher.enum';
 import { AdminEntity } from './admin.entity';
 import { VoucherTypeEntity } from './voucher-type.entity';
 import { ProductEntity } from './product.entity';
 import { FileEntity } from './file.entity';
 import { StoreEntity } from './store.entity';
+import { EServiceType } from 'src/common/enums';
 
 @Entity('vouchers')
 export class VoucherEntity extends BaseEntity {
@@ -19,11 +20,11 @@ export class VoucherEntity extends BaseEntity {
   @Column()
   code: string;
 
-  @Column({ name: 'type_id' })
-  typeId: number;
+  @Column({ name: 'type_id', type: 'int' })
+  typeId: EVoucherType;
 
   @Column({ name: 'service_type_id' })
-  serviceTypeId: number;
+  serviceTypeId: EServiceType;
 
   @Column({ name: 'start_time' })
   startTime: Date;
@@ -69,8 +70,11 @@ export class VoucherEntity extends BaseEntity {
   @Column({ name: 'max_use_time_per_user' })
   maxUseTimePerUser: number;
 
-  @Column({ name: 'created_by_id' })
+  @Column({ name: 'created_by_id', nullable: true })
   createdById: number;
+
+  @Column({ name: 'created_by_store_id', nullable: true })
+  createdByStoreId: number;
 
   @Column({ name: 'is_all_products', default: false })
   isAllItems: boolean;
