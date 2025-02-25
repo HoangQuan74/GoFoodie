@@ -18,6 +18,7 @@ import { PreparationTimesModule } from './preparation-times/preparation-times.mo
 import { PrintSettingsModule } from './print_settings/print_settings.module';
 import { FlashSalesModule } from './flash-sales/flash-sales.module';
 import { VouchersModule } from './vouchers/vouchers.module';
+import { StatisticalModule } from './statistical/statistical.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { VouchersModule } from './vouchers/vouchers.module';
       { path: 'merchant', module: OrdersModule },
       { path: 'merchant', module: CancelOrderReasonsModule },
       { path: 'merchant', module: VouchersModule },
+      { path: 'merchant', module: StatisticalModule },
     ]),
     ProductsModule,
     StoresModule,
@@ -48,6 +50,7 @@ import { VouchersModule } from './vouchers/vouchers.module';
     PrintSettingsModule,
     FlashSalesModule,
     VouchersModule,
+    StatisticalModule,
   ],
   providers: [MerchantsService],
   exports: [MerchantsService],

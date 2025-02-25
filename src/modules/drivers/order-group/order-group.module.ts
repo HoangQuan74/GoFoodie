@@ -11,12 +11,7 @@ import { OrdersModule } from 'src/modules/merchant/order/order.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      // OrderEntity,
-      // DriverEntity,
-      // OrderGroupEntity,
-      // OrderGroupItemEntity,
-    ]),
+    TypeOrmModule.forFeature([OrderEntity, DriverEntity, OrderGroupEntity, OrderGroupItemEntity]),
     forwardRef(() => DriversModule),
   ],
   controllers: [OrderGroupController],
