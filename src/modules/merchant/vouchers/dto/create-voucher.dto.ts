@@ -16,7 +16,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { EXCEPTIONS } from 'src/common/constants';
-import { ERefundType, EDiscountType } from 'src/common/enums/voucher.enum';
+import { ERefundType, EDiscountType, EVoucherType } from 'src/common/enums/voucher.enum';
 import { IdDto } from 'src/common/query';
 
 export class CreateVoucherDto {
@@ -24,6 +24,10 @@ export class CreateVoucherDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @ApiProperty({ enum: [EVoucherType.Product, EVoucherType.Store] })
+  @IsEnum([EVoucherType.Product, EVoucherType.Store])
+  typeId: EVoucherType.Product | EVoucherType.Store;
 
   @ApiProperty()
   @IsUUID()

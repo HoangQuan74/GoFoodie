@@ -68,6 +68,7 @@ export class VouchersController {
       .leftJoin('voucher.serviceType', 'serviceType')
       .leftJoin('voucher.type', 'type')
       .leftJoin('voucher.products', 'products')
+      .where('voucher.createdByStoreId IS NULL')
       .orderBy('voucher.id', 'DESC')
       .groupBy('voucher.id')
       .addGroupBy('createdBy.id')

@@ -65,6 +65,7 @@ export class FlashSalesController {
       .leftJoin('flashSale.products', 'flashSaleProduct')
       .leftJoin('flashSaleProduct.product', 'product')
       .leftJoin('product.store', 'store')
+      .where('flashSale.createdByStoreId IS NULL')
       .orderBy('flashSale.id', 'DESC')
       .groupBy('flashSale.id')
       .addGroupBy('timeFrame.id')
