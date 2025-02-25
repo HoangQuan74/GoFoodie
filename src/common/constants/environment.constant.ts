@@ -29,3 +29,7 @@ export const ENCRYPTION_IV: string = process.env.ENCRYPTION_IV || '';
 
 export const CRONJOB: boolean = process.env.CRONJOB === 'true';
 export const ORM_LOGGING: boolean = process.env.ORM_LOGGING === 'true';
+
+export const PAY_MERCHANT_KEY: string = process.env.PAY_MERCHANT_KEY || '';
+export const PAY_SECRET_KEY: string = process.env.PAY_SECRET_KEY || '';
+export const PAY_CHECKSUM_KEY: string = process.env.PAY_CHECKSUM_KEY || '';

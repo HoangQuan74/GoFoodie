@@ -183,6 +183,7 @@ export class CartsController {
   async findProduct(@Param('productId') productId: string, @CurrentUser() user: JwtPayload) {
     const carts = await this.cartsService
       .createQueryBuilder('cart')
+      .select(['cart.id', 'cart.storeId'])
       .addSelect(['cartProducts.id', 'cartProducts.quantity', 'cartProducts.note'])
       .innerJoin('cart.cartProducts', 'cartProducts')
       .addSelect(['product.id', 'product.name', 'product.price', 'product.imageId'])
@@ -240,6 +241,7 @@ export class CartsController {
     return Object.keys(groupedCartProducts).map((key) => ({
       productId: +key,
       quantity: groupedCartProducts[key].reduce((acc, cp) => acc + cp.quantity, 0),
+      isMultiOptions: groupedCartProducts[key].length > 1,
     }));
   }
 

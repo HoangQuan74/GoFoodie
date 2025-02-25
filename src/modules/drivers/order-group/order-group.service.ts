@@ -1,71 +1,167 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EXCEPTIONS } from 'src/common/constants';
-import { EOrderGroupStatus } from 'src/common/enums';
+import { ORDER_GROUP_FULL } from 'src/common/constants/common.constant';
+import { EOrderGroupStatus, EOrderStatus } from 'src/common/enums';
 import { OrderGroupItemEntity } from 'src/database/entities/order-group-item.entity';
 import { OrderGroupEntity } from 'src/database/entities/order-group.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 
 @Injectable()
 export class OrderGroupService {
-  constructor() {} // private orderRepository: Repository<OrderEntity>, // @InjectRepository(OrderEntity) // private orderGroupItemRepository: Repository<OrderGroupItemEntity>, // @InjectRepository(OrderGroupItemEntity) // private orderGroupRepository: Repository<OrderGroupEntity>, // @InjectRepository(OrderGroupEntity)
+  constructor(
+    @InjectRepository(OrderGroupEntity)
+    private orderGroupRepository: Repository<OrderGroupEntity>,
+
+    @InjectRepository(OrderGroupItemEntity)
+    private orderGroupItemRepository: Repository<OrderGroupItemEntity>,
+
+    @InjectRepository(OrderEntity)
+    private orderRepository: Repository<OrderEntity>,
+  ) {}
 
   async getCurrentOrderGroup(driverId: number) {
-    // const queryBuilder = this.orderGroupItemRepository.createQueryBuilder('orderGroupItem')
-    //     .innerJoin('orderGroupItem.orderGroup', 'orderGroup')
-    //     .innerJoin('orderGroupItem.order', 'order')
-    //     .leftJoin('order.client', 'client')
-    //     .leftJoin('order.store', 'store')
-    //     .where('orderGroup.driverId = :driverId', { driverId })
-    //     .andWhere('orderGroup.status = :status', { status: EOrderGroupStatus.InDelivery })
-    //     .select([
-    //         'orderGroupItem.id',
-    //         'order.id',
-    //         'order.orderCode',
-    //         'order.estimatedOrderTime',
-    //         'order.estimatedPickupTime',
-    //         'order.deliveryAddress',
-    //         'order.deliveryLatitude',
-    //         'order.deliveryLongitude',
-    //         'client.id',
-    //         'client.name',
-    //         'store.id',
-    //         'store.name',
-    //         'store.address',
-    //         'store.streetName',
-    //         'store.latitude',
-    //         'store.longitude',
-    //     ]);
-    // const result = await queryBuilder
-    //     .orderBy('order.createdAt', 'DESC')
-    //     .getMany();
-    // return result;
+    const queryBuilder = this.orderGroupItemRepository
+      .createQueryBuilder('orderGroupItem')
+      .innerJoin('orderGroupItem.orderGroup', 'orderGroup')
+      .innerJoin('orderGroupItem.order', 'order')
+      .leftJoin('order.client', 'client')
+      .leftJoin('order.store', 'store')
+      .leftJoinAndMapOne(
+        'order.orderInDelivery',
+        'order.activities',
+        'orderInDelivery',
+        'orderInDelivery.orderId = order.id AND orderInDelivery.status = :statusInDelivery',
+        { statusInDelivery: EOrderStatus.InDelivery },
+      )
+      .leftJoinAndMapOne(
+        'order.orderDelivered',
+        'order.activities',
+        'orderDelivered',
+        'orderDelivered.orderId = order.id AND orderDelivered.status = :statusDelivered',
+        { statusDelivered: EOrderStatus.Delivered },
+      )
+      .where('orderGroup.driverId = :driverId', { driverId })
+      .andWhere('orderGroup.status = :status', { status: EOrderGroupStatus.InDelivery })
+      .select([
+        'orderGroupItem.id',
+        'order.id',
+        'order.orderCode',
+        'order.estimatedOrderTime',
+        'order.estimatedPickupTime',
+        'order.estimatedDeliveryTime',
+        'order.deliveryAddress',
+        'order.deliveryLatitude',
+        'order.deliveryLongitude',
+        'client.id',
+        'client.name',
+        'client.phone',
+        'store.id',
+        'store.name',
+        'store.address',
+        'store.streetName',
+        'store.latitude',
+        'store.longitude',
+        'store.phoneNumber',
+      ]);
+
+    const result = await queryBuilder.orderBy('order.createdAt', 'DESC').getMany();
+    const incomeOfDriver = await this.orderGroupItemRepository
+      .createQueryBuilder('orderGroupItem')
+      .innerJoin('orderGroupItem.orderGroup', 'orderGroup')
+      .innerJoin('orderGroupItem.order', 'order')
+      .where('orderGroup.driverId = :driverId', { driverId })
+      .andWhere('orderGroup.status = :status', { status: EOrderGroupStatus.InDelivery })
+      .select(
+        `
+        SUM(
+          COALESCE(order.tip, 0) + 
+          COALESCE(order.deliveryFee, 0) + 
+          COALESCE(order.peakHourFee, 0) + 
+          COALESCE(order.parkingFee, 0)
+        )`,
+        'totalIncome',
+      )
+      .groupBy('orderGroup.id')
+      .getRawOne();
+
+    return { result, incomeOfDriver: Number(incomeOfDriver.totalIncome) || 0 };
   }
 
-  // async upsertOrderGroup(orderId: number, driverId: number) {
-  //     const order = await this.orderRepository.findOneBy({ id: orderId });
-  //     if (!order) {
-  //         throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
-  //     }
+  async upsertOrderGroup(orderId: number, driverId: number) {
+    const order = await this.orderRepository.findOneBy({ id: orderId });
+    if (!order) {
+      throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
+    }
 
-  //     let orderGroup = await this.orderGroupRepository.findOne({
-  //         where: {
-  //             driverId: driverId,
-  //             status: EOrderGroupStatus.InDelivery,
-  //         }
-  //     });
+    let orderGroup = await this.orderGroupRepository.findOne({
+      where: {
+        driverId: driverId,
+        status: EOrderGroupStatus.InDelivery,
+      },
+      relations: { orderGroupItems: true },
+      select: {
+        id: true,
+        orderGroupItems: {
+          id: true,
+        },
+      },
+    });
 
-  //     if (!orderGroup) {
-  //         orderGroup = await this.orderGroupRepository.save({
-  //             driverId: driverId,
-  //             status: EOrderGroupStatus.InDelivery,
-  //         });
-  //     }
+    if (!orderGroup) {
+      orderGroup = await this.orderGroupRepository.save({
+        driverId: driverId,
+        status: EOrderGroupStatus.InDelivery,
+      });
+    } else {
+      if (orderGroup.orderGroupItems?.length >= ORDER_GROUP_FULL) {
+        throw new BadRequestException(EXCEPTIONS.ORDER_GROUP_FULL);
+      }
+    }
 
-  //     return await this.orderGroupItemRepository.save({
-  //         orderGroup: orderGroup,
-  //         order: order,
-  //     });
-  // }
+    return await this.orderGroupItemRepository.save({
+      orderGroup: orderGroup,
+      order: order,
+    });
+  }
+
+  async updateOrderGroupByOrderId(orderId: number, driverId: number): Promise<void> {
+    const countOrderOfGroup = await this.orderGroupItemRepository.count({
+      where: {
+        orderGroup: {
+          driverId: driverId,
+          status: EOrderGroupStatus.InDelivery,
+        },
+      },
+    });
+
+    const countCompleteOrderOfGroup = await this.orderGroupItemRepository
+      .createQueryBuilder('ogi')
+      .leftJoin('ogi.order', 'order')
+      .leftJoin('ogi.orderGroup', 'orderGroup')
+      .where('orderGroup.driverId = :driverId', { driverId })
+      .andWhere('orderGroup.status = :status', { status: EOrderGroupStatus.InDelivery })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('order.status = :deliveredStatus AND order.driverId = :driverId', {
+            deliveredStatus: EOrderStatus.Delivered,
+            driverId,
+          }).orWhere(' order.driverId != :driverId', { driverId });
+        }),
+      )
+      .getCount();
+
+    if (countOrderOfGroup === countCompleteOrderOfGroup) {
+      await this.orderGroupRepository.update(
+        {
+          driverId: driverId,
+          status: EOrderGroupStatus.InDelivery,
+        },
+        {
+          status: EOrderGroupStatus.Delivered,
+        },
+      );
+    }
+  }
 }
