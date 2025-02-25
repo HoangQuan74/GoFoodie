@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import * as moment from 'moment-timezone';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { PaginationQuery } from 'src/common/query';
+import { StoreEntity } from 'src/database/entities/store.entity';
 
 @Injectable()
 export class StatisticalService {
@@ -15,6 +16,9 @@ export class StatisticalService {
 
     @InjectRepository(ProductEntity)
     private readonly productRepository: Repository<ProductEntity>,
+
+    @InjectRepository(StoreEntity)
+    private readonly storeRepository: Repository<StoreEntity>,
   ) {}
 
   async getRevenueChart(type: TimeRange, storeId: number) {
@@ -41,15 +45,36 @@ export class StatisticalService {
     const revenueData = await this.getRevenueData(storeId, startDate, interval, format);
     const revenue = await this.getRevenue(startDate, now.endOf('day'), storeId);
     const previousRevenue = await this.getRevenue(previousTime, startDate, storeId);
+    const store = await this.storeRepository
+      .createQueryBuilder('store')
+      .where('store.id = :storeId', { storeId })
+      .leftJoin('store.title', 'title')
+      .leftJoin('store.clientReviewStore', 'clientReviewStore')
+      .select('store.id', 'storeId')
+      .addSelect('AVG(clientReviewStore.rating)', 'avgRating')
+      .addSelect('title.id', 'titleId')
+      .addSelect('title.title', 'title')
+      .addSelect('title.iconId', 'iconId')
+      .groupBy('store.id')
+      .addGroupBy('title.id')
+      .getRawOne();
 
     return {
-      revenue,
-      growRate: previousRevenue === 0 ? null : (revenue - previousRevenue) / previousRevenue,
+      store,
+      updatedAt: new Date(),
+      revenue: revenue.total,
+      revenueGrowthRate:
+        previousRevenue.total === 0 ? null : (revenue.total - previousRevenue.total) / previousRevenue.total,
+      quantityOrder: revenue.quantityOrder,
+      orderQuantityGrowthRate:
+        previousRevenue.quantityOrder === 0
+          ? null
+          : (revenue.quantityOrder - previousRevenue.quantityOrder) / previousRevenue.quantityOrder,
       revenueData,
     };
   }
 
-  private async getRevenue(startDate: moment.Moment, endDate: moment.Moment, storeId: number): Promise<number> {
+  private async getRevenue(startDate: moment.Moment, endDate: moment.Moment, storeId: number) {
     const result = await this.orderRepository
       .createQueryBuilder('order')
       .where('order.storeId = :storeId', { storeId })
@@ -59,8 +84,13 @@ export class StatisticalService {
       })
       .andWhere('order.status = :status', { status: EOrderStatus.Delivered })
       .select('SUM(order.totalAmount)', 'total')
+      .addSelect('COUNT(order.id)', 'quantityOrder')
       .getRawOne();
-    return Number(result.total) || 0;
+
+    return {
+      total: Number(result?.total) || 0,
+      quantityOrder: Number(result?.quantityOrder) || 0,
+    };
   }
 
   private async getRevenueData(storeId: number, startDate: moment.Moment, interval: string, format: string) {

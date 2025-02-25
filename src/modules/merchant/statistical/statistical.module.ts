@@ -5,9 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { MerchantModule } from '../merchant.module';
 import { ProductEntity } from 'src/database/entities/product.entity';
+import { StoreEntity } from 'src/database/entities/store.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([OrderEntity, ProductEntity]), forwardRef(() => MerchantModule)],
+  imports: [TypeOrmModule.forFeature([OrderEntity, ProductEntity, StoreEntity]), forwardRef(() => MerchantModule)],
   controllers: [StatisticalController],
   providers: [StatisticalService],
   exports: [StatisticalService],
