@@ -12,6 +12,8 @@ import { DriverSearchService } from 'src/modules/order/driver-search.service';
 import { MerchantModule } from '../merchant.module';
 import { OrderController } from './order.controller';
 import { OrderService } from './order.service';
+import { OrderGroupEntity } from 'src/database/entities/order-group.entity';
+import { OrderGroupItemEntity } from 'src/database/entities/order-group-item.entity';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { OrderService } from './order.service';
       DriverEntity,
       OrderCriteriaEntity,
       DriverAvailabilityEntity,
+      OrderGroupEntity,
+      OrderGroupItemEntity,
     ]),
     forwardRef(() => MerchantModule),
     EventsModule,

@@ -204,7 +204,12 @@ export class OrderService {
       throw new BadRequestException('You cannot accept this order');
     }
 
-    await this.orderGroupService.upsertOrderGroup(orderId, driverId);
+    // await this.orderGroupService.upsertOrderGroup(orderId, driverId);
+    await this.orderGroupService.updateOrderGroupItem({
+      orderId,
+      driverId,
+      isConfirmByDriver: true,
+    });
 
     order.status = EOrderStatus.DriverAccepted;
     await this.orderRepository.save(order);
@@ -262,12 +267,15 @@ export class OrderService {
 
       await this.orderActivityRepository.save(orderActivity);
     }
+
+    await this.orderGroupService.rejectOrderGroupItem(orderId, driverId);
+    
     delete order.activities;
     order.driverId = null;
     order.status = EOrderStatus.SearchingForDriver;
 
     await this.orderRepository.save(order);
-    await this.orderGroupService.updateOrderGroupByOrderId(orderId, driverId);
+    await this.orderGroupService.updateOrderGroupByDriverId(driverId);
     await this.driverSearchService.assignOrderToDriver(orderId);
 
     this.eventGatewayService.handleOrderUpdated(order.id);
@@ -309,7 +317,7 @@ export class OrderService {
         performedBy: `driverId:${driverId}`,
       });
       await this.orderActivityRepository.save(orderActivity);
-      await this.orderGroupService.updateOrderGroupByOrderId(orderId, driverId);
+      await this.orderGroupService.updateOrderGroupByDriverId(driverId);
 
       this.eventGatewayService.handleOrderUpdated(order.id);
     }

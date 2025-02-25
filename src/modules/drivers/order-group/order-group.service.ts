@@ -46,12 +46,14 @@ export class OrderGroupService {
       .andWhere('orderGroup.status = :status', { status: EOrderGroupStatus.InDelivery })
       .select([
         'orderGroupItem.id',
+        'orderGroupItem.isConfirmByDriver',
         'order.id',
         'order.orderCode',
         'order.estimatedOrderTime',
         'order.estimatedPickupTime',
         'order.estimatedDeliveryTime',
         'order.deliveryAddress',
+        'order.deliveryName',
         'order.deliveryLatitude',
         'order.deliveryLongitude',
         'client.id',
@@ -86,7 +88,7 @@ export class OrderGroupService {
       .groupBy('orderGroup.id')
       .getRawOne();
 
-    return { result, incomeOfDriver: Number(incomeOfDriver.totalIncome) || 0 };
+    return { result, incomeOfDriver: Number(incomeOfDriver?.totalIncome) || 0 };
   }
 
   async upsertOrderGroup(orderId: number, driverId: number) {
@@ -126,7 +128,46 @@ export class OrderGroupService {
     });
   }
 
-  async updateOrderGroupByOrderId(orderId: number, driverId: number): Promise<void> {
+  async updateOrderGroupItem(data: { orderId: number; driverId: number; isConfirmByDriver: boolean }) {
+    const { orderId, driverId, isConfirmByDriver } = data;
+    const orderGroupItem = await this.orderGroupItemRepository.findOne({
+      where: {
+        orderId: orderId,
+        orderGroup: {
+          driverId: driverId,
+        },
+      },
+    });
+
+    if (!orderGroupItem) {
+      throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
+    }
+
+    orderGroupItem.isConfirmByDriver = isConfirmByDriver;
+
+    return await this.orderGroupItemRepository.save(orderGroupItem);
+  }
+
+  async rejectOrderGroupItem(orderId: number, driverId: number) {
+    const orderGroupItem = await this.orderGroupItemRepository.findOne({
+      where: {
+        orderId: orderId,
+        orderGroup: {
+          driverId: driverId,
+        },
+      },
+    });
+
+    if (!orderGroupItem) {
+      return;
+    }
+
+    await this.orderGroupItemRepository.softRemove(orderGroupItem);
+    await this.updateOrderGroupByDriverId(driverId);
+    return;
+  }
+
+  async updateOrderGroupByDriverId(driverId: number): Promise<void> {
     const countOrderOfGroup = await this.orderGroupItemRepository.count({
       where: {
         orderGroup: {
