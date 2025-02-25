@@ -47,6 +47,10 @@ export class CartsController {
         const cartProductOptionIds = cartProduct.cartProductOptions.map((cpo) => cpo.optionId);
         const optionIdsSet = new Set(optionIds);
 
+        if (note != cartProduct.note) {
+          return this.cartsService.addProductToCart(cart, body);
+        }
+
         if (optionIdsSet.size !== cartProductOptionIds.length) {
           return this.cartsService.addProductToCart(cart, body);
         }
