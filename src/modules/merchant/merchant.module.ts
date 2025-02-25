@@ -16,6 +16,8 @@ import { OrdersModule } from './order/order.module';
 import { CancelOrderReasonsModule } from './cancel-order-reasons/cancel-order-reasons.module';
 import { PreparationTimesModule } from './preparation-times/preparation-times.module';
 import { PrintSettingsModule } from './print_settings/print_settings.module';
+import { FlashSalesModule } from './flash-sales/flash-sales.module';
+import { VouchersModule } from './vouchers/vouchers.module';
 import { StatisticalModule } from './statistical/statistical.module';
 
 @Module({
@@ -33,6 +35,7 @@ import { StatisticalModule } from './statistical/statistical.module';
       { path: 'merchant', module: StoreAddressesModule },
       { path: 'merchant', module: OrdersModule },
       { path: 'merchant', module: CancelOrderReasonsModule },
+      { path: 'merchant', module: VouchersModule },
       { path: 'merchant', module: StatisticalModule },
     ]),
     ProductsModule,
@@ -45,6 +48,8 @@ import { StatisticalModule } from './statistical/statistical.module';
     CancelOrderReasonsModule,
     PreparationTimesModule,
     PrintSettingsModule,
+    FlashSalesModule,
+    VouchersModule,
     StatisticalModule,
   ],
   providers: [MerchantsService],

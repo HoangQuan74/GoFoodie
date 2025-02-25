@@ -20,6 +20,9 @@ export class FlashSaleEntity extends BaseEntity {
   @Column({ name: 'end_date', type: 'date' })
   endDate: Date;
 
+  @Column({ name: 'created_by_store_id', nullable: true })
+  createdByStoreId: number;
+
   @ManyToOne(() => FlashSaleTimeFrameEntity, (timeFrame) => timeFrame.flashSales)
   @JoinColumn({ name: 'time_frame_id' })
   timeFrame: FlashSaleTimeFrameEntity;
