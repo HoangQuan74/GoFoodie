@@ -22,4 +22,11 @@ export class OrderCriteriaService {
 
     return orderCriteria.value;
   }
+
+  async getTimeCountDownToDriverConfirm() {
+    const orderCriteria = await this.orderCriteriaRepository.findOne({ where: { type: EOrderCriteriaType.Time } });
+    if (!orderCriteria) return 10;
+
+    return orderCriteria.value;
+  }
 }
