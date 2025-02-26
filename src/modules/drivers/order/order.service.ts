@@ -117,6 +117,16 @@ export class OrderService {
         'orderDelivered.orderId = order.id AND orderDelivered.status = :statusDelivered',
         { statusDelivered: EOrderStatus.Delivered },
       )
+      .leftJoinAndMapOne(
+        'order.driverCancelOrder',
+        'order.activities',
+        'driverCancelOrder',
+        'driverCancelOrder.orderId = order.id AND (driverCancelOrder.description = :descriptionDeclined OR driverCancelOrder.description = :descriptionCancelled)',
+        {
+          descriptionDeclined: EOrderActivityStatus.DRIVER_REJECTED,
+          descriptionCancelled: EOrderActivityStatus.DRIVER_APPROVED_AND_REJECTED,
+        },
+      )
       .leftJoinAndSelect('order.store', 'store')
       .leftJoinAndSelect('store.ward', 'ward')
       .leftJoinAndSelect('store.district', 'district')
@@ -149,17 +159,6 @@ export class OrderService {
 
     if (order.driverId && order.driverId !== driverId) {
       throw new BadRequestException('You do not have permission to view this order');
-    }
-
-    if (order.store) {
-      const addressParts = [
-        order.store.address,
-        order.store.ward?.name,
-        order.store.district?.name,
-        order.store.province?.name,
-      ].filter(Boolean);
-
-      order.store.address = addressParts.join(', ');
     }
 
     const criteria = await this.orderCriteriaRepository.findOne({
@@ -290,7 +289,7 @@ export class OrderService {
     }
 
     await this.orderGroupService.rejectOrderGroupItem(orderId, driverId);
-    
+
     delete order.activities;
     order.driverId = null;
     order.status = EOrderStatus.SearchingForDriver;
