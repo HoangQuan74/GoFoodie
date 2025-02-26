@@ -8,7 +8,9 @@ import { OrderCriteriaEntity } from 'src/database/entities/order-criteria.entity
 import { EDriverStatus, EDriverApprovalStatus } from 'src/common/enums/driver.enum';
 import { EOrderCriteriaType } from 'src/common/enums/order-criteria.enum';
 import { calculateDistance } from 'src/utils/distance';
-import { EOrderGroupStatus, EOrderStatus } from 'src/common/enums';
+import { EClientNotificationType, EOrderStatus, EOrderGroupStatus } from 'src/common/enums';
+import { ClientNotificationEntity } from 'src/database/entities/client-notification.entity';
+import { CLIENT_NOTIFICATION_CONTENT, CLIENT_NOTIFICATION_TITLE } from 'src/common/constants/notification.constant';
 import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
 import { EventGatewayService } from 'src/events/event.gateway.service';
 import { isEmpty } from 'lodash';
@@ -22,6 +24,7 @@ export class DriverSearchService {
   constructor(
     @InjectRepository(DriverAvailabilityEntity)
     private driverAvailabilityRepository: Repository<DriverAvailabilityEntity>,
+
     @InjectRepository(OrderCriteriaEntity)
     private orderCriteriaRepository: Repository<OrderCriteriaEntity>,
 
@@ -76,6 +79,14 @@ export class DriverSearchService {
       cancellationReason: '',
       performedBy: `driverId:${driver.id}`,
     });
+
+    const notification = new ClientNotificationEntity();
+    notification.clientId = order.clientId;
+    notification.from = order.store?.name;
+    notification.title = CLIENT_NOTIFICATION_TITLE.ORDER_DRIVER_ARRIVING;
+    notification.content = CLIENT_NOTIFICATION_CONTENT.ORDER_DRIVER_ARRIVING;
+    notification.type = EClientNotificationType.Order;
+    notification.relatedId = order.id;
 
     await this.orderActivityRepository.save(orderActivity);
     await this.upsertOrderGroup(order.id, driver.id);

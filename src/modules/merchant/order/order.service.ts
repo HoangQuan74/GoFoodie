@@ -12,8 +12,10 @@ import { OrderResponse } from 'src/common/interfaces/order.interface';
 import { calculateStoreIncome } from 'src/utils/income';
 import { EXCEPTIONS } from 'src/common/constants';
 import { FcmService } from 'src/modules/fcm/fcm.service';
-import { EUserType } from 'src/common/enums';
+import { EClientNotificationType, EUserType } from 'src/common/enums';
 import { DriverSearchService } from 'src/modules/order/driver-search.service';
+import { ClientNotificationEntity } from 'src/database/entities/client-notification.entity';
+import { CLIENT_NOTIFICATION_CONTENT, CLIENT_NOTIFICATION_TITLE } from 'src/common/constants/notification.constant';
 
 @Injectable()
 export class OrderService {
@@ -132,6 +134,15 @@ export class OrderService {
         performedBy: `merchant:${merchantId}`,
       });
       await queryRunner.manager.save(orderActivity);
+
+      const notification = new ClientNotificationEntity();
+      notification.clientId = savedOrder.clientId;
+      notification.from = order.store?.name;
+      notification.title = CLIENT_NOTIFICATION_TITLE.ORDER_FINDING_DRIVER;
+      notification.content = CLIENT_NOTIFICATION_CONTENT.ORDER_FINDING_DRIVER;
+      notification.type = EClientNotificationType.Order;
+      notification.relatedId = savedOrder.id;
+      await queryRunner.manager.save(notification);
 
       await queryRunner.commitTransaction();
 

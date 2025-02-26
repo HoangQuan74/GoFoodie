@@ -6,7 +6,7 @@ import { StoreEntity } from 'src/database/entities/store.entity';
 import { StoreLikeEntity } from 'src/database/entities/store-like.entity';
 import { ProductCategoriesModule } from '../product-categories/product-categories.module';
 import { ClientReviewStoreEntity } from 'src/database/entities/client-review-store.entity';
-import { ClientModule } from '../client.module';
+import { ClientModule } from '../clients/client.module';
 import { StoreAvailableView } from 'src/database/views/store-available.view';
 
 @Module({
