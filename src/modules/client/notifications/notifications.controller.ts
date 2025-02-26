@@ -4,6 +4,8 @@ import { AuthGuard } from '../auth/auth.guard';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { QueryNotificationDto } from './dto/query-notification.dto';
+import * as _ from 'lodash';
+import * as moment from 'moment-timezone';
 
 @Controller('notifications')
 @UseGuards(AuthGuard)
@@ -28,7 +30,11 @@ export class NotificationsController {
     type && queryBuilder.andWhere('notification.type = :type', { type });
 
     const [items, total] = await queryBuilder.getManyAndCount();
-    return { items, total };
+
+    const grouped = _.groupBy(items, (item) => moment(item.createdAt).format('YYYY-MM-DD'));
+    const itemsGrouped = Object.keys(grouped).map((key) => ({ date: key, items: grouped[key] }));
+
+    return { items: itemsGrouped, total };
   }
 
   @Patch(':id/read')
