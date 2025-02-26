@@ -1,21 +1,19 @@
 import { Module } from '@nestjs/common';
-import { ClientService } from './client.service';
-import { ClientController } from './client.controller';
 import { BannersModule } from './banners/banners.module';
-import { RouterModule } from '@nestjs/core';
-import { AuthModule } from './auth/auth.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ClientEntity } from 'src/database/entities/client.entity';
 import { StoresModule } from './stores/stores.module';
-import { ProductsModule } from './products/products.module';
-import { ProductCategoriesModule } from './product-categories/product-categories.module';
+import { AuthModule } from './auth/auth.module';
 import { AddressesModule } from './addresses/addresses.module';
-import { CartsModule } from './carts/carts.module';
 import { OrdersModule } from './order/order.module';
 import { CancelOrderReasonsModule } from './cancel-order-reasons/cancel-order-reasons.module';
 import { ReviewTemplatesModule } from './review-templates/review-templates.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { RouterModule } from '@nestjs/core';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ProductsModule } from './products/products.module';
+import { ClientEntity } from 'src/database/entities/client.entity';
+import { ProductCategoriesModule } from './product-categories/product-categories.module';
+import { CartsModule } from './carts/carts.module';
 
 @Module({
   imports: [
@@ -44,8 +42,6 @@ import { NotificationsModule } from './notifications/notifications.module';
     ReviewsModule,
     NotificationsModule,
   ],
-  controllers: [ClientController],
-  providers: [ClientService],
-  exports: [ClientService],
+  exports: [],
 })
 export class ClientModule {}

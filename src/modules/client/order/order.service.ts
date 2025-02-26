@@ -20,7 +20,7 @@ import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { EXCEPTIONS, TIMEZONE } from 'src/common/constants';
 import { CartProductOptionEntity } from 'src/database/entities/cart-product-option.entity';
-import { ERoleType, EStoreAddressType, EUserType } from 'src/common/enums';
+import { EClientNotificationType, ERoleType, EStoreAddressType, EUserType } from 'src/common/enums';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import {
@@ -35,6 +35,9 @@ import * as moment from 'moment-timezone';
 import { ClientEntity } from 'src/database/entities/client.entity';
 import { OrderCriteriaService } from 'src/modules/order-criteria/order-criteria.service';
 import { OrderService as MerchantOrderService } from 'src/modules/merchant/order/order.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { ClientNotificationEntity } from 'src/database/entities/client-notification.entity';
+import { CLIENT_NOTIFICATION_CONTENT, CLIENT_NOTIFICATION_TITLE } from 'src/common/constants/notification.constant';
 
 @Injectable()
 export class OrderService {
@@ -64,9 +67,8 @@ export class OrderService {
     private readonly orderCriteriaService: OrderCriteriaService,
     private readonly mapboxService: MapboxService,
     private readonly merchantOrderService: MerchantOrderService,
-  ) {
-    this.calculateEstimatedOrderTime(10003, new Date(), 1, 1);
-  }
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   async create(createOrderDto: CreateOrderDto, clientId: number): Promise<OrderEntity> {
     const {
@@ -237,6 +239,15 @@ export class OrderService {
       // Soft delete the cart and its related entities
       await queryRunner.manager.softDelete(CartEntity, { id: cartId });
       await queryRunner.manager.softDelete(CartProductEntity, { cartId });
+
+      const notification = new ClientNotificationEntity();
+      notification.clientId = clientId;
+      notification.from = cart.store?.name;
+      notification.title = CLIENT_NOTIFICATION_TITLE.ORDER_PENDING;
+      notification.content = CLIENT_NOTIFICATION_CONTENT.ORDER_PENDING;
+      notification.type = EClientNotificationType.Order;
+      notification.relatedId = savedOrder.id;
+      await queryRunner.manager.save(ClientNotificationEntity, notification);
 
       await queryRunner.commitTransaction();
 

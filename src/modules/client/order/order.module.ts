@@ -1,3 +1,4 @@
+import { NotificationsModule } from './../notifications/notifications.module';
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OrderController } from './order.controller';
@@ -7,7 +8,7 @@ import { CartProductEntity } from 'src/database/entities/cart-product.entity';
 import { CartEntity } from 'src/database/entities/cart.entity';
 import { OrderItemEntity } from 'src/database/entities/order-item.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
-import { ClientModule } from '../client.module';
+import { ClientModule } from '../clients/client.module';
 import { EventsModule } from 'src/events/events.module';
 import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
 import { FcmModule } from 'src/modules/fcm/fcm.module';
@@ -38,6 +39,8 @@ import { OrdersModule as MerchantOrdersModule } from 'src/modules/merchant/order
     OrderCriteriaModule,
     MapboxModule,
     forwardRef(() => MerchantOrdersModule),
+    forwardRef(() => NotificationsModule),
+    // NotificationsModule,
   ],
   providers: [OrderService, FeeService],
   controllers: [OrderController],

@@ -5,7 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClientReviewDriverEntity } from 'src/database/entities/client-review-driver.entity';
 import { ClientReviewStoreEntity } from 'src/database/entities/client-review-store.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
-import { ClientModule } from '../client.module';
+import { ClientModule } from '../clients/client.module';
 import { ChallengeEntity } from 'src/database/entities/challenge.entity';
 
 @Module({

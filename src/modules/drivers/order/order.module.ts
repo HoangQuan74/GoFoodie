@@ -10,8 +10,8 @@ import { EventsModule } from 'src/events/events.module';
 import { DriversModule } from '../drivers.module';
 import { OrderController } from './order.controller';
 import { OrderService } from './order.service';
-import { DriverSearchService } from 'src/modules/order/driver-search.service';
 import { OrderGroupModule } from '../order-group/order-group.module';
+import { DriverSearchModule } from 'src/modules/order/driver-search.module';
 import { OrderGroupItemEntity } from 'src/database/entities/order-group-item.entity';
 
 @Module({
@@ -28,8 +28,9 @@ import { OrderGroupItemEntity } from 'src/database/entities/order-group-item.ent
     forwardRef(() => DriversModule),
     EventsModule,
     OrderGroupModule,
+    DriverSearchModule,
   ],
-  providers: [OrderService, DriverSearchService],
+  providers: [OrderService],
   controllers: [OrderController],
   exports: [OrderService],
 })

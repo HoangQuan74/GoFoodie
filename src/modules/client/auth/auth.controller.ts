@@ -6,7 +6,7 @@ import { LoginSmsDto } from './dto/login.dto';
 import { JwtPayload } from 'src/common/interfaces';
 import { AuthGuard } from './auth.guard';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { ClientService } from '../client.service';
+import { ClientService } from '../clients/client.service';
 
 @Controller('auth')
 @UseGuards(AuthGuard)
