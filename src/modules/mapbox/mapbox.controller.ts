@@ -1,5 +1,5 @@
 import { GOONG_API_KEY, GOONG_URL, MAPBOX_ACCESS_TOKEN, MAPBOX_URL } from './../../common/constants';
-import { Controller, Get, Param, Query, ServiceUnavailableException, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, ServiceUnavailableException, UseGuards } from '@nestjs/common';
 import { MapboxService } from './mapbox.service';
 import { AppGuard } from 'src/app.gaurd';
 import axios from 'axios';
@@ -7,6 +7,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/common/decorators';
 import { SearchReverseDto } from './dto/search-reverse.dto';
 import { SearchForwardDto } from './dto/search-forward.dto';
+import { QueryDistanceDto } from './dto/query-distance.dto';
 
 @Controller('mapbox')
 @ApiTags('Mapbox')
@@ -123,5 +124,11 @@ export class MapboxController {
     }));
 
     return result;
+  }
+
+  @UseGuards(AppGuard)
+  @Post('/distance')
+  async getDistanceAndDuration(@Body() body: QueryDistanceDto) {
+    return this.mapboxService.getDistanceAndDuration(body.startingPosition, body.destinationPosition, body.vehicle);
   }
 }
