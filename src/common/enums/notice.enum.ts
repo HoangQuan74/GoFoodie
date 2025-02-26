@@ -15,3 +15,8 @@ export enum ENotificationType {
   ProductCreate = 'product_create',
   ProductUpdate = 'product_update',
 }
+
+export enum EClientNotificationType {
+  Order = 'order',
+  Promotion = 'promotion',
+}

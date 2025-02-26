@@ -85,12 +85,6 @@ export class CreateOrderDto {
   @IsOptional()
   eatingTools?: boolean;
 
-  @ApiPropertyOptional({ enum: EPaymentStatus })
-  @IsEnum(EPaymentStatus)
-  @ValidateIf((o) => o.paymentStatus !== undefined)
-  @IsOptional()
-  paymentStatus?: EPaymentStatus;
-
   @ApiPropertyOptional()
   @IsInt()
   @IsOptional()
