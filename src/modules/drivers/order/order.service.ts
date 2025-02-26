@@ -14,8 +14,11 @@ import { Brackets, Repository } from 'typeorm';
 import { QueryOrderDto, QueryOrderHistoryDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { DriverSearchService } from 'src/modules/order/driver-search.service';
-import { DRIVER_SPEED } from 'src/common/constants/common.constant';
 import { OrderGroupService } from '../order-group/order-group.service';
+import { ClientNotificationEntity } from 'src/database/entities/client-notification.entity';
+import { CLIENT_NOTIFICATION_CONTENT, CLIENT_NOTIFICATION_TITLE } from 'src/common/constants/notification.constant';
+import { EClientNotificationType } from 'src/common/enums';
+import { NotificationsService } from 'src/modules/client/notifications/notifications.service';
 
 @Injectable()
 export class OrderService {
@@ -33,12 +36,11 @@ export class OrderService {
     private orderRepository: Repository<OrderEntity>,
     @InjectRepository(OrderActivityEntity)
     private orderActivityRepository: Repository<OrderActivityEntity>,
-    @InjectRepository(OrderGroupEntity)
-    private orderGroupRepository: Repository<OrderGroupEntity>,
 
     private eventGatewayService: EventGatewayService,
     private orderGroupService: OrderGroupService,
     private driverSearchService: DriverSearchService,
+    private clientNotificationService: NotificationsService,
   ) {}
 
   async assignOrderToSpecificDriver(orderId: number, driverId: number): Promise<void> {
@@ -328,6 +330,15 @@ export class OrderService {
       });
       await this.orderActivityRepository.save(orderActivity);
 
+      const notification = new ClientNotificationEntity();
+      notification.clientId = order.clientId;
+      notification.from = '';
+      notification.title = CLIENT_NOTIFICATION_TITLE.ORDER_DRIVER_DELIVERING;
+      notification.content = CLIENT_NOTIFICATION_CONTENT.ORDER_DRIVER_DELIVERING;
+      notification.type = EClientNotificationType.Order;
+      notification.relatedId = order.id;
+      await this.clientNotificationService.save(notification);
+
       this.eventGatewayService.handleOrderUpdated(order.id);
     } else {
       const orderActivity = this.orderActivityRepository.create({
@@ -338,6 +349,15 @@ export class OrderService {
       });
       await this.orderActivityRepository.save(orderActivity);
       await this.orderGroupService.updateOrderGroupByDriverId(driverId);
+
+      const notification = new ClientNotificationEntity();
+      notification.clientId = order.clientId;
+      notification.from = '';
+      notification.title = CLIENT_NOTIFICATION_TITLE.ORDER_DELIVERED;
+      notification.content = CLIENT_NOTIFICATION_CONTENT.ORDER_DELIVERED;
+      notification.type = EClientNotificationType.Order;
+      notification.relatedId = order.id;
+      await this.clientNotificationService.save(notification);
 
       this.eventGatewayService.handleOrderUpdated(order.id);
     }
