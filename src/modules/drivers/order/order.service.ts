@@ -96,6 +96,27 @@ export class OrderService {
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.orderItems', 'orderItems')
       .leftJoinAndSelect('order.activities', 'activities')
+      .leftJoinAndMapOne(
+        'order.orderStoreConfirmed',
+        'order.activities',
+        'orderStoreConfirmed',
+        'orderStoreConfirmed.orderId = order.id AND orderStoreConfirmed.status = :statusStoreConfirmed',
+        { statusStoreConfirmed: EOrderStatus.Confirmed },
+      )
+      .leftJoinAndMapOne(
+        'order.orderInDelivery',
+        'order.activities',
+        'orderInDelivery',
+        'orderInDelivery.orderId = order.id AND orderInDelivery.status = :statusInDelivery',
+        { statusInDelivery: EOrderStatus.InDelivery },
+      )
+      .leftJoinAndMapOne(
+        'order.orderDelivered',
+        'order.activities',
+        'orderDelivered',
+        'orderDelivered.orderId = order.id AND orderDelivered.status = :statusDelivered',
+        { statusDelivered: EOrderStatus.Delivered },
+      )
       .leftJoinAndSelect('order.store', 'store')
       .leftJoinAndSelect('store.ward', 'ward')
       .leftJoinAndSelect('store.district', 'district')
