@@ -18,6 +18,7 @@ export enum EOrderGroupStatus {
 export enum EOrderActivityStatus {
   DRIVER_APPROVED_AND_REJECTED = 'driver_approved_and_rejected_the_order',
   DRIVER_REJECTED = 'driver_rejected_the_order',
+  CANCEL_ORDER_AFTER_5_MINUTES = 'cancel_order_after_5_minutes',
 }
 
 export enum EPaymentStatus {
@@ -32,5 +33,6 @@ export enum EOrderCode {
 }
 
 export enum EOrderProcessor {
+  REMIND_MERCHANT_CONFIRM_ORDER = 'remindMerchantConfirmOrder',
   CANCEL_ORDER = 'cancelOrder',
 }
