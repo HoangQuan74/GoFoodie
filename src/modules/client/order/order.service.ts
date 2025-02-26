@@ -67,7 +67,7 @@ export class OrderService {
     private readonly orderCriteriaService: OrderCriteriaService,
     private readonly mapboxService: MapboxService,
     private readonly merchantOrderService: MerchantOrderService,
-    private readonly notificationsService: NotificationsService,
+    private readonly clientNotificationsService: NotificationsService,
   ) {}
 
   async create(createOrderDto: CreateOrderDto, clientId: number): Promise<OrderEntity> {
@@ -240,6 +240,8 @@ export class OrderService {
       await queryRunner.manager.softDelete(CartEntity, { id: cartId });
       await queryRunner.manager.softDelete(CartProductEntity, { cartId });
 
+      await queryRunner.commitTransaction();
+
       const notification = new ClientNotificationEntity();
       notification.clientId = clientId;
       notification.from = cart.store?.name;
@@ -247,9 +249,7 @@ export class OrderService {
       notification.content = CLIENT_NOTIFICATION_CONTENT.ORDER_PENDING;
       notification.type = EClientNotificationType.Order;
       notification.relatedId = savedOrder.id;
-      await queryRunner.manager.save(ClientNotificationEntity, notification);
-
-      await queryRunner.commitTransaction();
+      await this.clientNotificationsService.save(notification);
 
       if (cart.store.autoAcceptOrder && savedOrder.id) {
         setTimeout(() => {

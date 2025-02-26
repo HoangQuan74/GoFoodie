@@ -16,6 +16,7 @@ import { EClientNotificationType, EUserType } from 'src/common/enums';
 import { DriverSearchService } from 'src/modules/order/driver-search.service';
 import { ClientNotificationEntity } from 'src/database/entities/client-notification.entity';
 import { CLIENT_NOTIFICATION_CONTENT, CLIENT_NOTIFICATION_TITLE } from 'src/common/constants/notification.constant';
+import { NotificationsService } from 'src/modules/client/notifications/notifications.service';
 
 @Injectable()
 export class OrderService {
@@ -33,6 +34,7 @@ export class OrderService {
     private readonly driverSearchService: DriverSearchService,
     private readonly eventGatewayService: EventGatewayService,
     private readonly fcmService: FcmService,
+    private readonly clientNotificationService: NotificationsService,
   ) {}
 
   async queryOrders(queryOrderDto: QueryOrderDto, storeId: number) {
@@ -135,6 +137,8 @@ export class OrderService {
       });
       await queryRunner.manager.save(orderActivity);
 
+      await queryRunner.commitTransaction();
+
       const notification = new ClientNotificationEntity();
       notification.clientId = savedOrder.clientId;
       notification.from = order.store?.name;
@@ -142,9 +146,7 @@ export class OrderService {
       notification.content = CLIENT_NOTIFICATION_CONTENT.ORDER_FINDING_DRIVER;
       notification.type = EClientNotificationType.Order;
       notification.relatedId = savedOrder.id;
-      await queryRunner.manager.save(notification);
-
-      await queryRunner.commitTransaction();
+      await this.clientNotificationService.save(notification);
 
       this.eventGatewayService.handleOrderUpdated(order.id);
 
