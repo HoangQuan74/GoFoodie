@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EOrderStatus, TimeRange } from 'src/common/enums';
+import { EOrderStatus, TimeRangeV2 } from 'src/common/enums';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { Repository } from 'typeorm';
 import * as moment from 'moment-timezone';
@@ -21,25 +21,38 @@ export class StatisticalService {
     private readonly storeRepository: Repository<StoreEntity>,
   ) {}
 
-  async getRevenueChart(type: TimeRange, storeId: number) {
+  async getRevenueChart(type: TimeRangeV2, storeId: number) {
     const now = moment().tz('Asia/Ho_Chi_Minh');
     let startDate: moment.Moment, interval: string, format: string, previousTime: moment.Moment;
 
-    if (type === TimeRange.DAY) {
-      startDate = now.clone().startOf('day');
-      interval = '4 hours';
-      format = 'HH:00';
-      previousTime = startDate.subtract(1, 'days');
-    } else if (type === TimeRange.WEEK) {
-      startDate = now.clone().subtract(6, 'days').startOf('day');
-      interval = '1 day';
-      format = 'YYYY-MM-DD';
-      previousTime = startDate.subtract(7, 'days');
-    } else {
-      startDate = now.clone().subtract(29, 'days').startOf('day');
-      interval = '1 day';
-      format = 'YYYY-MM-DD';
-      previousTime = startDate.subtract(30, 'days');
+    switch (type) {
+      case TimeRangeV2.TODAY:
+        startDate = now.clone().subtract(1, 'days').startOf('day');
+        interval = '4 hours';
+        format = 'HH:00';
+        previousTime = startDate.clone().subtract(1, 'days');
+        break;
+
+      case TimeRangeV2.YESTERDAY:
+        startDate = now.clone().startOf('day');
+        interval = '4 hours';
+        format = 'HH:00';
+        previousTime = startDate.clone().subtract(1, 'days');
+        break;
+
+      case TimeRangeV2.LAST_7_DAYS:
+        startDate = now.clone().subtract(6, 'days').startOf('day');
+        interval = '1 day';
+        format = 'YYYY-MM-DD';
+        previousTime = startDate.clone().subtract(7, 'days');
+        break;
+
+      case TimeRangeV2.LAST_30_DAYS:
+        startDate = now.clone().subtract(29, 'days').startOf('day');
+        interval = '1 day';
+        format = 'YYYY-MM-DD';
+        previousTime = startDate.clone().subtract(30, 'days');
+        break;
     }
 
     const revenueData = await this.getRevenueData(storeId, startDate, interval, format);
@@ -95,16 +108,16 @@ export class StatisticalService {
 
   private async getRevenueData(storeId: number, startDate: moment.Moment, interval: string, format: string) {
     const endDate = moment().tz('Asia/Ho_Chi_Minh').endOf('day');
-    const revenueMap = new Map<string, number>();
+    const revenueMap = new Map<string, { total: number; countOrder: number }>(); // Đảm bảo chứa cả total và countOrder
 
     let tempDate = startDate.clone();
     while (tempDate.isSameOrBefore(endDate)) {
       const key = tempDate.format(format);
-      revenueMap.set(key, 0);
+      revenueMap.set(key, { total: 0, countOrder: 0 });
 
       if (interval === '4 hours' && tempDate.format('HH:mm') === '20:00') {
         const midnightKey = '24:00';
-        revenueMap.set(midnightKey, 0);
+        revenueMap.set(midnightKey, { total: 0, countOrder: 0 });
       }
 
       tempDate.add(interval === '4 hours' ? 4 : 1, interval === '4 hours' ? 'hours' : 'days');
@@ -114,6 +127,7 @@ export class StatisticalService {
     const query = this.orderRepository
       .createQueryBuilder('order')
       .select('SUM(order.totalAmount)', 'total')
+      .addSelect('COUNT(order.id)', 'quantityOrder')
       .addSelect(`to_char(order.createdAt, '${timeFormat}')`, 'time')
       .where('order.storeId = :storeId', { storeId })
       .andWhere('order.createdAt BETWEEN :startDate AND :endDate', {
@@ -126,12 +140,31 @@ export class StatisticalService {
     const orders = await query.getRawMany();
 
     orders.forEach((order) => {
-      if (revenueMap.has(order.time)) {
-        revenueMap.set(order.time, parseFloat(order.total));
+      const orderTime = moment(order.time, format);
+      const roundedTime = orderTime
+        .clone()
+        .add(4 - (orderTime.hour() % 4), 'hours')
+        .format(format);
+
+      if (revenueMap.has(roundedTime)) {
+        const currentData = revenueMap.get(roundedTime);
+        revenueMap.set(roundedTime, {
+          total: currentData.total + parseFloat(order.total),
+          countOrder: currentData.countOrder + Number(order.quantityOrder),
+        });
+      } else {
+        revenueMap.set(roundedTime, {
+          total: parseFloat(order.total),
+          countOrder: Number(order.quantityOrder),
+        });
       }
     });
 
-    return Array.from(revenueMap, ([time, total]) => ({ time, total }));
+    return Array.from(revenueMap.entries(), ([time, { total, countOrder }]) => ({
+      time,
+      total,
+      countOrder,
+    }));
   }
 
   async getTopProductsRevenue(storeId: number, query: PaginationQuery) {
