@@ -85,15 +85,6 @@ export class DriverSearchService {
     await this.orderActivityRepository.save(orderActivity);
     await this.upsertOrderGroup(order.id, driver.id);
 
-    const notification = new ClientNotificationEntity();
-    notification.clientId = order.clientId;
-    notification.from = order.store?.name;
-    notification.title = CLIENT_NOTIFICATION_TITLE.ORDER_DRIVER_ARRIVING;
-    notification.content = CLIENT_NOTIFICATION_CONTENT.ORDER_DRIVER_ARRIVING;
-    notification.type = EClientNotificationType.Order;
-    notification.relatedId = order.id;
-    await this.clientNotificationService.save(notification);
-
     this.eventGatewayService.notifyDriverNewOrder(driver.id, order);
   }
 

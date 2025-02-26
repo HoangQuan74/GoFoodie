@@ -6,6 +6,7 @@ export class MyLogger extends ConsoleLogger {
   error(message: any, stack?: string, context?: string) {
     // add your tailored logic here
     if (ENV !== 'production') {
+      console.error(message, stack, context);
       super.error(message, stack, context);
     }
     logger.error(message, { stack, context });
