@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum } from 'class-validator';
-import { TimeRange } from 'src/common/enums';
+import { TimeRangeV2 } from 'src/common/enums';
 
 export class QueryRevenueChartDto {
-  @ApiProperty({ type: TimeRange, enum: TimeRange })
-  @IsEnum(TimeRange)
-  type: TimeRange;
+  @ApiProperty({ type: TimeRangeV2, enum: TimeRangeV2 })
+  @IsEnum(TimeRangeV2)
+  type: TimeRangeV2;
 }

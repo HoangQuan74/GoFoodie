@@ -1,19 +1,119 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
-import { EOrderProcessor } from 'src/common/enums/order.enum';
+import { EOrderActivityStatus, EOrderProcessor, EOrderStatus } from 'src/common/enums/order.enum';
 import { OrderService } from '../merchant/order/order.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { OrderEntity } from 'src/database/entities/order.entity';
+import { Repository } from 'typeorm';
+import { MerchantEntity } from 'src/database/entities/merchant.entity';
+import { FcmService } from '../fcm/fcm.service';
+import { StoreEntity } from 'src/database/entities/store.entity';
+import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
+import { EventGatewayService } from 'src/events/event.gateway.service';
 
 @Processor('orderQueue')
 export class OrderProcessor extends WorkerHost {
-  constructor(private readonly orderService: OrderService) {
+  constructor(
+    @InjectRepository(OrderEntity)
+    private readonly orderRepository: Repository<OrderEntity>,
+
+    @InjectRepository(MerchantEntity)
+    private readonly merchantRepository: Repository<MerchantEntity>,
+
+    @InjectRepository(OrderActivityEntity)
+    private readonly orderActivityRepository: Repository<OrderActivityEntity>,
+
+    private readonly fcmService: FcmService,
+    private readonly eventService: EventGatewayService,
+  ) {
     super();
   }
 
   async process(job: Job) {
     switch (job.name) {
+      case EOrderProcessor.REMIND_MERCHANT_CONFIRM_ORDER:
+        await this.remindMerchantConfirmOrder(job.data.orderId);
+        break;
       case EOrderProcessor.CANCEL_ORDER:
-        // return this.cancelOrder(job);
+        await this.cancelOrderAfter5Minutes(job.data.orderId);
         break;
     }
+  }
+
+  async getMerchantsByStore(store: StoreEntity): Promise<MerchantEntity[]> {
+    const merchants = await this.merchantRepository.find({
+      where: [
+        {
+          storeId: store.id,
+        },
+        {
+          id: store.merchantId,
+        },
+      ],
+      select: {
+        id: true,
+        deviceToken: true,
+      },
+    });
+    return merchants;
+  }
+
+  async getOrderPending(orderId: number): Promise<OrderEntity> {
+    return await this.orderRepository.findOne({
+      where: {
+        id: orderId,
+        status: EOrderStatus.Pending,
+      },
+      select: {
+        id: true,
+        store: {
+          id: true,
+          merchantId: true,
+        },
+      },
+      relations: {
+        store: true,
+      },
+    });
+  }
+
+  async remindMerchantConfirmOrder(orderId: number) {
+    const order = await this.getOrderPending(orderId);
+    if (!order) return;
+
+    const merchants = await this.getMerchantsByStore(order.store);
+
+    merchants.forEach(async (merchant) => {
+      if (merchant.deviceToken) {
+        this.fcmService.sendToDevice(merchant.deviceToken, 'Confirm order', 'You have a new order to confirm', {
+          orderId: orderId.toString(),
+        });
+      }
+    });
+  }
+
+  async cancelOrderAfter5Minutes(orderId: number) {
+    const order = await this.getOrderPending(orderId);
+    if (!order) return;
+
+    await this.orderRepository.update({ id: orderId }, { status: EOrderStatus.Cancelled });
+    const orderActivity = this.orderActivityRepository.create({
+      orderId: orderId,
+      status: EOrderStatus.Cancelled,
+      description: EOrderActivityStatus.CANCEL_ORDER_AFTER_5_MINUTES,
+      performedBy: 'system',
+    });
+    await this.orderActivityRepository.save(orderActivity);
+    const merchants = await this.getMerchantsByStore(order.store);
+
+    this.eventService.handleOrderUpdated(orderId);
+
+    merchants.forEach(async (merchant) => {
+      if (merchant.deviceToken) {
+        this.fcmService.sendToDevice(merchant.deviceToken, 'Cancel order', 'Order was cancelled after 5 minutes', {
+          orderId: orderId.toString(),
+        });
+      }
+    });
   }
 }

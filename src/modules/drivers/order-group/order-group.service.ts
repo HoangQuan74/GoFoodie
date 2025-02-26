@@ -6,6 +6,7 @@ import { EOrderGroupStatus, EOrderStatus } from 'src/common/enums';
 import { OrderGroupItemEntity } from 'src/database/entities/order-group-item.entity';
 import { OrderGroupEntity } from 'src/database/entities/order-group.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
+import { OrderCriteriaService } from 'src/modules/order-criteria/order-criteria.service';
 import { Brackets, Repository } from 'typeorm';
 
 @Injectable()
@@ -19,9 +20,11 @@ export class OrderGroupService {
 
     @InjectRepository(OrderEntity)
     private orderRepository: Repository<OrderEntity>,
+
+    private readonly orderCriteriaService: OrderCriteriaService,
   ) {}
 
-  async getCurrentOrderGroup(driverId: number) {
+  async getCurrentOrderGroup(driverId: number, isConfirmByDriver: Boolean) {
     const queryBuilder = this.orderGroupItemRepository
       .createQueryBuilder('orderGroupItem')
       .innerJoin('orderGroupItem.orderGroup', 'orderGroup')
@@ -46,14 +49,17 @@ export class OrderGroupService {
       .andWhere('orderGroup.status = :status', { status: EOrderGroupStatus.InDelivery })
       .select([
         'orderGroupItem.id',
+        'orderGroupItem.isConfirmByDriver',
         'order.id',
         'order.orderCode',
         'order.estimatedOrderTime',
         'order.estimatedPickupTime',
         'order.estimatedDeliveryTime',
         'order.deliveryAddress',
+        'order.deliveryName',
         'order.deliveryLatitude',
         'order.deliveryLongitude',
+        'order.status',
         'client.id',
         'client.name',
         'client.phone',
@@ -66,8 +72,7 @@ export class OrderGroupService {
         'store.phoneNumber',
       ]);
 
-    const result = await queryBuilder.orderBy('order.createdAt', 'DESC').getMany();
-    const incomeOfDriver = await this.orderGroupItemRepository
+    const queryIncomeOfDriver = await this.orderGroupItemRepository
       .createQueryBuilder('orderGroupItem')
       .innerJoin('orderGroupItem.orderGroup', 'orderGroup')
       .innerJoin('orderGroupItem.order', 'order')
@@ -83,10 +88,18 @@ export class OrderGroupService {
         )`,
         'totalIncome',
       )
-      .groupBy('orderGroup.id')
-      .getRawOne();
+      .groupBy('orderGroup.id');
 
-    return { result, incomeOfDriver: Number(incomeOfDriver.totalIncome) || 0 };
+    if (isConfirmByDriver) {
+      queryBuilder.andWhere('orderGroupItem.isConfirmByDriver = :isConfirmByDriver', { isConfirmByDriver });
+      queryIncomeOfDriver.andWhere('orderGroupItem.isConfirmByDriver = :isConfirmByDriver', { isConfirmByDriver });
+    }
+
+    const result = await queryBuilder.orderBy('order.createdAt', 'DESC').getMany();
+    const incomeOfDriver = await queryIncomeOfDriver.getRawOne();
+
+    const criteria = await this.orderCriteriaService.getTimeCountDownToDriverConfirm();
+    return { result, incomeOfDriver: Number(incomeOfDriver?.totalIncome) || 0, criteria };
   }
 
   async upsertOrderGroup(orderId: number, driverId: number) {
@@ -126,7 +139,46 @@ export class OrderGroupService {
     });
   }
 
-  async updateOrderGroupByOrderId(orderId: number, driverId: number): Promise<void> {
+  async updateOrderGroupItem(data: { orderId: number; driverId: number; isConfirmByDriver: boolean }) {
+    const { orderId, driverId, isConfirmByDriver } = data;
+    const orderGroupItem = await this.orderGroupItemRepository.findOne({
+      where: {
+        orderId: orderId,
+        orderGroup: {
+          driverId: driverId,
+        },
+      },
+    });
+
+    if (!orderGroupItem) {
+      throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
+    }
+
+    orderGroupItem.isConfirmByDriver = isConfirmByDriver;
+
+    return await this.orderGroupItemRepository.save(orderGroupItem);
+  }
+
+  async rejectOrderGroupItem(orderId: number, driverId: number) {
+    const orderGroupItem = await this.orderGroupItemRepository.findOne({
+      where: {
+        orderId: orderId,
+        orderGroup: {
+          driverId: driverId,
+        },
+      },
+    });
+
+    if (!orderGroupItem) {
+      return;
+    }
+
+    await this.orderGroupItemRepository.softRemove(orderGroupItem);
+    await this.updateOrderGroupByDriverId(driverId);
+    return;
+  }
+
+  async updateOrderGroupByDriverId(driverId: number): Promise<void> {
     const countOrderOfGroup = await this.orderGroupItemRepository.count({
       where: {
         orderGroup: {

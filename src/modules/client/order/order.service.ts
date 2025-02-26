@@ -23,7 +23,12 @@ import { CartProductOptionEntity } from 'src/database/entities/cart-product-opti
 import { EClientNotificationType, ERoleType, EStoreAddressType, EUserType } from 'src/common/enums';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import { DRIVER_SPEED, SCAN_DRIVER_TIME, STORE_CONFIRM_TIME } from 'src/common/constants/common.constant';
+import {
+  DRIVER_SPEED,
+  REMIND_CONFIRM_TIME,
+  SCAN_DRIVER_TIME,
+  STORE_CONFIRM_TIME,
+} from 'src/common/constants/common.constant';
 import { IOrderTime } from 'src/common/interfaces/order.interface';
 import { StoresService } from '../stores/stores.service';
 import * as moment from 'moment-timezone';
@@ -255,7 +260,16 @@ export class OrderService {
       this.eventGatewayService.notifyMerchantNewOrder(savedOrder.storeId, savedOrder);
       this.fcmService.notifyMerchantNewOrder(savedOrder.id);
       this.eventGatewayService.handleOrderUpdated(savedOrder.id);
-      this.orderQueue.add(EOrderProcessor.CANCEL_ORDER, { orderId: savedOrder.id }, { delay: STORE_CONFIRM_TIME });
+      this.orderQueue.add(
+        EOrderProcessor.REMIND_MERCHANT_CONFIRM_ORDER,
+        { orderId: savedOrder.id },
+        { delay: REMIND_CONFIRM_TIME * 1000 * 60 },
+      );
+      this.orderQueue.add(
+        EOrderProcessor.CANCEL_ORDER,
+        { orderId: savedOrder.id },
+        { delay: STORE_CONFIRM_TIME * 1000 * 60 },
+      );
 
       return this.findOne(clientId, savedOrder.id);
     } catch (error) {

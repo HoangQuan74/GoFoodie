@@ -11,6 +11,9 @@ export class OrderGroupItemEntity extends BaseEntity {
   @Column({ name: 'order_id' })
   orderId: number;
 
+  @Column({ name: 'is_confirm_by_driver', type: 'boolean', default: false })
+  isConfirmByDriver: boolean;
+
   @ManyToOne(() => OrderGroupEntity, (orderGroup) => orderGroup.id)
   @JoinColumn({ name: 'order_group_id' })
   orderGroup: OrderGroupEntity;

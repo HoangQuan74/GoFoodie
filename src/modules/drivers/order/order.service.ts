@@ -96,6 +96,37 @@ export class OrderService {
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.orderItems', 'orderItems')
       .leftJoinAndSelect('order.activities', 'activities')
+      .leftJoinAndMapOne(
+        'order.orderStoreConfirmed',
+        'order.activities',
+        'orderStoreConfirmed',
+        'orderStoreConfirmed.orderId = order.id AND orderStoreConfirmed.status = :statusStoreConfirmed',
+        { statusStoreConfirmed: EOrderStatus.Confirmed },
+      )
+      .leftJoinAndMapOne(
+        'order.orderInDelivery',
+        'order.activities',
+        'orderInDelivery',
+        'orderInDelivery.orderId = order.id AND orderInDelivery.status = :statusInDelivery',
+        { statusInDelivery: EOrderStatus.InDelivery },
+      )
+      .leftJoinAndMapOne(
+        'order.orderDelivered',
+        'order.activities',
+        'orderDelivered',
+        'orderDelivered.orderId = order.id AND orderDelivered.status = :statusDelivered',
+        { statusDelivered: EOrderStatus.Delivered },
+      )
+      .leftJoinAndMapOne(
+        'order.driverCancelOrder',
+        'order.activities',
+        'driverCancelOrder',
+        'driverCancelOrder.orderId = order.id AND (driverCancelOrder.description = :descriptionDeclined OR driverCancelOrder.description = :descriptionCancelled)',
+        {
+          descriptionDeclined: EOrderActivityStatus.DRIVER_REJECTED,
+          descriptionCancelled: EOrderActivityStatus.DRIVER_APPROVED_AND_REJECTED,
+        },
+      )
       .leftJoinAndSelect('order.store', 'store')
       .leftJoinAndSelect('store.ward', 'ward')
       .leftJoinAndSelect('store.district', 'district')
@@ -128,17 +159,6 @@ export class OrderService {
 
     if (order.driverId && order.driverId !== driverId) {
       throw new BadRequestException('You do not have permission to view this order');
-    }
-
-    if (order.store) {
-      const addressParts = [
-        order.store.address,
-        order.store.ward?.name,
-        order.store.district?.name,
-        order.store.province?.name,
-      ].filter(Boolean);
-
-      order.store.address = addressParts.join(', ');
     }
 
     const criteria = await this.orderCriteriaRepository.findOne({
@@ -204,7 +224,12 @@ export class OrderService {
       throw new BadRequestException('You cannot accept this order');
     }
 
-    await this.orderGroupService.upsertOrderGroup(orderId, driverId);
+    // await this.orderGroupService.upsertOrderGroup(orderId, driverId);
+    await this.orderGroupService.updateOrderGroupItem({
+      orderId,
+      driverId,
+      isConfirmByDriver: true,
+    });
 
     order.status = EOrderStatus.DriverAccepted;
     await this.orderRepository.save(order);
@@ -262,12 +287,15 @@ export class OrderService {
 
       await this.orderActivityRepository.save(orderActivity);
     }
+
+    await this.orderGroupService.rejectOrderGroupItem(orderId, driverId);
+
     delete order.activities;
     order.driverId = null;
     order.status = EOrderStatus.SearchingForDriver;
 
     await this.orderRepository.save(order);
-    await this.orderGroupService.updateOrderGroupByOrderId(orderId, driverId);
+    await this.orderGroupService.updateOrderGroupByDriverId(driverId);
     await this.driverSearchService.assignOrderToDriver(orderId);
 
     this.eventGatewayService.handleOrderUpdated(order.id);
@@ -309,7 +337,7 @@ export class OrderService {
         performedBy: `driverId:${driverId}`,
       });
       await this.orderActivityRepository.save(orderActivity);
-      await this.orderGroupService.updateOrderGroupByOrderId(orderId, driverId);
+      await this.orderGroupService.updateOrderGroupByDriverId(driverId);
 
       this.eventGatewayService.handleOrderUpdated(order.id);
     }

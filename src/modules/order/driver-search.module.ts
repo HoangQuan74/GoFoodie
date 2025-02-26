@@ -8,6 +8,8 @@ import { OrderActivityEntity } from 'src/database/entities/order-activities.enti
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventsModule } from 'src/events/events.module';
 import { NotificationsModule } from '../client/notifications/notifications.module';
+import { OrderGroupItemEntity } from 'src/database/entities/order-group-item.entity';
+import { OrderGroupEntity } from 'src/database/entities/order-group.entity';
 
 @Module({
   imports: [
@@ -17,9 +19,10 @@ import { NotificationsModule } from '../client/notifications/notifications.modul
       OrderEntity,
       DriverEntity,
       OrderActivityEntity,
+      OrderGroupEntity,
+      OrderGroupItemEntity,
     ]),
     EventsModule,
-    forwardRef(() => NotificationsModule),
   ],
 
   providers: [DriverSearchService],
