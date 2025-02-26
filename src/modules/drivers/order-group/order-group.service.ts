@@ -56,6 +56,7 @@ export class OrderGroupService {
         'order.deliveryName',
         'order.deliveryLatitude',
         'order.deliveryLongitude',
+        'order.status',
         'client.id',
         'client.name',
         'client.phone',
