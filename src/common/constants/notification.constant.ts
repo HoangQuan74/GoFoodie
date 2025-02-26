@@ -11,7 +11,7 @@ export const CLIENT_NOTIFICATION_CONTENT = {
   ORDER_PENDING: 'Bạn đã đặt đơn thành công và đang chờ {{from}} xác nhận.',
   ORDER_FINDING_DRIVER: '{{from}} đã xác nhận đơn và đang chuẩn bị món để tài xế đến lấy',
   ORDER_DRIVER_ARRIVING: 'Đã tìm thấy tài xế. Tài xế đang trên đường tới quán {{from}}.',
-  ORDER_DRIVER_DELIVERING: 'Tài xế đã lấy đơn từ quán {{from}} và đang giao đến bạn. Chờ ít phút nhé!',
+  ORDER_DRIVER_DELIVERING: 'Tài xế đã lấy đơn và đang giao đến bạn. Chờ ít phút nhé!',
   ORDER_DELIVERED: 'GOO+ chúc bạn ngon miệng, đừng quên đánh giá đơn hàng nhé!',
   ORDER_CANCELLED: (reason: string) =>
     `Đơn hàng của bạn tại quán {{from}} đã bị hủy vì lý do ${reason}. GOO+ rất tiếc vì sự bất tiện này.`,

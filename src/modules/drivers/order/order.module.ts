@@ -13,6 +13,7 @@ import { OrderService } from './order.service';
 import { OrderGroupModule } from '../order-group/order-group.module';
 import { DriverSearchModule } from 'src/modules/order/driver-search.module';
 import { OrderGroupItemEntity } from 'src/database/entities/order-group-item.entity';
+import { NotificationsModule } from 'src/modules/client/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { OrderGroupItemEntity } from 'src/database/entities/order-group-item.ent
     EventsModule,
     OrderGroupModule,
     DriverSearchModule,
+    NotificationsModule,
   ],
   providers: [OrderService],
   controllers: [OrderController],

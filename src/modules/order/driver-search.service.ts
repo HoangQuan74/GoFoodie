@@ -18,6 +18,7 @@ import { EXCEPTIONS } from 'src/common/constants';
 import { OrderGroupEntity } from 'src/database/entities/order-group.entity';
 import { OrderGroupItemEntity } from 'src/database/entities/order-group-item.entity';
 import { ORDER_GROUP_FULL } from 'src/common/constants/common.constant';
+import { NotificationsService } from '../client/notifications/notifications.service';
 
 @Injectable()
 export class DriverSearchService {
@@ -44,6 +45,7 @@ export class DriverSearchService {
     private orderGroupItemRepository: Repository<OrderGroupItemEntity>,
 
     private eventGatewayService: EventGatewayService,
+    private clientNotificationService: NotificationsService,
   ) {}
 
   async assignOrderToDriver(orderId: number): Promise<void> {
@@ -80,6 +82,9 @@ export class DriverSearchService {
       performedBy: `driverId:${driver.id}`,
     });
 
+    await this.orderActivityRepository.save(orderActivity);
+    await this.upsertOrderGroup(order.id, driver.id);
+
     const notification = new ClientNotificationEntity();
     notification.clientId = order.clientId;
     notification.from = order.store?.name;
@@ -87,9 +92,7 @@ export class DriverSearchService {
     notification.content = CLIENT_NOTIFICATION_CONTENT.ORDER_DRIVER_ARRIVING;
     notification.type = EClientNotificationType.Order;
     notification.relatedId = order.id;
-
-    await this.orderActivityRepository.save(orderActivity);
-    await this.upsertOrderGroup(order.id, driver.id);
+    await this.clientNotificationService.save(notification);
 
     this.eventGatewayService.notifyDriverNewOrder(driver.id, order);
   }

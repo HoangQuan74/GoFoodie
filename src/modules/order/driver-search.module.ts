@@ -7,9 +7,9 @@ import { DriverAvailabilityEntity } from 'src/database/entities/driver-availabil
 import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventsModule } from 'src/events/events.module';
-import { NotificationsModule } from '../client/notifications/notifications.module';
 import { OrderGroupItemEntity } from 'src/database/entities/order-group-item.entity';
 import { OrderGroupEntity } from 'src/database/entities/order-group.entity';
+import { NotificationsModule } from '../client/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -23,6 +23,7 @@ import { OrderGroupEntity } from 'src/database/entities/order-group.entity';
       OrderGroupItemEntity,
     ]),
     EventsModule,
+    NotificationsModule,
   ],
 
   providers: [DriverSearchService],
