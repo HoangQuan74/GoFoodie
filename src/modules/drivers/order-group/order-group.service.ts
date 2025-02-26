@@ -6,6 +6,7 @@ import { EOrderGroupStatus, EOrderStatus } from 'src/common/enums';
 import { OrderGroupItemEntity } from 'src/database/entities/order-group-item.entity';
 import { OrderGroupEntity } from 'src/database/entities/order-group.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
+import { OrderCriteriaService } from 'src/modules/order-criteria/order-criteria.service';
 import { Brackets, Repository } from 'typeorm';
 
 @Injectable()
@@ -19,6 +20,8 @@ export class OrderGroupService {
 
     @InjectRepository(OrderEntity)
     private orderRepository: Repository<OrderEntity>,
+
+    private readonly orderCriteriaService: OrderCriteriaService,
   ) {}
 
   async getCurrentOrderGroup(driverId: number, isConfirmByDriver: Boolean) {
@@ -95,7 +98,8 @@ export class OrderGroupService {
     const result = await queryBuilder.orderBy('order.createdAt', 'DESC').getMany();
     const incomeOfDriver = await queryIncomeOfDriver.getRawOne();
 
-    return { result, incomeOfDriver: Number(incomeOfDriver?.totalIncome) || 0 };
+    const criteria = await this.orderCriteriaService.getTimeCountDownToDriverConfirm();
+    return { result, incomeOfDriver: Number(incomeOfDriver?.totalIncome) || 0, criteria };
   }
 
   async upsertOrderGroup(orderId: number, driverId: number) {
