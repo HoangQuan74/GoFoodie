@@ -10,8 +10,8 @@ import { EventsModule } from 'src/events/events.module';
 import { DriversModule } from '../drivers.module';
 import { OrderController } from './order.controller';
 import { OrderService } from './order.service';
-import { DriverSearchService } from 'src/modules/order/driver-search.service';
 import { OrderGroupModule } from '../order-group/order-group.module';
+import { DriverSearchModule } from 'src/modules/order/driver-search.module';
 
 @Module({
   imports: [
@@ -26,8 +26,9 @@ import { OrderGroupModule } from '../order-group/order-group.module';
     forwardRef(() => DriversModule),
     EventsModule,
     OrderGroupModule,
+    DriverSearchModule,
   ],
-  providers: [OrderService, DriverSearchService],
+  providers: [OrderService],
   controllers: [OrderController],
   exports: [OrderService],
 })

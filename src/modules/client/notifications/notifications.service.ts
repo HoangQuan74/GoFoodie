@@ -2,15 +2,26 @@ import { Injectable } from '@nestjs/common';
 import { ClientNotificationEntity } from 'src/database/entities/client-notification.entity';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { FcmService } from 'src/modules/fcm/fcm.service';
+import { ClientService } from '../clients/client.service';
 
 @Injectable()
 export class NotificationsService {
   constructor(
     @InjectRepository(ClientNotificationEntity)
     private readonly notificationRepository: Repository<ClientNotificationEntity>,
+
+    private readonly fcmService: FcmService,
+    private readonly clientService: ClientService,
   ) {}
 
   async save(entity: ClientNotificationEntity) {
+    const { clientId, title, content } = entity;
+    const client = await this.clientService.findOne({ select: ['id', 'deviceToken'], where: { id: clientId } });
+
+    if (client && client.deviceToken) {
+      this.fcmService.sendToDevice(client.deviceToken, title, content);
+    }
     return this.notificationRepository.save(entity);
   }
 

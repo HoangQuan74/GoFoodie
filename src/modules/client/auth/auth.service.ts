@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { LoginSmsDto } from './dto/login.dto';
 import { FirebaseService } from 'src/modules/firebase/firebase.service';
-import { ClientService } from '../client.service';
+import { ClientService } from '../clients/client.service';
 import { ClientEntity } from 'src/database/entities/client.entity';
 import { JwtPayload } from 'src/common/interfaces';
 import { JwtService } from '@nestjs/jwt';

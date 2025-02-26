@@ -12,6 +12,7 @@ import { DriverSearchService } from 'src/modules/order/driver-search.service';
 import { MerchantModule } from '../merchant.module';
 import { OrderController } from './order.controller';
 import { OrderService } from './order.service';
+import { DriverSearchModule } from 'src/modules/order/driver-search.module';
 
 @Module({
   imports: [
@@ -26,9 +27,10 @@ import { OrderService } from './order.service';
     forwardRef(() => MerchantModule),
     EventsModule,
     FcmModule,
+    DriverSearchModule,
   ],
   controllers: [OrderController],
-  providers: [OrderService, DriverSearchService],
+  providers: [OrderService],
   exports: [OrderService],
 })
 export class OrdersModule {}
