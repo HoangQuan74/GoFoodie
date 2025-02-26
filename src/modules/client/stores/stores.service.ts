@@ -5,8 +5,6 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StoreLikeEntity } from 'src/database/entities/store-like.entity';
 import { ClientReviewStoreEntity } from 'src/database/entities/client-review-store.entity';
-import { TIMEZONE } from 'src/common/constants';
-import * as moment from 'moment-timezone';
 
 @Injectable()
 export class StoresService {

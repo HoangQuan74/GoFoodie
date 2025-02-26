@@ -378,4 +378,75 @@ export class StoresController {
     const [items, total] = await queryBuilder.getManyAndCount();
     return { items, total };
   }
+
+  @Get(':storeId/booking-time')
+  @ApiOperation({ summary: 'Get booking time' })
+  async findBookingTime(@Param('storeId') storeId: number) {
+    const now = moment().tz(TIMEZONE);
+    let dayOfWeek = now.day();
+    const currentTime = now.hours() * 60 + now.minutes();
+
+    const queryBuilder = this.storesService
+      .createQueryBuilder('store')
+      .select(['store.id'])
+      .addSelect(['workingTime.dayOfWeek', 'workingTime.openTime', 'workingTime.closeTime'])
+      .innerJoin('store.workingTimes', 'workingTime')
+      .addSelect(['closeTime.date', 'closeTime.startTime', 'closeTime.endTime'])
+      .leftJoin('store.specialWorkingTimes', 'closeTime', 'closeTime.date >= CURRENT_DATE')
+      .where('store.id = :storeId')
+      .orderBy('workingTime.dayOfWeek', 'ASC')
+      .addOrderBy('workingTime.openTime', 'ASC')
+      .setParameters({ storeId, dayOfWeek, currentTime });
+
+    const store = await queryBuilder.getOne();
+    if (!store) return [];
+
+    const workingTimes = store.workingTimes;
+    const closeTimes = store.specialWorkingTimes;
+    let count = 0;
+    const result = [];
+
+    while (count < 3) {
+      const formattedDate = now.format('YYYY-MM-DD');
+      let openSlots = workingTimes
+        .filter((item) => item.dayOfWeek === now.day())
+        .map((item) => {
+          return { openTime: item.openTime, closeTime: item.closeTime };
+        });
+
+      if (openSlots.length > 0) {
+        const offDay = closeTimes.find((item) => item.date === formattedDate);
+        if (offDay) {
+          const { startTime, endTime } = offDay;
+          const newOpenSlots = [];
+
+          for (const slot of openSlots) {
+            if (slot.openTime >= endTime || slot.closeTime <= startTime) {
+              newOpenSlots.push(slot);
+            } else if (slot.openTime >= startTime && slot.closeTime <= endTime) {
+              continue;
+            } else if (slot.openTime < startTime && slot.closeTime > endTime) {
+              newOpenSlots.push({ openTime: slot.openTime, closeTime: startTime });
+              newOpenSlots.push({ openTime: endTime, closeTime: slot.closeTime });
+            } else if (slot.openTime < startTime) {
+              newOpenSlots.push({ openTime: slot.openTime, closeTime: startTime });
+            } else if (slot.closeTime > endTime) {
+              newOpenSlots.push({ openTime: endTime, closeTime: slot.closeTime });
+            }
+          }
+
+          openSlots = newOpenSlots;
+        }
+      }
+      if (openSlots.length > 0) {
+        result.push({ date: formattedDate, openSlots });
+        count++;
+      }
+
+      now.add(1, 'days');
+      dayOfWeek = (dayOfWeek + 1) % 7;
+    }
+
+    return result;
+  }
 }
