@@ -21,7 +21,7 @@ export class OrderGroupService {
     private orderRepository: Repository<OrderEntity>,
   ) {}
 
-  async getCurrentOrderGroup(driverId: number) {
+  async getCurrentOrderGroup(driverId: number, isConfirmByDriver: Boolean) {
     const queryBuilder = this.orderGroupItemRepository
       .createQueryBuilder('orderGroupItem')
       .innerJoin('orderGroupItem.orderGroup', 'orderGroup')
@@ -68,8 +68,7 @@ export class OrderGroupService {
         'store.phoneNumber',
       ]);
 
-    const result = await queryBuilder.orderBy('order.createdAt', 'DESC').getMany();
-    const incomeOfDriver = await this.orderGroupItemRepository
+    const queryIncomeOfDriver = await this.orderGroupItemRepository
       .createQueryBuilder('orderGroupItem')
       .innerJoin('orderGroupItem.orderGroup', 'orderGroup')
       .innerJoin('orderGroupItem.order', 'order')
@@ -85,8 +84,15 @@ export class OrderGroupService {
         )`,
         'totalIncome',
       )
-      .groupBy('orderGroup.id')
-      .getRawOne();
+      .groupBy('orderGroup.id');
+
+    if (isConfirmByDriver) {
+      queryBuilder.andWhere('orderGroupItem.isConfirmByDriver = :isConfirmByDriver', { isConfirmByDriver });
+      queryIncomeOfDriver.andWhere('orderGroupItem.isConfirmByDriver = :isConfirmByDriver', { isConfirmByDriver });
+    }
+
+    const result = await queryBuilder.orderBy('order.createdAt', 'DESC').getMany();
+    const incomeOfDriver = await queryIncomeOfDriver.getRawOne();
 
     return { result, incomeOfDriver: Number(incomeOfDriver?.totalIncome) || 0 };
   }

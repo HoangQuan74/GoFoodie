@@ -4,6 +4,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
+import { QueryOrderGroupDto } from './dto';
 
 @Controller('order-group')
 @ApiTags('Order-Group')
@@ -14,8 +15,9 @@ export class OrderGroupController {
   @Get()
   @ApiOperation({ summary: 'Get current order group' })
   @ApiResponse({ status: 200, description: 'Returns a list of orders for the drivers' })
-  getCurrentOrderGroup(@CurrentUser() user: JwtPayload) {
+  getCurrentOrderGroup(@CurrentUser() user: JwtPayload, @Query() query: QueryOrderGroupDto) {
     const { id: driverId } = user;
-    return this.orderGroupService.getCurrentOrderGroup(driverId);
+    const { isConfirmByDriver } = query;
+    return this.orderGroupService.getCurrentOrderGroup(driverId, isConfirmByDriver);
   }
 }
