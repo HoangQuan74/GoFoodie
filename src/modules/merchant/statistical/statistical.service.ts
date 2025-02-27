@@ -22,19 +22,21 @@ export class StatisticalService {
   ) {}
 
   async getRevenueChart(type: TimeRangeV2, storeId: number) {
-    const now = moment().tz('Asia/Ho_Chi_Minh');
-    let startDate: moment.Moment, interval: string, format: string, previousTime: moment.Moment;
+    const now = moment();
+    let startDate: moment.Moment, interval: string, format: string, previousTime: moment.Moment, endDate: moment.Moment;
+    endDate = now.clone().endOf('day');
 
     switch (type) {
       case TimeRangeV2.TODAY:
-        startDate = now.clone().subtract(1, 'days').startOf('day');
+        startDate = now.clone().startOf('day');
         interval = '4 hours';
         format = 'HH:00';
         previousTime = startDate.clone().subtract(1, 'days');
         break;
 
       case TimeRangeV2.YESTERDAY:
-        startDate = now.clone().startOf('day');
+        startDate = now.clone().subtract(1, 'days').startOf('day');
+        endDate = now.clone().subtract(1, 'days').endOf('day');
         interval = '4 hours';
         format = 'HH:00';
         previousTime = startDate.clone().subtract(1, 'days');
@@ -49,15 +51,15 @@ export class StatisticalService {
 
       case TimeRangeV2.LAST_30_DAYS:
         startDate = now.clone().subtract(29, 'days').startOf('day');
-        interval = '1 day';
+        interval = '5 day';
         format = 'YYYY-MM-DD';
         previousTime = startDate.clone().subtract(30, 'days');
         break;
     }
 
-    const revenueData = await this.getRevenueData(storeId, startDate, interval, format);
-    const revenue = await this.getRevenue(startDate, now.endOf('day'), storeId);
-    const previousRevenue = await this.getRevenue(previousTime, startDate, storeId);
+    const revenueData = await this.getRevenueData(storeId, startDate.clone(), endDate.clone(), interval, format);
+    const revenue = await this.getRevenue(startDate.clone(), endDate.clone(), storeId);
+    const previousRevenue = await this.getRevenue(previousTime.clone(), startDate.clone(), storeId);
     const store = await this.storeRepository
       .createQueryBuilder('store')
       .where('store.id = :storeId', { storeId })
@@ -106,24 +108,37 @@ export class StatisticalService {
     };
   }
 
-  private async getRevenueData(storeId: number, startDate: moment.Moment, interval: string, format: string) {
-    const endDate = moment().tz('Asia/Ho_Chi_Minh').endOf('day');
-    const revenueMap = new Map<string, { total: number; countOrder: number }>(); // Đảm bảo chứa cả total và countOrder
+  private async getRevenueData(
+    storeId: number,
+    startDate: moment.Moment,
+    endDate: moment.Moment,
+    interval: string,
+    format: string,
+  ) {
+    const revenueMap = new Map<string, { total: number; countOrder: number }>();
 
     let tempDate = startDate.clone();
+    if (interval === '5 day') tempDate = startDate.clone().subtract(1, 'days');
+
     while (tempDate.isSameOrBefore(endDate)) {
       const key = tempDate.format(format);
       revenueMap.set(key, { total: 0, countOrder: 0 });
 
-      if (interval === '4 hours' && tempDate.format('HH:mm') === '20:00') {
-        const midnightKey = '24:00';
-        revenueMap.set(midnightKey, { total: 0, countOrder: 0 });
-      }
-
-      tempDate.add(interval === '4 hours' ? 4 : 1, interval === '4 hours' ? 'hours' : 'days');
+      tempDate.add(
+        interval === '4 hours' ? 4 : interval === '1 day' ? 1 : 5,
+        interval === '4 hours' ? 'hours' : 'days',
+      );
     }
 
     const timeFormat = format === 'HH:00' ? 'HH24:00' : 'YYYY-MM-DD';
+    if (interval === '4 hours') {
+      const midnightKey = '24:00';
+      revenueMap.set(midnightKey, { total: 0, countOrder: 0 });
+    } else if (interval === '5 day') {
+      const key = endDate.clone().format(format);
+      revenueMap.set(key, { total: 0, countOrder: 0 });
+    }
+
     const query = this.orderRepository
       .createQueryBuilder('order')
       .select('SUM(order.totalAmount)', 'total')
@@ -138,24 +153,27 @@ export class StatisticalService {
       .groupBy('time');
 
     const orders = await query.getRawMany();
-
     orders.forEach((order) => {
       const orderTime = moment(order.time, format);
-      const roundedTime = orderTime
-        .clone()
-        .add(4 - (orderTime.hour() % 4), 'hours')
-        .format(format);
+      let roundedTime;
+      if (interval === '4 hours') {
+        roundedTime = orderTime
+          .clone()
+          .add(4 - (orderTime.hour() % 4), 'hours')
+          .format(format);
+      } else if (interval === '5 day') {
+        const diffDays = orderTime.diff(startDate, 'days');
+        const adjustedDays = Math.floor(diffDays / 5) * 5 + 4;
+        roundedTime = startDate.clone().add(adjustedDays, 'days').format(format);
+      } else {
+        roundedTime = orderTime.format(format);
+      }
 
       if (revenueMap.has(roundedTime)) {
         const currentData = revenueMap.get(roundedTime);
         revenueMap.set(roundedTime, {
           total: currentData.total + parseFloat(order.total),
           countOrder: currentData.countOrder + Number(order.quantityOrder),
-        });
-      } else {
-        revenueMap.set(roundedTime, {
-          total: parseFloat(order.total),
-          countOrder: Number(order.quantityOrder),
         });
       }
     });
