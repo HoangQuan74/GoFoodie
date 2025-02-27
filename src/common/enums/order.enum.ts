@@ -35,4 +35,5 @@ export enum EOrderCode {
 export enum EOrderProcessor {
   REMIND_MERCHANT_CONFIRM_ORDER = 'remindMerchantConfirmOrder',
   CANCEL_ORDER = 'cancelOrder',
+  DRIVER_NOT_ACCEPTED_ORDER = 'driverNotAcceptedOrder',
 }

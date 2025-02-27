@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { DriverSearchService } from './driver-search.service';
 import { DriverEntity } from 'src/database/entities/driver.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
@@ -10,6 +10,7 @@ import { EventsModule } from 'src/events/events.module';
 import { OrderGroupItemEntity } from 'src/database/entities/order-group-item.entity';
 import { OrderGroupEntity } from 'src/database/entities/order-group.entity';
 import { NotificationsModule } from '../client/notifications/notifications.module';
+import { QueuesModule } from '../queues/queues.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { NotificationsModule } from '../client/notifications/notifications.modul
       OrderGroupItemEntity,
     ]),
     EventsModule,
+    forwardRef(() => QueuesModule),
     NotificationsModule,
   ],
 

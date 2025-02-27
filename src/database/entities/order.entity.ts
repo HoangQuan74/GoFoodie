@@ -55,7 +55,7 @@ export class OrderEntity extends BaseEntity {
   })
   orderType: EOrderCode;
 
-  @Column({ type: 'timestamp', name: 'order_time', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'timestamp', name: 'estimated_order_time', default: () => 'CURRENT_TIMESTAMP' })
   orderTime: Date;
 
   @Column({ nullable: true, name: 'delivery_address' })

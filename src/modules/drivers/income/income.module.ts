@@ -3,7 +3,7 @@ import { IncomeService } from './income.service';
 import { IncomeController } from './income.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OrderEntity } from 'src/database/entities/order.entity';
-import { DriversModule } from '../drivers.module';
+import { DriversModule } from '../drivers/drivers.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([OrderEntity]), forwardRef(() => DriversModule)],

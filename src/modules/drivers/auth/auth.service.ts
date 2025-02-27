@@ -1,5 +1,4 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { DriversService } from '../drivers.service';
 import { DriverEntity } from 'src/database/entities/driver.entity';
 import { JwtPayload, JwtSign } from 'src/common/interfaces';
 import { EDriverStatus } from 'src/common/enums/driver.enum';
@@ -10,6 +9,7 @@ import { FirebaseService } from 'src/modules/firebase/firebase.service';
 import { RefreshTokensService } from '../refresh-tokens/refresh-tokens.service';
 import { Request } from 'express';
 import { ERoleType } from 'src/common/enums';
+import { DriversService } from '../drivers/drivers.service';
 
 @Injectable()
 export class AuthService {
