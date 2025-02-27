@@ -45,7 +45,11 @@ export class OrderService {
       .where('order.storeId = :storeId', { storeId });
 
     if (queryOrderDto.status) {
-      query.andWhere('order.status = :status', { status: queryOrderDto.status });
+      if (queryOrderDto.status === EOrderStatus.Delivered) {
+        query.andWhere('order.status IN (:...status)', { status: [EOrderStatus.Delivered, EOrderStatus.InDelivery] });
+      } else {
+        query.andWhere('order.status = :status', { status: queryOrderDto.status });
+      }
     }
 
     if (queryOrderDto.orderType) {
