@@ -135,4 +135,5 @@ export class OrderEntity extends BaseEntity {
 
   driverIncome: number;
   storeRevenue: number;
+  orderSystemAssignToDriver: OrderActivityEntity;
 }
