@@ -55,8 +55,8 @@ export class OrderEntity extends BaseEntity {
   })
   orderType: EOrderCode;
 
-  @Column({ type: 'timestamp', name: 'estimated_order_time', nullable: true })
-  estimatedOrderTime: Date;
+  @Column({ type: 'timestamp', name: 'order_time', default: () => 'CURRENT_TIMESTAMP' })
+  orderTime: Date;
 
   @Column({ nullable: true, name: 'delivery_address' })
   deliveryAddress: string;
@@ -133,6 +133,8 @@ export class OrderEntity extends BaseEntity {
   @OneToMany(() => ClientReviewStoreEntity, (review) => review.order)
   storeReviews: ClientReviewStoreEntity[];
 
+  // don't use
+  estimatedOrderTime: Date;
   driverIncome: number;
   storeRevenue: number;
   orderSystemAssignToDriver: OrderActivityEntity;

@@ -84,7 +84,6 @@ export class OrderService {
       tip,
       eatingTools,
       promoPrice,
-      estimatedOrderTime,
     } = createOrderDto;
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -166,7 +165,6 @@ export class OrderService {
         orderCode: `${EOrderCode.DeliveryNow}${formattedDate}${shortUuid.toLocaleUpperCase()}`,
         estimatedPickupTime,
         estimatedDeliveryTime,
-        estimatedOrderTime,
         cartId,
       });
 
@@ -660,7 +658,8 @@ export class OrderService {
   }
 
   async createPreOrder(data: CreatePreOrderDto, clientId: number): Promise<OrderEntity> {
-    const { cartId, deliveryLatitude, deliveryLongitude, deliveryPhone, deliveryName, deliveryAddressNote } = data;
+    const { cartId, deliveryLatitude, deliveryLongitude, deliveryPhone, deliveryName, deliveryAddressNote, orderTime } =
+      data;
 
     return this.dataSource.transaction(async (manager) => {
       const client = await manager.findOne(ClientEntity, { select: ['id', 'name', 'phone'], where: { id: clientId } });
@@ -708,7 +707,7 @@ export class OrderService {
       newOrder.deliveryFee = deliveryFee;
       newOrder.status = EOrderStatus.OrderCreated;
       newOrder.orderCode = `${EOrderCode.PreOrder}${formattedDate}${shortUuid.toLocaleUpperCase()}`;
-      // order.estimatedOrderTime = estimatedOrderTime;
+      newOrder.orderTime = orderTime;
 
       const order = await manager.save(newOrder);
 

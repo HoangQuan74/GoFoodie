@@ -4,7 +4,6 @@ import { RouterModule } from '@nestjs/core';
 import { RefreshTokensModule } from './refresh-tokens/refresh-tokens.module';
 import { ProductsModule } from './products/products.module';
 import { StoresModule } from './stores/stores.module';
-import { MerchantsService } from './merchants.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MerchantEntity } from 'src/database/entities/merchant.entity';
 import { MerchantOtpEntity } from 'src/database/entities/merchant-otp.entity';
@@ -53,7 +52,7 @@ import { StatisticalModule } from './statistical/statistical.module';
     VouchersModule,
     StatisticalModule,
   ],
-  providers: [MerchantsService],
-  exports: [MerchantsService],
+  providers: [],
+  exports: [],
 })
 export class MerchantModule {}

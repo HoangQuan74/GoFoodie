@@ -51,7 +51,7 @@ export class OrderGroupService {
       .addSelect([
         'order.id',
         'order.orderCode',
-        'order.estimatedOrderTime',
+        'order.orderTime',
         'order.estimatedPickupTime',
         'order.estimatedDeliveryTime',
         'order.deliveryAddress',

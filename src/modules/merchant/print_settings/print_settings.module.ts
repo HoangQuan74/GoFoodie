@@ -3,7 +3,7 @@ import { PrintSettingsService } from './print_settings.service';
 import { PrintSettingsController } from './print_settings.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { StorePrintSettingEntity } from 'src/database/entities/store-print-setting.entity';
-import { MerchantModule } from '../merchant.module';
+import { MerchantModule } from '../merchants/merchant.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([StorePrintSettingEntity]), forwardRef(() => MerchantModule)],

@@ -4,7 +4,7 @@ import { PreparationTimesController } from './preparation-times.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { StoresModule } from '../stores/stores.module';
 import { StorePreparationTimeEntity } from 'src/database/entities/store-preparation-time.entity';
-import { MerchantModule } from '../merchant.module';
+import { MerchantModule } from '../merchants/merchant.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([StorePreparationTimeEntity]), StoresModule, forwardRef(() => MerchantModule)],

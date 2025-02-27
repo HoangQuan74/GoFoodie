@@ -80,13 +80,8 @@ export class CreatePreOrderDto {
   @IsOptional()
   orderType?: EOrderCode;
 
-  // @ApiProperty()
-  // @IsDate()
-  // @Type(() => Date)
-  // preOrderTime: Date;
-
-  @ApiPropertyOptional()
-  @IsString()
-  @IsOptional()
-  estimatedOrderTime?: Date;
+  @ApiProperty()
+  @IsDate()
+  @Type(() => Date)
+  orderTime: Date;
 }

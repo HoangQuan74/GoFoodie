@@ -4,7 +4,7 @@ import { StoresController } from './stores.controller';
 import { WardsModule } from 'src/modules/wards/wards.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { StoreEntity } from 'src/database/entities/store.entity';
-import { MerchantModule } from '../merchant.module';
+import { MerchantModule } from '../merchants/merchant.module';
 import { NotificationsModule } from 'src/modules/admin/notifications/notifications.module';
 import { EventsModule } from 'src/events/events.module';
 

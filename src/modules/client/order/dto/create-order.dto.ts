@@ -77,9 +77,4 @@ export class CreateOrderDto {
   @IsInt()
   @IsOptional()
   promoPrice?: number;
-
-  @ApiPropertyOptional()
-  @IsString()
-  @IsOptional()
-  estimatedOrderTime?: Date;
 }
