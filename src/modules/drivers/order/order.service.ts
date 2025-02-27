@@ -16,6 +16,7 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { DriverSearchService } from 'src/modules/order/driver-search.service';
 import { DRIVER_SPEED } from 'src/common/constants/common.constant';
 import { OrderGroupService } from '../order-group/order-group.service';
+import { EOrderCriteriaType } from 'src/common/enums/order-criteria.enum';
 
 @Injectable()
 export class OrderService {
@@ -104,6 +105,15 @@ export class OrderService {
         { statusStoreConfirmed: EOrderStatus.Confirmed },
       )
       .leftJoinAndMapOne(
+        'order.orderSystemAssignToDriver',
+        'order.activities',
+        'orderSystemAssignToDriver',
+        `orderSystemAssignToDriver.orderId = order.id 
+        AND orderSystemAssignToDriver.status = :statusSystemAssignToDriver 
+        AND orderSystemAssignToDriver.performedBy = :performedBy`,
+        { statusSystemAssignToDriver: EOrderStatus.OfferSentToDriver, performedBy: `driverId:${driverId}` },
+      )
+      .leftJoinAndMapOne(
         'order.orderInDelivery',
         'order.activities',
         'orderInDelivery',
@@ -162,13 +172,16 @@ export class OrderService {
     }
 
     const criteria = await this.orderCriteriaRepository.findOne({
-      where: { serviceTypeId: order.store.serviceType.id },
+      where: { serviceTypeId: order.store.serviceType.id, type: EOrderCriteriaType.Time },
       relations: ['serviceType'],
     });
 
+    const remaining =
+      criteria.value - (new Date().getTime() - order?.orderSystemAssignToDriver?.createdAt?.getTime()) / 1000 || 15;
     return {
       ...order,
       criteria,
+      remaining: remaining > 0 ? remaining : 0,
     };
   }
 
