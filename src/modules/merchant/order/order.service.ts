@@ -197,6 +197,15 @@ export class OrderService {
       });
       await queryRunner.manager.save(orderActivity);
 
+      const notification = new ClientNotificationEntity();
+      notification.clientId = order.clientId;
+      notification.from = order.store?.name;
+      notification.title = CLIENT_NOTIFICATION_TITLE.ORDER_CANCELLED;
+      notification.content = CLIENT_NOTIFICATION_CONTENT.ORDER_CANCELLED(updateOrderDto.reasons);
+      notification.type = EClientNotificationType.Order;
+      notification.relatedId = order.id;
+      await this.clientNotificationService.save(notification);
+
       await queryRunner.commitTransaction();
 
       this.eventGatewayService.handleOrderUpdated(order.id);

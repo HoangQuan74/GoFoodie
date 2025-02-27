@@ -64,6 +64,8 @@ export class VouchersController {
       .createQueryBuilder('voucher')
       .select(['voucher.id as id', 'voucher.code as code', 'voucher.name as name', 'voucher.isActive as "isActive"'])
       .addSelect(['voucher.imageId as "imageId"', 'voucher.createdByStoreId as "createdByStoreId"'])
+      .addSelect(['voucher.refundType as "refundType"', 'voucher.minOrderValue as "minOrderValue"'])
+      .addSelect(['voucher.maxDiscountValue as "maxDiscountValue"'])
       .addSelect(['voucher.startTime as "startTime"', 'voucher.endTime as "endTime"'])
       .addSelect(['voucher.maxUseTime as "maxUseTime"', 'voucher.maxUseTimePerUser as "maxUseTimePerUser"'])
       .addSelect(['voucher.discountType as "discountType"', 'voucher.discountValue as "discountValue"'])
