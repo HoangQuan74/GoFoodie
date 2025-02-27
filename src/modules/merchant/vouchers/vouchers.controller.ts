@@ -63,6 +63,9 @@ export class VouchersController {
     const queryBuilder = this.vouchersService
       .createQueryBuilder('voucher')
       .select(['voucher.id as id', 'voucher.code as code', 'voucher.name as name', 'voucher.isActive as "isActive"'])
+      .addSelect(['voucher.imageId as "imageId"', 'voucher.createdByStoreId as "createdByStoreId"'])
+      .addSelect(['voucher.refundType as "refundType"', 'voucher.minOrderValue as "minOrderValue"'])
+      .addSelect(['voucher.maxDiscountValue as "maxDiscountValue"'])
       .addSelect(['voucher.startTime as "startTime"', 'voucher.endTime as "endTime"'])
       .addSelect(['voucher.maxUseTime as "maxUseTime"', 'voucher.maxUseTimePerUser as "maxUseTimePerUser"'])
       .addSelect(['voucher.discountType as "discountType"', 'voucher.discountValue as "discountValue"'])
@@ -80,6 +83,7 @@ export class VouchersController {
       .leftJoin('voucher.createdBy', 'createdBy')
       .leftJoin('voucher.type', 'type')
       .leftJoin('voucher.products', 'products')
+      .leftJoin('voucher.stores', 'stores')
       .orderBy('voucher.id', 'DESC')
       .groupBy('voucher.id')
       .addGroupBy('createdBy.id')
@@ -88,6 +92,7 @@ export class VouchersController {
         new Brackets((qb) => {
           qb.where('voucher.createdByStoreId = :storeId', { storeId });
           qb.orWhere('products.storeId = :storeId', { storeId });
+          qb.orWhere('stores.id = :storeId', { storeId });
         }),
       )
       .limit(limit)
@@ -98,7 +103,6 @@ export class VouchersController {
         new Brackets((qb) => {
           qb.where('voucher.code ILIKE :search', { search: `%${search}%` });
           qb.orWhere('voucher.name ILIKE :search', { search: `%${search}%` });
-          // qb.orWhere('type.name ILIKE :search', { search: `%${search}%` });
         }),
       );
     }
@@ -131,8 +135,8 @@ export class VouchersController {
   }
 
   @Patch(':id')
-  async update(@Body() body: UpdateVoucherDto, @Param('id') id: number) {
-    const voucher = await this.vouchersService.findOne({ where: { id: id } });
+  async update(@Body() body: UpdateVoucherDto, @Param('id') id: number, @CurrentStore() storeId: number) {
+    const voucher = await this.vouchersService.findOne({ where: { id: id, createdByStoreId: storeId } });
     if (!voucher) throw new NotFoundException();
 
     Object.assign(voucher, body);
@@ -155,11 +159,20 @@ export class VouchersController {
       select: {
         products: { id: true, name: true },
       },
-      where: { id: id, createdByStoreId: storeId },
+      where: [{ id, createdByStoreId: storeId }, { stores: { id: storeId } }, { products: { storeId } }],
       relations: ['products'],
     });
     if (!voucher) throw new NotFoundException();
 
     return voucher;
+  }
+
+  @Patch(':id/end')
+  async endVoucher(@Param('id') id: number, @CurrentStore() storeId: number) {
+    const voucher = await this.vouchersService.findOne({ where: [{ id, createdByStoreId: storeId }] });
+    if (!voucher) throw new NotFoundException();
+
+    voucher.endTime = new Date();
+    return this.vouchersService.save(voucher);
   }
 }

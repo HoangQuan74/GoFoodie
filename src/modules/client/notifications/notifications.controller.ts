@@ -4,6 +4,8 @@ import { AuthGuard } from '../auth/auth.guard';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { QueryNotificationDto } from './dto/query-notification.dto';
+import * as _ from 'lodash';
+import * as moment from 'moment-timezone';
 
 @Controller('notifications')
 @UseGuards(AuthGuard)
@@ -21,14 +23,19 @@ export class NotificationsController {
       .offset((page - 1) * limit)
       .orderBy('notification.id', 'DESC');
 
+    type && queryBuilder.andWhere('notification.type = :type', { type });
+    const unread = await queryBuilder.clone().andWhere('notification.readAt IS NULL').getCount();
+
     if (typeof isRead === 'boolean') {
       queryBuilder.andWhere('notification.readAt IS ' + (isRead ? 'NOT NULL' : 'NULL'));
     }
 
-    type && queryBuilder.andWhere('notification.type = :type', { type });
-
     const [items, total] = await queryBuilder.getManyAndCount();
-    return { items, total };
+
+    const grouped = _.groupBy(items, (item) => moment(item.createdAt).format('YYYY-MM-DD'));
+    const itemsGrouped = Object.keys(grouped).map((key) => ({ date: key, items: grouped[key] }));
+
+    return { items: itemsGrouped, total, unread };
   }
 
   @Patch(':id/read')
@@ -43,13 +50,13 @@ export class NotificationsController {
   @Patch('read-all')
   async markAllAsRead(@CurrentUser() user: JwtPayload, @Query('type') type?: string) {
     const queryBuilder = this.notificationsService
-      .createQueryBuilder('notification')
+      .createQueryBuilder()
       .update()
       .set({ readAt: new Date() })
-      .where('notification.clientId = :clientId', { clientId: user.id })
-      .andWhere('notification.readAt IS NULL');
+      .where('clientId = :clientId', { clientId: user.id })
+      .andWhere('readAt IS NULL');
 
-    type && queryBuilder.andWhere('notification.type = :type', { type });
+    type && queryBuilder.andWhere('type = :type', { type });
     queryBuilder.execute();
   }
 }

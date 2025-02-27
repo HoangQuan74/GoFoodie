@@ -29,6 +29,7 @@ import { ChallengesModule } from './challenges/challenges.module';
 import { ReviewTemplatesModule } from './review-templates/review-templates.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { DriverTitleConfigsModule } from './title-configs/title-configs.module';
+import { ConfigTimesModule } from './config-times/config-times.module';
 
 @Module({
   imports: [
@@ -142,6 +143,10 @@ import { DriverTitleConfigsModule } from './title-configs/title-configs.module';
         path: 'admin',
         module: DriverTitleConfigsModule,
       },
+      {
+        path: 'admin',
+        module: ConfigTimesModule,
+      },
     ]),
     AdminsModule,
     MerchantsModule,
@@ -170,6 +175,7 @@ import { DriverTitleConfigsModule } from './title-configs/title-configs.module';
     ReviewTemplatesModule,
     NotificationsModule,
     DriverTitleConfigsModule,
+    ConfigTimesModule,
   ],
   providers: [
     {

@@ -16,11 +16,12 @@ export class NotificationsService {
   ) {}
 
   async save(entity: ClientNotificationEntity) {
-    const { clientId, title, content } = entity;
+    const { clientId, title, content, from } = entity;
     const client = await this.clientService.findOne({ select: ['id', 'deviceToken'], where: { id: clientId } });
 
     if (client && client.deviceToken) {
-      this.fcmService.sendToDevice(client.deviceToken, title, content);
+      const body = content.replace('{{from}}', from);
+      this.fcmService.sendToDevice(client.deviceToken, title, body);
     }
     return this.notificationRepository.save(entity);
   }
