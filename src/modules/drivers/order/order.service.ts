@@ -7,7 +7,6 @@ import { DriverAvailabilityEntity } from 'src/database/entities/driver-availabil
 import { DriverEntity } from 'src/database/entities/driver.entity';
 import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
 import { OrderCriteriaEntity } from 'src/database/entities/order-criteria.entity';
-import { OrderGroupEntity } from 'src/database/entities/order-group.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { EventGatewayService } from 'src/events/event.gateway.service';
 import { Brackets, Repository } from 'typeorm';

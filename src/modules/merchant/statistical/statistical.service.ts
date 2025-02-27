@@ -110,7 +110,7 @@ export class StatisticalService {
     const endDate = moment().tz('Asia/Ho_Chi_Minh').endOf('day');
     const revenueMap = new Map<string, { total: number; countOrder: number }>(); // Đảm bảo chứa cả total và countOrder
 
-    let tempDate = startDate.clone();
+    const tempDate = startDate.clone();
     while (tempDate.isSameOrBefore(endDate)) {
       const key = tempDate.format(format);
       revenueMap.set(key, { total: 0, countOrder: 0 });
