@@ -29,7 +29,7 @@ export class OrderGroupService {
       .createQueryBuilder('orderGroupItem')
       .innerJoin('orderGroupItem.orderGroup', 'orderGroup')
       .innerJoin('orderGroupItem.order', 'order')
-      .leftJoinAndSelect('order.orderItems','orderItem')
+      .leftJoinAndSelect('order.orderItems', 'orderItem')
       .leftJoin('order.client', 'client')
       .leftJoin('order.store', 'store')
       .leftJoinAndMapOne(
@@ -101,7 +101,16 @@ export class OrderGroupService {
     const incomeOfDriver = await queryIncomeOfDriver.getRawOne();
 
     const criteria = await this.orderCriteriaService.getTimeCountDownToDriverConfirm();
-    return { result, incomeOfDriver: Number(incomeOfDriver?.totalIncome) || 0, criteria };
+    return {
+      result: result.map((order) => {
+        return {
+          ...order,
+          criteria,
+        };
+      }),
+      incomeOfDriver: Number(incomeOfDriver?.totalIncome) || 0,
+      criteria,
+    };
   }
 
   async upsertOrderGroup(orderId: number, driverId: number) {
