@@ -19,6 +19,8 @@ import { OrderGroupEntity } from 'src/database/entities/order-group.entity';
 import { OrderGroupItemEntity } from 'src/database/entities/order-group-item.entity';
 import { ORDER_GROUP_FULL } from 'src/common/constants/common.constant';
 import { NotificationsService } from '../client/notifications/notifications.service';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 
 @Injectable()
 export class DriverSearchService {
@@ -43,6 +45,8 @@ export class DriverSearchService {
 
     @InjectRepository(OrderGroupItemEntity)
     private orderGroupItemRepository: Repository<OrderGroupItemEntity>,
+
+    @InjectQueue('orderQueue') private orderQueue: Queue,
 
     private eventGatewayService: EventGatewayService,
     private clientNotificationService: NotificationsService,

@@ -10,6 +10,8 @@ import { FcmService } from '../fcm/fcm.service';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
 import { EventGatewayService } from 'src/events/event.gateway.service';
+import { DriverSearchService } from '../order/driver-search.service';
+import { OrderService as OrderDriverService } from '../drivers/order/order.service';
 
 @Processor('orderQueue')
 export class OrderProcessor extends WorkerHost {
@@ -25,6 +27,7 @@ export class OrderProcessor extends WorkerHost {
 
     private readonly fcmService: FcmService,
     private readonly eventService: EventGatewayService,
+    private readonly orderDriverService: OrderDriverService,
   ) {
     super();
   }
@@ -36,6 +39,9 @@ export class OrderProcessor extends WorkerHost {
         break;
       case EOrderProcessor.CANCEL_ORDER:
         await this.cancelOrderAfter5Minutes(job.data.orderId);
+        break;
+      case EOrderProcessor.DRIVER_NOT_ACCEPTED_ORDER:
+        await this.driverNotAcceptedOrder(job.data.orderId, job.data.driverId);
         break;
     }
   }
@@ -115,5 +121,19 @@ export class OrderProcessor extends WorkerHost {
         });
       }
     });
+  }
+
+  async driverNotAcceptedOrder(orderId: number, driverId: number) {
+    const order = await this.orderRepository.findOne({
+      where: {
+        id: orderId,
+        driverId: driverId,
+        status: EOrderStatus.OfferSentToDriver,
+      },
+    });
+
+    if (!order) return;
+
+    await this.orderDriverService.rejectOrderByDriver(orderId, driverId, { reasons: 'Auto reject after confirm time' });
   }
 }
