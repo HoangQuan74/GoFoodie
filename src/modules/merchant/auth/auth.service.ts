@@ -11,7 +11,7 @@ import { FirebaseService } from 'src/modules/firebase/firebase.service';
 import { Request } from 'express';
 import { Brackets, IsNull, Not } from 'typeorm';
 import { RegisterSmsDto } from './dto/register.dto';
-import { MerchantsService } from '../merchants.service';
+import { MerchantsService } from '../merchants/merchants.service';
 import { UpdatePhoneDto } from './dto/update-phone.dto';
 
 @Injectable()

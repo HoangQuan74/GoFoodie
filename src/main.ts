@@ -7,7 +7,6 @@ import { ValidationPipe } from '@nestjs/common';
 import { MyLogger } from './logger/app.logger';
 import * as cookieParser from 'cookie-parser';
 import { corsConfig } from './config/cors.config';
-import { MerchantModule } from './modules/merchant/merchant.module';
 import { DriversModule } from './modules/drivers/drivers.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { BanksModule } from './modules/banks/banks.module';
@@ -23,6 +22,7 @@ import { UniformSizesModule } from './modules/uniform-sizes/uniform-sizes.module
 import { ClientModule } from './modules/client/client.module';
 import { MapboxModule } from './modules/mapbox/mapbox.module';
 import { FeeModule } from './modules/fee/fee.module';
+import { MerchantModule } from './modules/merchant/merchant.module';
 
 const { NODE_ENV = 'development', PORT = 3000 } = process.env;
 

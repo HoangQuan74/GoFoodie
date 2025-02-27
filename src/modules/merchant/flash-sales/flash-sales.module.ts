@@ -5,7 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { FlashSaleEntity } from 'src/database/entities/flash-sale.entity';
 import { FlashSaleTimeFrameEntity } from 'src/database/entities/flash-sale-time-frame.entity';
 import { FlashSaleProductEntity } from 'src/database/entities/flash-sale-product.entity';
-import { MerchantModule } from '../merchant.module';
+import { MerchantModule } from '../merchants/merchant.module';
 
 @Module({
   imports: [
