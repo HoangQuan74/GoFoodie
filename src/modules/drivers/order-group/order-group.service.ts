@@ -29,6 +29,7 @@ export class OrderGroupService {
       .createQueryBuilder('orderGroupItem')
       .innerJoin('orderGroupItem.orderGroup', 'orderGroup')
       .innerJoin('orderGroupItem.order', 'order')
+      .leftJoinAndSelect('order.orderItems','orderItem')
       .leftJoin('order.client', 'client')
       .leftJoin('order.store', 'store')
       .leftJoinAndMapOne(
@@ -47,9 +48,7 @@ export class OrderGroupService {
       )
       .where('orderGroup.driverId = :driverId', { driverId })
       .andWhere('orderGroup.status = :status', { status: EOrderGroupStatus.InDelivery })
-      .select([
-        'orderGroupItem.id',
-        'orderGroupItem.isConfirmByDriver',
+      .addSelect([
         'order.id',
         'order.orderCode',
         'order.estimatedOrderTime',
@@ -95,7 +94,10 @@ export class OrderGroupService {
       queryIncomeOfDriver.andWhere('orderGroupItem.isConfirmByDriver = :isConfirmByDriver', { isConfirmByDriver });
     }
 
-    const result = await queryBuilder.orderBy('order.createdAt', 'DESC').getMany();
+    const result = await queryBuilder
+      .orderBy('orderGroupItem.isConfirmByDriver', 'DESC')
+      .addOrderBy('order.createdAt', 'ASC')
+      .getMany();
     const incomeOfDriver = await queryIncomeOfDriver.getRawOne();
 
     const criteria = await this.orderCriteriaService.getTimeCountDownToDriverConfirm();

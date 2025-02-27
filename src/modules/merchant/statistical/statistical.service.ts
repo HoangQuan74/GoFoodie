@@ -77,12 +77,12 @@ export class StatisticalService {
       updatedAt: new Date(),
       revenue: revenue.total,
       revenueGrowthRate:
-        previousRevenue.total === 0 ? null : (revenue.total - previousRevenue.total) / previousRevenue.total,
+        previousRevenue.total === 0 ? null : ((revenue.total - previousRevenue.total) / previousRevenue.total) * 100,
       quantityOrder: revenue.quantityOrder,
       orderQuantityGrowthRate:
         previousRevenue.quantityOrder === 0
           ? null
-          : (revenue.quantityOrder - previousRevenue.quantityOrder) / previousRevenue.quantityOrder,
+          : ((revenue.quantityOrder - previousRevenue.quantityOrder) / previousRevenue.quantityOrder) * 100,
       revenueData,
     };
   }
