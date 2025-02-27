@@ -1,7 +1,6 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { EOrderActivityStatus, EOrderProcessor, EOrderStatus } from 'src/common/enums/order.enum';
-import { OrderService } from '../merchant/order/order.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { Repository } from 'typeorm';

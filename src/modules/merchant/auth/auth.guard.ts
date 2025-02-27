@@ -5,7 +5,7 @@ import { EXCEPTIONS } from 'src/common/constants';
 import { IS_PUBLIC_KEY } from 'src/common/decorators';
 import { EMerchantStatus } from 'src/common/enums';
 import { JwtPayload } from 'src/common/interfaces';
-import { MerchantsService } from '../merchants.service';
+import { MerchantsService } from '../merchants/merchants.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {

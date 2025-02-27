@@ -8,7 +8,7 @@ import { OrderEntity } from 'src/database/entities/order.entity';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { EventsModule } from 'src/events/events.module';
 import { FcmModule } from 'src/modules/fcm/fcm.module';
-import { MerchantModule } from '../merchant.module';
+import { MerchantModule } from '../merchants/merchant.module';
 import { OrderController } from './order.controller';
 import { OrderService } from './order.service';
 import { DriverSearchModule } from 'src/modules/order/driver-search.module';

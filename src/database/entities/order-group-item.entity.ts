@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { OrderEntity } from './order.entity';
 import { BaseEntity } from './base.entity';
 import { OrderGroupEntity } from './order-group.entity';

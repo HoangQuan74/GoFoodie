@@ -10,6 +10,7 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderService } from './order.service';
 import { In, Not } from 'typeorm';
 import { EstimatedDeliveryTimeDto } from './dto/estimated-delivery-time.dto';
+import { CreatePreOrderDto } from './dto/create-pre-order.dto';
 
 @Controller('orders')
 @ApiTags('Orders')
@@ -87,5 +88,11 @@ export class OrderController {
   ) {
     const { lat, lng, orderDate } = query;
     return this.orderService.calculateEstimatedOrderTime(storeId, orderDate, lat, lng);
+  }
+
+  @Post('pre-order')
+  createPreOrder(@Body() createOrderDto: CreatePreOrderDto, @CurrentUser() user: JwtPayload) {
+    const { id: clientId } = user;
+    return this.orderService.createPreOrder(createOrderDto, clientId);
   }
 }

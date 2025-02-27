@@ -51,15 +51,16 @@ export class FlashSalesController {
     const queryBuilder = this.flashSalesService
       .createQueryBuilder('flashSale')
       .select([
-        'flashSale.id as id',
-        'flashSale.name as name',
-        'flashSale.startDate as "startDate"',
-        'flashSale.endDate as "endDate"',
-        'timeFrame.startTime as "startTime"',
-        'timeFrame.endTime as "endTime"',
+        'flashSale.id',
+        'flashSale.name',
+        'flashSale.startDate',
+        'flashSale.endDate',
+        'timeFrame.startTime',
+        'timeFrame.endTime',
       ])
-      .addSelect('COUNT(DISTINCT flashSaleProduct.id)', 'totalProducts')
       .innerJoin('flashSale.timeFrame', 'timeFrame')
+      .addSelect(['flashSaleProduct.id', 'flashSaleProduct.productId'])
+      .addSelect(['product.id', 'product.name', 'product.imageId'])
       .leftJoin('flashSale.products', 'flashSaleProduct')
       .leftJoin('flashSaleProduct.product', 'product')
       .where(
@@ -69,10 +70,8 @@ export class FlashSalesController {
         }),
       )
       .orderBy('flashSale.id', 'DESC')
-      .groupBy('flashSale.id')
-      .addGroupBy('timeFrame.id')
-      .limit(limit)
-      .offset(limit * (page - 1));
+      .skip(limit * (page - 1))
+      .take(limit);
 
     search && queryBuilder.andWhere('flashSale.name ILIKE :search', { search: `%${search}%` });
 
@@ -143,7 +142,7 @@ export class FlashSalesController {
       queryBuilder.setParameters({ currentDay, currentTime });
     }
 
-    const items = await queryBuilder.getRawMany();
+    const items = await queryBuilder.getMany();
     const total = await queryBuilder.getCount();
     return { items, total };
   }
