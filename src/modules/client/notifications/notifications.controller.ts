@@ -23,18 +23,19 @@ export class NotificationsController {
       .offset((page - 1) * limit)
       .orderBy('notification.id', 'DESC');
 
+    type && queryBuilder.andWhere('notification.type = :type', { type });
+    const unread = await queryBuilder.clone().andWhere('notification.readAt IS NULL').getCount();
+
     if (typeof isRead === 'boolean') {
       queryBuilder.andWhere('notification.readAt IS ' + (isRead ? 'NOT NULL' : 'NULL'));
     }
-
-    type && queryBuilder.andWhere('notification.type = :type', { type });
 
     const [items, total] = await queryBuilder.getManyAndCount();
 
     const grouped = _.groupBy(items, (item) => moment(item.createdAt).format('YYYY-MM-DD'));
     const itemsGrouped = Object.keys(grouped).map((key) => ({ date: key, items: grouped[key] }));
 
-    return { items: itemsGrouped, total };
+    return { items: itemsGrouped, total, unread };
   }
 
   @Patch(':id/read')
