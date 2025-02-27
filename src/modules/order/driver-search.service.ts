@@ -8,7 +8,7 @@ import { OrderCriteriaEntity } from 'src/database/entities/order-criteria.entity
 import { EDriverStatus, EDriverApprovalStatus } from 'src/common/enums/driver.enum';
 import { EOrderCriteriaType } from 'src/common/enums/order-criteria.enum';
 import { calculateDistance } from 'src/utils/distance';
-import { EOrderStatus, EOrderGroupStatus } from 'src/common/enums';
+import { EOrderStatus, EOrderGroupStatus, EOrderProcessor } from 'src/common/enums';
 import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
 import { EventGatewayService } from 'src/events/event.gateway.service';
 import { isEmpty } from 'lodash';
@@ -86,6 +86,12 @@ export class DriverSearchService {
 
     await this.orderActivityRepository.save(orderActivity);
     await this.upsertOrderGroup(order.id, driver.id);
+    const orderCriteria = await this.orderCriteriaRepository.findOne({ where: { type: EOrderCriteriaType.Time } });
+    this.orderQueue.add(
+      EOrderProcessor.DRIVER_NOT_ACCEPTED_ORDER,
+      { orderId: order.id, driverId: driver.id },
+      { delay: orderCriteria.value ?? 15 * 1000 },
+    );
 
     this.eventGatewayService.notifyDriverNewOrder(driver.id, order);
   }
