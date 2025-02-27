@@ -29,6 +29,7 @@ export class OrderGroupService {
       .createQueryBuilder('orderGroupItem')
       .innerJoin('orderGroupItem.orderGroup', 'orderGroup')
       .innerJoin('orderGroupItem.order', 'order')
+      .leftJoinAndSelect('order.orderItems','orderItem')
       .leftJoin('order.client', 'client')
       .leftJoin('order.store', 'store')
       .leftJoinAndMapOne(
@@ -47,9 +48,7 @@ export class OrderGroupService {
       )
       .where('orderGroup.driverId = :driverId', { driverId })
       .andWhere('orderGroup.status = :status', { status: EOrderGroupStatus.InDelivery })
-      .select([
-        'orderGroupItem.id',
-        'orderGroupItem.isConfirmByDriver',
+      .addSelect([
         'order.id',
         'order.orderCode',
         'order.estimatedOrderTime',
