@@ -1,7 +1,7 @@
 import { MapboxService } from './../../mapbox/mapbox.service';
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EOrderProcessor, EOrderStatus } from 'src/common/enums/order.enum';
+import { EOrderCode, EOrderProcessor, EOrderStatus } from 'src/common/enums/order.enum';
 import { Group } from 'src/common/interfaces/order-item.interface';
 import { CartProductEntity } from 'src/database/entities/cart-product.entity';
 import { CartEntity } from 'src/database/entities/cart.entity';
@@ -16,6 +16,7 @@ import { formatDate, generateShortUuid } from 'src/utils/common';
 import { calculateDistance } from 'src/utils/distance';
 import { Brackets, DataSource, Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { CreatePreOrderDto } from './dto/create-pre-order.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { EXCEPTIONS, TIMEZONE } from 'src/common/constants';
@@ -83,8 +84,6 @@ export class OrderService {
       tip,
       eatingTools,
       promoPrice,
-      orderType,
-      estimatedOrderTime,
     } = createOrderDto;
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -163,11 +162,9 @@ export class OrderService {
         deliveryFee,
         promoPrice,
         status: EOrderStatus.OrderCreated,
-        orderCode: `${orderType}${formattedDate}${shortUuid.toLocaleUpperCase()}`,
+        orderCode: `${EOrderCode.DeliveryNow}${formattedDate}${shortUuid.toLocaleUpperCase()}`,
         estimatedPickupTime,
         estimatedDeliveryTime,
-        estimatedOrderTime,
-        orderType,
         cartId,
       });
 
@@ -658,5 +655,143 @@ export class OrderService {
     };
 
     return result;
+  }
+
+  async createPreOrder(data: CreatePreOrderDto, clientId: number): Promise<OrderEntity> {
+    const { cartId, deliveryLatitude, deliveryLongitude, deliveryPhone, deliveryName, deliveryAddressNote, orderTime } =
+      data;
+
+    return this.dataSource.transaction(async (manager) => {
+      const client = await manager.findOne(ClientEntity, { select: ['id', 'name', 'phone'], where: { id: clientId } });
+
+      const cart = await manager
+        .createQueryBuilder(CartEntity, 'cart')
+        .innerJoinAndSelect('cart.cartProducts', 'cartProducts')
+        .leftJoinAndSelect('cartProducts.product', 'product')
+        .leftJoinAndSelect('cartProducts.cartProductOptions', 'cartProductOptions')
+        .leftJoinAndSelect('cartProductOptions.option', 'option')
+        .leftJoinAndSelect('option.optionGroup', 'optionGroup')
+        .addSelect(['store.id', 'store.latitude', 'store.longitude'])
+        .leftJoin('cart.store', 'store')
+        .where('cart.id = :cartId', { cartId })
+        .andWhere('cart.clientId = :clientId', { clientId })
+        .getOne();
+
+      if (!cart) throw new NotFoundException(`No cart found with ID ${cartId}`);
+
+      const totalAmount = cart.cartProducts.reduce((sum, cartProduct) => {
+        const productPrice = cartProduct.product.price;
+        const optionsPrice = cartProduct.cartProductOptions.reduce((optSum, option) => optSum + option.option.price, 0);
+        return sum + (productPrice + optionsPrice) * cartProduct.quantity;
+      }, 0);
+      const totalQuantity = cart.cartProducts.reduce((sum, cartProduct) => sum + cartProduct.quantity, 0);
+
+      const storeAddress = await this.storesService.getStoreReceiveAddress(cart.storeId);
+      if (!storeAddress) throw new BadRequestException('Store address not found');
+
+      const distance = calculateDistance(storeAddress.lat, storeAddress.lng, deliveryLatitude, deliveryLongitude);
+      const deliveryFee = await this.feeService.getShippingFee(distance);
+
+      const formattedDate = formatDate(new Date());
+      const shortUuid = generateShortUuid();
+
+      const newOrder = new OrderEntity();
+      Object.assign(newOrder, data);
+      newOrder.clientId = clientId;
+      newOrder.storeId = cart.store.id;
+      newOrder.totalAmount = totalAmount;
+      newOrder.totalQuantity = totalQuantity;
+      newOrder.deliveryPhone = deliveryPhone || client.phone;
+      newOrder.deliveryName = deliveryName || client.name;
+      newOrder.deliveryAddressNote = deliveryAddressNote;
+      newOrder.deliveryFee = deliveryFee;
+      newOrder.status = EOrderStatus.OrderCreated;
+      newOrder.orderCode = `${EOrderCode.PreOrder}${formattedDate}${shortUuid.toLocaleUpperCase()}`;
+      newOrder.orderTime = orderTime;
+
+      const order = await manager.save(newOrder);
+
+      const orderItems = cart.cartProducts.map((cartProduct) => {
+        const productPrice = cartProduct.product.price;
+
+        const groupedOptions = cartProduct.cartProductOptions.reduce((acc, opt) => {
+          const groupId = opt.option.optionGroup.id;
+          if (!acc[groupId]) {
+            acc[groupId] = {
+              optionGroup: opt.option.optionGroup,
+              options: [],
+            };
+          }
+          acc[groupId].options.push(opt.option);
+          return acc;
+        }, {});
+
+        const optionsPrice = cartProduct.cartProductOptions.reduce((sum, opt) => sum + opt.option.price, 0);
+        const itemPrice = productPrice + optionsPrice;
+
+        return {
+          orderId: order.id,
+          productId: cartProduct.product.id,
+          productName: cartProduct.product.name ?? '',
+          productImage: cartProduct.product?.imageId ?? '',
+          price: itemPrice,
+          quantity: cartProduct.quantity,
+          subtotal: itemPrice * cartProduct.quantity,
+          note: cartProduct.note,
+          cartProductOptions: Object.values(groupedOptions).map((group: Group) => ({
+            optionGroup: {
+              id: group.optionGroup.id,
+              name: group.optionGroup.name,
+              storeId: group.optionGroup.storeId,
+              isMultiple: group.optionGroup.isMultiple,
+              status: group.optionGroup.status,
+              createdAt: group.optionGroup.createdAt,
+              updateAt: group.optionGroup.updateAt,
+            },
+            options: Array.isArray(group.options)
+              ? group.options.map((option) => ({
+                  id: option.id,
+                  name: option.name,
+                  price: option.price,
+                  status: option.status,
+                  optionGroupId: option.optionGroupId,
+                  createdAt: option.createdAt,
+                  updateAt: option.updateAt,
+                }))
+              : [],
+          })),
+        };
+      });
+
+      await manager.save(OrderItemEntity, orderItems);
+
+      // Create initial order activity
+      const orderActivity = this.orderActivityRepository.create({
+        orderId: order.id,
+        status: EOrderStatus.OrderCreated,
+        description: 'order_created',
+        performedBy: `client:${clientId}`,
+      });
+      await manager.save(OrderActivityEntity, orderActivity);
+
+      // Soft delete the cart and its related entities
+      await manager.softDelete(CartEntity, { id: cartId });
+      await manager.softDelete(CartProductEntity, { cartId });
+
+      const notification = new ClientNotificationEntity();
+      notification.clientId = clientId;
+      notification.from = cart.store?.name;
+      notification.title = CLIENT_NOTIFICATION_TITLE.ORDER_PENDING;
+      notification.content = CLIENT_NOTIFICATION_CONTENT.ORDER_PENDING;
+      notification.type = EClientNotificationType.Order;
+      notification.relatedId = order.id;
+      await this.clientNotificationsService.save(notification);
+
+      this.eventGatewayService.notifyMerchantNewOrder(order.storeId, order);
+      this.fcmService.notifyMerchantNewOrder(order.id);
+      this.eventGatewayService.handleOrderUpdated(order.id);
+
+      return order;
+    });
   }
 }

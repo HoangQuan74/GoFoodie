@@ -4,7 +4,7 @@ import { OptionGroupsController } from './option-groups.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OptionGroupEntity } from 'src/database/entities/option-group.entity';
 import { OptionEntity } from 'src/database/entities/option.entity';
-import { MerchantModule } from '../merchant.module';
+import { MerchantModule } from '../merchants/merchant.module';
 import { ProductOptionGroupsModule } from 'src/modules/product-option-groups/product-option-groups.module';
 
 @Module({

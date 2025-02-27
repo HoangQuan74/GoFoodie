@@ -1,18 +1,18 @@
-import { PAY_MERCHANT_KEY, PAY_SECRET_KEY, PAY_API_URL } from './../../common/constants/environment.constant';
+import { PAY_SECRET_KEY } from './../../common/constants/environment.constant';
 import { Injectable } from '@nestjs/common';
 import { createHmac } from 'crypto';
 
 @Injectable()
 export class PaymentService {
-//   returnUrl = 'http://fcdcc4767acb.ngrok.io/';
-//   httpQuery = buildHttpQuery(parameters);
-//   message = 'POST' + '\n' + END_POINT + '/payments/create' + '\n' + time + '\n' + httpQuery;
-//   signature = buildSignature(message, MERCHANT_SECRET_KEY);
-//   baseEncode = Buffer.from(JSON.stringify(parameters)).toString('base64');
-//   httpBuild = {
-//     baseEncode: baseEncode,
-//     signature: signature,
-//   };
+  //   returnUrl = 'http://fcdcc4767acb.ngrok.io/';
+  //   httpQuery = buildHttpQuery(parameters);
+  //   message = 'POST' + '\n' + END_POINT + '/payments/create' + '\n' + time + '\n' + httpQuery;
+  //   signature = buildSignature(message, MERCHANT_SECRET_KEY);
+  //   baseEncode = Buffer.from(JSON.stringify(parameters)).toString('base64');
+  //   httpBuild = {
+  //     baseEncode: baseEncode,
+  //     signature: signature,
+  //   };
 
   async transfer9Pay() {
     // const parameters = {

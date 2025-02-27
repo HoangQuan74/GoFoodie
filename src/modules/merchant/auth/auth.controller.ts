@@ -17,7 +17,7 @@ import { CheckOtpDto } from './dto/check-otp.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdateEmailDto } from './dto/update-email.dto';
 import { UpdatePhoneDto } from './dto/update-phone.dto';
-import { MerchantsService } from '../merchants.service';
+import { MerchantsService } from '../merchants/merchants.service';
 import { FirebaseService } from 'src/modules/firebase/firebase.service';
 import { EXCEPTIONS } from 'src/common/constants';
 import { Not } from 'typeorm';

@@ -24,7 +24,7 @@ export class OrderGroupService {
     private readonly orderCriteriaService: OrderCriteriaService,
   ) {}
 
-  async getCurrentOrderGroup(driverId: number, isConfirmByDriver: Boolean) {
+  async getCurrentOrderGroup(driverId: number, isConfirmByDriver: boolean) {
     const queryBuilder = this.orderGroupItemRepository
       .createQueryBuilder('orderGroupItem')
       .innerJoin('orderGroupItem.orderGroup', 'orderGroup')
@@ -51,7 +51,7 @@ export class OrderGroupService {
       .addSelect([
         'order.id',
         'order.orderCode',
-        'order.estimatedOrderTime',
+        'order.orderTime',
         'order.estimatedPickupTime',
         'order.estimatedDeliveryTime',
         'order.deliveryAddress',

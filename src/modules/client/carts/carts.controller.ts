@@ -3,7 +3,7 @@ import { CartsService } from './carts.service';
 import { CreateCartDto } from './dto/create-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
 import { ProductsService } from '../products/products.service';
-import { EOptionGroupStatus, EOptionStatus, EProductApprovalStatus, EProductStatus } from 'src/common/enums';
+import { EOptionGroupStatus, EOptionStatus } from 'src/common/enums';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { AuthGuard } from '../auth/auth.guard';

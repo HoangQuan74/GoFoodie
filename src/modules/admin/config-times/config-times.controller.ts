@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UseGuards } from '@nestjs/common';
+import { Controller, Get, Body, Put, UseGuards } from '@nestjs/common';
 import { ConfigTimesService } from './config-times.service';
 import { UpdateConfigTimeDto } from './dto/update-config-time.dto';
 import { AuthGuard } from '../auth/auth.guard';
