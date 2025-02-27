@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { TitleEntity } from './title.entity';
 import { ETitlePolicyType, ETitlePolicyFrequency } from 'src/common/enums';
 import { TitlePolicyCriteriaEntity } from './title-policy-criteria.entity';

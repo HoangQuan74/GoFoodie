@@ -88,4 +88,12 @@ export class OrderController {
     const { lat, lng, orderDate } = query;
     return this.orderService.calculateEstimatedOrderTime(storeId, orderDate, lat, lng);
   }
+
+  // tạo đơn hàng đặt trước
+  @Post('pre-order')
+  @ApiResponse({ status: 201, description: 'Pre-order created successfully' })
+  createPreOrder(@Body() createOrderDto: CreateOrderDto, @CurrentUser() user: JwtPayload) {
+    const { id: clientId } = user;
+    return this.orderService.createPreOrder(createOrderDto, clientId);
+  }
 }

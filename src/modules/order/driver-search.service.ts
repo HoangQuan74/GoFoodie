@@ -8,9 +8,7 @@ import { OrderCriteriaEntity } from 'src/database/entities/order-criteria.entity
 import { EDriverStatus, EDriverApprovalStatus } from 'src/common/enums/driver.enum';
 import { EOrderCriteriaType } from 'src/common/enums/order-criteria.enum';
 import { calculateDistance } from 'src/utils/distance';
-import { EClientNotificationType, EOrderStatus, EOrderGroupStatus } from 'src/common/enums';
-import { ClientNotificationEntity } from 'src/database/entities/client-notification.entity';
-import { CLIENT_NOTIFICATION_CONTENT, CLIENT_NOTIFICATION_TITLE } from 'src/common/constants/notification.constant';
+import { EOrderStatus, EOrderGroupStatus } from 'src/common/enums';
 import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
 import { EventGatewayService } from 'src/events/event.gateway.service';
 import { isEmpty } from 'lodash';

@@ -1,17 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsBoolean,
-  IsEnum,
-  IsInt,
-  IsNumber,
-  IsOptional,
-  IsPhoneNumber,
-  IsString,
-  Max,
-  Min,
-  ValidateIf,
-} from 'class-validator';
-import { EOrderCode, EPaymentStatus } from 'src/common/enums/order.enum';
+import { IsBoolean, IsInt, IsNumber, IsOptional, IsPhoneNumber, IsString, Max, Min, ValidateIf } from 'class-validator';
 
 export class CreateOrderDto {
   @ApiProperty({
@@ -89,12 +77,6 @@ export class CreateOrderDto {
   @IsInt()
   @IsOptional()
   promoPrice?: number;
-
-  @ApiPropertyOptional({ enum: EOrderCode })
-  @IsEnum(EOrderCode)
-  @ValidateIf((o) => o.orderType !== undefined)
-  @IsOptional()
-  orderType?: EOrderCode;
 
   @ApiPropertyOptional()
   @IsString()

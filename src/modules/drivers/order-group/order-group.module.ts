@@ -7,7 +7,6 @@ import { DriverEntity } from 'src/database/entities/driver.entity';
 import { DriversModule } from '../drivers.module';
 import { OrderGroupEntity } from 'src/database/entities/order-group.entity';
 import { OrderGroupItemEntity } from 'src/database/entities/order-group-item.entity';
-import { OrdersModule } from 'src/modules/merchant/order/order.module';
 import { OrderCriteriaModule } from 'src/modules/order-criteria/order-criteria.module';
 
 @Module({

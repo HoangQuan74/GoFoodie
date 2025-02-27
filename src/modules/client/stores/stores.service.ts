@@ -5,6 +5,8 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StoreLikeEntity } from 'src/database/entities/store-like.entity';
 import { ClientReviewStoreEntity } from 'src/database/entities/client-review-store.entity';
+import { IAddress } from 'src/common/interfaces/map.interface';
+import { EStoreAddressType } from 'src/common/enums';
 
 @Injectable()
 export class StoresService {
@@ -42,7 +44,6 @@ export class StoresService {
     return this.storeAvailableViewRepository.createQueryBuilder(alias);
   }
 
-  // check xem quán có đang hoạt động không
   async checkStoreAvailable(storeId: number) {
     return this.storeRepository
       .createQueryBuilder('store')
@@ -66,5 +67,21 @@ export class StoresService {
       )
       .andWhere('specialWorkingTime.id IS NULL')
       .getExists();
+  }
+
+  async getStoreReceiveAddress(storeId: number): Promise<IAddress> {
+    return this.storeRepository
+      .createQueryBuilder('store')
+      .select([
+        'address.id as id',
+        'address.address as address',
+        'address.lat as latitude',
+        'address.lng as longitude',
+        'address.building as building',
+        'address.gate as gate',
+      ])
+      .innerJoin('store.address', 'address', 'address.type = :type', { type: EStoreAddressType.Receive })
+      .where('store.id = :storeId', { storeId })
+      .getRawOne();
   }
 }

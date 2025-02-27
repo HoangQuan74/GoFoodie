@@ -1,4 +1,4 @@
-import { Controller, Get, Body, UseGuards, Put, Query } from '@nestjs/common';
+import { Controller, Get, Body, UseGuards, Put } from '@nestjs/common';
 import { DriverTitleConfigsService } from './title-configs.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { UpsertTitleConfigDto } from './dto/upsert-title-config.dto';
