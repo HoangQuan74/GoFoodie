@@ -7,7 +7,7 @@ import { OrderCriteriaEntity } from 'src/database/entities/order-criteria.entity
 import { OrderGroupEntity } from 'src/database/entities/order-group.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { EventsModule } from 'src/events/events.module';
-import { DriversModule } from '../drivers.module';
+import { DriversModule } from '../drivers/drivers.module';
 import { OrderController } from './order.controller';
 import { OrderService } from './order.service';
 import { OrderGroupModule } from '../order-group/order-group.module';
@@ -29,7 +29,7 @@ import { NotificationsModule } from 'src/modules/client/notifications/notificati
     forwardRef(() => DriversModule),
     EventsModule,
     OrderGroupModule,
-    DriverSearchModule,
+    forwardRef(() => DriverSearchModule),
     NotificationsModule,
   ],
   providers: [OrderService],

@@ -31,7 +31,7 @@ import { NotificationsModule } from 'src/modules/client/notifications/notificati
     forwardRef(() => MerchantModule),
     EventsModule,
     FcmModule,
-    DriverSearchModule,
+    forwardRef(() => DriverSearchModule),
     NotificationsModule,
   ],
   controllers: [OrderController],

@@ -6,7 +6,6 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtPayload } from 'src/common/interfaces';
 import { AuthGuard } from './auth.guard';
 import { UpdateDriverProfileDto } from './dto/update-profile.dto';
-import { DriversService } from '../drivers.service';
 import { EDriverApprovalStatus, EDriverContractStatus } from 'src/common/enums/driver.enum';
 import { RefreshTokenDto } from './refresh-token.dto';
 import { Request } from 'express';
@@ -15,6 +14,7 @@ import { AdminNotificationEntity } from 'src/database/entities/admin-notificatio
 import { ENotificationType, EUserType } from 'src/common/enums';
 import { APPROVE_PATH } from 'src/common/constants/common.constant';
 import { NotificationsService } from 'src/modules/admin/notifications/notifications.service';
+import { DriversService } from '../drivers/drivers.service';
 
 @Controller('auth')
 @ApiTags('Auth')

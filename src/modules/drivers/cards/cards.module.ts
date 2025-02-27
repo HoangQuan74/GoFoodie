@@ -3,7 +3,7 @@ import { CardsService } from './cards.service';
 import { CardsController } from './cards.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DriverCardEntity } from 'src/database/entities/driver-card.entity';
-import { DriversModule } from '../drivers.module';
+import { DriversModule } from '../drivers/drivers.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([DriverCardEntity]), forwardRef(() => DriversModule)],

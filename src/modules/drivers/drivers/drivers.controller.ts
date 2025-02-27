@@ -1,14 +1,14 @@
 import { Body, Controller, Get, NotFoundException, Post, UseGuards } from '@nestjs/common';
 import { DriversService } from './drivers.service';
-import { AuthGuard } from './auth/auth.guard';
+import { AuthGuard } from '../auth/auth.guard';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SignContractDto } from './dto/sign-contract.dto';
 import { RegisterUniformDto } from './dto/register-uniform.dto';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { DriverUniformEntity } from 'src/database/entities/driver-uniform.entity';
-import { UniformsService } from './uniforms/uniforms.service';
 import { EDriverUniformStatus } from 'src/common/enums/driver.enum';
+import { UniformsService } from '../uniforms/uniforms.service';
 
 @Controller('drivers')
 @ApiTags('Drivers')
