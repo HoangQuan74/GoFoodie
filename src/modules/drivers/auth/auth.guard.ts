@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { EXCEPTIONS } from 'src/common/constants';
 import { IS_PUBLIC_KEY } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
-import { DriversService } from '../drivers.service';
+import { DriversService } from '../drivers/drivers.service';
 // import { EDriverStatus } from 'src/common/enums/driver.enum';
 
 @Injectable()

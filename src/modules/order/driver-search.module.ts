@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { DriverSearchService } from './driver-search.service';
 import { DriverEntity } from 'src/database/entities/driver.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';

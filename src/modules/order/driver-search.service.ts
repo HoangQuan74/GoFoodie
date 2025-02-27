@@ -47,7 +47,7 @@ export class DriverSearchService {
     @InjectQueue('orderQueue') private orderQueue: Queue,
 
     private eventGatewayService: EventGatewayService,
-    private clientNotificationService: NotificationsService,
+    // private clientNotificationService: NotificationsService,
   ) {}
 
   async assignOrderToDriver(orderId: number): Promise<void> {
