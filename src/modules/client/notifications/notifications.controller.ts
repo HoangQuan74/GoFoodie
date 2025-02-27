@@ -50,13 +50,13 @@ export class NotificationsController {
   @Patch('read-all')
   async markAllAsRead(@CurrentUser() user: JwtPayload, @Query('type') type?: string) {
     const queryBuilder = this.notificationsService
-      .createQueryBuilder('notification')
+      .createQueryBuilder()
       .update()
       .set({ readAt: new Date() })
-      .where('notification.clientId = :clientId', { clientId: user.id })
-      .andWhere('notification.readAt IS NULL');
+      .where('clientId = :clientId', { clientId: user.id })
+      .andWhere('readAt IS NULL');
 
-    type && queryBuilder.andWhere('notification.type = :type', { type });
+    type && queryBuilder.andWhere('type = :type', { type });
     queryBuilder.execute();
   }
 }

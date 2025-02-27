@@ -80,6 +80,7 @@ export class VouchersController {
       .leftJoin('voucher.createdBy', 'createdBy')
       .leftJoin('voucher.type', 'type')
       .leftJoin('voucher.products', 'products')
+      .leftJoin('voucher.stores', 'stores')
       .orderBy('voucher.id', 'DESC')
       .groupBy('voucher.id')
       .addGroupBy('createdBy.id')
@@ -88,6 +89,7 @@ export class VouchersController {
         new Brackets((qb) => {
           qb.where('voucher.createdByStoreId = :storeId', { storeId });
           qb.orWhere('products.storeId = :storeId', { storeId });
+          qb.orWhere('stores.id = :storeId', { storeId });
         }),
       )
       .limit(limit)
