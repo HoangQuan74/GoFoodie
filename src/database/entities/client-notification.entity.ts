@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { EClientNotificationType } from 'src/common/enums';
+import { EClientNotificationType, EClientNotificationStatus } from 'src/common/enums';
 import { FileEntity } from './file.entity';
 import { ClientEntity } from './client.entity';
 
@@ -23,6 +23,9 @@ export class ClientNotificationEntity extends BaseEntity {
 
   @Column({ type: 'enum', enum: EClientNotificationType })
   type: EClientNotificationType;
+
+  @Column({ name: 'status', type: 'enum', enum: EClientNotificationStatus, default: EClientNotificationStatus.Info })
+  status: EClientNotificationStatus;
 
   @Column({ name: 'related_id', nullable: true })
   relatedId: number;

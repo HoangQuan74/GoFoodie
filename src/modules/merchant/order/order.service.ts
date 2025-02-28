@@ -12,7 +12,7 @@ import { OrderResponse } from 'src/common/interfaces/order.interface';
 import { calculateStoreIncome } from 'src/utils/income';
 import { EXCEPTIONS } from 'src/common/constants';
 import { FcmService } from 'src/modules/fcm/fcm.service';
-import { EClientNotificationType, EUserType } from 'src/common/enums';
+import { EClientNotificationStatus, EClientNotificationType, EUserType } from 'src/common/enums';
 import { DriverSearchService } from 'src/modules/order/driver-search.service';
 import { ClientNotificationEntity } from 'src/database/entities/client-notification.entity';
 import { CLIENT_NOTIFICATION_CONTENT, CLIENT_NOTIFICATION_TITLE } from 'src/common/constants/notification.constant';
@@ -207,6 +207,7 @@ export class OrderService {
       notification.title = CLIENT_NOTIFICATION_TITLE.ORDER_CANCELLED;
       notification.content = CLIENT_NOTIFICATION_CONTENT.ORDER_CANCELLED(updateOrderDto.reasons);
       notification.type = EClientNotificationType.Order;
+      notification.status = EClientNotificationStatus.Error;
       notification.relatedId = order.id;
       await this.clientNotificationService.save(notification);
 
