@@ -69,4 +69,8 @@ export class FlashSalesService {
   createQueryBuilderProducts(alias: string) {
     return this.flashSaleProductRepository.createQueryBuilder(alias);
   }
+
+  createQueryBuilderTimeFrames(alias: string) {
+    return this.flashSaleTimeFrameRepository.createQueryBuilder(alias);
+  }
 }

@@ -4,8 +4,8 @@ export enum EServiceGroupStatus {
 }
 
 export enum EServiceType {
-  Food = 'food',
-  Shopping = 'shopping',
-  Delivery = 'delivery',
-  Car = 'car',
+  Food = 1,
+  Shopping = 3,
+  Delivery = 2,
+  Car = 4,
 }
