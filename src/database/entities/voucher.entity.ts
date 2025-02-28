@@ -111,6 +111,6 @@ export class VoucherEntity extends BaseEntity {
   @JoinColumn({ name: 'image_id' })
   image: FileEntity;
 
-  used: number = 0;
+  usedCount: number = 0;
   productCount: number;
 }

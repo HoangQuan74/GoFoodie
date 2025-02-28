@@ -62,32 +62,9 @@ export class VouchersController {
 
     const queryBuilder = this.vouchersService
       .createQueryBuilder('voucher')
-      .select(['voucher.id as id', 'voucher.code as code', 'voucher.name as name', 'voucher.isActive as "isActive"'])
-      .addSelect(['voucher.imageId as "imageId"', 'voucher.createdByStoreId as "createdByStoreId"'])
-      .addSelect(['voucher.refundType as "refundType"', 'voucher.minOrderValue as "minOrderValue"'])
-      .addSelect(['voucher.maxDiscountValue as "maxDiscountValue"'])
-      .addSelect(['voucher.startTime as "startTime"', 'voucher.endTime as "endTime"'])
-      .addSelect(['voucher.maxUseTime as "maxUseTime"', 'voucher.maxUseTimePerUser as "maxUseTimePerUser"'])
-      .addSelect(['voucher.discountType as "discountType"', 'voucher.discountValue as "discountValue"'])
-      .addSelect(['createdBy.name as "createdByName"', 'voucher.createdAt as "createdAt"'])
-      .addSelect(['type.id as "typeId"'])
-      .addSelect((subQuery) => {
-        return subQuery
-          .select('COUNT(1)', 'count')
-          .from('voucher_products', 'vp')
-          .where('vp.voucher_id = voucher.id')
-          .innerJoin(ProductEntity, 'product', 'product.id = vp.product_id AND product.store_id = :storeId')
-          .setParameter('storeId', storeId);
-      }, 'productsCount')
-      .addSelect(['0 as "usedCount"'])
-      .leftJoin('voucher.createdBy', 'createdBy')
-      .leftJoin('voucher.type', 'type')
       .leftJoin('voucher.products', 'products')
       .leftJoin('voucher.stores', 'stores')
       .orderBy('voucher.id', 'DESC')
-      .groupBy('voucher.id')
-      .addGroupBy('createdBy.id')
-      .addGroupBy('type.id')
       .where(
         new Brackets((qb) => {
           qb.where('voucher.createdByStoreId = :storeId', { storeId });
@@ -95,8 +72,8 @@ export class VouchersController {
           qb.orWhere('stores.id = :storeId', { storeId });
         }),
       )
-      .limit(limit)
-      .offset((page - 1) * limit);
+      .take(limit)
+      .skip((page - 1) * limit);
 
     if (search) {
       queryBuilder.andWhere(
@@ -128,8 +105,7 @@ export class VouchersController {
     endTimeFrom && queryBuilder.andWhere('voucher.endTime >= :endTimeFrom', { endTimeFrom });
     endTimeTo && queryBuilder.andWhere('voucher.endTime <= :endTimeTo', { endTimeTo });
 
-    const items = await queryBuilder.getRawMany();
-    const total = await queryBuilder.getCount();
+    const [items, total] = await queryBuilder.getManyAndCount();
 
     return { items, total };
   }
