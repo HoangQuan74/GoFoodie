@@ -813,6 +813,10 @@ export class OrderService {
       this.fcmService.notifyMerchantNewOrder(order.id);
       this.eventGatewayService.handleOrderUpdated(order.id);
 
+      setTimeout(() => {
+        this.updateOrderStatus(+order.id, EOrderStatus.Pending, clientId);
+      }, 3000);
+
       return order;
     });
   }
