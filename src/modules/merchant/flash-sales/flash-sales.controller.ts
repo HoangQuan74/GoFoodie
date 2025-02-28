@@ -26,6 +26,7 @@ import { TIMEZONE } from 'src/common/constants';
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentStore } from 'src/common/decorators/current-store.decorator';
 import { ProductsService } from '../products/products.service';
+import { Public } from 'src/common/decorators';
 
 @Controller('flash-sales')
 @ApiTags('Flash Sales')
@@ -42,16 +43,25 @@ export class FlashSalesController {
   }
 
   @Get('time-frames')
+  @Public()
   @ApiOperation({ summary: 'Lấy danh sách khung giờ flash sale theo ngày' })
-  getTimeFrames(@Query('date') date: Date, @CurrentStore() storeId: number) {
+  getTimeFrames(@Query('date') date: Date) {
+    const storeId = 10009;
+
     const queryBuilder = this.flashSalesService
       .createQueryBuilderTimeFrames('timeFrame')
-      .leftJoin('timeFrame.flashSales', 'flashSale', 'flashSale.createdByStoreId = :storeId', { storeId })
       .orderBy('timeFrame.startTime', 'ASC');
 
     if (date) {
       const dateFormatted = moment(date).tz(TIMEZONE).format('YYYY-MM-DD');
-      queryBuilder.andWhere('flashSale.startDate = :startDate', { startDate: dateFormatted });
+      queryBuilder
+        .leftJoin(
+          'timeFrame.flashSales',
+          'flashSale',
+          'flashSale.createdByStoreId = :storeId AND flashSale.startDate = :startDate',
+        )
+        .where('flashSale.id IS NULL')
+        .setParameters({ storeId, startDate: dateFormatted });
     }
 
     return queryBuilder.getMany();
