@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as moment from 'moment-timezone';
 import { EXCEPTIONS } from 'src/common/constants';
 import { ORDER_GROUP_FULL } from 'src/common/constants/common.constant';
 import { EOrderGroupStatus, EOrderStatus } from 'src/common/enums';
@@ -45,6 +46,15 @@ export class OrderGroupService {
         'orderDelivered',
         'orderDelivered.orderId = order.id AND orderDelivered.status = :statusDelivered',
         { statusDelivered: EOrderStatus.Delivered },
+      )
+      .leftJoinAndMapOne(
+        'order.orderSystemAssignToDriver',
+        'order.activities',
+        'orderSystemAssignToDriver',
+        `orderSystemAssignToDriver.orderId = order.id 
+        AND orderSystemAssignToDriver.status = :statusSystemAssignToDriver 
+        AND orderSystemAssignToDriver.performedBy = :performedBy`,
+        { statusSystemAssignToDriver: EOrderStatus.OfferSentToDriver, performedBy: `driverId:${driverId}` },
       )
       .where('orderGroup.driverId = :driverId', { driverId })
       .andWhere('orderGroup.status = :status', { status: EOrderGroupStatus.InDelivery })
@@ -101,6 +111,27 @@ export class OrderGroupService {
     const incomeOfDriver = await queryIncomeOfDriver.getRawOne();
 
     const criteria = await this.orderCriteriaService.getTimeCountDownToDriverConfirm();
+
+    result.forEach((orderGroupItem) => {
+      if (!orderGroupItem.isConfirmByDriver) {
+        const order = orderGroupItem.order;
+        if (order?.orderSystemAssignToDriver?.createdAt) {
+          const createdAt = moment(order.orderSystemAssignToDriver.createdAt).unix();
+          const now = moment().unix();
+
+          const remaining = criteria - (now - createdAt) / 1000 || 15;
+          orderGroupItem.order.remaining = remaining < 0 ? 0 : remaining;
+
+          console.log(
+            `Thời gian còn lại: ${orderGroupItem.order.remaining} giây`,
+            moment(),
+            order.orderSystemAssignToDriver.createdAt,
+            criteria - (now - createdAt) / 1000,
+          );
+        }
+      }
+    });
+
     return {
       result: result.map((order) => {
         return {

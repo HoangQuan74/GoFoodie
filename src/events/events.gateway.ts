@@ -75,8 +75,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     this.server.to(merchantSocketId).emit('newOrder', {
       ...baseOrderInfo,
-      clientName: order.client.name,
-      clientPhone: order.client.phone,
+      clientName: order.client?.name,
+      clientPhone: order.client?.phone,
       deliveryAddress: order.deliveryAddress,
     });
   }

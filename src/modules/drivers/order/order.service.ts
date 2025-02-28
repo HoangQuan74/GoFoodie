@@ -177,8 +177,11 @@ export class OrderService {
       relations: ['serviceType'],
     });
 
-    const remaining =
-      criteria.value - (new Date().getTime() - order?.orderSystemAssignToDriver?.createdAt?.getTime()) / 1000 || 15;
+    const createdAt = moment(order.orderSystemAssignToDriver.createdAt).unix();
+    const now = moment().unix();
+
+    const remaining = criteria.value - (now - createdAt) / 1000 || 15;
+
     return {
       ...order,
       criteria,
@@ -227,7 +230,7 @@ export class OrderService {
   async acceptOrderByDriver(orderId: number, driverId: number): Promise<OrderEntity> {
     const order = await this.orderRepository.findOne({
       where: { id: orderId },
-      relations: ['store'],
+      relations: ['store', 'client'],
     });
 
     if (!order) {
