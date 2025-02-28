@@ -409,7 +409,7 @@ export class StoresController {
     while (count < 3) {
       const formattedDate = now.format('YYYY-MM-DD');
       let openSlots = workingTimes
-        .filter((item) => item.dayOfWeek === now.day())
+        .filter((item) => item.dayOfWeek === now.day() && item.closeTime > currentTime)
         .map((item) => {
           return { openTime: item.openTime, closeTime: item.closeTime };
         });
