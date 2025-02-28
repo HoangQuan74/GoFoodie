@@ -39,6 +39,8 @@ import { OrderService as MerchantOrderService } from 'src/modules/merchant/order
 import { NotificationsService } from '../notifications/notifications.service';
 import { ClientNotificationEntity } from 'src/database/entities/client-notification.entity';
 import { CLIENT_NOTIFICATION_CONTENT, CLIENT_NOTIFICATION_TITLE } from 'src/common/constants/notification.constant';
+import { AppFeeEntity } from 'src/database/entities/app-fee.entity';
+import { EAppType } from 'src/common/enums/config.enum';
 
 @Injectable()
 export class OrderService {
@@ -57,6 +59,9 @@ export class OrderService {
 
     @InjectRepository(CartProductOptionEntity)
     private cartProductOptionRepository: Repository<CartProductOptionEntity>,
+
+    @InjectRepository(AppFeeEntity)
+    private appFeeRepository: Repository<AppFeeEntity>,
 
     @InjectQueue('orderQueue') private orderQueue: Queue,
 
@@ -136,6 +141,19 @@ export class OrderService {
         deliveryLongitude,
       );
       const deliveryFee = await this.feeService.getShippingFee(distance);
+      const parkingFee = cart.store?.parkingFee ?? 0;
+
+      const appTransactionFee = await this.appFeeRepository.findOne({
+        where: {
+          appTypeId: EAppType.AppDriver,
+          fee: {
+            serviceType: {
+              code: 'FD',
+            },
+          },
+        },
+      });
+      const transactionFee = ((Number(appTransactionFee?.value) ?? 0) / 100) * deliveryFee;
 
       const formattedDate = formatDate(new Date());
       const shortUuid = generateShortUuid();
@@ -160,6 +178,8 @@ export class OrderService {
         tip,
         eatingTools,
         deliveryFee,
+        parkingFee,
+        transactionFee,
         promoPrice,
         status: EOrderStatus.OrderCreated,
         orderCode: `${EOrderCode.DeliveryNow}${formattedDate}${shortUuid.toLocaleUpperCase()}`,
