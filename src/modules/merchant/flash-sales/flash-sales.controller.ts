@@ -25,12 +25,16 @@ import * as moment from 'moment-timezone';
 import { TIMEZONE } from 'src/common/constants';
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentStore } from 'src/common/decorators/current-store.decorator';
+import { ProductsService } from '../products/products.service';
 
 @Controller('flash-sales')
 @ApiTags('Flash Sales')
 @UseGuards(AuthGuard)
 export class FlashSalesController {
-  constructor(private readonly flashSalesService: FlashSalesService) {}
+  constructor(
+    private readonly flashSalesService: FlashSalesService,
+    private readonly productsService: ProductsService,
+  ) {}
 
   @Post()
   create(@Body() body: CreateFlashSaleDto, @CurrentStore() storeId: number) {
@@ -38,9 +42,19 @@ export class FlashSalesController {
   }
 
   @Get('time-frames')
-  @ApiOperation({ summary: 'Lấy danh sách khung giờ flash sale' })
-  getTimeFrames() {
-    return this.flashSalesService.getTimeFrames({ order: { startTime: 'ASC' } });
+  @ApiOperation({ summary: 'Lấy danh sách khung giờ flash sale theo ngày' })
+  getTimeFrames(@Query('date') date: Date, @CurrentStore() storeId: number) {
+    const queryBuilder = this.flashSalesService
+      .createQueryBuilderTimeFrames('timeFrame')
+      .leftJoin('timeFrame.flashSales', 'flashSale', 'flashSale.createdByStoreId = :storeId', { storeId })
+      .orderBy('timeFrame.startTime', 'ASC');
+
+    if (date) {
+      const dateFormatted = moment(date).tz(TIMEZONE).format('YYYY-MM-DD');
+      queryBuilder.andWhere('flashSale.startDate = :startDate', { startDate: dateFormatted });
+    }
+
+    return queryBuilder.getMany();
   }
 
   @Get()
@@ -160,7 +174,38 @@ export class FlashSalesController {
 
   @Delete(':id')
   async delete(@Param('id') id: number, @CurrentStore() storeId: number) {
-    const flashSale = await this.flashSalesService.findOne({ where: { id, createdByStoreId: storeId } });
+    const currentDay = moment().tz(TIMEZONE).format('YYYY-MM-DD');
+    const currentTime = moment().tz(TIMEZONE).format('HH:mm:ss');
+
+    const flashSale = await this.flashSalesService
+      .createQueryBuilder('flashSale')
+      .innerJoin('flashSale.timeFrame', 'timeFrame')
+      .where('flashSale.id = :id', { id })
+      .andWhere('flashSale.createdByStoreId = :storeId', { storeId })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where(
+            new Brackets((qb) => {
+              qb.where('flashSale.endDate > :currentDay');
+              qb.andWhere(
+                new Brackets((qb) => {
+                  qb.where('timeFrame.startTime > :currentTime');
+                  qb.orWhere('timeFrame.endTime < :currentTime');
+                }),
+              );
+            }),
+          );
+          qb.orWhere(
+            new Brackets((qb) => {
+              qb.where('flashSale.endDate = :currentDay');
+              qb.andWhere('timeFrame.startTime > :currentTime');
+            }),
+          );
+          qb.orWhere('flashSale.startDate > :currentDay');
+        }),
+      )
+      .setParameters({ currentDay, currentTime })
+      .getOne();
     if (!flashSale) throw new NotFoundException();
 
     return this.flashSalesService.remove(flashSale);
