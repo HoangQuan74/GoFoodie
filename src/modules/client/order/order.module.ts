@@ -19,6 +19,7 @@ import { StoresModule } from '../stores/stores.module';
 import { OrderCriteriaModule } from 'src/modules/order-criteria/order-criteria.module';
 import { MapboxModule } from 'src/modules/mapbox/mapbox.module';
 import { OrdersModule as MerchantOrdersModule } from 'src/modules/merchant/order/order.module';
+import { AppFeeEntity } from 'src/database/entities/app-fee.entity';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { OrdersModule as MerchantOrdersModule } from 'src/modules/merchant/order
       CartProductOptionEntity,
       OrderActivityEntity,
       FeeEntity,
+      AppFeeEntity,
     ]),
     forwardRef(() => ClientModule),
     EventsModule,

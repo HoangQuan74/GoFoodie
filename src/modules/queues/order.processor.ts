@@ -130,6 +130,7 @@ export class OrderProcessor extends WorkerHost {
         status: EOrderStatus.OfferSentToDriver,
       },
     });
+    console.log('Searching other driver for the order', order);
 
     if (!order) return;
 
