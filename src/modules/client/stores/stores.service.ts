@@ -80,7 +80,7 @@ export class StoresService {
         'address.building as building',
         'address.gate as gate',
       ])
-      .innerJoin('store.address', 'address', 'address.type = :type', { type: EStoreAddressType.Receive })
+      .innerJoin('store.addresses', 'address', 'address.type = :type', { type: EStoreAddressType.Receive })
       .where('store.id = :storeId', { storeId })
       .getRawOne();
   }

@@ -706,6 +706,7 @@ export class OrderService {
       newOrder.deliveryAddressNote = deliveryAddressNote;
       newOrder.deliveryFee = deliveryFee;
       newOrder.status = EOrderStatus.OrderCreated;
+      newOrder.orderType = EOrderCode.PreOrder;
       newOrder.orderCode = `${EOrderCode.PreOrder}${formattedDate}${shortUuid.toLocaleUpperCase()}`;
       newOrder.orderTime = orderTime;
 

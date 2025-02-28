@@ -3,7 +3,6 @@ import { Type } from 'class-transformer';
 import {
   IsBoolean,
   IsDate,
-  IsEnum,
   IsInt,
   IsLatitude,
   IsLongitude,
@@ -73,12 +72,6 @@ export class CreatePreOrderDto {
   @IsInt()
   @IsOptional()
   promoPrice?: number;
-
-  @ApiPropertyOptional({ enum: EOrderCode })
-  @IsEnum(EOrderCode)
-  @ValidateIf((o) => o.orderType !== undefined)
-  @IsOptional()
-  orderType?: EOrderCode;
 
   @ApiProperty()
   @IsDate()
