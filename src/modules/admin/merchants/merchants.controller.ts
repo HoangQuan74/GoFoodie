@@ -95,7 +95,7 @@ export class MerchantsController {
     });
 
     if (!merchant) {
-      throw new NotFoundException();
+      return null;
     }
 
     return merchant;
