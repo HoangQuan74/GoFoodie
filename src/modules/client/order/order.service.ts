@@ -153,7 +153,20 @@ export class OrderService {
           },
         },
       });
+      const storeAppTransactionFee = await this.appFeeRepository.findOne({
+        where: {
+          appTypeId: EAppType.AppMerchant,
+          fee: {
+            serviceType: {
+              code: 'FD',
+            },
+          },
+        },
+      });
       const transactionFee = ((Number(appTransactionFee?.value) ?? 0) / 100) * deliveryFee;
+      const storeTransactionFee = ((Number(storeAppTransactionFee?.value) ?? 0) / 100) * totalAmount;
+      const storeRevenue = totalAmount - storeTransactionFee - parkingFee;
+      const clientTotalPaid = totalAmount + deliveryFee;
 
       const formattedDate = formatDate(new Date());
       const shortUuid = generateShortUuid();
@@ -180,6 +193,9 @@ export class OrderService {
         deliveryFee,
         parkingFee,
         transactionFee,
+        storeTransactionFee,
+        storeRevenue,
+        clientTotalPaid,
         promoPrice,
         status: EOrderStatus.OrderCreated,
         orderCode: `${EOrderCode.DeliveryNow}${formattedDate}${shortUuid.toLocaleUpperCase()}`,

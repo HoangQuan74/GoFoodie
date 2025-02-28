@@ -100,6 +100,21 @@ export class OrderEntity extends BaseEntity {
   @Column({ type: 'decimal', precision: 10, scale: 0, name: 'app_fee', default: 0 })
   appFee: number;
 
+  @Column({ type: 'decimal', precision: 10, scale: 0, name: 'store_app_fee', default: 0 })
+  storeAppFee: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 0, name: 'store_delivery_fee', default: 0 })
+  storeDeliveryFee: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 0, name: 'store_revenue', default: 0 })
+  storeRevenue: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 0, name: 'store_transaction_fee', default: 0 })
+  storeTransactionFee: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 0, name: 'client_total_paid', default: 0 })
+  clientTotalPaid: number;
+
   @Column({ nullable: true })
   notes: string;
 
@@ -136,7 +151,6 @@ export class OrderEntity extends BaseEntity {
   // don't use
   estimatedOrderTime: Date;
   driverIncome: number;
-  storeRevenue: number;
   orderSystemAssignToDriver: OrderActivityEntity;
   remaining: number;
 }
