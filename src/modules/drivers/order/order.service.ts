@@ -482,9 +482,9 @@ export class OrderService {
       queryBuilder
         .andWhere(
           new Brackets((qb) => {
-            qb.orWhere('client.name ILIKE :search')
-              .orWhere('order.orderCode ILIKE :search')
-              .orWhere('store.name ILIKE :search');
+            qb.orWhere('unaccent(client.name) ILIKE unaccent(:search)')
+              .orWhere('unaccent(order.orderCode) ILIKE unaccent(:search)')
+              .orWhere('unaccent(store.name) ILIKE unaccent(:search)');
           }),
         )
         .setParameters({ search: `%${search}%` });
