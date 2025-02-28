@@ -107,6 +107,7 @@ export class OrderProcessor extends WorkerHost {
       status: EOrderStatus.Cancelled,
       description: EOrderActivityStatus.CANCEL_ORDER_AFTER_5_MINUTES,
       performedBy: 'system',
+      cancellationReason: 'Đơn hàng bị hủy do quán không xác nhận đơn hàng',
     });
     await this.orderActivityRepository.save(orderActivity);
     const merchants = await this.getMerchantsByStore(order.store);

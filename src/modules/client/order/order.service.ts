@@ -729,6 +729,7 @@ export class OrderService {
       newOrder.orderType = EOrderCode.PreOrder;
       newOrder.orderCode = `${EOrderCode.PreOrder}${formattedDate}${shortUuid.toLocaleUpperCase()}`;
       newOrder.orderTime = orderTime;
+      newOrder.estimatedDeliveryTime = orderTime;
 
       const order = await manager.save(newOrder);
 
