@@ -1,30 +1,32 @@
 import {
-  Controller,
-  Get,
-  Post,
+  BadRequestException,
   Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-  NotFoundException,
   ConflictException,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
-import { MerchantsService } from './merchants.service';
-import { CreateMerchantDto } from './dto/create-merchant.dto';
-import { UpdateMerchantDto } from './dto/update-merchant.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { EXCEPTIONS } from 'src/common/constants';
+import { OPERATIONS } from 'src/common/constants/operation.constant';
+import { Roles } from 'src/common/decorators';
+import { AdminRolesGuard } from 'src/common/guards';
+import { IdentityQuery } from 'src/common/query';
 import { MerchantEntity } from 'src/database/entities/merchant.entity';
 import { hashPassword } from 'src/utils/bcrypt';
-import { QueryMerchantDto } from './dto/query-merchant.dto';
 import { Brackets, In, Not } from 'typeorm';
-import { EXCEPTIONS } from 'src/common/constants';
-import { IdentityQuery } from 'src/common/query';
 import { AuthGuard } from '../auth/auth.guard';
-import { AdminRolesGuard } from 'src/common/guards';
-import { Roles } from 'src/common/decorators';
-import { OPERATIONS } from 'src/common/constants/operation.constant';
+import { CreateMerchantDto } from './dto/create-merchant.dto';
+import { QueryMerchantDto, SearchMerchantByEmailPhoneDto } from './dto/query-merchant.dto';
+import { UpdateMerchantByEmailPhoneDto, UpdateMerchantDto } from './dto/update-merchant.dto';
+import { MerchantsService } from './merchants.service';
 
 @Controller('merchants')
 @ApiTags('Admin Merchants')
@@ -82,6 +84,40 @@ export class MerchantsController {
 
     const [items, total] = await queryBuilder.getManyAndCount();
     return { items, total };
+  }
+
+  @Get('email-or-phone')
+  async findByEmailOrPhone(@Query() searchDto: SearchMerchantByEmailPhoneDto) {
+    const { email, phone } = searchDto;
+
+    const merchant = await this.merchantsService.findOne({
+      where: [{ email: email }, { phone: phone }],
+    });
+
+    if (!merchant) {
+      throw new NotFoundException();
+    }
+
+    return merchant;
+  }
+
+  @Put('update-by-phone-email')
+  @ApiOperation({ summary: 'Update a merchant by email or phone' })
+  @ApiResponse({ status: 200, description: 'Merchant updated successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 404, description: 'Merchant not found' })
+  async updateMerchantByPhoneEmail(@Body() updateMerchantDto: UpdateMerchantByEmailPhoneDto) {
+    if (!updateMerchantDto.email && !updateMerchantDto.phone) {
+      throw new BadRequestException('Either email or phone must be provided to identify the merchant');
+    }
+
+    const updatedMerchant = await this.merchantsService.updateMerchant(updateMerchantDto);
+
+    if (!updatedMerchant) {
+      throw new NotFoundException('Merchant not found');
+    }
+
+    return updatedMerchant;
   }
 
   @Get(':id')

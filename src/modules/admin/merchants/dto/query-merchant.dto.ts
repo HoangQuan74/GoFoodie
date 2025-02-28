@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional, ValidateIf } from 'class-validator';
+import { IsEmail, IsEnum, IsOptional, IsString, ValidateIf } from 'class-validator';
 import { EMerchantStatus, ESortMerchant } from 'src/common/enums';
 import { PaginationQuery } from 'src/common/query';
 
@@ -23,4 +23,14 @@ export class QueryMerchantDto extends PaginationQuery {
   @ApiPropertyOptional()
   @IsOptional()
   createdAtTo: Date;
+}
+
+export class SearchMerchantByEmailPhoneDto {
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
 }

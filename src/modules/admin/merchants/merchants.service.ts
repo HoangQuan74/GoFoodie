@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MerchantEntity } from 'src/database/entities/merchant.entity';
 import { MerchantView } from 'src/database/views/merchant.view';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { UpdateMerchantByEmailPhoneDto } from './dto/update-merchant.dto';
 
 @Injectable()
 export class MerchantsService {
@@ -47,5 +48,28 @@ export class MerchantsService {
       return this.merchantRepository.softRemove(entity);
     }
     return this.merchantRepository.softRemove(entity);
+  }
+
+  async updateMerchant(updateMerchantDto: UpdateMerchantByEmailPhoneDto): Promise<MerchantEntity> {
+    const { email, phone, ...updateData } = updateMerchantDto;
+
+    const merchant = await this.merchantRepository.findOne({
+      where: [{ email: email }, { phone: phone }],
+    });
+
+    if (!merchant) {
+      throw new NotFoundException('Merchant not found');
+    }
+
+    Object.assign(merchant, updateData);
+
+    if (email) {
+      merchant.email = email;
+    }
+    if (phone) {
+      merchant.phone = phone;
+    }
+
+    return this.merchantRepository.save(merchant);
   }
 }
