@@ -119,14 +119,14 @@ export class OrderGroupService {
           const createdAt = moment(order.orderSystemAssignToDriver.createdAt).unix();
           const now = moment().unix();
 
-          const remaining = criteria - (now - createdAt) / 1000 || 15;
+          const remaining = criteria - (now - createdAt) || 15;
           orderGroupItem.order.remaining = remaining < 0 ? 0 : remaining;
 
           console.log(
             `Thời gian còn lại: ${orderGroupItem.order.remaining} giây`,
             moment(),
             order.orderSystemAssignToDriver.createdAt,
-            criteria - (now - createdAt) / 1000,
+            criteria - (now - createdAt),
           );
         }
       }
