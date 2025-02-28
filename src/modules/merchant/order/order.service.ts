@@ -248,18 +248,7 @@ export class OrderService {
     if (order.status === 'offer_sent_to_driver') {
       order.driver = null;
     }
-
-    if (order.store) {
-      const addressParts = [
-        order.store.address,
-        order.store.ward?.name,
-        order.store.district?.name,
-        order.store.province?.name,
-      ].filter(Boolean);
-
-      order.store.address = addressParts.join(', ');
-    }
-
+    
     return {
       ...order,
       storeIncome: calculateStoreIncome(order),
