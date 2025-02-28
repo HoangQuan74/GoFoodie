@@ -87,10 +87,11 @@ export class DriverSearchService {
     await this.orderActivityRepository.save(orderActivity);
     await this.upsertOrderGroup(order.id, driver.id);
     const orderCriteria = await this.orderCriteriaRepository.findOne({ where: { type: EOrderCriteriaType.Time } });
+    const timeCount = orderCriteria?.value ?? 15;
     this.orderQueue.add(
       EOrderProcessor.DRIVER_NOT_ACCEPTED_ORDER,
       { orderId: order.id, driverId: driver.id },
-      { delay: orderCriteria.value ?? 15 * 1000 },
+      { delay: timeCount * 1000 },
     );
 
     this.eventGatewayService.notifyDriverNewOrder(driver.id, order);
