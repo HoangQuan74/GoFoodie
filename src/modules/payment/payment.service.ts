@@ -1,34 +1,38 @@
-import { PAY_SECRET_KEY } from './../../common/constants/environment.constant';
+import { PAY_API_URL, PAY_MERCHANT_KEY, PAY_SECRET_KEY } from './../../common/constants/environment.constant';
 import { Injectable } from '@nestjs/common';
 import { createHmac } from 'crypto';
+import { IPaymentParams } from 'src/common/interfaces/payment.interface';
+import * as moment from 'moment';
 
 @Injectable()
 export class PaymentService {
-  //   returnUrl = 'http://fcdcc4767acb.ngrok.io/';
-  //   httpQuery = buildHttpQuery(parameters);
-  //   message = 'POST' + '\n' + END_POINT + '/payments/create' + '\n' + time + '\n' + httpQuery;
-  //   signature = buildSignature(message, MERCHANT_SECRET_KEY);
-  //   baseEncode = Buffer.from(JSON.stringify(parameters)).toString('base64');
-  //   httpBuild = {
-  //     baseEncode: baseEncode,
-  //     signature: signature,
-  //   };
-
-  async transfer9Pay() {
-    // const parameters = {
-    //   merchantKey: PAY_MERCHANT_KEY,
-    //   time: new Date().getTime(),
-    //   invoice_no: '123456',
-    //   amount: 10000,
-    //   description: 'Thanh toán đơn hàng',
-    //   return_url: this.returnUrl,
-    //   method: 'CREDIT_CARD',
-    //   transaction_type: 'CARD_AUTHORIZATION',
-    // };
-    // tạo url thanh toán
+  private createParameters(data: IPaymentParams) {
+    const { amount, description, returnUrl, method, invoiceNo } = data;
+    const time = moment().unix();
+    return {
+      merchantKey: PAY_MERCHANT_KEY,
+      time: time,
+      invoice_no: invoiceNo,
+      amount: amount,
+      description: description || 'Thanh toán đơn hàng',
+      return_url: returnUrl,
+      method: method,
+    };
   }
 
-  buildHttpQuery(data: any) {
+  async createPaymentUrl(data: IPaymentParams) {
+    const parameters = this.createParameters(data);
+    console.log(parameters);
+    const httpQuery = this.buildHttpQuery(parameters);
+    const message = 'POST' + '\n' + PAY_API_URL + '/payments/create' + '\n' + parameters.time + '\n' + httpQuery;
+    const signature = this.buildSignature(message);
+    const baseEncode = Buffer.from(JSON.stringify(parameters)).toString('base64');
+    const httpBuild = { baseEncode: baseEncode, signature: signature };
+
+    return PAY_API_URL + '/portal?' + this.buildHttpQuery(httpBuild);
+  }
+
+  private buildHttpQuery(data: object) {
     const httpQuery = new URLSearchParams();
 
     const ordered = Object.keys(data)
@@ -44,7 +48,7 @@ export class PaymentService {
     return httpQuery.toString();
   }
 
-  private buildSignature(data: any) {
+  private buildSignature(data: string) {
     return createHmac('sha256', PAY_SECRET_KEY).update(data).digest().toString('base64');
   }
 }

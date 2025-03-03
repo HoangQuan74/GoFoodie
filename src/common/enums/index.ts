@@ -14,3 +14,5 @@ export * from './notice.enum';
 export * from './common.enum';
 export * from './order.enum';
 export * from './title.enum';
+export * from './transaction.enum';
+export * from './payment.enum';

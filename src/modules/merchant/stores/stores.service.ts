@@ -37,4 +37,9 @@ export class StoresService {
   merge(entity: StoreEntity, data: any) {
     return this.storeRepository.merge(entity, data);
   }
+
+  async getBalance(storeId: number) {
+    const store = await this.findOne({ where: { id: storeId } });
+    return store.balance;
+  }
 }

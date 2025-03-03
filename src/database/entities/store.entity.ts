@@ -146,6 +146,9 @@ export class StoreEntity extends BaseEntity {
   @Column({ name: 'auto_accept_order', default: false })
   autoAcceptOrder: boolean;
 
+  @Column({ type: 'int8', default: 0 })
+  balance: number;
+
   @ManyToOne(() => ServiceGroupEntity, (serviceGroup) => serviceGroup.id, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'service_group_id' })
   serviceGroup: ServiceGroupEntity;
