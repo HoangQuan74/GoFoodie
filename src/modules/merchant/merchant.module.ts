@@ -18,6 +18,7 @@ import { PrintSettingsModule } from './print_settings/print_settings.module';
 import { FlashSalesModule } from './flash-sales/flash-sales.module';
 import { VouchersModule } from './vouchers/vouchers.module';
 import { StatisticalModule } from './statistical/statistical.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { StatisticalModule } from './statistical/statistical.module';
       { path: 'merchant', module: VouchersModule },
       { path: 'merchant', module: StatisticalModule },
       { path: 'merchant', module: FlashSalesModule },
+      { path: 'merchant', module: PaymentModule },
     ]),
     ProductsModule,
     StoresModule,
@@ -51,6 +53,7 @@ import { StatisticalModule } from './statistical/statistical.module';
     FlashSalesModule,
     VouchersModule,
     StatisticalModule,
+    PaymentModule,
   ],
   providers: [],
   exports: [],

@@ -11,9 +11,4 @@ export class PaymentController {
     console.log(body);
     // return this.paymentService.ipn9Pay();
   }
-
-  @Get('9pay/transfer')
-  async transfer9Pay() {
-    return this.paymentService.transfer9Pay();
-  }
 }
