@@ -72,8 +72,10 @@ export class RolesController {
   @Get(':id')
   async findOne(@Param('id') id: number) {
     const role = await this.rolesService.findOne({
+      select: { provinces: { id: true, name: true } },
       where: { id },
       relations: ['operations', 'provinces', 'serviceTypes'],
+      relationLoadStrategy: 'query',
     });
     if (!role) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
 
