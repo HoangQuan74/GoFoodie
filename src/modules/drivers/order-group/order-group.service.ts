@@ -3,12 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as moment from 'moment-timezone';
 import { EXCEPTIONS } from 'src/common/constants';
 import { ORDER_GROUP_FULL } from 'src/common/constants/common.constant';
-import { EOrderGroupStatus, EOrderStatus } from 'src/common/enums';
+import { EOrderGroupStatus, EOrderStatus, EUserType } from 'src/common/enums';
 import { OrderGroupItemEntity } from 'src/database/entities/order-group-item.entity';
 import { OrderGroupEntity } from 'src/database/entities/order-group.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { OrderCriteriaService } from 'src/modules/order-criteria/order-criteria.service';
 import { Brackets, Repository } from 'typeorm';
+import { UpdateOrderGroupItemDto } from './dto';
+import { isEmpty } from 'lodash';
 
 @Injectable()
 export class OrderGroupService {
@@ -25,7 +27,7 @@ export class OrderGroupService {
     private readonly orderCriteriaService: OrderCriteriaService,
   ) {}
 
-  async getCurrentOrderGroup(driverId: number, isConfirmByDriver: boolean) {
+  async getCurrentOrderGroup(driverId: number, isConfirmByDriver: Boolean) {
     const queryBuilder = this.orderGroupItemRepository
       .createQueryBuilder('orderGroupItem')
       .innerJoin('orderGroupItem.orderGroup', 'orderGroup')
@@ -251,5 +253,162 @@ export class OrderGroupService {
         },
       );
     }
+  }
+
+  async getCardStoreAndClient(driverId: number, isConfirmByDriver: Boolean) {
+    const queryBuilder = this.orderGroupItemRepository
+      .createQueryBuilder('orderGroupItem')
+      .leftJoin('orderGroupItem.orderGroup', 'orderGroup')
+      .leftJoin('orderGroupItem.order', 'order')
+      .leftJoinAndSelect('order.orderItems', 'orderItem')
+      .where('orderGroup.driverId = :driverId', { driverId })
+      .andWhere('orderGroup.status = :status', { status: EOrderGroupStatus.InDelivery })
+      .addSelect([
+        'order.id',
+        'order.orderCode',
+        'order.orderTime',
+        'order.estimatedPickupTime',
+        'order.estimatedDeliveryTime',
+        'order.deliveryAddress',
+        'order.deliveryName',
+        'order.deliveryLatitude',
+        'order.deliveryLongitude',
+        'order.status',
+        'order.totalAmount',
+      ])
+      .orderBy('orderGroupItem.isConfirmByDriver', 'DESC')
+      .addOrderBy('order.createdAt', 'ASC');
+
+    const queryIncomeOfDriver = this.orderGroupItemRepository
+      .createQueryBuilder('orderGroupItem')
+      .innerJoin('orderGroupItem.orderGroup', 'orderGroup')
+      .innerJoin('orderGroupItem.order', 'order')
+      .where('orderGroup.driverId = :driverId', { driverId })
+      .andWhere('orderGroup.status = :status', { status: EOrderGroupStatus.InDelivery })
+      .select(
+        `
+        SUM(
+          COALESCE(order.tip, 0) + 
+          COALESCE(order.deliveryFee, 0) + 
+          COALESCE(order.peakHourFee, 0) + 
+          COALESCE(order.parkingFee, 0)
+        )`,
+        'totalIncome',
+      )
+      .groupBy('orderGroup.id');
+
+    if (typeof isConfirmByDriver === 'boolean') {
+      queryBuilder.andWhere('orderGroupItem.isConfirmByDriver = :isConfirmByDriver', { isConfirmByDriver });
+      queryIncomeOfDriver.andWhere('orderGroupItem.isConfirmByDriver = :isConfirmByDriver', { isConfirmByDriver });
+    }
+
+    const storeQuery = queryBuilder
+      .clone()
+      .leftJoin('order.store', 'store')
+      .leftJoinAndMapOne(
+        'order.orderInDelivery',
+        'order.activities',
+        'orderInDelivery',
+        'orderInDelivery.orderId = order.id AND orderInDelivery.status = :statusInDelivery',
+        { statusInDelivery: EOrderStatus.InDelivery },
+      )
+      .leftJoinAndMapOne(
+        'order.orderDelivered',
+        'order.activities',
+        'orderDelivered',
+        'orderDelivered.orderId = order.id AND orderDelivered.status = :statusDelivered',
+        { statusDelivered: EOrderStatus.Delivered },
+      )
+      .leftJoinAndMapOne(
+        'order.orderSystemAssignToDriver',
+        'order.activities',
+        'orderSystemAssignToDriver',
+        `orderSystemAssignToDriver.orderId = order.id 
+        AND orderSystemAssignToDriver.status = :statusSystemAssignToDriver 
+        AND orderSystemAssignToDriver.performedBy = :performedBy`,
+        { statusSystemAssignToDriver: EOrderStatus.OfferSentToDriver, performedBy: `driverId:${driverId}` },
+      )
+      .addSelect([
+        'store.id',
+        'store.name',
+        'store.address',
+        'store.streetName',
+        'store.latitude',
+        'store.longitude',
+        'store.phoneNumber',
+      ]);
+
+    const clientQuery = queryBuilder
+      .clone()
+      .leftJoin('order.client', 'client')
+      .addSelect(['client.id', 'client.name', 'client.phone']);
+
+    const [stores, clients] = await Promise.all([storeQuery.getMany(), clientQuery.getMany()]);
+    const [criteria, incomeOfDriver] = await Promise.all([
+      this.orderCriteriaService.getTimeCountDownToDriverConfirm(),
+      queryIncomeOfDriver.getRawOne(),
+    ]);
+
+    stores.forEach((orderGroupItem) => {
+      orderGroupItem.sortOrder = orderGroupItem.routePriority.store;
+      if (!orderGroupItem.isConfirmByDriver) {
+        const order = orderGroupItem.order;
+        if (order?.orderSystemAssignToDriver?.createdAt) {
+          const createdAt = moment(order.orderSystemAssignToDriver.createdAt).unix();
+          const remaining = Math.max(0, criteria - (moment().unix() - createdAt));
+          orderGroupItem.order.remaining = remaining;
+        }
+      }
+    });
+
+    clients.forEach((client) => {
+      client.sortOrder = client.routePriority.client;
+    });
+    const orderGroupItems = stores.concat(clients);
+
+    orderGroupItems.sort((a, b) => {
+      return a.sortOrder - b.sortOrder;
+    });
+
+    return {
+      orderGroupItems: orderGroupItems.map((order) => {
+        return {
+          ...order,
+          criteria,
+        };
+      }),
+      incomeOfDriver: Number(incomeOfDriver?.totalIncome) || 0,
+      criteria,
+    };
+  }
+
+  async sortOrderGroupItem(driverId: number, data: UpdateOrderGroupItemDto) {
+    const orderGroupItems = await this.orderGroupItemRepository.find({
+      where: {
+        orderGroup: {
+          driverId: driverId,
+          status: EOrderGroupStatus.InDelivery,
+        },
+      },
+      select: {
+        id: true,
+        routePriority: { store: true, client: true },
+      },
+    });
+
+    if (isEmpty(orderGroupItems)) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
+    if (orderGroupItems.length * 2 !== data.orderItems.length)
+      throw new BadRequestException(EXCEPTIONS.QUATITY_ORDER_NOT_MATCH);
+
+    orderGroupItems.forEach((orderGroupItem) => {
+      orderGroupItem.routePriority.store = data.orderItems.find(
+        (item) => item.orderItemId === orderGroupItem.id && item.sortType === EUserType.Merchant,
+      ).index;
+      orderGroupItem.routePriority.client = data.orderItems.find(
+        (item) => item.orderItemId === orderGroupItem.id && item.sortType === EUserType.Client,
+      ).index;
+    });
+
+    return await this.orderGroupItemRepository.save(orderGroupItems);
   }
 }
