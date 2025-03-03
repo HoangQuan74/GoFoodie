@@ -48,6 +48,9 @@ export class ProductView {
   @ViewColumn({ name: 'store_id' })
   storeId: number;
 
+  @ViewColumn({ name: 'description' })
+  description: string;
+
   @ViewColumn({ name: 'product_category_id' })
   productCategoryId: number;
 
