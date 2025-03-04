@@ -40,6 +40,6 @@ export class StoresService {
 
   async getBalance(storeId: number) {
     const store = await this.findOne({ where: { id: storeId } });
-    return store.balance;
+    return Number(store.balance);
   }
 }

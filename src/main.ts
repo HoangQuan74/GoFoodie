@@ -23,6 +23,7 @@ import { ClientModule } from './modules/client/client.module';
 import { MapboxModule } from './modules/mapbox/mapbox.module';
 import { FeeModule } from './modules/fee/fee.module';
 import { MerchantModule } from './modules/merchant/merchant.module';
+import { PaymentModule } from './modules/payment/payment.module';
 
 const { NODE_ENV = 'development', PORT = 3000 } = process.env;
 
@@ -72,6 +73,7 @@ async function bootstrap() {
       UniformSizesModule,
       MapboxModule,
       FeeModule,
+      PaymentModule,
     ];
 
     const document = SwaggerModule.createDocument(app, config.build(), {
