@@ -143,7 +143,7 @@ export class StatisticalService {
       .createQueryBuilder('order')
       .select('SUM(order.totalAmount)', 'total')
       .addSelect('COUNT(order.id)', 'quantityOrder')
-      .addSelect(`to_char(order.createdAt, '${timeFormat}')`, 'time')
+      .addSelect(`to_char(order.createdAt AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Ho_Chi_Minh', '${timeFormat}')`, 'time')
       .where('order.storeId = :storeId', { storeId })
       .andWhere('order.createdAt BETWEEN :startDate AND :endDate', {
         startDate: startDate.toDate(),
