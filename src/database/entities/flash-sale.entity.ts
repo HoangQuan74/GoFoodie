@@ -27,6 +27,6 @@ export class FlashSaleEntity extends BaseEntity {
   @JoinColumn({ name: 'time_frame_id' })
   timeFrame: FlashSaleTimeFrameEntity;
 
-  @OneToMany(() => FlashSaleProductEntity, (flashSaleProduct) => flashSaleProduct.flashSale)
+  @OneToMany(() => FlashSaleProductEntity, (flashSaleProduct) => flashSaleProduct.flashSale, { cascade: true })
   products: FlashSaleProductEntity[];
 }
