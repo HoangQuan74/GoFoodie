@@ -16,3 +16,4 @@ export * from './order.enum';
 export * from './title.enum';
 export * from './transaction.enum';
 export * from './payment.enum';
+export * from './client.enum';

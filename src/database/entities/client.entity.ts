@@ -31,6 +31,9 @@ export class ClientEntity extends BaseEntity {
   @Column({ name: 'last_login', nullable: true })
   lastLogin: Date;
 
+  @Column({ type: 'int8', default: 0 })
+  coins: number;
+
   @ManyToOne(() => FileEntity, (file) => file.id)
   @JoinColumn({ name: 'avatar_id' })
   avatar: FileEntity;

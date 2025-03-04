@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { ArrayMinSize, IsArray, IsDateString, IsInt, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import { AddFlashSaleProductDto } from './add-flash-sale-products.dto';
+import { Type } from 'class-transformer';
 
 export class CreateFlashSaleDto {
   @ApiProperty()
@@ -18,4 +20,11 @@ export class CreateFlashSaleDto {
   @ApiProperty()
   @IsInt()
   timeFrameId: number;
+
+  @ApiProperty({ type: [AddFlashSaleProductDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @ArrayMinSize(1)
+  @Type(() => AddFlashSaleProductDto)
+  products: AddFlashSaleProductDto[];
 }
