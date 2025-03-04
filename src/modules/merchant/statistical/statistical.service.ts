@@ -153,6 +153,8 @@ export class StatisticalService {
       .groupBy('time');
 
     const orders = await query.getRawMany();
+    console.log('startDate, endDate', startDate.toDate(), endDate.toDate());
+    console.log('query', query.getQueryAndParameters());
     orders.forEach((order) => {
       const orderTime = moment(order.time, format);
       let roundedTime;
