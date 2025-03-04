@@ -144,7 +144,7 @@ export class StatisticalService {
       .createQueryBuilder('order')
       .select('SUM(order.totalAmount)', 'total')
       .addSelect('COUNT(order.id)', 'quantityOrder')
-      .addSelect(`to_char(order.createdAt AT TIME ZONE 'Asia/Ho_Chi_Minh', '${timeFormat}')`, 'time')
+      .addSelect(`to_char(order.createdAt AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Ho_Chi_Minh', '${timeFormat}')`, 'time')
       .where('order.storeId = :storeId', { storeId })
       .andWhere('order.createdAt BETWEEN :startDate AND :endDate', {
         startDate: startDate.toDate(),
@@ -154,8 +154,7 @@ export class StatisticalService {
       .groupBy('time');
 
     const orders = await query.getRawMany();
-    console.log('startDate, endDate', startDate.toDate(), endDate.toDate());
-    console.log('query', query.getQueryAndParameters());
+
     orders.forEach((order) => {
       const orderTime = moment(order.time, format);
       let roundedTime;
