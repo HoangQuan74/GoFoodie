@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { generateRandomString } from 'src/utils/bcrypt';
 import { ETransactionType } from 'src/common/enums';
 import { StoresService } from '../stores/stores.service';
+import { CreateWithdrawDto } from './dto/create-withdraw.dto';
 
 @Injectable()
 export class PaymentService {
@@ -37,6 +38,10 @@ export class PaymentService {
     return this.paymentCommonService.createPaymentUrl({ amount, returnUrl, method, description, invoiceNo });
   }
 
+  async withdraw(data: CreateWithdrawDto, storeId: number) {
+    // code here
+  }
+
   private async createInvoiceNo() {
     const invoiceNo = generateRandomString(30);
 
@@ -44,5 +49,9 @@ export class PaymentService {
     if (!checkInvoiceNo) return invoiceNo;
 
     return this.createInvoiceNo();
+  }
+
+  createQueryBuild(alias: string) {
+    return this.transactionHistoryRepository.createQueryBuilder(alias);
   }
 }
