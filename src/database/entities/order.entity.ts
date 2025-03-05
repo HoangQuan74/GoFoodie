@@ -103,6 +103,9 @@ export class OrderEntity extends BaseEntity {
   @Column({ type: 'decimal', precision: 10, scale: 0, name: 'store_app_fee', default: 0 })
   storeAppFee: number;
 
+  @Column({ type: 'decimal', precision: 10, scale: 0, name: 'client_app_fee', default: 0 })
+  clientAppFee: number;
+
   @Column({ type: 'decimal', precision: 10, scale: 0, name: 'store_delivery_fee', default: 0 })
   storeDeliveryFee: number;
 
@@ -153,4 +156,5 @@ export class OrderEntity extends BaseEntity {
   driverIncome: number;
   orderSystemAssignToDriver: OrderActivityEntity;
   remaining: number;
+  otherFee: number;
 }
