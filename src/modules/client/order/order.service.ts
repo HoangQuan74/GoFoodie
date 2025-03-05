@@ -21,7 +21,7 @@ import { QueryOrderDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { EXCEPTIONS, TIMEZONE } from 'src/common/constants';
 import { CartProductOptionEntity } from 'src/database/entities/cart-product-option.entity';
-import { EClientNotificationType, ERoleType, EStoreAddressType, EUserType } from 'src/common/enums';
+import { EClientNotificationType, EFeeType, ERoleType, EStoreAddressType, EUserType } from 'src/common/enums';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import {
@@ -150,6 +150,9 @@ export class OrderService {
             serviceType: {
               code: 'FD',
             },
+            feeType: {
+              value: EFeeType.Transaction,
+            },
           },
         },
       });
@@ -160,13 +163,30 @@ export class OrderService {
             serviceType: {
               code: 'FD',
             },
+            feeType: {
+              value: EFeeType.Transaction,
+            },
           },
         },
       });
-      const transactionFee = ((Number(appTransactionFee?.value) ?? 0) / 100) * deliveryFee;
-      const storeTransactionFee = ((Number(storeAppTransactionFee?.value) ?? 0) / 100) * totalAmount;
-      const storeRevenue = totalAmount - storeTransactionFee - parkingFee;
-      const clientTotalPaid = totalAmount + deliveryFee;
+      const clientFeeApp = await this.appFeeRepository.findOne({
+        where: {
+          appTypeId: EAppType.AppClient,
+          fee: {
+            serviceType: {
+              code: 'FD',
+            },
+            feeType: {
+              value: EFeeType.Service,
+            },
+          },
+        },
+      });
+      const transactionFee = ((Number(appTransactionFee?.value) || 0) / 100) * deliveryFee;
+      const storeTransactionFee = ((Number(storeAppTransactionFee?.value) || 0) / 100) * totalAmount;
+      const clientAppFee = ((Number(clientFeeApp?.value) || 0) / 100) * totalAmount;
+      const storeRevenue = totalAmount - storeTransactionFee;
+      const clientTotalPaid = totalAmount + deliveryFee + clientAppFee + parkingFee;
 
       const formattedDate = formatDate(new Date());
       const shortUuid = generateShortUuid();
@@ -195,6 +215,7 @@ export class OrderService {
         transactionFee,
         storeTransactionFee,
         storeRevenue,
+        clientAppFee,
         clientTotalPaid,
         promoPrice,
         status: EOrderStatus.OrderCreated,
@@ -425,16 +446,7 @@ export class OrderService {
       throw new NotFoundException(`Order with ID ${orderId} not found for this client`);
     }
 
-    if (order.store) {
-      const addressParts = [
-        order.store.address,
-        order.store.ward?.name,
-        order.store.district?.name,
-        order.store.province?.name,
-      ].filter(Boolean);
-
-      order.store.address = addressParts.join(', ');
-    }
+    order.otherFee = Number(order.clientAppFee) + Number(order.parkingFee);
 
     return order;
   }
