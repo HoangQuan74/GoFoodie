@@ -9,6 +9,7 @@ import { OptionGroupEntity } from './option-group.entity';
 import { ProductOptionGroupEntity } from './product-option-group.entity';
 import { EProductApprovalStatus } from 'src/common/enums/product.enum';
 import { OrderItemEntity } from './order-item.entity';
+import { VoucherEntity } from './voucher.entity';
 
 @Entity('products')
 export class ProductEntity extends BaseEntity {
@@ -73,6 +74,9 @@ export class ProductEntity extends BaseEntity {
 
   @OneToMany(() => OrderItemEntity, (orderItems) => orderItems.product)
   orderItems: OrderItemEntity;
+
+  @ManyToMany(() => VoucherEntity, (voucher) => voucher.products)
+  vouchers: VoucherEntity[];
 
   sold: number = 0;
   liked: number = 0;
