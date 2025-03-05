@@ -43,7 +43,14 @@ export class CoinsController {
 
     const queryBuilder = this.coinsService
       .createQueryBuilder('history')
-      .select(['history.id', 'history.amount', 'history.expiredAt', 'history.used', 'history.createdAt'])
+      .select([
+        'history.id',
+        'history.amount',
+        'history.expiredAt',
+        'history.used',
+        'history.createdAt',
+        'history.type',
+      ])
       .where('history.clientId = :clientId', { clientId: user.id })
       .andWhere('history.expiredAt <= :expireDate', { expireDate })
       .andWhere('history.amount > history.used')
