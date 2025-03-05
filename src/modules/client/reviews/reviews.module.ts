@@ -15,5 +15,6 @@ import { ChallengeEntity } from 'src/database/entities/challenge.entity';
   ],
   controllers: [ReviewsController],
   providers: [ReviewsService],
+  exports: [ReviewsService],
 })
 export class ReviewsModule {}
