@@ -572,7 +572,7 @@ export class OrderService {
       )
       .select(['order.id', 'order.orderCode', 'store.id', 'store.latitude', 'store.longitude']);
 
-    const orders = await queryBuilder.getRawAndEntities();
+    const orders = await queryBuilder.getMany();
     return orders;
   }
 
@@ -590,7 +590,7 @@ export class OrderService {
           distance: RADIUS_OF_ORDER_DISPLAY_LOOKING_FOR_DRIVER,
         },
       )
-      .andWhere(`order.createdAt BETWEEN (NOW() AT TIME ZONE 'UTC') - INTERVAL :time AND (NOW() AT TIME ZONE 'UTC')`, {
+      .andWhere(`order.createdAt BETWEEN (NOW() AT TIME ZONE 'UTC') - (:time || ' minutes')::INTERVAL AND (NOW() AT TIME ZONE 'UTC')`, {
         time: ORDER_BURST_DURATION_MIN,
       })
       .groupBy('store.id')
