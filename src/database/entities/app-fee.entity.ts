@@ -14,6 +14,9 @@ export class AppFeeEntity {
   @Column()
   value: string;
 
+  @Column({ name: 'description', default: '' })
+  description: string;
+
   @ManyToOne(() => AppTypeEntity, (appType) => appType.value)
   @JoinColumn({ name: 'app_type_id' })
   appType: AppTypeEntity;

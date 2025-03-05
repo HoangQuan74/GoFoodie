@@ -12,23 +12,32 @@ export class ClientCoinHistoryEntity extends BaseEntity {
   @Column({ type: 'int8', name: 'amount' })
   amount: number;
 
+  @Column({ type: 'int8', name: 'balance' })
+  balance: number;
+
   @Column({ name: 'type', type: 'varchar' })
   type: EClientCoinType;
+
+  @Column({ name: 'used', default: 0 })
+  used: number;
 
   @Column({ name: 'expired_at', nullable: true })
   expiredAt: Date;
 
-  // @Column({ name: 'description', default: '' })
-  // description: string;
+  @Column({ name: 'is_recovered', default: false })
+  isRecovered: boolean;
 
-  // @Column({ name: 'related_id', nullable: true })
-  // relatedId: number;
+  @Column({ name: 'description', default: '' })
+  description: string;
 
-  // @ManyToOne(() => OrderEntity, (order) => order.id, { createForeignKeyConstraints: false })
-  // @JoinColumn({ name: 'related_id' })
-  // order: OrderEntity;
+  @Column({ name: 'related_id', nullable: true })
+  relatedId: number;
 
-  // @ManyToOne(() => ClientEntity, (client) => client.id)
-  // @JoinColumn({ name: 'client_id' })
-  // client: ClientEntity;
+  @ManyToOne(() => OrderEntity, (order) => order.id, { createForeignKeyConstraints: false })
+  @JoinColumn({ name: 'related_id' })
+  order: OrderEntity;
+
+  @ManyToOne(() => ClientEntity, (client) => client.id)
+  @JoinColumn({ name: 'client_id' })
+  client: ClientEntity;
 }
