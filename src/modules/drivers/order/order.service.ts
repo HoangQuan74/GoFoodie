@@ -1,7 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as moment from 'moment-timezone';
-import { EXCEPTIONS } from 'src/common/constants';
+import {
+  EXCEPTIONS,
+  ORDER_BURST_DURATION_MIN,
+  ORDER_BURST_THRESHOLD,
+  RADIUS_OF_ORDER_DISPLAY_LOOKING_FOR_DRIVER,
+} from 'src/common/constants';
 import { EOrderActivityStatus, EOrderStatus } from 'src/common/enums/order.enum';
 import { DriverAvailabilityEntity } from 'src/database/entities/driver-availability.entity';
 import { DriverEntity } from 'src/database/entities/driver.entity';
@@ -10,7 +15,7 @@ import { OrderCriteriaEntity } from 'src/database/entities/order-criteria.entity
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { EventGatewayService } from 'src/events/event.gateway.service';
 import { Brackets, Repository } from 'typeorm';
-import { QueryOrderDto, QueryOrderHistoryDto } from './dto/query-order.dto';
+import { QueryOrderDto, QueryOrderHistoryDto, QueryOrderSearchingDriverDto } from './dto/query-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { DriverSearchService } from 'src/modules/order/driver-search.service';
 import { OrderGroupService } from '../order-group/order-group.service';
@@ -19,6 +24,7 @@ import { ClientNotificationEntity } from 'src/database/entities/client-notificat
 import { CLIENT_NOTIFICATION_CONTENT, CLIENT_NOTIFICATION_TITLE } from 'src/common/constants/notification.constant';
 import { EClientNotificationType } from 'src/common/enums';
 import { NotificationsService } from 'src/modules/client/notifications/notifications.service';
+import { StoreEntity } from 'src/database/entities/store.entity';
 
 @Injectable()
 export class OrderService {
@@ -34,6 +40,10 @@ export class OrderService {
 
     @InjectRepository(OrderEntity)
     private orderRepository: Repository<OrderEntity>,
+
+    @InjectRepository(StoreEntity)
+    private storeRepository: Repository<StoreEntity>,
+
     @InjectRepository(OrderActivityEntity)
     private orderActivityRepository: Repository<OrderActivityEntity>,
 
@@ -537,5 +547,56 @@ export class OrderService {
       .andWhere('order.status = :status', { status: EOrderStatus.Delivered })
       .andWhere('order.createdAt BETWEEN :startDate AND :endDate', { startDate: startOfDay, endDate: endOfDay })
       .getCount();
+  }
+
+  async getOrdersSearchingForDriver(driverId: number, query: QueryOrderSearchingDriverDto) {
+    const { latitude, longitude } = query;
+    const queryBuilder = this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoin('order.store', 'store')
+      .where('order.status = :orderSearchingForDriver', {
+        orderSearchingForDriver: EOrderStatus.SearchingForDriver,
+      })
+      .andWhere('order.driverId IS NULL')
+      .andWhere(
+        `
+        ST_DistanceSphere(
+          ST_MakePoint(store.longitude, store.latitude),
+          ST_MakePoint(:longtitudeOfdriver, :latitudeOfDriver)
+        ) <= :distance`,
+        {
+          longtitudeOfdriver: longitude,
+          latitudeOfDriver: latitude,
+          distance: RADIUS_OF_ORDER_DISPLAY_LOOKING_FOR_DRIVER,
+        },
+      )
+      .select(['order.id', 'order.orderCode', 'store.id', 'store.latitude', 'store.longitude']);
+
+    const orders = await queryBuilder.getRawAndEntities();
+    return orders;
+  }
+
+  async getHotStoreAreas(query: QueryOrderSearchingDriverDto) {
+    const { latitude, longitude } = query;
+    const queryBuilder = this.storeRepository
+      .createQueryBuilder('store')
+      .select(['store.id', 'store.latitude', 'store.longitude'])
+      .leftJoin('store.orders', 'order')
+      .where(
+        'ST_DistanceSphere(ST_MakePoint(store.longitude, store.latitude),ST_MakePoint(:longtitudeOfdriver, :latitudeOfDriver)) <= :distance',
+        {
+          longtitudeOfdriver: longitude,
+          latitudeOfDriver: latitude,
+          distance: RADIUS_OF_ORDER_DISPLAY_LOOKING_FOR_DRIVER,
+        },
+      )
+      .andWhere(`order.createdAt BETWEEN (NOW() AT TIME ZONE 'UTC') - INTERVAL :time AND (NOW() AT TIME ZONE 'UTC')`, {
+        time: ORDER_BURST_DURATION_MIN,
+      })
+      .groupBy('store.id')
+      .having('COUNT(order.id) >= :orderCount', { orderCount: ORDER_BURST_THRESHOLD });
+
+    const stores = await queryBuilder.getMany();
+    return stores;
   }
 }
