@@ -94,7 +94,7 @@ export class PaymentService {
       .digest('hex')
       .toUpperCase();
 
-    console.log({ hashChecksum, checksum });
+    console.log({ hashChecksum, checksum, result });
 
     if (hashChecksum === checksum) {
       const arrayParams = JSON.parse(Buffer.from(result, 'base64').toString('utf-8'));
