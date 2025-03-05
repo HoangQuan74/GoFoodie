@@ -7,6 +7,7 @@ import * as moment from 'moment-timezone';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { PaginationQuery } from 'src/common/query';
 import { StoreEntity } from 'src/database/entities/store.entity';
+import { TIMEZONE } from 'src/common/constants';
 
 @Injectable()
 export class StatisticalService {
@@ -22,7 +23,7 @@ export class StatisticalService {
   ) {}
 
   async getRevenueChart(type: TimeRangeV2, storeId: number) {
-    const now = moment();
+    const now = moment().tz(TIMEZONE);
     let startDate: moment.Moment, interval: string, format: string, previousTime: moment.Moment, endDate: moment.Moment;
     endDate = now.clone().endOf('day');
 
@@ -143,7 +144,7 @@ export class StatisticalService {
       .createQueryBuilder('order')
       .select('SUM(order.totalAmount)', 'total')
       .addSelect('COUNT(order.id)', 'quantityOrder')
-      .addSelect(`to_char(order.createdAt, '${timeFormat}')`, 'time')
+      .addSelect(`to_char(order.createdAt AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Ho_Chi_Minh', '${timeFormat}')`, 'time')
       .where('order.storeId = :storeId', { storeId })
       .andWhere('order.createdAt BETWEEN :startDate AND :endDate', {
         startDate: startDate.toDate(),
@@ -153,6 +154,7 @@ export class StatisticalService {
       .groupBy('time');
 
     const orders = await query.getRawMany();
+
     orders.forEach((order) => {
       const orderTime = moment(order.time, format);
       let roundedTime;
