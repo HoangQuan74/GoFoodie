@@ -9,7 +9,6 @@ import { FcmService } from '../fcm/fcm.service';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
 import { EventGatewayService } from 'src/events/event.gateway.service';
-import { DriverSearchService } from '../order/driver-search.service';
 import { OrderService as OrderDriverService } from '../drivers/order/order.service';
 
 @Processor('orderQueue')

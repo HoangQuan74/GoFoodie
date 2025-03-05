@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { OrderGroupService } from './order-group.service';
 import { OrderGroupController } from './order-group.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';

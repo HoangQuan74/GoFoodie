@@ -1,4 +1,9 @@
-import { PAY_API_URL, PAY_MERCHANT_KEY, PAY_SECRET_KEY } from './../../common/constants/environment.constant';
+import {
+  PAY_API_URL,
+  PAY_CHECKSUM_KEY,
+  PAY_MERCHANT_KEY,
+  PAY_SECRET_KEY,
+} from './../../common/constants/environment.constant';
 import { Injectable } from '@nestjs/common';
 import { createHash, createHmac } from 'crypto';
 import { IPaymentParams, IPaymentResult } from 'src/common/interfaces/payment.interface';
@@ -85,9 +90,11 @@ export class PaymentService {
     const { result, checksum } = data;
 
     const hashChecksum = createHash('sha256')
-      .update(result + PAY_SECRET_KEY)
+      .update(result + PAY_CHECKSUM_KEY)
       .digest('hex')
       .toUpperCase();
+
+    console.log({ hashChecksum, checksum });
 
     if (hashChecksum === checksum) {
       const arrayParams = JSON.parse(Buffer.from(result, 'base64').toString('utf-8'));

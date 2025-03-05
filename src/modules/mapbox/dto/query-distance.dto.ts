@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEnum, IsNotEmpty, IsNumber, IsObject, ValidateNested } from 'class-validator';
+import { IsEnum, IsNumber, IsObject, ValidateNested } from 'class-validator';
 import { EVehicleType } from 'src/common/enums/map.enum';
 
 export class locationDto {
