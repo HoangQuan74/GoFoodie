@@ -98,7 +98,7 @@ export class DriverSearchService {
 
   async findEligibleDrivers(order: OrderEntity): Promise<DriverEntity[]> {
     const orderCriteria = await this.orderCriteriaRepository.findOne({ where: { type: EOrderCriteriaType.Distance } });
-    const distanceCriteria = orderCriteria.value ?? 1000;
+    const distanceCriteria = orderCriteria?.value ?? 10000;
 
     const drivers = await this.driverAvailabilityRepository
       .createQueryBuilder('driverAvailability')
