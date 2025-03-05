@@ -23,6 +23,7 @@ import { QueryVoucherDto } from './dto/query-voucher.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { UpdateVoucherDto } from './dto/update-voucher.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { ProductCategoriesService } from '../product-categories/product-categories.service';
 
 @Controller('vouchers')
 @UseGuards(AuthGuard)
@@ -31,6 +32,7 @@ export class VouchersController {
   constructor(
     private readonly vouchersService: VouchersService,
     private readonly dataSource: DataSource,
+    private readonly productCategoriesService: ProductCategoriesService,
   ) {}
 
   @Post()
@@ -149,5 +151,18 @@ export class VouchersController {
 
     voucher.endTime = new Date();
     return this.vouchersService.save(voucher);
+  }
+
+  @Get(':id/products')
+  async getProducts(@Param('id') id: number, @CurrentStore() storeId: number) {
+    return this.productCategoriesService
+      .createQueryBuilder('category')
+      .select(['category.id', 'category.name'])
+      .addSelect(['products.id', 'products.name', 'products.price', 'products.imageId'])
+      .innerJoin('category.products', 'products')
+      .innerJoin('products.vouchers', 'vouchers')
+      .where('vouchers.id = :id', { id })
+      .andWhere('products.storeId = :storeId', { storeId })
+      .getMany();
   }
 }
