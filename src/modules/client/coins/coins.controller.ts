@@ -6,13 +6,20 @@ import { ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import * as moment from 'moment';
-import { EClientCoinType } from 'src/common/enums';
+import { EClientCoinType, EOrderStatus } from 'src/common/enums';
+import { OrderService } from '../order/order.service';
+import { ReviewsService } from '../reviews/reviews.service';
+import { Brackets } from 'typeorm';
 
 @Controller('coins')
 @UseGuards(AuthGuard)
 @ApiTags('Coins')
 export class CoinsController {
-  constructor(private readonly coinsService: CoinsService) {}
+  constructor(
+    private readonly coinsService: CoinsService,
+    private readonly orderService: OrderService,
+    private readonly reviewService: ReviewsService,
+  ) {}
 
   @Get('history')
   async getCoinHistory(@Query() query: PaginationQuery, @CurrentUser() user: JwtPayload) {
@@ -73,5 +80,42 @@ export class CoinsController {
   @Get('balance')
   async getBalance(@CurrentUser() user: JwtPayload) {
     return this.coinsService.getBalance(user.id);
+  }
+
+  @Get('review')
+  async getReviewCoins(@Query() query: PaginationQuery, @CurrentUser() user: JwtPayload) {
+    const { page, limit } = query;
+
+    const reward = await this.reviewService.getReward();
+    if (!reward) return { items: [], total: 0, reward: null };
+
+    const queryBuilder = this.orderService
+      .createQueryBuilder('order')
+      .select([
+        'order.id as "orderId"',
+        'order.orderCode as "orderCode"',
+        'store.name as "storeName"',
+        'activity.createdAt as "completedAt"',
+      ])
+      .innerJoin('order.activities', 'activity', 'activity.status = :status')
+      .innerJoin('order.store', 'store')
+      .leftJoin('order.driverReviews', 'driverReview')
+      .leftJoin('order.storeReviews', 'storeReview')
+      .where('order.clientId = :clientId', { clientId: user.id })
+      .andWhere('order.status = :orderStatus')
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('driverReview.id IS NULL');
+          qb.orWhere('storeReview.id IS NULL');
+        }),
+      )
+      .setParameters({ status: EOrderStatus.Delivered, orderStatus: EOrderStatus.Delivered })
+      .limit(limit)
+      .offset((page - 1) * limit);
+
+    const items = await queryBuilder.getRawMany();
+    const total = await queryBuilder.getCount();
+
+    return { items, total, reward };
   }
 }

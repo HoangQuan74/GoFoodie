@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ClientService } from '../clients/client.service';
 import { get } from 'http';
+import { OrderService } from '../order/order.service';
 
 @Injectable()
 export class CoinsService {
@@ -12,6 +13,7 @@ export class CoinsService {
     private readonly coinHistoryRepository: Repository<ClientCoinHistoryEntity>,
 
     private readonly clientService: ClientService,
+    private readonly orderService: OrderService,
   ) {}
 
   createQueryBuilder(alias?: string) {
