@@ -19,6 +19,7 @@ export class OptionGroupsService {
 
     const { options: tempOptions, ...rest } = entity;
     let options = tempOptions;
+    const newOptionGroup = await this.optionGroupRepository.save(rest);
 
     if (options) {
       options = options.map((option) => ({ ...option, optionGroupId: entity.id }));
@@ -32,10 +33,10 @@ export class OptionGroupsService {
       });
 
       await this.optionRepository.softRemove(removeOptions);
-      await this.optionRepository.save(upsertOptions);
+      newOptionGroup.options = await this.optionRepository.save(upsertOptions);
     }
 
-    return this.optionGroupRepository.save(rest);
+    return newOptionGroup;
   }
 
   async find(options?: FindManyOptions<OptionGroupEntity>): Promise<OptionGroupEntity[]> {

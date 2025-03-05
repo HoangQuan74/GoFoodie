@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { IPN9PayDto } from './dto/ipn-9pay.dto';
 import { CheckAccountDto } from './dto/check-account.dto';

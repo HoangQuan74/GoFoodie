@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { CreateDepositDto } from './dto/create-deposit.dto';
 import { CurrentStore } from 'src/common/decorators/current-store.decorator';

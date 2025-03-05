@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { CoinsService } from './coins.service';
 import { PaginationQuery } from 'src/common/query';
 import { AuthGuard } from '../auth/auth.guard';

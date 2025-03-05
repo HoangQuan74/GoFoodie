@@ -20,7 +20,6 @@ import { EMaxDiscountType, EVoucherStatus, EVoucherType } from 'src/common/enums
 import { EServiceType } from 'src/common/enums';
 import { CurrentStore } from 'src/common/decorators/current-store.decorator';
 import { QueryVoucherDto } from './dto/query-voucher.dto';
-import { ProductEntity } from 'src/database/entities/product.entity';
 import { AuthGuard } from '../auth/auth.guard';
 import { UpdateVoucherDto } from './dto/update-voucher.dto';
 import { ApiTags } from '@nestjs/swagger';

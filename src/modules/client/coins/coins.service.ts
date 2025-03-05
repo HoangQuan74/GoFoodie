@@ -3,7 +3,6 @@ import { ClientCoinHistoryEntity } from 'src/database/entities/client-coin-histo
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ClientService } from '../clients/client.service';
-import { get } from 'http';
 import { OrderService } from '../order/order.service';
 
 @Injectable()

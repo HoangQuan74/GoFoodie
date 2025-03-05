@@ -14,7 +14,6 @@ import {
   Min,
   ValidateIf,
 } from 'class-validator';
-import { EOrderCode } from 'src/common/enums/order.enum';
 
 export class CreatePreOrderDto {
   @ApiProperty({

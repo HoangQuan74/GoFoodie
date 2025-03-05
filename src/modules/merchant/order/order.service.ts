@@ -249,7 +249,7 @@ export class OrderService {
     if (order.status === 'offer_sent_to_driver') {
       order.driver = null;
     }
-    
+
     return {
       ...order,
       storeIncome: calculateStoreIncome(order),
