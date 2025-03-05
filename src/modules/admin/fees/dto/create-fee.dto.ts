@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
@@ -22,6 +22,11 @@ export class CreateAppFeeDto {
   @IsString()
   @Type(() => String)
   value: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  description: string;
 }
 
 export class CreateFeeDto {
