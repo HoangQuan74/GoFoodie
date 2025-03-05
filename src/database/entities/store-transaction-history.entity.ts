@@ -25,7 +25,7 @@ export class StoreTransactionHistoryEntity extends BaseEntity {
   invoiceNo: string;
 
   @Column({ name: 'transaction_id', nullable: true })
-  transactionId: number;
+  transactionId: string;
 
   @Column({ name: 'bank_id', nullable: true })
   bankId: number;

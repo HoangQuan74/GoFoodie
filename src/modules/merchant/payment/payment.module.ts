@@ -16,5 +16,6 @@ import { StoresModule } from '../stores/stores.module';
   ],
   controllers: [PaymentController],
   providers: [PaymentService],
+  exports: [PaymentService],
 })
 export class PaymentModule {}

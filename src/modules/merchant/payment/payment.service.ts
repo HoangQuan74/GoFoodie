@@ -3,11 +3,13 @@ import { PaymentService as PaymentCommonService } from 'src/modules/payment/paym
 import { CreateDepositDto } from './dto/create-deposit.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StoreTransactionHistoryEntity } from 'src/database/entities/store-transaction-history.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { generateRandomString } from 'src/utils/bcrypt';
-import { ETransactionType } from 'src/common/enums';
+import { ETransactionStatus, ETransactionType, EUserType } from 'src/common/enums';
 import { StoresService } from '../stores/stores.service';
 import { CreateWithdrawDto } from './dto/create-withdraw.dto';
+import { IPaymentResult } from 'src/common/interfaces/payment.interface';
+import { StoreEntity } from 'src/database/entities/store.entity';
 
 @Injectable()
 export class PaymentService {
@@ -17,12 +19,13 @@ export class PaymentService {
 
     private readonly paymentCommonService: PaymentCommonService,
     private readonly storeService: StoresService,
+    private dataSource: DataSource,
   ) {}
 
   async deposit(data: CreateDepositDto, storeId: number) {
     const { amount, returnUrl, method } = data;
     const description = 'Nạp tiền vào tài khoản';
-    const invoiceNo = await this.createInvoiceNo();
+    const invoiceNo = await this.createInvoiceNo(ETransactionType.Deposit);
     const balance = await this.storeService.getBalance(storeId);
 
     const newTransaction = new StoreTransactionHistoryEntity();
@@ -38,17 +41,42 @@ export class PaymentService {
     return this.paymentCommonService.createPaymentUrl({ amount, returnUrl, method, description, invoiceNo });
   }
 
+  async updateTransactionStatus(invoiceNo: string, status: ETransactionStatus, result: IPaymentResult) {
+    return this.dataSource.transaction(async (manager) => {
+      const transaction = await manager.findOne(StoreTransactionHistoryEntity, {
+        where: { invoiceNo, status: ETransactionStatus.Pending },
+      });
+      if (!transaction) return;
+
+      if (status === ETransactionStatus.Success) {
+        transaction.status = status;
+        transaction.transactionId = result.payment_no;
+
+        const store = await manager.findOne(StoreEntity, { where: { id: transaction.storeId } });
+        store.balance = Number(store.balance) + transaction.amount;
+        await manager.save(store);
+      } else if (status === ETransactionStatus.Failed) {
+        transaction.status = status;
+        transaction.errorMessage = result.failure_reason;
+        transaction.transactionId = result.payment_no;
+      }
+
+      await manager.save(transaction);
+    });
+  }
+
   async withdraw(data: CreateWithdrawDto, storeId: number) {
     // code here
   }
 
-  private async createInvoiceNo() {
-    const invoiceNo = generateRandomString(30);
+  private async createInvoiceNo(transactionType: ETransactionType, randomString?: string) {
+    if (!randomString) randomString = generateRandomString(6);
+    const invoiceNo = `${EUserType.Merchant.toUpperCase()}-${transactionType.toUpperCase()}-${randomString}`;
 
     const checkInvoiceNo = await this.transactionHistoryRepository.existsBy({ invoiceNo });
     if (!checkInvoiceNo) return invoiceNo;
 
-    return this.createInvoiceNo();
+    return this.createInvoiceNo(transactionType);
   }
 
   createQueryBuild(alias: string) {
