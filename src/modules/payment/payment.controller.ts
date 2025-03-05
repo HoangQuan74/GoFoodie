@@ -27,7 +27,7 @@ export class PaymentController {
         // code here
         break;
       case EUserType.Merchant:
-        if (status === 5) {
+        if (status === 5 || status === 16) {
           this.merchantPaymentService.updateTransactionStatus(invoiceNo, ETransactionStatus.Success, data);
         } else if (status !== 2 && status !== 3) {
           this.merchantPaymentService.updateTransactionStatus(invoiceNo, ETransactionStatus.Failed, data);
