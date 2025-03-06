@@ -14,7 +14,7 @@ import { CoinsService } from '../coins/coins.service';
 import { ClientEntity } from 'src/database/entities/client.entity';
 import { ClientCoinHistoryEntity } from 'src/database/entities/client-coin-history.entity';
 import { EClientCoinType } from 'src/common/enums';
-import moment from 'moment-timezone';
+import * as moment from 'moment-timezone';
 import { TIMEZONE } from 'src/common/constants';
 
 @Injectable()
