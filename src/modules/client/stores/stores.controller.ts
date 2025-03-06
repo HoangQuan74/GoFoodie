@@ -237,6 +237,7 @@ export class StoresController {
         'store.specialDish as "specialDish"',
         'store.streetName as "streetName"',
         'store.storeAvatarId as "storeAvatarId"',
+        'store.storeCoverId as "storeCoverId"',
       ])
       .addSelect((subQuery) => {
         return subQuery
