@@ -17,12 +17,13 @@ export const comparePassword = (password: string, hash: string): boolean => {
   return compareSync(password, hash);
 };
 
-export const generateRandomString = (length: number): string => {
+export const generateRandomString = (length: number, uppercase = false): string => {
   let result = '';
   for (let i = 0; i < length; i++) {
     result += CHARS.charAt(Math.floor(Math.random() * CHARS.length));
   }
-  return result;
+
+  return uppercase ? result.toUpperCase() : result;
 };
 
 export const generateOTP = (): string => {
@@ -47,4 +48,16 @@ export const decrypt = (text: string): string => {
   decrypted += decipher.final('utf8');
 
   return decrypted;
+};
+
+const normalizeText = (text: string): string => {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+};
+
+export const compareText = (str1: string, str2: string): boolean => {
+  if (!str1 || !str2) return false;
+  return normalizeText(str1) === normalizeText(str2);
 };

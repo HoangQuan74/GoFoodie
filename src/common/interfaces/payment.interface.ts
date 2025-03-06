@@ -9,6 +9,16 @@ export interface IPaymentParams {
   transactionType?: string;
 }
 
+export interface IDisbursementParams {
+  amount: number;
+  description: string;
+  bankCode: string;
+  accountNo: string;
+  accountName: string;
+  accountType: string;
+  requestId: string;
+}
+
 export interface IPaymentResult {
   amount: number;
   card_brand: string;

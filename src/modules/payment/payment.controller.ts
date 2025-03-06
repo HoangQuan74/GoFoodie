@@ -20,23 +20,28 @@ export class PaymentController {
     if (!data) return;
 
     const { invoice_no: invoiceNo, status } = data;
-    const userType = invoiceNo.split('-')[0].toLowerCase();
+    console.log('IPN 9Pay', data);
+    const key = invoiceNo.slice(0, 2);
 
-    switch (userType) {
-      case EUserType.Client:
+    switch (key) {
+      case 'deposit':
         // code here
         break;
-      case EUserType.Merchant:
+
+      // Kết quả giao dịch nạp, rút tiền của merchant
+      case '10':
+      case '11':
         if (status === 5 || status === 16) {
           this.merchantPaymentService.updateTransactionStatus(invoiceNo, ETransactionStatus.Success, data);
         } else if (status !== 2 && status !== 3) {
           this.merchantPaymentService.updateTransactionStatus(invoiceNo, ETransactionStatus.Failed, data);
         }
-        // code here
-
         break;
-      case EUserType.Driver:
-      // code here
+      // Kết quả giao dịch nạp, rút tiền của driver
+      case '20':
+      case '21':
+        // code here
+        break;
     }
   }
 
