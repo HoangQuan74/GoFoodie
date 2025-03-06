@@ -62,6 +62,35 @@ export class PaymentService {
       })
       .then((res) => res.data);
 
+    return result;
+  }
+
+  async createDisbursement(data: object) {
+    const time = moment().unix();
+    const parameters = {
+      request_id: time,
+      bank_code: data['bankCode'],
+      account_no: data['accountNo'],
+      account_name: 'NGUYEN VAN A',
+      amount: data['amount'],
+      description: data['description'],
+      account_type: data['accountType'],
+    };
+
+    const httpQuery = this.buildHttpQuery(parameters);
+    const message = 'POST' + '\n' + PAY_API_URL + '/disbursement/create' + '\n' + time + '\n' + httpQuery;
+    const signature = this.buildSignature(message);
+
+    const result = await axios
+      .post(PAY_API_URL + '/disbursement/create', parameters, {
+        headers: {
+          Date: time.toString(),
+          Authorization: `Signature Algorithm=HS256,Credential=${PAY_MERCHANT_KEY},SignedHeaders=,Signature=${signature}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+      .then((res) => res.data);
+
     console.log(result);
     return result;
   }

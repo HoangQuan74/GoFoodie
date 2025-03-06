@@ -20,6 +20,9 @@ export class FlashSaleEntity extends BaseEntity {
   @Column({ name: 'end_date', type: 'date' })
   endDate: Date;
 
+  @Column({ default: true })
+  status: boolean;
+
   @Column({ name: 'created_by_store_id', nullable: true })
   createdByStoreId: number;
 

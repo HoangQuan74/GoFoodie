@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsUrl, Min } from 'class-validator';
+import { IsEnum, IsInt, IsNotEmpty, IsString, Min } from 'class-validator';
+import { EAccountType } from 'src/common/enums';
 
 export class CreateWithdrawDto {
   @ApiProperty()
@@ -8,6 +9,21 @@ export class CreateWithdrawDto {
   amount: number;
 
   @ApiProperty()
-  @IsUrl()
-  returnUrl: string = 'https://sand-cms.9pay.vn/simulator/payment/result';
+  @IsString()
+  @IsNotEmpty()
+  bankCode: string;
+
+  @ApiProperty({ enum: EAccountType, description: '0: Số tài khoản ngân hàng, 1: Số thẻ ngân hàng' })
+  @IsEnum(EAccountType)
+  accountType: EAccountType;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  accountName: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  accountNo: string;
 }
