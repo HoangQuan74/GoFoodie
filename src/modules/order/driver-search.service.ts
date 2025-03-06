@@ -15,7 +15,7 @@ import { isEmpty } from 'lodash';
 import { EXCEPTIONS } from 'src/common/constants';
 import { OrderGroupEntity } from 'src/database/entities/order-group.entity';
 import { OrderGroupItemEntity } from 'src/database/entities/order-group-item.entity';
-import { ORDER_GROUP_FULL } from 'src/common/constants/common.constant';
+import { DURATION_CONFIRM_ORDER, ORDER_GROUP_FULL } from 'src/common/constants/common.constant';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 
@@ -86,7 +86,7 @@ export class DriverSearchService {
     await this.orderActivityRepository.save(orderActivity);
     await this.upsertOrderGroup(order.id, driver.id);
     const orderCriteria = await this.orderCriteriaRepository.findOne({ where: { type: EOrderCriteriaType.Time } });
-    const timeCount = orderCriteria?.value ?? 15;
+    const timeCount = (orderCriteria?.value || DURATION_CONFIRM_ORDER) + 5;
     this.orderQueue.add(
       EOrderProcessor.DRIVER_NOT_ACCEPTED_ORDER,
       { orderId: order.id, driverId: driver.id },

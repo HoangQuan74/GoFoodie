@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import * as moment from 'moment-timezone';
 import {
+  DURATION_CONFIRM_ORDER,
   EXCEPTIONS,
   ORDER_BURST_DURATION_MIN,
   ORDER_BURST_THRESHOLD,
@@ -187,10 +188,10 @@ export class OrderService {
       relations: ['serviceType'],
     });
 
-    const createdAt = moment(order.orderSystemAssignToDriver.createdAt).unix();
+    const createdAt = moment(order.orderSystemAssignToDriver?.createdAt).unix();
     const now = moment().unix();
 
-    const remaining = (criteria?.value || 60) - (now - createdAt) || 15;
+    const remaining = (criteria?.value || DURATION_CONFIRM_ORDER) - (now - createdAt) || DURATION_CONFIRM_ORDER;
 
     return {
       ...order,
@@ -590,9 +591,12 @@ export class OrderService {
           distance: RADIUS_OF_ORDER_DISPLAY_LOOKING_FOR_DRIVER,
         },
       )
-      .andWhere(`order.createdAt BETWEEN (NOW() AT TIME ZONE 'UTC') - (:time || ' minutes')::INTERVAL AND (NOW() AT TIME ZONE 'UTC')`, {
-        time: ORDER_BURST_DURATION_MIN,
-      })
+      .andWhere(
+        `order.createdAt BETWEEN (NOW() AT TIME ZONE 'UTC') - (:time || ' minutes')::INTERVAL AND (NOW() AT TIME ZONE 'UTC')`,
+        {
+          time: ORDER_BURST_DURATION_MIN,
+        },
+      )
       .groupBy('store.id')
       .having('COUNT(order.id) >= :orderCount', { orderCount: ORDER_BURST_THRESHOLD });
 
