@@ -186,7 +186,7 @@ export class VouchersController {
   @ApiOperation({ summary: 'Danh sách sản phẩm được áp dụng voucher' })
   async getProducts(@Param('id') id: number) {
     const voucher = await this.vouchersService.findOne({
-      select: { id: true, products: { id: true, name: true } },
+      select: { products: { id: true, name: true } },
       where: { id: id },
       relations: ['products'],
     });

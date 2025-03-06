@@ -21,22 +21,26 @@ export class PaymentController {
 
     const { invoice_no: invoiceNo, status } = data;
     console.log('IPN 9Pay', data);
-    const userType = invoiceNo.split('-')[0].toLowerCase();
+    const key = invoiceNo.slice(0, 7).toLowerCase();
 
-    switch (userType) {
-      case EUserType.Client:
+    switch (key) {
+      case 'deposit':
         // code here
         break;
-      case EUserType.Merchant:
+      case 'mer-dep':
         if (status === 5 || status === 16) {
           this.merchantPaymentService.updateTransactionStatus(invoiceNo, ETransactionStatus.Success, data);
         } else if (status !== 2 && status !== 3) {
           this.merchantPaymentService.updateTransactionStatus(invoiceNo, ETransactionStatus.Failed, data);
         }
-        // code here
-
         break;
-      case EUserType.Driver:
+      case 'mer-wit':
+        if (status === 5 || status === 16) {
+          this.merchantPaymentService.updateTransactionStatus(invoiceNo, ETransactionStatus.Success, data);
+        } else if (status !== 2 && status !== 3) {
+          this.merchantPaymentService.updateTransactionStatus(invoiceNo, ETransactionStatus.Failed, data);
+        }
+        break;
       // code here
     }
   }

@@ -53,13 +53,21 @@ export class PaymentService {
         transaction.status = status;
         transaction.transactionId = result.payment_no;
 
-        const store = await manager.findOne(StoreEntity, { where: { id: transaction.storeId } });
-        store.balance = Number(store.balance) + transaction.amount;
-        await manager.save(store);
+        if (transaction.type === ETransactionType.Deposit) {
+          const store = await manager.findOne(StoreEntity, { where: { id: transaction.storeId } });
+          store.balance = Number(store.balance) + transaction.amount;
+          await manager.save(store);
+        }
       } else if (status === ETransactionStatus.Failed) {
         transaction.status = status;
         transaction.errorMessage = result.failure_reason;
         transaction.transactionId = result.payment_no;
+
+        if (transaction.type === ETransactionType.Deposit) {
+          const store = await manager.findOne(StoreEntity, { where: { id: transaction.storeId } });
+          store.balance = Number(store.balance) + transaction.amount;
+          await manager.save(store);
+        }
       }
 
       await manager.save(transaction);
@@ -94,14 +102,22 @@ export class PaymentService {
         newTransaction.method = EPaymentMethod.AtmCard;
       }
 
-      await this.paymentCommonService.createDisbursement({ ...data, description });
-      await manager.save(newTransaction);
+      console.log('Withdraw data', invoiceNo);
+
+      await this.paymentCommonService
+        .createDisbursement({ ...data, description, requestId: invoiceNo })
+        .catch((error) => {
+          console.log('Withdraw error', error.response.data);
+          throw new BadRequestException(error);
+        });
+      return manager.save(newTransaction);
     });
   }
 
   private async createInvoiceNo(transactionType: ETransactionType, randomString?: string) {
     if (!randomString) randomString = generateRandomString(6);
-    const invoiceNo = `${EUserType.Merchant.toUpperCase()}-${transactionType.toUpperCase()}-${randomString}`;
+    const userType = EUserType.Merchant.slice(0, 3).toUpperCase();
+    const invoiceNo = `${userType}-${transactionType.slice(0, 3).toUpperCase()}-${randomString}`;
 
     const checkInvoiceNo = await this.transactionHistoryRepository.existsBy({ invoiceNo });
     if (!checkInvoiceNo) return invoiceNo;

@@ -99,7 +99,7 @@ export class VoucherEntity extends BaseEntity {
   })
   products: ProductEntity[];
 
-  @ManyToMany(() => StoreEntity, (store) => store.id)
+  @ManyToMany(() => StoreEntity, (store) => store.id, { cascade: true })
   @JoinTable({
     name: 'voucher_stores',
     joinColumn: { name: 'voucher_id' },
