@@ -91,7 +91,7 @@ export class VoucherEntity extends BaseEntity {
   @JoinColumn({ name: 'type_id' })
   type: VoucherTypeEntity;
 
-  @ManyToMany(() => ProductEntity, (product) => product.id)
+  @ManyToMany(() => ProductEntity, (product) => product.vouchers, { cascade: true })
   @JoinTable({
     name: 'voucher_products',
     joinColumn: { name: 'voucher_id' },

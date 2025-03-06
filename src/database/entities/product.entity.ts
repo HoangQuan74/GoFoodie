@@ -76,11 +76,6 @@ export class ProductEntity extends BaseEntity {
   orderItems: OrderItemEntity;
 
   @ManyToMany(() => VoucherEntity, (voucher) => voucher.products)
-  @JoinTable({
-    name: 'voucher_products',
-    joinColumn: { name: 'product_id' },
-    inverseJoinColumn: { name: 'voucher_id' },
-  })
   vouchers: VoucherEntity[];
 
   sold: number = 0;
