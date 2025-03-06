@@ -49,3 +49,15 @@ export const decrypt = (text: string): string => {
 
   return decrypted;
 };
+
+const normalizeText = (text: string): string => {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+};
+
+export const compareText = (str1: string, str2: string): boolean => {
+  if (!str1 || !str2) return false;
+  return normalizeText(str1) === normalizeText(str2);
+};

@@ -136,7 +136,11 @@ export class VouchersController {
       select: {
         products: { id: true, name: true, price: true, imageId: true, productCategory: { id: true, name: true } },
       },
-      where: [{ id, createdByStoreId: storeId }, { stores: { id: storeId } }, { products: { storeId } }],
+      where: [
+        { id, createdByStoreId: storeId },
+        { id, stores: { id: storeId } },
+        { id, products: { storeId } },
+      ],
       relations: { products: { productCategory: true } },
     });
     if (!voucher) throw new NotFoundException();
