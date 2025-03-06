@@ -96,7 +96,6 @@ export class PaymentService {
       })
       .then((res) => res.data);
 
-    console.log(result);
     return result;
   }
 
