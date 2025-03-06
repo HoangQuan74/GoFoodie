@@ -130,10 +130,16 @@ export class CartsController {
       },
     });
 
-    return carts.map((cart) => ({
-      ...cart,
-      otherFee: ((Number(clientFeeApp?.value) || 0) / 100) * cart.totalPrice + cart.parkingFee,
-    }));
+    return carts.map((cart) => {
+      const clientAppFee = ((Number(clientFeeApp?.value) || 0) / 100) * cart.totalPrice;
+      return {
+        ...cart,
+        parkingFee: Number(cart.parkingFee),
+        clientAppFee,
+        descritionClientAppFee: clientFeeApp?.description || '',
+        otherFee: clientAppFee + cart.parkingFee,
+      };
+    });
   }
 
   @Get('store/:storeId')
