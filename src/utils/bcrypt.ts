@@ -17,12 +17,13 @@ export const comparePassword = (password: string, hash: string): boolean => {
   return compareSync(password, hash);
 };
 
-export const generateRandomString = (length: number): string => {
+export const generateRandomString = (length: number, uppercase = false): string => {
   let result = '';
   for (let i = 0; i < length; i++) {
     result += CHARS.charAt(Math.floor(Math.random() * CHARS.length));
   }
-  return result;
+
+  return uppercase ? result.toUpperCase() : result;
 };
 
 export const generateOTP = (): string => {
