@@ -118,4 +118,19 @@ export class CoinsController {
 
     return { items, total, reward };
   }
+
+  @Get('expired-daily')
+  async getExpiredCoinsDaily(@CurrentUser() user: JwtPayload) {
+    return this.coinsService
+      .createQueryBuilder('history')
+      .select(`(history.expired_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Ho_Chi_Minh')`, 'expiredAt')
+      .addSelect('SUM(history.amount - history.used)::INT', 'amount')
+      .where('history.clientId = :clientId', { clientId: user.id })
+      .andWhere('history.amount > history.used')
+      .andWhere('history.isRecovered = false')
+      .andWhere('history.type = :type', { type: EClientCoinType.Review })
+      .orderBy('history.expiredAt', 'ASC')
+      .groupBy('history.expiredAt')
+      .getRawMany();
+  }
 }
