@@ -314,7 +314,6 @@ export class StoresController {
 
   @Get(':id/working-times')
   async findWorkingTimes(@Param('id') storeId: number) {
-    console.log(storeId);
     const queryBuilder = this.storesService
       .createQueryBuilder('store')
       .select(['store.id'])
@@ -372,6 +371,8 @@ export class StoresController {
   @ApiOperation({ summary: 'Get booking time' })
   async findBookingTime(@Param('storeId') storeId: number) {
     const now = moment().tz(TIMEZONE);
+    const currentDate = now.format('YYYY-MM-DD');
+    const nowTemp = now.clone();
     let dayOfWeek = now.day();
     const currentTime = now.hours() * 60 + now.minutes();
 
@@ -391,14 +392,15 @@ export class StoresController {
     if (!store) return [];
 
     const workingTimes = store.workingTimes;
+
     const closeTimes = store.specialWorkingTimes;
     let count = 0;
     const result = [];
 
     while (count < 3) {
-      const formattedDate = now.format('YYYY-MM-DD');
+      const formattedDate = nowTemp.format('YYYY-MM-DD');
       let openSlots = workingTimes
-        .filter((item) => item.dayOfWeek === now.day() && item.closeTime > currentTime)
+        .filter((item) => item.dayOfWeek === nowTemp.day())
         .map((item) => {
           return { openTime: item.openTime, closeTime: item.closeTime };
         });
@@ -427,12 +429,21 @@ export class StoresController {
           openSlots = newOpenSlots;
         }
       }
+
       if (openSlots.length > 0) {
-        result.push({ date: formattedDate, openSlots });
-        count++;
+        if (formattedDate === currentDate) {
+          const newOpenSlots = openSlots.filter((slot) => slot.closeTime >= currentTime);
+          if (newOpenSlots.length > 0) {
+            result.push({ date: formattedDate, openSlots: newOpenSlots });
+            count++;
+          }
+        } else {
+          result.push({ date: formattedDate, openSlots });
+          count++;
+        }
       }
 
-      now.add(1, 'days');
+      nowTemp.add(1, 'days');
       dayOfWeek = (dayOfWeek + 1) % 7;
     }
 
