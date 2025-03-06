@@ -3,7 +3,7 @@ import { CartsService } from './carts.service';
 import { CreateCartDto } from './dto/create-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
 import { ProductsService } from '../products/products.service';
-import { EOptionGroupStatus, EOptionStatus } from 'src/common/enums';
+import { EFeeType, EOptionGroupStatus, EOptionStatus } from 'src/common/enums';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { AuthGuard } from '../auth/auth.guard';
@@ -13,12 +13,18 @@ import * as _ from 'lodash';
 import { OrderService } from '../order/order.service';
 import { EXCEPTIONS } from 'src/common/constants';
 import { StoresService } from '../stores/stores.service';
+import { EAppType } from 'src/common/enums/config.enum';
+import { InjectRepository } from '@nestjs/typeorm';
+import { AppFeeEntity } from 'src/database/entities/app-fee.entity';
+import { Repository } from 'typeorm';
 
 @Controller('carts')
 @ApiTags('Client Carts')
 @UseGuards(AuthGuard)
 export class CartsController {
   constructor(
+    @InjectRepository(AppFeeEntity)
+    private appFeeRepository: Repository<AppFeeEntity>,
     private readonly cartsService: CartsService,
     private readonly productsService: ProductsService,
     private readonly orderService: OrderService,
@@ -86,6 +92,7 @@ export class CartsController {
         'store.streetName as "streetName"',
         'store.latitude as "latitude"',
         'store.longitude as "longitude"',
+        'store.parkingFee as "parkingFee"',
       ])
       .addSelect('SUM(cartProducts.quantity)', 'totalQuantity')
       .addSelect('COUNT(cartProducts.id)', 'totalItems')
@@ -109,7 +116,24 @@ export class CartsController {
       .groupBy('cart.id, store.id')
       .getRawMany();
 
-    return carts;
+    const clientFeeApp = await this.appFeeRepository.findOne({
+      where: {
+        appTypeId: EAppType.AppClient,
+        fee: {
+          serviceType: {
+            code: 'FD',
+          },
+          feeType: {
+            value: EFeeType.Service,
+          },
+        },
+      },
+    });
+
+    return carts.map((cart) => ({
+      ...cart,
+      otherFee: ((Number(clientFeeApp?.value) || 0) / 100) * cart.totalPrice + cart.parkingFee,
+    }));
   }
 
   @Get('store/:storeId')
