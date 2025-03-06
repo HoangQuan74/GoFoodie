@@ -6,7 +6,7 @@ import {
 } from './../../common/constants/environment.constant';
 import { Injectable } from '@nestjs/common';
 import { createHash, createHmac } from 'crypto';
-import { IPaymentParams, IPaymentResult } from 'src/common/interfaces/payment.interface';
+import { IDisbursementParams, IPaymentParams, IPaymentResult } from 'src/common/interfaces/payment.interface';
 import * as moment from 'moment';
 import { IPN9PayDto } from './dto/ipn-9pay.dto';
 import axios from 'axios';
@@ -65,16 +65,16 @@ export class PaymentService {
     return result;
   }
 
-  async createDisbursement(data: object) {
+  async createDisbursement(data: IDisbursementParams) {
     const time = moment().unix();
     const parameters = {
-      request_id: time,
-      bank_code: data['bankCode'],
-      account_no: data['accountNo'],
-      account_name: 'NGUYEN VAN A',
-      amount: data['amount'],
-      description: data['description'],
-      account_type: data['accountType'],
+      request_id: data.requestId,
+      bank_code: data.bankCode,
+      account_no: data.accountNo,
+      account_name: data.accountName,
+      amount: data.amount,
+      description: data.description || 'Rut tien',
+      account_type: data.accountType,
     };
 
     const httpQuery = this.buildHttpQuery(parameters);

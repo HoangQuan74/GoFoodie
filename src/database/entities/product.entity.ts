@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { StoreEntity } from './store.entity';
 import { ProductCategoryEntity } from './product-category.entity';
@@ -76,6 +76,11 @@ export class ProductEntity extends BaseEntity {
   orderItems: OrderItemEntity;
 
   @ManyToMany(() => VoucherEntity, (voucher) => voucher.products)
+  @JoinTable({
+    name: 'voucher_products',
+    joinColumn: { name: 'product_id' },
+    inverseJoinColumn: { name: 'voucher_id' },
+  })
   vouchers: VoucherEntity[];
 
   sold: number = 0;
