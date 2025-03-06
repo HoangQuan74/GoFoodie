@@ -45,7 +45,7 @@ export class StoresController {
       .innerJoin(
         'store.workingTimes',
         'workingTime',
-        'workingTime.dayOfWeek = :dayOfWeek AND workingTime.openTime <= :currentTime AND workingTime.closeTime >= :currentTime',
+        // 'workingTime.dayOfWeek = :dayOfWeek AND workingTime.openTime <= :currentTime AND workingTime.closeTime >= :currentTime',
       )
       .addSelect(['product.id', 'product.name', 'product.price', 'product.imageId'])
       .innerJoin(
@@ -54,19 +54,7 @@ export class StoresController {
         'product.status = :productStatus AND product.approvalStatus = :productApprovalStatus',
       )
       .leftJoin('product.productWorkingTimes', 'productWorkingTime', 'product.isNormalTime = false')
-      .where(
-        new Brackets((qb) => {
-          qb.where('product.isNormalTime = true');
-          qb.orWhere(
-            new Brackets((qb) => {
-              qb.where('productWorkingTime.dayOfWeek = :dayOfWeek', { dayOfWeek });
-              qb.andWhere('productWorkingTime.openTime <= :currentTime', { currentTime });
-              qb.andWhere('productWorkingTime.closeTime >= :currentTime', { currentTime });
-            }),
-          );
-        }),
-      )
-      .andWhere('store.isPause = false')
+      .where('store.isPause = false')
       .andWhere('store.status = :storeStatus')
       .andWhere('store.approvalStatus = :storeApprovalStatus')
       .setParameters({ dayOfWeek, currentTime })
@@ -249,6 +237,7 @@ export class StoresController {
         'store.specialDish as "specialDish"',
         'store.streetName as "streetName"',
         'store.storeAvatarId as "storeAvatarId"',
+        'store.storeCoverId as "storeCoverId"',
       ])
       .addSelect((subQuery) => {
         return subQuery

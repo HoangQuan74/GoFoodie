@@ -45,9 +45,8 @@ export class ReviewsController {
     return this.reviewsService.getStoreReview(+orderId, clientId);
   }
 
-  // lấy phần thưởng khi đánh giá
   @Get('reward')
-  getReward(@CurrentUser() user: JwtPayload) {
+  getReward() {
     return this.reviewsService.getReward();
   }
 }

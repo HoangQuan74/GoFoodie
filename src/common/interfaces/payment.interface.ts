@@ -30,3 +30,14 @@ export interface IPaymentResult {
   payment_no: string;
   status: number;
 }
+
+export interface ICheckAccountResult {
+  status: number;
+  error_code: number;
+  message: string;
+  request_id: string;
+  bank_code: string;
+  account_no: string;
+  account_name?: string;
+  account_type: string;
+}

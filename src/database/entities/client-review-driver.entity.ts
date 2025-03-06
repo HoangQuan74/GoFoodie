@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, Unique } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { ClientEntity } from './client.entity';
 import { DriverEntity } from './driver.entity';
@@ -6,6 +6,7 @@ import { OrderEntity } from './order.entity';
 import { ReviewTemplateEntity } from './review-template.entity';
 
 @Entity('client_review_drivers')
+@Unique(['clientId', 'driverId', 'orderId'])
 export class ClientReviewDriverEntity extends BaseEntity {
   @Column({ name: 'client_id' })
   clientId: number;

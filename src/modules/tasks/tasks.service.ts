@@ -17,6 +17,7 @@ import { CRONJOB } from 'src/common/constants';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { STORE_CONFIRM_TIME } from 'src/common/constants/common.constant';
 import { TitleConfigEntity } from 'src/database/entities/title-config.entity';
+import { PaymentService as MerchantPaymentService } from '../merchant/payment/payment.service';
 
 @Injectable()
 export class TasksService {
@@ -36,14 +37,15 @@ export class TasksService {
     @InjectRepository(DriverEntity)
     private readonly driverRepository: Repository<DriverEntity>,
 
-    @InjectRepository(OrderEntity)
-    private readonly orderRepository: Repository<OrderEntity>,
+    // @InjectRepository(OrderEntity)
+    // private readonly orderRepository: Repository<OrderEntity>,
 
     @InjectRepository(TitleConfigEntity)
     private readonly titleConfigRepository: Repository<TitleConfigEntity>,
 
     private readonly dataSource: DataSource,
     private readonly mailHistoriesService: MailHistoriesService,
+    private readonly merchantPaymentService: MerchantPaymentService,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, {
@@ -255,4 +257,10 @@ export class TasksService {
     for (const titleConfig of titleConfigs) {
     }
   }
+
+  @Cron(CronExpression.EVERY_30_MINUTES, {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    disabled: !CRONJOB,
+  })
+  async handleUnreceivedIpn() {}
 }

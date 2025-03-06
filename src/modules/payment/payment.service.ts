@@ -6,7 +6,12 @@ import {
 } from './../../common/constants/environment.constant';
 import { Injectable } from '@nestjs/common';
 import { createHash, createHmac } from 'crypto';
-import { IDisbursementParams, IPaymentParams, IPaymentResult } from 'src/common/interfaces/payment.interface';
+import {
+  IDisbursementParams,
+  IPaymentParams,
+  IPaymentResult,
+  ICheckAccountResult,
+} from 'src/common/interfaces/payment.interface';
 import * as moment from 'moment';
 import { IPN9PayDto } from './dto/ipn-9pay.dto';
 import axios from 'axios';
@@ -39,7 +44,7 @@ export class PaymentService {
     return PAY_API_URL + '/portal?' + this.buildHttpQuery(httpBuild);
   }
 
-  async checkAccount(account: CheckAccountDto) {
+  async checkAccount(account: CheckAccountDto): Promise<ICheckAccountResult> {
     const time = moment().unix();
     const parameters = {
       request_id: time,
@@ -129,5 +134,22 @@ export class PaymentService {
     } else {
       return null;
     }
+  }
+
+  async getManualResult(invoiceNo: string): Promise<IPaymentResult | null> {
+    const time = moment().unix();
+    const message = 'GET' + '\n' + PAY_API_URL + '/v2/payments/' + invoiceNo + '/inquire' + '\n' + time;
+    const signature = this.buildSignature(message);
+
+    const result = await axios
+      .get(PAY_API_URL + '/v2/payments/' + invoiceNo + '/inquire', {
+        headers: {
+          Date: time.toString(),
+          Authorization: `Signature Algorithm=HS256,Credential=${PAY_MERCHANT_KEY},SignedHeaders=,Signature=${signature}`,
+        },
+      })
+      .then((res) => res.data);
+
+    return result;
   }
 }

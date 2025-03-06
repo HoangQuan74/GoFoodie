@@ -3,14 +3,15 @@ import { PaymentService as PaymentCommonService } from 'src/modules/payment/paym
 import { CreateDepositDto } from './dto/create-deposit.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StoreTransactionHistoryEntity } from 'src/database/entities/store-transaction-history.entity';
-import { DataSource, Repository } from 'typeorm';
-import { generateRandomString } from 'src/utils/bcrypt';
+import { DataSource, LessThan, Repository } from 'typeorm';
+import { compareText, generateRandomString } from 'src/utils/bcrypt';
 import { EAccountType, EPaymentMethod, ETransactionStatus, ETransactionType, EUserType } from 'src/common/enums';
 import { StoresService } from '../stores/stores.service';
 import { CreateWithdrawDto } from './dto/create-withdraw.dto';
 import { IPaymentResult } from 'src/common/interfaces/payment.interface';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { EXCEPTIONS } from 'src/common/constants';
+import * as moment from 'moment-timezone';
 
 @Injectable()
 export class PaymentService {
@@ -75,7 +76,13 @@ export class PaymentService {
   }
 
   async withdraw(data: CreateWithdrawDto, storeId: number) {
-    const { amount, accountType } = data;
+    const { amount, accountType, accountName } = data;
+
+    const account = await this.paymentCommonService.checkAccount(data);
+    if (!account || account.status !== 5) throw new BadRequestException(EXCEPTIONS.INVALID_CREDENTIALS);
+    const isNameMatch = compareText(account.account_name, accountName);
+    if (!isNameMatch) throw new BadRequestException(EXCEPTIONS.INVALID_CREDENTIALS);
+
     const description = 'Rut tien';
     const invoiceNo = await this.createInvoiceNo(ETransactionType.Withdraw);
 
@@ -128,5 +135,48 @@ export class PaymentService {
 
   createQueryBuild(alias: string) {
     return this.transactionHistoryRepository.createQueryBuilder(alias);
+  }
+
+  // async getPendingTransactions() {
+  //   const time = moment().subtract(30, 'minutes').toDate();
+  //   return this.transactionHistoryRepository.find({
+  //     where: { status: ETransactionStatus.Pending, createdAt: LessThan(time) },
+  //   });
+  // }
+
+  // xử lí các giao dịch chưa được xác nhận sau 30 phút
+  async handlePendingTransactions() {
+    const time = moment().subtract(30, 'minutes').toDate();
+    const count = await this.transactionHistoryRepository.countBy({
+      status: ETransactionStatus.Pending,
+      createdAt: LessThan(time),
+    });
+    if (count === 0) return;
+
+    // chia batch 100 giao dịch
+    const batch = 100;
+    const pages = Math.ceil(count / batch);
+
+    this.dataSource.transaction(async (manager) => {
+      for (let i = 0; i < pages; i++) {
+        const transactions = await manager.find(StoreTransactionHistoryEntity, {
+          where: { status: ETransactionStatus.Pending, createdAt: LessThan(time) },
+          take: batch,
+          skip: i * batch,
+        });
+
+        for (const transaction of transactions) {
+          // const result = await this.paymentCommonService.getManualResult(transaction.invoiceNo);
+          // transaction.status = ETransactionStatus.Failed;
+          // transaction.errorMessage = 'Timeout';
+          // await manager.save(transaction);
+          // if (transaction.type === ETransactionType.Deposit) {
+          //   const store = await manager.findOne(StoreEntity, { where: { id: transaction.storeId } });
+          //   store.balance = Number(store.balance) - transaction.amount;
+          //   await manager.save(store);
+          // }
+        }
+      }
+    });
   }
 }
