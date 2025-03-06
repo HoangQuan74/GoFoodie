@@ -190,7 +190,7 @@ export class OrderService {
     const createdAt = moment(order.orderSystemAssignToDriver.createdAt).unix();
     const now = moment().unix();
 
-    const remaining = criteria.value - (now - createdAt) || 15;
+    const remaining = (criteria?.value || 60) - (now - createdAt) || 15;
 
     return {
       ...order,
