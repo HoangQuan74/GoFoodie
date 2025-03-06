@@ -20,6 +20,7 @@ export class PaymentController {
     if (!data) return;
 
     const { invoice_no: invoiceNo, status } = data;
+    console.log('IPN 9Pay', data);
     const userType = invoiceNo.split('-')[0].toLowerCase();
 
     switch (userType) {

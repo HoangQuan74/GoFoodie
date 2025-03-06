@@ -45,7 +45,7 @@ export class MapboxController {
 
       return data;
     } catch (error) {
-      const message = error.response.data?.message || error.response.data?.error;
+      const message = error.response?.data?.message || error.response?.data?.error;
       throw new ServiceUnavailableException(message);
     }
   }
