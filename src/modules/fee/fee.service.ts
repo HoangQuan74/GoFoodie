@@ -12,6 +12,11 @@ export class FeeService {
     private readonly feeRepository: Repository<FeeEntity>,
   ) {}
 
+  /**
+   * Get shipping fee based on distance
+   * @param distance Distance in km
+   * @returns Shipping fee
+   */
   async getShippingFee(distance: number): Promise<number> {
     const fee = await this.feeRepository.findOne({
       where: { feeType: { value: EFeeType.Shipping }, isActive: true },
