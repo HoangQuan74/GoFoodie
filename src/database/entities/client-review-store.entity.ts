@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, Unique } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { ClientEntity } from './client.entity';
 import { StoreEntity } from './store.entity';
@@ -7,6 +7,7 @@ import { FileEntity } from './file.entity';
 import { ReviewTemplateEntity } from './review-template.entity';
 
 @Entity('client_review_stores')
+@Unique(['clientId', 'storeId', 'orderId'])
 export class ClientReviewStoreEntity extends BaseEntity {
   @Column({ name: 'client_id' })
   clientId: number;
