@@ -2,7 +2,7 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { IPN9PayDto } from './dto/ipn-9pay.dto';
 import { CheckAccountDto } from './dto/check-account.dto';
 import { Public } from 'src/common/decorators';
-import { ETransactionStatus, EUserType } from 'src/common/enums';
+import { ETransactionStatus } from 'src/common/enums';
 import { PaymentService as MerchantPaymentService } from 'src/modules/merchant/payment/payment.service';
 import { PaymentService } from './payment.service';
 

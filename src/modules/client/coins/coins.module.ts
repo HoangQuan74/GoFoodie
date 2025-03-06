@@ -12,9 +12,10 @@ import { ReviewsModule } from '../reviews/reviews.module';
     TypeOrmModule.forFeature([ClientCoinHistoryEntity]),
     forwardRef(() => ClientModule),
     OrdersModule,
-    ReviewsModule,
+    forwardRef(() => ReviewsModule),
   ],
   controllers: [CoinsController],
   providers: [CoinsService],
+  exports: [CoinsService],
 })
 export class CoinsModule {}

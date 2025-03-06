@@ -1,7 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ClientReviewDriverEntity } from 'src/database/entities/client-review-driver.entity';
-import { Brackets, Repository } from 'typeorm';
+import { Brackets, DataSource, Repository } from 'typeorm';
 import { ReviewDriverDto } from './dto/review-driver.dto';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { EOrderStatus } from 'src/common/enums/order.enum';
@@ -10,6 +10,12 @@ import { ClientReviewStoreEntity } from 'src/database/entities/client-review-sto
 import { ChallengeEntity } from 'src/database/entities/challenge.entity';
 import * as _ from 'lodash';
 import { DriverView } from 'src/database/views/driver.view';
+import { CoinsService } from '../coins/coins.service';
+import { ClientEntity } from 'src/database/entities/client.entity';
+import { ClientCoinHistoryEntity } from 'src/database/entities/client-coin-history.entity';
+import { EClientCoinType } from 'src/common/enums';
+import moment from 'moment-timezone';
+import { TIMEZONE } from 'src/common/constants';
 
 @Injectable()
 export class ReviewsService {
@@ -25,30 +31,89 @@ export class ReviewsService {
 
     @InjectRepository(ChallengeEntity)
     private readonly challengeRepository: Repository<ChallengeEntity>,
+
+    private readonly dataSource: DataSource,
+    private readonly coinsService: CoinsService,
   ) {}
 
   async reviewDriver(orderId: number, clientId: number, reviewDriverDto: ReviewDriverDto) {
-    const order = await this.orderRepository.findOne({
-      where: { id: orderId, clientId, status: EOrderStatus.Delivered },
+    return this.dataSource.transaction(async (manager) => {
+      const order = await manager.findOne(OrderEntity, {
+        select: { id: true, driverId: true, storeId: true },
+        where: { id: orderId, clientId, status: EOrderStatus.Delivered },
+      });
+      if (!order) throw new NotFoundException();
+
+      const reviewDriver = await manager.findOne(ClientReviewDriverEntity, { where: { orderId, clientId } });
+      if (reviewDriver) throw new ConflictException();
+
+      const { driverId, storeId } = order;
+
+      const review = await manager.save(ClientReviewDriverEntity, { orderId, clientId, driverId, ...reviewDriverDto });
+      const reviewStore = await manager.existsBy(ClientReviewStoreEntity, { orderId, clientId, storeId });
+      const rewardRepository = manager.getRepository(ChallengeEntity);
+      const reward = await this.getReward(rewardRepository);
+
+      if (reviewStore && reward) {
+        const { reward: rewardAmount, duration } = reward;
+        const expiredAt = moment().tz(TIMEZONE).add(duration, 'days').endOf('day').toDate();
+
+        const client = await manager.findOne(ClientEntity, { select: ['coins'], where: { id: clientId } });
+        await manager.update(ClientEntity, { id: clientId }, { coins: () => `coins + ${rewardAmount}` });
+        await manager.update(ChallengeEntity, { id: reward.id }, { usedBudget: () => `usedBudget + ${rewardAmount}` });
+
+        await manager.save(ClientCoinHistoryEntity, {
+          clientId,
+          amount: rewardAmount,
+          type: EClientCoinType.Review,
+          expiredAt: expiredAt,
+          relatedId: orderId,
+          balance: Number(client.coins) + rewardAmount,
+        });
+      }
+
+      return review;
     });
-    if (!order) throw new NotFoundException('Order not found');
-
-    const review = await this.reviewDriverRepository.findOne({ where: { orderId, clientId } });
-    if (review) throw new ConflictException('You have already reviewed this driver');
-
-    return this.reviewDriverRepository.save({ orderId, clientId, driverId: order.driverId, ...reviewDriverDto });
   }
 
   async reviewStore(orderId: number, clientId: number, reviewStoreDto: ReviewStoreDto) {
-    const order = await this.orderRepository.findOne({
-      where: { id: orderId, clientId, status: EOrderStatus.Delivered },
+    return this.dataSource.transaction(async (manager) => {
+      const order = await manager.findOne(OrderEntity, {
+        select: { id: true, storeId: true, driverId: true },
+        where: { id: orderId, clientId, status: EOrderStatus.Delivered },
+      });
+      if (!order) throw new NotFoundException();
+
+      const reviewStore = await manager.findOne(ClientReviewStoreEntity, { where: { orderId, clientId } });
+      if (reviewStore) throw new ConflictException();
+
+      const { storeId, driverId } = order;
+
+      const review = await manager.save(ClientReviewStoreEntity, { orderId, clientId, storeId, ...reviewStoreDto });
+      const reviewDriver = await manager.existsBy(ClientReviewDriverEntity, { orderId, clientId, driverId });
+      const rewardRepository = manager.getRepository(ChallengeEntity);
+      const reward = await this.getReward(rewardRepository);
+
+      if (reviewDriver && reward) {
+        const { reward: rewardAmount, duration } = reward;
+        const expiredAt = moment().tz(TIMEZONE).add(duration, 'days').endOf('day').toDate();
+
+        const client = await manager.findOne(ClientEntity, { select: ['coins'], where: { id: clientId } });
+        await manager.update(ClientEntity, { id: clientId }, { coins: () => `coins + ${rewardAmount}` });
+        await manager.update(ChallengeEntity, { id: reward.id }, { usedBudget: () => `usedBudget + ${rewardAmount}` });
+
+        await manager.save(ClientCoinHistoryEntity, {
+          clientId,
+          amount: rewardAmount,
+          type: EClientCoinType.Review,
+          expiredAt: expiredAt,
+          relatedId: orderId,
+          balance: Number(client.coins) + rewardAmount,
+        });
+      }
+
+      return review;
     });
-    if (!order) throw new NotFoundException('Order not found');
-
-    const review = await this.reviewStoreRepository.findOne({ where: { orderId, clientId } });
-    if (review) throw new ConflictException('You have already reviewed this store');
-
-    return this.reviewStoreRepository.save({ orderId, clientId, storeId: order.storeId, ...reviewStoreDto });
   }
 
   async getDriverReview(orderId: number, clientId: number) {
@@ -106,8 +171,8 @@ export class ReviewsService {
       .getOne();
   }
 
-  async getReward() {
-    return this.challengeRepository
+  async getReward(repository: Repository<ChallengeEntity> = this.challengeRepository) {
+    return repository
       .createQueryBuilder('challenge')
       .where('challenge.typeId = 1')
       .andWhere('challenge.startTime <= :now', { now: new Date() })

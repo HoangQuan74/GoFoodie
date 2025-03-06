@@ -17,4 +17,8 @@ export class ClientService {
   async save(entity: DeepPartial<ClientEntity>): Promise<ClientEntity> {
     return this.clientRepository.save(entity);
   }
+
+  async updateCoin(clientId: number, amount: number) {
+    return this.clientRepository.increment({ id: clientId }, 'balance', amount);
+  }
 }

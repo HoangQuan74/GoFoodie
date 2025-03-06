@@ -15,6 +15,10 @@ export class CoinsService {
     private readonly orderService: OrderService,
   ) {}
 
+  async save(data: Partial<ClientCoinHistoryEntity>) {
+    return this.coinHistoryRepository.save(data);
+  }
+
   createQueryBuilder(alias?: string) {
     return this.coinHistoryRepository.createQueryBuilder(alias);
   }
@@ -22,5 +26,15 @@ export class CoinsService {
   async getBalance(clientId: number): Promise<number> {
     const client = await this.clientService.findOne({ select: ['coins'], where: { id: clientId } });
     return Number(client?.coins || 0);
+  }
+
+  async increment(clientId: number, data: ClientCoinHistoryEntity) {
+    const { amount } = data;
+
+    const balance = await this.getBalance(clientId);
+    data.balance = balance + amount;
+    await this.save(data);
+
+    return this.clientService.updateCoin(clientId, amount);
   }
 }
