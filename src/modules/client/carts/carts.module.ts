@@ -8,10 +8,11 @@ import { ClientModule } from '../clients/client.module';
 import { CartProductEntity } from 'src/database/entities/cart-product.entity';
 import { OrdersModule } from '../order/order.module';
 import { StoresModule } from '../stores/stores.module';
+import { AppFeeEntity } from 'src/database/entities/app-fee.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([CartEntity, CartProductEntity]),
+    TypeOrmModule.forFeature([CartEntity, CartProductEntity, AppFeeEntity]),
     ProductsModule,
     forwardRef(() => ClientModule),
     OrdersModule,
