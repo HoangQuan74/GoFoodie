@@ -14,10 +14,10 @@ import { MailHistoryEntity } from 'src/database/entities/mail-history.entity';
 import { EDriverApprovalStatus, EDriverStatus } from 'src/common/enums/driver.enum';
 import { DriverEntity } from 'src/database/entities/driver.entity';
 import { CRONJOB } from 'src/common/constants';
-import { OrderEntity } from 'src/database/entities/order.entity';
 import { STORE_CONFIRM_TIME } from 'src/common/constants/common.constant';
 import { TitleConfigEntity } from 'src/database/entities/title-config.entity';
 import { PaymentService as MerchantPaymentService } from '../merchant/payment/payment.service';
+import { CoinsService } from '../client/coins/coins.service';
 
 @Injectable()
 export class TasksService {
@@ -46,6 +46,7 @@ export class TasksService {
     private readonly dataSource: DataSource,
     private readonly mailHistoriesService: MailHistoriesService,
     private readonly merchantPaymentService: MerchantPaymentService,
+    private readonly coinsService: CoinsService,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, {
@@ -263,4 +264,12 @@ export class TasksService {
     disabled: !CRONJOB,
   })
   async handleUnreceivedIpn() {}
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    disabled: !CRONJOB,
+  })
+  async revokeExpiredCoins() {
+    this.coinsService.revokeExpiredCoins();
+  }
 }
