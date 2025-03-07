@@ -184,7 +184,7 @@ export class OrderService {
       });
       const transactionFee = ((Number(appTransactionFee?.value) || 0) / 100) * deliveryFee;
       const storeTransactionFee = ((Number(storeAppTransactionFee?.value) || 0) / 100) * totalAmount;
-      const clientAppFee = ((Number(clientFeeApp?.value) || 0) / 100) * totalAmount;
+      const clientAppFee = Number(clientFeeApp?.value) || 0;
       const storeRevenue = totalAmount - storeTransactionFee;
       const clientTotalPaid = totalAmount + deliveryFee + clientAppFee + parkingFee;
 
