@@ -13,7 +13,7 @@ import { CoinsModule } from '../coins/coins.module';
   imports: [
     TypeOrmModule.forFeature([ClientReviewDriverEntity, ClientReviewStoreEntity, OrderEntity, ChallengeEntity]),
     forwardRef(() => ClientModule),
-    CoinsModule,
+    forwardRef(() => CoinsModule),
   ],
   controllers: [ReviewsController],
   providers: [ReviewsService],
