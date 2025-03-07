@@ -64,7 +64,7 @@ export class DriverSearchService {
     const scoredDrivers = await this.scoreDrivers(eligibleDrivers, order);
     const bestDriver = this.selectBestDriver(scoredDrivers);
 
-    console.log('BestDriver', bestDriver);
+    console.log('BestDriver', bestDriver?.id);
     if (bestDriver) {
       await this.offerOrderToDriver(order, bestDriver);
     }
@@ -135,8 +135,6 @@ export class DriverSearchService {
         orderId: order.id,
       })
       .getRawMany();
-
-    console.log('get driver from database', drivers);
 
     if (isEmpty(drivers)) {
       return [];
