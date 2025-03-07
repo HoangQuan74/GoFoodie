@@ -9,12 +9,14 @@ import { DriverEntity } from 'src/database/entities/driver.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { TitleConfigEntity } from 'src/database/entities/title-config.entity';
 import { PaymentModule as MerchantPaymentModule } from '../merchant/payment/payment.module';
+import { CoinsModule } from '../client/coins/coins.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([FileEntity, NoticeEntity, MerchantEntity, DriverEntity, OrderEntity, TitleConfigEntity]),
     MailHistoriesModule,
     MerchantPaymentModule,
+    CoinsModule,
   ],
   controllers: [],
   providers: [TasksService],

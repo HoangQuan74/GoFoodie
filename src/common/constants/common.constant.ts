@@ -11,3 +11,4 @@ export const REMIND_CONFIRM_TIME = 2; // 2 minutes
 export const SCAN_DRIVER_TIME = 5; // 5 minutes
 export const DRIVER_SPEED = 30; // 30 km/h
 export const ORDER_GROUP_FULL = 5;
+export const BATCH_SIZE = 100;
