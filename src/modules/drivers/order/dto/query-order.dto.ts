@@ -1,6 +1,6 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEnum, IsOptional, IsString, ValidateIf } from 'class-validator';
+import { IsEnum, IsLatitude, IsLongitude, IsOptional, IsString, ValidateIf } from 'class-validator';
 import { EOrderStatus, EPaymentStatus } from 'src/common/enums/order.enum';
 import { PaginationQuery } from './../../../../common/query/base.query';
 
@@ -44,4 +44,18 @@ export class QueryOrderHistoryDto extends PaginationQuery {
   @ValidateIf((o) => o.status !== undefined)
   @IsOptional()
   status?: EOrderStatus;
+}
+
+export class QueryOrderSearchingDriverDto {
+  @ApiProperty()
+  @IsLatitude()
+  @IsOptional()
+  @Type(() => Number)
+  latitude: number;
+
+  @ApiPropertyOptional()
+  @IsLongitude()
+  @IsOptional()
+  @Type(() => Number)
+  longitude: number;
 }

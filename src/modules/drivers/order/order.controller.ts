@@ -4,7 +4,7 @@ import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { AuthGuard } from '../auth/auth.guard';
 import { AssignOrderDto } from './dto/assign-order.dto';
-import { QueryOrderDto, QueryOrderHistoryDto } from './dto/query-order.dto';
+import { QueryOrderDto, QueryOrderHistoryDto, QueryOrderSearchingDriverDto } from './dto/query-order.dto';
 import { UpdateDriverAvailabilityDto } from './dto/update-driver-availability.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { UpdateStatusDto } from './dto/update-status-order.dto';
@@ -44,6 +44,21 @@ export class OrderController {
   getDriverOfferOrders(@Query() queryOrderDto: QueryOrderDto, @CurrentUser() user: JwtPayload) {
     const { id: driverId } = user;
     return this.orderService.findAllByClient(driverId, queryOrderDto);
+  }
+
+  @Get('/searching-driver')
+  @ApiOperation({ summary: 'Get all searching orders for a drivers' })
+  @ApiResponse({ status: 200, description: 'Returns a list of orders for the drivers' })
+  getOrdersSearchingForDriver(@Query() query: QueryOrderSearchingDriverDto, @CurrentUser() user: JwtPayload) {
+    const { id: driverId } = user;
+    return this.orderService.getOrdersSearchingForDriver(driverId, query);
+  }
+
+  @Get('/hot-store-areas')
+  @ApiOperation({ summary: 'Get all hot store areas' })
+  @ApiResponse({ status: 200, description: 'Returns a list of hot store areas' })
+  getHotStoreAreas(@Query() query: QueryOrderSearchingDriverDto) {
+    return this.orderService.getHotStoreAreas(query);
   }
 
   @Get('/history')
