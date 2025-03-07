@@ -94,8 +94,6 @@ export class MapboxController {
       },
     });
 
-    console.log(data);
-
     const result = data.results.map((result) => ({
       id: result.place_id,
       name: result.name,
