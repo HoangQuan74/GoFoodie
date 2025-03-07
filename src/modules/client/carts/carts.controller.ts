@@ -131,7 +131,7 @@ export class CartsController {
     });
 
     return carts.map((cart) => {
-      const clientAppFee = ((Number(clientFeeApp?.value) || 0) / 100) * cart.totalPrice;
+      const clientAppFee = Number(clientFeeApp?.value) || 0;
       return {
         ...cart,
         parkingFee: Number(cart.parkingFee),
