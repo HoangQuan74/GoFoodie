@@ -7,6 +7,7 @@ import {
   ORDER_BURST_DURATION_MIN,
   ORDER_BURST_THRESHOLD,
   RADIUS_OF_ORDER_DISPLAY_LOOKING_FOR_DRIVER,
+  TIMEZONE,
 } from 'src/common/constants';
 import { EOrderActivityStatus, EOrderStatus } from 'src/common/enums/order.enum';
 import { DriverAvailabilityEntity } from 'src/database/entities/driver-availability.entity';
@@ -188,9 +189,11 @@ export class OrderService {
       relations: ['serviceType'],
     });
 
-    const createdAt = moment(order.orderSystemAssignToDriver?.createdAt).unix();
-    const now = moment().unix();
+    const createdAt = moment(order.orderSystemAssignToDriver?.createdAt).tz(TIMEZONE).unix();
+    const now = moment().tz(TIMEZONE).unix();
 
+    console.log(order.orderSystemAssignToDriver.createdAt, moment().toDate());
+    console.log(criteria?.value || DURATION_CONFIRM_ORDER, now - createdAt, DURATION_CONFIRM_ORDER);
     const remaining = (criteria?.value || DURATION_CONFIRM_ORDER) - (now - createdAt) || DURATION_CONFIRM_ORDER;
 
     return {
