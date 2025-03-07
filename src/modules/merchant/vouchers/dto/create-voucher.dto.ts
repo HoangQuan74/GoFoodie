@@ -42,7 +42,7 @@ class MaxDiscountValueConstraint implements ValidatorConstraintInterface {
     const object = args.object as any;
     return (
       object.discountType !== EDiscountType.Percentage ||
-      value >= object.minOrderValue * object.discountValue ||
+      value >= object.minOrderValue * object.discountValue * 0.01 ||
       !object.minOrderValue
     );
   }
@@ -71,6 +71,7 @@ export class CreateVoucherDto {
   @MaxLength(5)
   @IsNotEmpty()
   @Matches(/^[a-zA-Z0-9]*$/, { message: EXCEPTIONS.INVALID_VOUCHER_CODE })
+  @IsOptional()
   code: string;
 
   @ApiProperty()

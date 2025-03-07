@@ -24,6 +24,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { UpdateVoucherDto } from './dto/update-voucher.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { ProductCategoriesService } from '../product-categories/product-categories.service';
+import { generateRandomString } from 'src/utils/bcrypt';
 
 @Controller('vouchers')
 @UseGuards(AuthGuard)
@@ -37,17 +38,23 @@ export class VouchersController {
 
   @Post()
   create(@Body() body: CreateVoucherDto, @CurrentStore() storeId: number) {
-    const { code, typeId } = body;
+    let { code } = body;
+    const { typeId } = body;
 
     return this.dataSource.transaction(async (manager: EntityManager) => {
-      const isExist = await manager.findOne(VoucherEntity, { where: { code } });
-      if (isExist) throw new ConflictException(EXCEPTIONS.CODE_EXISTED);
+      if (code) {
+        const isExist = await manager.findOne(VoucherEntity, { where: { code } });
+        if (isExist) throw new ConflictException(EXCEPTIONS.CODE_EXISTED);
+      } else {
+        code = generateRandomString(6, true);
+      }
 
       const voucher = new VoucherEntity();
       Object.assign(voucher, body);
       voucher.serviceTypeId = EServiceType.Food;
       voucher.createdByStoreId = storeId;
       voucher.maxDiscountType = voucher.maxDiscountValue ? EMaxDiscountType.Limited : EMaxDiscountType.Unlimited;
+      voucher.code = code;
 
       if (typeId === EVoucherType.Store) {
         Object.assign(voucher, { stores: [{ id: storeId }] });
