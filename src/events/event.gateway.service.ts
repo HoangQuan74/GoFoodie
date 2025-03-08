@@ -25,4 +25,8 @@ export class EventGatewayService {
   handleNewNotification() {
     this.eventsGateway.handleNewNotification();
   }
+
+  handleNewOrderSearchingForDriver(order: OrderEntity) {
+    this.eventsGateway.newOrderSearchingForDriver(order);
+  }
 }

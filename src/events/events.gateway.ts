@@ -158,6 +158,22 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
   }
 
+  async newOrderSearchingForDriver(order: OrderEntity) {
+    const drivers = Array.from(this.connected.entries())
+      .filter(([key]) => key.startsWith('driver-'))
+      .map(([key, clientId]) => ({ userId: key.split('-')[1], clientId }));
+
+    drivers.forEach(({ clientId }) => {
+      this.server.to(clientId).emit(ESocketEvent.OrderSearchingForDriver, {
+        orderId: order.id,
+        store: {
+          latitude: order.store?.latitude,
+          longitude: order.store?.longitude,
+        },
+      });
+    });
+  }
+
   @SubscribeMessage('driverLocationUpdate')
   async handleDriverLocationUpdate(client: Socket, location: string) {
     if (!location) return;

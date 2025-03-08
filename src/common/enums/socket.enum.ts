@@ -6,4 +6,5 @@ export enum ESocketEvent {
   DriverLocationUpdate = 'driverLocationUpdate',
   RoleUpdated = 'roleUpdated',
   NewNotification = 'newNotification',
+  OrderSearchingForDriver = 'orderSearchingForDriver',
 }

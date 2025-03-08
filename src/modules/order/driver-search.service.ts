@@ -60,13 +60,14 @@ export class DriverSearchService {
     }
 
     const eligibleDrivers = await this.findEligibleDrivers(order);
-    console.log('EligibleDrivers', eligibleDrivers);
     const scoredDrivers = await this.scoreDrivers(eligibleDrivers, order);
     const bestDriver = this.selectBestDriver(scoredDrivers);
 
-    console.log('BestDriver', bestDriver);
+    console.log('BestDriver', bestDriver?.id);
     if (bestDriver) {
       await this.offerOrderToDriver(order, bestDriver);
+    } else {
+      this.eventGatewayService.handleNewOrderSearchingForDriver(order);
     }
   }
 
@@ -135,8 +136,6 @@ export class DriverSearchService {
         orderId: order.id,
       })
       .getRawMany();
-
-    console.log('get driver from database', drivers);
 
     if (isEmpty(drivers)) {
       return [];

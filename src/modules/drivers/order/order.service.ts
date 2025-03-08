@@ -192,8 +192,6 @@ export class OrderService {
     const createdAt = moment(order.orderSystemAssignToDriver?.createdAt).tz(TIMEZONE).unix();
     const now = moment().tz(TIMEZONE).unix();
 
-    console.log(order.orderSystemAssignToDriver.createdAt, moment().toDate());
-    console.log(criteria?.value || DURATION_CONFIRM_ORDER, now - createdAt, DURATION_CONFIRM_ORDER);
     const remaining = (criteria?.value || DURATION_CONFIRM_ORDER) - (now - createdAt) || DURATION_CONFIRM_ORDER;
 
     return {
