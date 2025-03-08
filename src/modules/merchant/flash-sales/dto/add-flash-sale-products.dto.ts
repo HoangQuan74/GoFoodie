@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
@@ -9,6 +9,8 @@ import {
   ArrayMinSize,
   ValidateNested,
   ValidateIf,
+  IsOptional,
+  IsPositive,
 } from 'class-validator';
 import { EDiscountType } from 'src/common/enums/voucher.enum';
 
@@ -28,14 +30,16 @@ export class AddFlashSaleProductDto {
   @ValidateIf((o) => o.discountType === EDiscountType.Fixed)
   price: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsInt()
-  @IsNotEmpty()
+  @IsPositive()
+  @IsOptional()
   productQuantity: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsInt()
-  @IsNotEmpty()
+  @IsPositive()
+  @IsOptional()
   limitQuantity: number;
 
   @ApiProperty()
