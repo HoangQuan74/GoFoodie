@@ -21,8 +21,8 @@ export class NotificationsService {
     const client = await this.clientService.findOne({ select: ['id', 'deviceToken'], where: { id: clientId } });
 
     if (client && client.deviceToken) {
-      const body = content.replace('{{from}}', from);
-      this.fcmService.sendToDevice(client.deviceToken, title, body, {
+      // const body = content.replace('{{from}}', from);
+      this.fcmService.sendToDevice(client.deviceToken, '', '', {
         type,
         orderId: relatedId.toString(),
         status,
@@ -30,6 +30,7 @@ export class NotificationsService {
         content,
       });
     }
+
     return this.notificationRepository.save(entity);
   }
 

@@ -15,13 +15,11 @@ export class FcmService {
 
   async sendToDevice(deviceToken: string, title: string, body: string, data?: { [key: string]: string }) {
     const message: Message = {
-      notification: {
-        title: title,
-        body: body,
-      },
       token: deviceToken,
       data: data,
     };
+
+    if (title) message.notification = { title: title, body: body };
 
     try {
       await firebase.messaging().send(message);
