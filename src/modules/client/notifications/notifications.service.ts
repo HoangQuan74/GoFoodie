@@ -4,6 +4,7 @@ import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FcmService } from 'src/modules/fcm/fcm.service';
 import { ClientService } from '../clients/client.service';
+import { EClientNotificationStatus } from 'src/common/enums';
 
 @Injectable()
 export class NotificationsService {
@@ -16,14 +17,16 @@ export class NotificationsService {
   ) {}
 
   async save(entity: ClientNotificationEntity) {
-    const { clientId, title, content, from, type, relatedId } = entity;
+    const { clientId, title, content, from } = entity;
     const client = await this.clientService.findOne({ select: ['id', 'deviceToken'], where: { id: clientId } });
 
+    const notification = await this.notificationRepository.save(entity);
     if (client && client.deviceToken) {
       const body = content.replace('{{from}}', from);
-      this.fcmService.sendToDevice(client.deviceToken, title, body, { type, orderId: relatedId.toString() });
+      this.fcmService.sendToDevice(client.deviceToken, title, body, notification as any);
     }
-    return this.notificationRepository.save(entity);
+
+    return notification;
   }
 
   async find(options?: FindManyOptions<ClientNotificationEntity>) {
