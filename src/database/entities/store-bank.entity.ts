@@ -21,6 +21,9 @@ export class StoreBankEntity extends BaseEntity {
   @Column({ name: 'bank_account_name', nullable: true })
   bankAccountName: string;
 
+  @Column({ name: 'is_default', default: false })
+  isDefault: boolean;
+
   @ManyToOne(() => StoreEntity, (store) => store.banks, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
   @JoinColumn({ name: 'store_id' })
   store: StoreEntity;
