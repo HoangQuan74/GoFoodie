@@ -20,6 +20,7 @@ import { VouchersModule } from './vouchers/vouchers.module';
 import { StatisticalModule } from './statistical/statistical.module';
 import { PaymentModule } from './payment/payment.module';
 import { BanksModule } from './banks/banks.module';
+import { CoinsModule } from './coins/coins.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { BanksModule } from './banks/banks.module';
       { path: 'merchant', module: FlashSalesModule },
       { path: 'merchant', module: PaymentModule },
       { path: 'merchant', module: BanksModule },
+      { path: 'merchant', module: CoinsModule },
     ]),
     ProductsModule,
     StoresModule,
@@ -57,6 +59,7 @@ import { BanksModule } from './banks/banks.module';
     StatisticalModule,
     PaymentModule,
     BanksModule,
+    CoinsModule,
   ],
   providers: [],
   exports: [],
