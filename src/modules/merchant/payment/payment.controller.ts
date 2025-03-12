@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Param } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { CreateDepositDto } from './dto/create-deposit.dto';
 import { CurrentStore } from 'src/common/decorators/current-store.decorator';
@@ -38,7 +38,7 @@ export class PaymentController {
     const { page, limit, status, type, startDate, endDate } = query;
 
     const queryBuilder = this.paymentService
-      .createQueryBuild('transaction')
+      .createQueryBuilder('transaction')
       .where('transaction.storeId = :storeId', { storeId })
       .orderBy('transaction.id', 'DESC')
       .skip((page - 1) * limit)
@@ -51,5 +51,14 @@ export class PaymentController {
 
     const [items, total] = await queryBuilder.getManyAndCount();
     return { items, total };
+  }
+
+  @Get('transaction/:id')
+  getTransaction(@CurrentStore() storeId: number, @Param('id') id: number) {
+    return this.paymentService
+      .createQueryBuilder('transaction')
+      .where('transaction.storeId = :storeId', { storeId })
+      .andWhere('transaction.id = :id', { id })
+      .getOne();
   }
 }

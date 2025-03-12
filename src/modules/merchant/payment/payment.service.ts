@@ -129,7 +129,7 @@ export class PaymentService {
     return this.createInvoiceNo(transactionType);
   }
 
-  createQueryBuild(alias: string) {
+  createQueryBuilder(alias: string) {
     return this.transactionHistoryRepository.createQueryBuilder(alias);
   }
 
