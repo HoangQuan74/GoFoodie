@@ -42,7 +42,7 @@ export class VouchersController {
   @Get()
   @ApiOperation({ summary: 'Danh sách voucher' })
   async find(@Query() query: QueryVoucherDto) {
-    const { page, limit, search, startTimeFrom, startTimeTo, endTimeFrom, endTimeTo, status } = query;
+    const { page, limit, search, startTimeFrom, startTimeTo, endTimeFrom, endTimeTo, status, typeId } = query;
 
     const queryBuilder = this.vouchersService
       .createQueryBuilder('voucher')
@@ -108,6 +108,7 @@ export class VouchersController {
     startTimeTo && queryBuilder.andWhere('voucher.startTime <= :startTimeTo', { startTimeTo });
     endTimeFrom && queryBuilder.andWhere('voucher.endTime >= :endTimeFrom', { endTimeFrom });
     endTimeTo && queryBuilder.andWhere('voucher.endTime <= :endTimeTo', { endTimeTo });
+    typeId && queryBuilder.andWhere('voucher.type_id = :typeId', { typeId });
 
     const items = await queryBuilder.getRawMany();
     const total = await queryBuilder.getCount();
