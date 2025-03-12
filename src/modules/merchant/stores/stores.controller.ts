@@ -16,6 +16,9 @@ import { AdminNotificationEntity } from 'src/database/entities/admin-notificatio
 import { APPROVE_PATH } from 'src/common/constants/common.constant';
 import { NotificationsService } from 'src/modules/admin/notifications/notifications.service';
 import { EventGatewayService } from 'src/events/event.gateway.service';
+import { UpdateStorePinDto } from './dto/update-store-pin.dto';
+import { FirebaseService } from 'src/modules/firebase/firebase.service';
+import { EXCEPTIONS } from 'src/common/constants';
 
 @Controller('stores')
 @ApiTags('Merchant Stores')
@@ -27,6 +30,7 @@ export class StoresController {
     private readonly wardsService: WardsService,
     private readonly notificationService: NotificationsService,
     private readonly eventGatewayService: EventGatewayService,
+    private readonly firebaseService: FirebaseService,
   ) {}
 
   @Post()
@@ -139,6 +143,35 @@ export class StoresController {
     if (!store) throw new NotFoundException();
 
     store.isSelfDelivery = body.isSelfDelivery;
+    return this.storesService.save(store);
+  }
+
+  @Get('check-pin')
+  async checkPin(@CurrentStore() storeId: number) {
+    const store = await this.storesService.findOne({ where: { id: storeId } });
+    if (!store) throw new NotFoundException();
+
+    return !!store.pin;
+  }
+
+  @Patch('pin')
+  async updatePin(@Body() body: UpdateStorePinDto, @CurrentStore() storeId: number) {
+    const store = await this.storesService.findOne({ where: { id: storeId } });
+    if (!store) throw new NotFoundException();
+
+    const { idToken, pin, oldPin } = body;
+    if (oldPin && store.pin !== oldPin) {
+      throw new NotFoundException(EXCEPTIONS.PIN_INCORRECT);
+    } else if (idToken) {
+      const { phone_number } = await this.firebaseService.verifyIdToken(idToken);
+      const phone = phone_number.replace('+84', '0');
+
+      if (store.phoneNumber !== phone) {
+        throw new NotFoundException(EXCEPTIONS.INVALID_CREDENTIALS);
+      }
+    }
+
+    store.pin = pin;
     return this.storesService.save(store);
   }
 

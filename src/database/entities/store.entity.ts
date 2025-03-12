@@ -20,6 +20,7 @@ import { StorePreparationTimeEntity } from './store-preparation-time.entity';
 import { StoreAddressEntity } from './store-address.entity';
 import { TitleEntity } from './title.entity';
 import { ClientReviewStoreEntity } from './client-review-store.entity';
+import { encrypt, decrypt } from 'src/utils/bcrypt';
 
 @Entity('stores')
 export class StoreEntity extends BaseEntity {
@@ -79,6 +80,14 @@ export class StoreEntity extends BaseEntity {
 
   @Column({ nullable: true, type: 'float' })
   longitude: number;
+
+  @Column({
+    name: 'pin',
+    nullable: true,
+    select: false,
+    transformer: { to: (value) => encrypt(value), from: (value) => decrypt(value) },
+  })
+  pin: string;
 
   @Column({ name: 'status', type: 'enum', enum: EStoreStatus, default: EStoreStatus.Active })
   status: string;
