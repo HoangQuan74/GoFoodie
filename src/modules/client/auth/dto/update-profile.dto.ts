@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsDate, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
 
 export class UpdateProfileDto {
   @ApiPropertyOptional()
@@ -25,4 +26,16 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsUUID()
   avatarId?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  name: string;
+
+  @ApiPropertyOptional()
+  @IsDate()
+  @Type(() => Date)
+  @IsOptional()
+  dateOfBirth: string;
 }

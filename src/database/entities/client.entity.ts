@@ -13,6 +13,9 @@ export class ClientEntity extends BaseEntity {
   @Column({ nullable: true, name: 'avatar_id' })
   avatarId: string;
 
+  @Column({ nullable: true, type: 'date', name: 'date_of_birth' })
+  dateOfBirth: Date;
+
   @Column()
   phone: string;
 
