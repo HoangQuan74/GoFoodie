@@ -76,7 +76,10 @@ export class PaymentService {
   }
 
   async withdraw(data: CreateWithdrawDto, storeId: number) {
-    const { amount, accountType, accountName } = data;
+    const { amount, accountType, accountName, pin } = data;
+    const store = await this.storeService.findOne({ where: { id: storeId } });
+    if (!store) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
+    if (store.pin && store.pin !== pin) throw new BadRequestException(EXCEPTIONS.PIN_INCORRECT);
 
     const account = await this.paymentCommonService.checkAccount(data);
     if (!account || account.status !== 5) throw new BadRequestException(EXCEPTIONS.INVALID_CREDENTIALS);
@@ -109,14 +112,7 @@ export class PaymentService {
         newTransaction.method = EPaymentMethod.AtmCard;
       }
 
-      console.log('Withdraw data', invoiceNo);
-
-      await this.paymentCommonService
-        .createDisbursement({ ...data, description, requestId: invoiceNo })
-        .catch((error) => {
-          console.log('Withdraw error', error.response.data);
-          throw new BadRequestException(error);
-        });
+      await this.paymentCommonService.createDisbursement({ ...data, description, requestId: invoiceNo });
       return manager.save(newTransaction);
     });
   }

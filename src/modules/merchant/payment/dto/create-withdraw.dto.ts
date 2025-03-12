@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsInt, IsNotEmpty, IsString, Min } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEnum, IsInt, IsNotEmpty, IsNumberString, IsOptional, IsString, MaxLength, Min, MinLength } from 'class-validator';
 import { EAccountType } from 'src/common/enums';
 
 export class CreateWithdrawDto {
@@ -26,4 +26,11 @@ export class CreateWithdrawDto {
   @IsString()
   @IsNotEmpty()
   accountNo: string;
+
+  @ApiPropertyOptional()
+  @IsNumberString()
+  @MinLength(6)
+  @MaxLength(6)
+  @IsOptional()
+  pin: string;
 }
