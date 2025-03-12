@@ -21,4 +21,9 @@ export class ClientService {
   async updateCoin(clientId: number, amount: number) {
     return this.clientRepository.increment({ id: clientId }, 'balance', amount);
   }
+
+  async remove(clientId: number) {
+    const client = await this.findOne({ where: { id: clientId } });
+    return this.clientRepository.softRemove(client);
+  }
 }

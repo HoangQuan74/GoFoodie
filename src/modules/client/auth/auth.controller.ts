@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Patch, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CurrentUser, Public } from 'src/common/decorators';
 import { ApiOperation } from '@nestjs/swagger';
@@ -33,5 +33,11 @@ export class AuthController {
   @ApiOperation({ summary: 'Cập nhật thông tin tài khoản' })
   updateProfile(@CurrentUser() user: JwtPayload, @Body() body: UpdateProfileDto) {
     return this.clientService.save({ ...user, ...body });
+  }
+
+  @Delete('withdraw')
+  @ApiOperation({ summary: 'Xóa tài khoản' })
+  withdraw(@CurrentUser() user: JwtPayload) {
+    return this.clientService.remove(user.id);
   }
 }
