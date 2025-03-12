@@ -370,6 +370,18 @@ export class OrderGroupService {
       return a.sortOrder - b.sortOrder;
     });
 
+    const orderLetterMap = new Map<number, string>();
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let letterIndex = 0;
+
+    orderGroupItems.forEach((order) => {
+      if (!orderLetterMap.has(order.order.id)) {
+        orderLetterMap.set(order.order.id, alphabet[letterIndex % alphabet.length]);
+        letterIndex++;
+      }
+      order.letter = orderLetterMap.get(order.order.id);
+    });
+
     return {
       orderGroupItems: orderGroupItems.map((order) => {
         return {
