@@ -22,10 +22,9 @@ export class FcmService {
     if (title) message.notification = { title: title, body: body };
 
     try {
-      console.log('message', message);
-
       await firebase.messaging().send(message);
     } catch (error) {
+      console.log('error', error);
       logger.error(error);
     }
   }

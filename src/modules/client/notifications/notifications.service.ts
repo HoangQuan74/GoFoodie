@@ -28,7 +28,6 @@ export class NotificationsService {
         status,
         title,
         content,
-        from,
       });
     }
 
