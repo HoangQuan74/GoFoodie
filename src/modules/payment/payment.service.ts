@@ -16,9 +16,19 @@ import * as moment from 'moment';
 import { IPN9PayDto } from './dto/ipn-9pay.dto';
 import axios from 'axios';
 import { CheckAccountDto } from './dto/check-account.dto';
+import { generateRandomString } from 'src/utils/bcrypt';
+import { ETransactionType, EUserType } from 'src/common/enums';
+import { StoreTransactionHistoryEntity } from 'src/database/entities/store-transaction-history.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class PaymentService {
+  constructor(
+    @InjectRepository(StoreTransactionHistoryEntity)
+    private readonly transactionHistoryRepository: Repository<StoreTransactionHistoryEntity>,
+  ) {}
+
   private createParameters(data: IPaymentParams) {
     const { amount, description, returnUrl, method, invoiceNo } = data;
     const time = moment().unix();
@@ -150,5 +160,21 @@ export class PaymentService {
       .then((res) => res.data);
 
     return result;
+  }
+
+  async createInvoiceNo(
+    transactionType: ETransactionType,
+    userType: EUserType = EUserType.Merchant,
+    randomString?: string,
+  ) {
+    if (!randomString) randomString = generateRandomString(10, true);
+    const prefixUserType = Object.values(EUserType).indexOf(userType);
+    const prefixTransactionType = Object.values(ETransactionType).indexOf(transactionType);
+    const invoiceNo = `${prefixUserType}${prefixTransactionType}${randomString}`;
+
+    const checkInvoiceNo = await this.transactionHistoryRepository.existsBy({ invoiceNo });
+    if (!checkInvoiceNo) return invoiceNo;
+
+    return this.createInvoiceNo(transactionType);
   }
 }

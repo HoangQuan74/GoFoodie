@@ -8,4 +8,5 @@ export enum ETransactionType {
   Deposit = 'deposit',
   Withdraw = 'withdraw',
   Transfer = 'transfer',
+  RechargeCoin = 'recharge_coin',
 }
