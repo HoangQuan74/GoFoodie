@@ -158,6 +158,12 @@ export class StoreEntity extends BaseEntity {
   @Column({ type: 'int8', default: 0 })
   balance: number;
 
+  @Column({ name: 'coin_balance', type: 'int8', default: 0 })
+  coinBalance: number;
+
+  @Column({ name: 'promotion_coin_balance', type: 'int8', default: 0 })
+  promotionCoinBalance: number;
+
   @ManyToOne(() => ServiceGroupEntity, (serviceGroup) => serviceGroup.id, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'service_group_id' })
   serviceGroup: ServiceGroupEntity;

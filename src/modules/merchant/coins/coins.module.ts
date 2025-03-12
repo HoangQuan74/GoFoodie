@@ -3,11 +3,17 @@ import { CoinsService } from './coins.service';
 import { CoinsController } from './coins.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { StoreCoinHistoryEntity } from 'src/database/entities/store-coin-history.entity';
-import { StoreCoinEventEntity } from 'src/database/entities/store-coin-event.entity';
 import { MerchantModule } from '../merchants/merchant.module';
+import { StoreEntity } from 'src/database/entities/store.entity';
+import { PaymentModule } from 'src/modules/payment/payment.module';
+import { StoreTransactionHistoryEntity } from 'src/database/entities/store-transaction-history.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([StoreCoinHistoryEntity, StoreCoinEventEntity]), forwardRef(() => MerchantModule)],
+  imports: [
+    TypeOrmModule.forFeature([StoreCoinHistoryEntity, StoreEntity, StoreTransactionHistoryEntity]),
+    forwardRef(() => MerchantModule),
+    forwardRef(() => PaymentModule),
+  ],
   controllers: [CoinsController],
   providers: [CoinsService],
   exports: [CoinsService],

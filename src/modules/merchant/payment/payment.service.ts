@@ -64,7 +64,7 @@ export class PaymentService {
         transaction.errorMessage = result.failure_reason;
         transaction.transactionId = result.payment_no;
 
-        if (transaction.type === ETransactionType.Deposit) {
+        if (transaction.type === ETransactionType.Withdraw) {
           const store = await manager.findOne(StoreEntity, { where: { id: transaction.storeId } });
           store.balance = Number(store.balance) + transaction.amount;
           await manager.save(store);

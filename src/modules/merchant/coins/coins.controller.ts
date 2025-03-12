@@ -25,4 +25,9 @@ export class CoinsController {
   getCoinHistoryOfStore(@CurrentStore() storeId: number, @Query() query: QueryCoinDto) {
     return this.coinsService.getCoinHistoryOfStore(storeId, query);
   }
+
+  @Get('history/:id')
+  getCoinHistoryDetail(@CurrentStore() storeId: number, @Param('id') id: number) {
+    return this.coinsService.getCoinHistoryDetail(storeId, +id);
+  }
 }

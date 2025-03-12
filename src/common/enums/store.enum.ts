@@ -49,7 +49,3 @@ export enum EStoreCoinType {
   SHOP_EVENT_REWARD = 'shop_event_reward',
   REVIEW_REWARD = 'review_reward',
 }
-
-export enum EStoreCoinPromotionalProgram {
-  CLIENT_REVIEW = 'client_review',
-}
