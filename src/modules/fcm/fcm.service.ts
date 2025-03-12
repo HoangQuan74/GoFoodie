@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as firebase from 'firebase-admin';
 import { Message } from 'firebase-admin/lib/messaging/messaging-api';
+import { send } from 'process';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import logger from 'src/logger/winston-daily-rotate-file.logger';
 import { Repository } from 'typeorm';
@@ -24,6 +25,7 @@ export class FcmService {
     try {
       await firebase.messaging().send(message);
     } catch (error) {
+      console.log('Error sending message:', error);
       logger.error(error);
     }
   }
