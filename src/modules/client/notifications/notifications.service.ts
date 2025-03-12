@@ -20,14 +20,13 @@ export class NotificationsService {
     const { clientId, title, content, from, type, relatedId, status = EClientNotificationStatus.Info } = entity;
     const client = await this.clientService.findOne({ select: ['id', 'deviceToken'], where: { id: clientId } });
 
-    console.log('client_noti', client);
     if (client && client.deviceToken) {
       this.fcmService.sendToDevice(client.deviceToken, '', '', {
         type,
         orderId: relatedId.toString(),
         status,
         title,
-        content,
+        content: content.replace('{{from}}', from),
       });
     }
 
