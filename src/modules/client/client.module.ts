@@ -32,7 +32,6 @@ import { CoinsModule } from './coins/coins.module';
       { path: 'client', module: CoinsModule },
     ]),
     AuthModule,
-    TypeOrmModule.forFeature([ClientEntity]),
     StoresModule,
     ProductsModule,
     ProductCategoriesModule,

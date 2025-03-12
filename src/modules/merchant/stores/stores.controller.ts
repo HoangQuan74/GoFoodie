@@ -148,7 +148,7 @@ export class StoresController {
 
   @Get('check-pin')
   async checkPin(@CurrentStore() storeId: number) {
-    const store = await this.storesService.findOne({ where: { id: storeId } });
+    const store = await this.storesService.findOne({ select: { id: true, pin: true }, where: { id: storeId } });
     if (!store) throw new NotFoundException();
 
     return !!store.pin;
@@ -156,7 +156,10 @@ export class StoresController {
 
   @Patch('pin')
   async updatePin(@Body() body: UpdateStorePinDto, @CurrentStore() storeId: number) {
-    const store = await this.storesService.findOne({ where: { id: storeId } });
+    const store = await this.storesService.findOne({
+      select: { id: true, pin: true, phoneNumber: true },
+      where: { id: storeId },
+    });
     if (!store) throw new NotFoundException();
 
     const { idToken, pin, oldPin } = body;

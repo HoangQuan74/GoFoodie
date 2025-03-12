@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as firebase from 'firebase-admin';
 import { Message } from 'firebase-admin/lib/messaging/messaging-api';
-import { send } from 'process';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import logger from 'src/logger/winston-daily-rotate-file.logger';
 import { Repository } from 'typeorm';
@@ -24,9 +23,25 @@ export class FcmService {
 
     try {
       console.log('message', message);
+
       await firebase.messaging().send(message);
     } catch (error) {
       logger.error(error);
+    }
+  }
+
+  async verifyToken(deviceToken: string) {
+    try {
+      const response = await firebase.messaging().send(
+        {
+          token: deviceToken,
+        },
+        true,
+      );
+
+      return response;
+    } catch (error) {
+      return null;
     }
   }
 
