@@ -6,6 +6,7 @@ import { StoreTransactionHistoryEntity } from 'src/database/entities/store-trans
 import { PaymentModule as PaymentComponentModule } from 'src/modules/payment/payment.module';
 import { MerchantModule } from '../merchants/merchant.module';
 import { StoresModule } from '../stores/stores.module';
+import { FeeModule } from '../fee/fee.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { StoresModule } from '../stores/stores.module';
     PaymentComponentModule,
     MerchantModule,
     StoresModule,
+    FeeModule,
   ],
   controllers: [PaymentController],
   providers: [PaymentService],
