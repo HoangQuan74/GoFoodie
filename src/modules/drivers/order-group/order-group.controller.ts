@@ -37,4 +37,12 @@ export class OrderGroupController {
     const { id: driverId } = user;
     return this.orderGroupService.sortOrderGroupItem(driverId, data);
   }
+
+  @Patch('/sort/default')
+  @ApiOperation({ summary: 'Update order group item' })
+  @ApiResponse({ status: 200, description: 'Returns a list of card store and client for the drivers' })
+  sortOrderGroupItemDefault(@CurrentUser() user: JwtPayload) {
+    const { id: driverId } = user;
+    return this.orderGroupService.sortOrderGroupItemDefault(driverId);
+  }
 }

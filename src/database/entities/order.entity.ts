@@ -157,4 +157,5 @@ export class OrderEntity extends BaseEntity {
   orderSystemAssignToDriver: OrderActivityEntity;
   remaining: number;
   otherFee: number;
+  letter: string;
 }

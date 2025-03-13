@@ -27,5 +27,4 @@ export class OrderGroupItemEntity extends BaseEntity {
   order: OrderEntity;
 
   sortOrder: number;
-  letter: string;
 }

@@ -374,12 +374,12 @@ export class OrderGroupService {
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let letterIndex = 0;
 
-    orderGroupItems.forEach((order) => {
-      if (!orderLetterMap.has(order.order.id)) {
-        orderLetterMap.set(order.order.id, alphabet[letterIndex % alphabet.length]);
+    orderGroupItems.forEach((orderGroupItem) => {
+      if (!orderLetterMap.has(orderGroupItem.order.id)) {
+        orderLetterMap.set(orderGroupItem.order.id, alphabet[letterIndex % alphabet.length]);
         letterIndex++;
       }
-      order.letter = orderLetterMap.get(order.order.id);
+      orderGroupItem.order.letter = orderLetterMap.get(orderGroupItem.order.id);
     });
 
     return {
@@ -419,6 +419,35 @@ export class OrderGroupService {
       orderGroupItem.routePriority.client = data.orderItems.find(
         (item) => item.orderItemId === orderGroupItem.id && item.sortType === EUserType.Client,
       ).index;
+    });
+
+    return await this.orderGroupItemRepository.save(orderGroupItems);
+  }
+
+  async sortOrderGroupItemDefault(driverId: number) {
+    const orderGroupItems = await this.orderGroupItemRepository.find({
+      where: {
+        orderGroup: {
+          driverId: driverId,
+          status: EOrderGroupStatus.InDelivery,
+        },
+      },
+      select: {
+        id: true,
+        createdAt: true,
+        routePriority: { store: true, client: true },
+      },
+      order: {
+        createdAt: 'ASC',
+      },
+    });
+
+    if (isEmpty(orderGroupItems)) return;
+
+    const totalItems = orderGroupItems.length;
+    orderGroupItems.forEach((orderGroupItem, index) => {
+      orderGroupItem.routePriority.store = index;
+      orderGroupItem.routePriority.client = index + totalItems;
     });
 
     return await this.orderGroupItemRepository.save(orderGroupItems);
