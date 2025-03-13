@@ -195,7 +195,7 @@ export class CartsController {
 
     if (!cart) return null;
 
-    const { cartProducts = [] } = cart;
+    let { cartProducts = [] } = cart;
 
     cartProducts.forEach((cp: any) => {
       const options = cp.cartProductOptions.map((cpo) => cpo.option).filter((option) => option?.optionGroup);
@@ -208,6 +208,8 @@ export class CartsController {
     });
 
     const changedProducts = await this.cartsService.validateCart(cart.id);
+    cartProducts = cartProducts.filter((cp) => !changedProducts.find((product) => product.id === cp.id));
+
     return { cartProducts, changedProducts };
   }
 
