@@ -374,12 +374,12 @@ export class OrderGroupService {
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let letterIndex = 0;
 
-    orderGroupItems.forEach((order) => {
-      if (!orderLetterMap.has(order.order.id)) {
-        orderLetterMap.set(order.order.id, alphabet[letterIndex % alphabet.length]);
+    orderGroupItems.forEach((orderGroupItem) => {
+      if (!orderLetterMap.has(orderGroupItem.order.id)) {
+        orderLetterMap.set(orderGroupItem.order.id, alphabet[letterIndex % alphabet.length]);
         letterIndex++;
       }
-      order.letter = orderLetterMap.get(order.order.id);
+      orderGroupItem.order.letter = orderLetterMap.get(orderGroupItem.order.id);
     });
 
     return {
