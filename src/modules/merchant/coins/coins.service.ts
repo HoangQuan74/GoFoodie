@@ -50,7 +50,7 @@ export class CoinsService {
         balance: true,
         coinBalance: true,
         promotionCoinBalance: true,
-        // pin: true,
+        pin: true,
       },
     });
     if (!store) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
@@ -64,7 +64,7 @@ export class CoinsService {
       return true;
     }
 
-    // if (store.pin && store.pin !== pin) throw new BadRequestException(EXCEPTIONS.PIN_INCORRECT);
+    if (store.pin && store.pin !== pin) throw new BadRequestException(EXCEPTIONS.PIN_INCORRECT);
 
     await this.saveCoinHistory(storeId, data, invoiceNo, store);
     return this.createPaymentUrl(amount, returnUrl, method, invoiceNo);
@@ -144,7 +144,7 @@ export class CoinsService {
 
       if (status === ETransactionStatus.Success) {
         const store = await manager.findOne(StoreEntity, { where: { id: transaction.storeId } });
-        store.coinBalance = Number(store.coinBalance) + transaction.amount;
+        store.coinBalance = Number(store.coinBalance) + Number(transaction.amount);
         await manager.save(store);
       } else if (status === ETransactionStatus.Failed) {
         transaction.errorMessage = result.failure_reason;
@@ -155,7 +155,7 @@ export class CoinsService {
   }
 
   async getCoinHistoryOfStore(storeId: number, query: QueryCoinDto) {
-    const { limit, page, type, startDate, endDate } = query;
+    const { limit, page, type, startDate, endDate, status } = query;
     const queryBuilder = this.coinHistoryRepository
       .createQueryBuilder('coinHistory')
       .where('coinHistory.storeId = :storeId', { storeId });
@@ -163,6 +163,7 @@ export class CoinsService {
     if (type) queryBuilder.andWhere('coinHistory.type = :type', { type });
     if (startDate) queryBuilder.andWhere('coinHistory.createdAt >= :startDate', { startDate });
     if (endDate) queryBuilder.andWhere('coinHistory.createdAt <= :endDate', { endDate });
+    if (status) queryBuilder.andWhere('coinHistory.status = :status', { status });
 
     queryBuilder.orderBy('coinHistory.createdAt', 'DESC');
     const [items, total] = await queryBuilder

@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsDate, IsEnum, IsOptional } from 'class-validator';
-import { EStoreCoinType } from 'src/common/enums';
+import { EStoreCoinType, ETransactionStatus } from 'src/common/enums';
 import { PaginationQuery } from 'src/common/query';
 import * as moment from 'moment';
 
@@ -10,6 +10,11 @@ export class QueryCoinDto extends PaginationQuery {
   @IsOptional()
   @IsEnum(EStoreCoinType)
   type: EStoreCoinType;
+
+  @ApiPropertyOptional({ type: ETransactionStatus, enum: ETransactionStatus })
+  @IsOptional()
+  @IsEnum(ETransactionStatus)
+  status: ETransactionStatus;
 
   @ApiPropertyOptional()
   @IsOptional()
