@@ -2,11 +2,18 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { DriverEntity } from './driver.entity';
 import { BaseEntity } from './base.entity';
 import { decrypt, encrypt } from 'src/utils/bcrypt';
+import { EPaymentMethod } from 'src/common/enums';
 
 @Entity('driver_cards')
 export class DriverCardEntity extends BaseEntity {
   @Column({ name: 'driver_id' })
   driverId: number;
+
+  @Column({ name: 'type' })
+  type: EPaymentMethod.AtmCard | EPaymentMethod.CreditCard;
+
+  @Column({ name: 'bank_code' })
+  bankCode: string;
 
   @Column({ name: 'card_number', transformer: { to: (value) => encrypt(value), from: (value) => decrypt(value) } })
   cardNumber: string;

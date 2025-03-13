@@ -19,17 +19,13 @@ export class CreateCardDto {
   expiryDate: string;
 
   @ApiProperty()
-  @IsString()
-  bankCode: string;
-
-  @ApiProperty()
   @Matches(/^[0-9]{3,4}$/)
   @IsNotEmpty()
   cvv: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   address: string;
 
   @ApiPropertyOptional()
