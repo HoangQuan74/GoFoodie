@@ -21,6 +21,7 @@ import { StatisticalModule } from './statistical/statistical.module';
 import { PaymentModule } from './payment/payment.module';
 import { BanksModule } from './banks/banks.module';
 import { CoinsModule } from './coins/coins.module';
+import { FeeModule } from './fee/fee.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { CoinsModule } from './coins/coins.module';
       { path: 'merchant', module: PaymentModule },
       { path: 'merchant', module: BanksModule },
       { path: 'merchant', module: CoinsModule },
+      { path: 'merchant', module: FeeModule },
     ]),
     ProductsModule,
     StoresModule,
@@ -60,6 +62,7 @@ import { CoinsModule } from './coins/coins.module';
     PaymentModule,
     BanksModule,
     CoinsModule,
+    FeeModule,
   ],
   providers: [],
   exports: [],
