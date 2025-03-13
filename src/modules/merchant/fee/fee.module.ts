@@ -8,5 +8,6 @@ import { FeeEntity } from 'src/database/entities/fee.entity';
   imports: [TypeOrmModule.forFeature([FeeEntity])],
   controllers: [FeeController],
   providers: [FeeService],
+  exports: [FeeService],
 })
 export class FeeModule {}
