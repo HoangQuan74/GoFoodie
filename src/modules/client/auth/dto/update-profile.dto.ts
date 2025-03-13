@@ -29,7 +29,6 @@ export class UpdateProfileDto {
 
   @ApiPropertyOptional()
   @IsString()
-  @IsNotEmpty()
   @IsOptional()
   name: string;
 
