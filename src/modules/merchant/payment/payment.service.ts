@@ -12,6 +12,7 @@ import { IPaymentResult } from 'src/common/interfaces/payment.interface';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { EXCEPTIONS } from 'src/common/constants';
 import * as moment from 'moment-timezone';
+import { FeeService } from '../fee/fee.service';
 
 @Injectable()
 export class PaymentService {
@@ -21,6 +22,7 @@ export class PaymentService {
 
     private readonly paymentCommonService: PaymentCommonService,
     private readonly storeService: StoresService,
+    private readonly feeService: FeeService,
     private dataSource: DataSource,
   ) {}
 
@@ -66,7 +68,7 @@ export class PaymentService {
 
         if (transaction.type === ETransactionType.Withdraw) {
           const store = await manager.findOne(StoreEntity, { where: { id: transaction.storeId } });
-          store.balance = Number(store.balance) + transaction.amount;
+          store.balance = Number(store.balance) + transaction.amount + transaction.fee;
           await manager.save(store);
         }
       }
@@ -77,10 +79,6 @@ export class PaymentService {
 
   async withdraw(data: CreateWithdrawDto, storeId: number) {
     const { amount, accountType, accountName, pin } = data;
-    const store = await this.storeService.findOne({ where: { id: storeId } });
-    if (!store) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
-    if (store.pin && store.pin !== pin) throw new BadRequestException(EXCEPTIONS.PIN_INCORRECT);
-
     const account = await this.paymentCommonService.checkAccount(data);
     if (!account || account.status !== 5) throw new BadRequestException(EXCEPTIONS.INVALID_CREDENTIALS);
     const isNameMatch = compareText(account.account_name, accountName);
@@ -90,10 +88,14 @@ export class PaymentService {
     const invoiceNo = await this.createInvoiceNo(ETransactionType.Withdraw);
 
     return this.dataSource.transaction(async (manager) => {
-      const store = await manager.findOne(StoreEntity, { where: { id: storeId } });
+      const store = await manager.findOne(StoreEntity, { select: ['id', 'balance', 'pin'], where: { id: storeId } });
+      if (!store) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
+      if (store.pin && store.pin !== pin) throw new BadRequestException(EXCEPTIONS.PIN_INCORRECT);
       if (store.balance < amount) throw new BadRequestException(EXCEPTIONS.NOT_ENOUGH_BALANCE);
+      const fee = await this.feeService.getTransactionFee();
+      const feeAmount = Math.floor((amount * fee) / 100);
 
-      store.balance = Number(store.balance) - amount;
+      store.balance = Number(store.balance) - amount - feeAmount;
       await manager.save(store);
 
       const newTransaction = new StoreTransactionHistoryEntity();
@@ -103,6 +105,7 @@ export class PaymentService {
       newTransaction.storeId = storeId;
       newTransaction.type = ETransactionType.Withdraw;
       newTransaction.balance = store.balance;
+      newTransaction.fee = feeAmount;
       newTransaction.bankAccount = data.accountNo;
       newTransaction.bankAccountName = data.accountName;
 
