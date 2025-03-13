@@ -175,6 +175,15 @@ export class CoinsService {
   }
 
   async getCoinHistoryDetail(storeId: number, id: number) {
-    return this.coinHistoryRepository.findOne({ where: { id, storeId } });
+    return this.coinHistoryRepository.findOne({
+      where: { id, storeId },
+      relations: ['store'],
+      select: {
+        store: {
+          id: true,
+          name: true,
+        },
+      },
+    });
   }
 }
