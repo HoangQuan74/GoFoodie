@@ -423,4 +423,33 @@ export class OrderGroupService {
 
     return await this.orderGroupItemRepository.save(orderGroupItems);
   }
+
+  async sortOrderGroupItemDefault(driverId: number) {
+    const orderGroupItems = await this.orderGroupItemRepository.find({
+      where: {
+        orderGroup: {
+          driverId: driverId,
+          status: EOrderGroupStatus.InDelivery,
+        },
+      },
+      select: {
+        id: true,
+        createdAt: true,
+        routePriority: { store: true, client: true },
+      },
+      order: {
+        createdAt: 'ASC',
+      },
+    });
+
+    if (isEmpty(orderGroupItems)) return;
+
+    const totalItems = orderGroupItems.length;
+    orderGroupItems.forEach((orderGroupItem, index) => {
+      orderGroupItem.routePriority.store = index;
+      orderGroupItem.routePriority.client = index + totalItems;
+    });
+
+    return await this.orderGroupItemRepository.save(orderGroupItems);
+  }
 }
