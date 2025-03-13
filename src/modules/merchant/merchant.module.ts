@@ -22,6 +22,7 @@ import { PaymentModule } from './payment/payment.module';
 import { BanksModule } from './banks/banks.module';
 import { CoinsModule } from './coins/coins.module';
 import { FeeModule } from './fee/fee.module';
+import { CardsModule } from './cards/cards.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { FeeModule } from './fee/fee.module';
       { path: 'merchant', module: BanksModule },
       { path: 'merchant', module: CoinsModule },
       { path: 'merchant', module: FeeModule },
+      { path: 'merchant', module: CardsModule },
     ]),
     ProductsModule,
     StoresModule,
@@ -63,6 +65,7 @@ import { FeeModule } from './fee/fee.module';
     BanksModule,
     CoinsModule,
     FeeModule,
+    CardsModule,
   ],
   providers: [],
   exports: [],

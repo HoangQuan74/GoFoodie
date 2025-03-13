@@ -1,35 +1,33 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, NotFoundException, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, UseGuards } from '@nestjs/common';
 import { CardsService } from './cards.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
-import { AuthGuard } from '../auth/auth.guard';
-import { ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
-import { EPaymentMethod } from 'src/common/enums';
+import { CurrentStore } from 'src/common/decorators/current-store.decorator';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('cards')
-@ApiTags('Cards')
 @UseGuards(AuthGuard)
 export class CardsController {
   constructor(private readonly cardsService: CardsService) {}
 
   @Post()
-  create(@Body() createCardDto: CreateCardDto, @CurrentUser() user: JwtPayload) {
-    return this.cardsService.save({ ...createCardDto, driverId: user.id });
+  create(@Body() createCardDto: CreateCardDto, @CurrentStore() storeId: number) {
+    return this.cardsService.save({ ...createCardDto, storeId });
   }
 
   @Get()
-  find(@CurrentUser() user: JwtPayload) {
+  find(@CurrentUser() user: JwtPayload, @CurrentStore() storeId: number) {
     return this.cardsService.find({
       select: ['id', 'cardNumber', 'cardHolder', 'expiryDate'],
-      where: { driverId: user.id },
+      where: { storeId },
     });
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    const card = await this.cardsService.findOne({ where: { id: +id, driverId: user.id } });
+  async findOne(@Param('id') id: string, @CurrentStore() storeId: number) {
+    const card = await this.cardsService.findOne({ where: { id: +id, storeId } });
     if (!card) throw new NotFoundException();
 
     return card;
