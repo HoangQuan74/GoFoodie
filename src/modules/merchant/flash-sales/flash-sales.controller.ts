@@ -174,13 +174,33 @@ export class FlashSalesController {
 
   @Get(':id')
   async findOne(@Param('id') id: number) {
-    const flashSale = await this.flashSalesService.findOne({
-      where: { id: id },
-      relations: ['timeFrame'],
-    });
-    if (!flashSale) throw new NotFoundException();
+    const { raw, entities } = await this.flashSalesService
+      .createQueryBuilder('flashSale')
+      .addSelect(`MAX("flashSaleProduct"."limit_quantity")`, 'maxLimitQuantity')
+      .addSelect(`MIN("flashSaleProduct"."limit_quantity")`, 'minLimitQuantity')
+      .addSelect(`MAX("flashSaleProduct"."product_quantity")`, 'maxProductQuantity')
+      .addSelect(`MIN("flashSaleProduct"."product_quantity")`, 'minProductQuantity')
+      .addSelect(`MIN("flashSaleProduct"."discount")`, 'minDiscount')
+      .addSelect(`MAX("flashSaleProduct"."discount")`, 'maxDiscount')
+      .addSelect(`MAX("flashSaleProduct"."price")`, 'maxPrice')
+      .where('flashSale.id = :id', { id })
+      .innerJoinAndSelect('flashSale.timeFrame', 'timeFrame')
+      .leftJoin('flashSale.products', 'flashSaleProduct')
+      .groupBy('flashSale.id')
+      .addGroupBy('timeFrame.id')
+      .getRawAndEntities();
 
-    return flashSale;
+    if (!entities.length) throw new NotFoundException();
+
+    return {
+      ...entities[0],
+      minLimitQuantity: raw[0].minLimitQuantity,
+      maxLimitQuantity: raw[0].maxLimitQuantity,
+      maxProductQuantity: raw[0].maxProductQuantity,
+      minProductQuantity: raw[0].minProductQuantity,
+      minDiscount: raw[0].minDiscount,
+      maxDiscount: raw[0].maxDiscount,
+    };
   }
 
   @Delete(':id')
