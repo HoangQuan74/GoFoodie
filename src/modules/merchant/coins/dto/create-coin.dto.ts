@@ -1,16 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsEnum,
-  IsNumber,
-  IsNumberString,
-  IsOptional,
-  IsString,
-  IsUrl,
-  Max,
-  MaxLength,
-  Min,
-  MinLength,
-} from 'class-validator';
+import { IsEnum, IsNumber, IsNumberString, IsOptional, IsUrl, Max, MaxLength, Min, MinLength } from 'class-validator';
 import { EPaymentMethod } from 'src/common/enums';
 
 export class CreateCoinDto {

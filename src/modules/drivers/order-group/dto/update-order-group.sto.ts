@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsArray, ValidateNested, IsObject, IsInt, Min, IsNumber, IsEnum } from 'class-validator';
+import { IsArray, ValidateNested, IsNumber, IsEnum } from 'class-validator';
 import { EUserType } from 'src/common/enums';
 
 export class UpdateOrderGroupDto {

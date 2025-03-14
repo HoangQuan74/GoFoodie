@@ -9,9 +9,7 @@ import { ReviewTemplatesModule } from './review-templates/review-templates.modul
 import { ReviewsModule } from './reviews/reviews.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { RouterModule } from '@nestjs/core';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductsModule } from './products/products.module';
-import { ClientEntity } from 'src/database/entities/client.entity';
 import { ProductCategoriesModule } from './product-categories/product-categories.module';
 import { CartsModule } from './carts/carts.module';
 import { CoinsModule } from './coins/coins.module';

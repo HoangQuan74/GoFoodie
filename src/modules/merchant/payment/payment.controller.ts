@@ -1,6 +1,5 @@
 import { Controller, Get, Post, Body, UseGuards, Param } from '@nestjs/common';
 import { PaymentService } from './payment.service';
-import { CreateDepositDto } from './dto/create-deposit.dto';
 import { CurrentStore } from 'src/common/decorators/current-store.decorator';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiTags } from '@nestjs/swagger';

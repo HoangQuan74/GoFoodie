@@ -134,6 +134,13 @@ export class PaymentService {
       }
 
       await this.paymentCommonService.createDisbursement({ ...data, description, requestId: invoiceNo });
+
+      setTimeout(() => {
+        this.paymentCommonService.getManualResult(invoiceNo).then((result) => {
+          this.paymentCommonService.handleIPN9Pay(result);
+        });
+      }, 30000);
+
       return manager.save(newTransaction);
     });
   }

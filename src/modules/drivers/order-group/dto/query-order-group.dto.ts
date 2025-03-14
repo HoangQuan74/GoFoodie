@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsOptional } from 'class-validator';
 import { Transform } from 'class-transformer';
 
@@ -7,5 +7,5 @@ export class QueryOrderGroupDto {
   @IsOptional()
   @IsBoolean()
   @Transform(({ value }) => value === 'true' || value === true)
-  isConfirmByDriver: Boolean;
+  isConfirmByDriver: boolean;
 }
