@@ -160,6 +160,7 @@ export class CoinsService {
 
       await manager.save(transaction);
       const merchants = await this.merchantService.getMerchantsByStore(store);
+      console.log('merchants', merchants);
       this.eventGatewayService.handleUpdateStatusTransactionCoin(
         merchants.map((m) => m.id),
         transaction.id,
