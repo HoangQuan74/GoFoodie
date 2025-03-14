@@ -11,6 +11,7 @@ import { EXCEPTIONS } from 'src/common/constants';
 import { IPaymentResult } from 'src/common/interfaces/payment.interface';
 import { EventGatewayService } from 'src/events/event.gateway.service';
 import { MerchantsService } from '../merchants/merchants.service';
+import { PaymentService } from '../payment/payment.service';
 
 @Injectable()
 export class CoinsService {
@@ -26,6 +27,7 @@ export class CoinsService {
 
     private readonly eventGatewayService: EventGatewayService,
     private readonly paymentCommonService: PaymentCommonService,
+    private readonly paymentService: PaymentService,
     private readonly merchantService: MerchantsService,
     private dataSource: DataSource,
   ) {}
@@ -59,7 +61,7 @@ export class CoinsService {
     });
     if (!store) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
 
-    const invoiceNo = await this.paymentCommonService.createInvoiceNo(ETransactionType.RechargeCoin);
+    const invoiceNo = await this.paymentService.createInvoiceNoCoin(ETransactionType.RechargeCoin);
 
     if (method === EPaymentMethod.Wallet) {
       await this.handleWalletTopUp(storeId, amount, invoiceNo, store);

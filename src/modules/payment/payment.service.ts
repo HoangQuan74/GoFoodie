@@ -161,20 +161,4 @@ export class PaymentService {
 
     return result;
   }
-
-  async createInvoiceNo(
-    transactionType: ETransactionType,
-    userType: EUserType = EUserType.Merchant,
-    randomString?: string,
-  ) {
-    if (!randomString) randomString = generateRandomString(10, true);
-    const prefixUserType = Object.values(EUserType).indexOf(userType);
-    const prefixTransactionType = Object.values(ETransactionType).indexOf(transactionType);
-    const invoiceNo = `${prefixUserType}${prefixTransactionType}${randomString}`;
-
-    const checkInvoiceNo = await this.transactionHistoryRepository.existsBy({ invoiceNo });
-    if (!checkInvoiceNo) return invoiceNo;
-
-    return this.createInvoiceNo(transactionType);
-  }
 }

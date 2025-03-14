@@ -8,10 +8,11 @@ import { MerchantModule } from '../merchants/merchant.module';
 import { StoresModule } from '../stores/stores.module';
 import { FeeModule } from '../fee/fee.module';
 import { EventsModule } from 'src/events/events.module';
+import { StoreCoinHistoryEntity } from 'src/database/entities/store-coin-history.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([StoreTransactionHistoryEntity]),
+    TypeOrmModule.forFeature([StoreTransactionHistoryEntity, StoreCoinHistoryEntity]),
     PaymentComponentModule,
     MerchantModule,
     StoresModule,

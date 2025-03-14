@@ -22,12 +22,16 @@ import * as moment from 'moment-timezone';
 import { FeeService } from '../fee/fee.service';
 import { EventGatewayService } from 'src/events/event.gateway.service';
 import { ESocketEvent } from 'src/common/enums/socket.enum';
+import { StoreCoinHistoryEntity } from 'src/database/entities/store-coin-history.entity';
 
 @Injectable()
 export class PaymentService {
   constructor(
     @InjectRepository(StoreTransactionHistoryEntity)
     private readonly transactionHistoryRepository: Repository<StoreTransactionHistoryEntity>,
+
+    @InjectRepository(StoreCoinHistoryEntity)
+    private readonly storeCoinHistoryRepository: Repository<StoreCoinHistoryEntity>,
 
     private readonly paymentCommonService: PaymentCommonService,
     private readonly storeService: StoresService,
@@ -144,6 +148,18 @@ export class PaymentService {
     if (!checkInvoiceNo) return invoiceNo;
 
     return this.createInvoiceNo(transactionType);
+  }
+
+  async createInvoiceNoCoin(transactionType: ETransactionType, randomString?: string) {
+    if (!randomString) randomString = generateRandomString(10, true);
+    const prefixUserType = Object.values(EUserType).indexOf(EUserType.Merchant);
+    const prefixTransactionType = Object.values(ETransactionType).indexOf(transactionType);
+    const invoiceNo = `${prefixUserType}${prefixTransactionType}${randomString}`;
+
+    const checkInvoiceNo = await this.storeCoinHistoryRepository.existsBy({ invoiceNo });
+    if (!checkInvoiceNo) return invoiceNo;
+
+    return this.createInvoiceNoCoin(transactionType);
   }
 
   createQueryBuilder(alias: string) {
