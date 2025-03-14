@@ -20,6 +20,12 @@ export class FlashSaleEntity extends BaseEntity {
   @Column({ name: 'end_date', type: 'date' })
   endDate: Date;
 
+  @Column({ name: 'product_quantity', nullable: true, comment: 'Số lượng sản phẩm' })
+  productQuantity: number;
+
+  @Column({ name: 'limit_quantity', nullable: true, comment: 'Số lượng sản phẩm tối đa mỗi khách hàng được mua' })
+  limitQuantity: number;
+
   @Column({ default: true })
   status: boolean;
 
