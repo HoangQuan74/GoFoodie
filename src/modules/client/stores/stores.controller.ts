@@ -162,22 +162,9 @@ export class StoresController {
               'product.status as "status"',
               'product.approvalStatus as "approvalStatus"',
             ])
-            .leftJoin('product.productWorkingTimes', 'productWorkingTime', 'product.isNormalTime = false')
             .where('product.status = :productStatus')
-            .andWhere('product.approvalStatus = :productApprovalStatus')
-            .andWhere(
-              new Brackets((qb) => {
-                qb.where('product.isNormalTime = true');
-                qb.orWhere(
-                  new Brackets((qb) => {
-                    qb.where('productWorkingTime.dayOfWeek = :dayOfWeek', { dayOfWeek });
-                    qb.andWhere('productWorkingTime.openTime <= :currentTime', { currentTime });
-                    qb.andWhere('productWorkingTime.closeTime >= :currentTime', { currentTime });
-                  }),
-                );
-              }),
-            )
-            .limit(10);
+            .andWhere('product.approvalStatus = :productApprovalStatus');
+          // .limit(10);
 
           if (productCategoryCode) {
             subQueryBuilder.innerJoin('product.productCategory', 'category', 'category.code = :productCategoryCode');
@@ -192,7 +179,6 @@ export class StoresController {
       .andWhere('store.isPause = false')
       .andWhere('store.status = :storeStatus')
       .andWhere('store.approvalStatus = :storeApprovalStatus')
-      .setParameters({ dayOfWeek, currentTime })
       .setParameters({ storeStatus: EStoreStatus.Active, storeApprovalStatus: EStoreApprovalStatus.Approved })
       .setParameters({ productStatus: EProductStatus.Active, productApprovalStatus: EStoreApprovalStatus.Approved })
       .limit(limit)
