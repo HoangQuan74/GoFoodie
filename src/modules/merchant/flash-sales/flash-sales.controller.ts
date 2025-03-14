@@ -25,8 +25,9 @@ import * as moment from 'moment-timezone';
 import { TIMEZONE } from 'src/common/constants';
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentStore } from 'src/common/decorators/current-store.decorator';
-import { ProductsService } from '../products/products.service';
 import { Public } from 'src/common/decorators';
+import * as _ from 'lodash';
+import { ProductCategoriesService } from '../product-categories/product-categories.service';
 
 @Controller('flash-sales')
 @ApiTags('Flash Sales')
@@ -34,7 +35,7 @@ import { Public } from 'src/common/decorators';
 export class FlashSalesController {
   constructor(
     private readonly flashSalesService: FlashSalesService,
-    private readonly productsService: ProductsService,
+    private readonly productCategoriesService: ProductCategoriesService,
   ) {}
 
   @Post()
@@ -257,21 +258,23 @@ export class FlashSalesController {
   ) {
     const { limit, page } = query;
 
-    const queryBuilder = this.flashSalesService
-      .createQueryBuilderProducts('flashSaleProduct')
+    const queryBuilder = this.productCategoriesService
+      .createQueryBuilder('productCategory')
+      .select(['productCategory.id', 'productCategory.name'])
       .addSelect(['product.id', 'product.name', 'product.price', 'product.imageId', 'product.code'])
-      .addSelect(['productCategory.id', 'productCategory.name'])
-      .addSelect(['serviceGroup.id', 'serviceGroup.name'])
-      .leftJoin('flashSaleProduct.product', 'product')
-      .leftJoin('product.productCategory', 'productCategory')
-      .leftJoin('productCategory.serviceGroup', 'serviceGroup')
-      .where('flashSaleProduct.flashSaleId = :flashSaleId', { flashSaleId: id })
-      .andWhere('product.storeId = :storeId', { storeId: storeId })
+      .innerJoin('productCategory.products', 'product')
+      .innerJoinAndMapOne(
+        'product.flashSaleProduct',
+        'product.flashSaleProducts',
+        'flashSaleProduct',
+        'flashSaleProduct.flashSaleId = :flashSaleId',
+        { flashSaleId: id },
+      )
+      .where('product.storeId = :storeId', { storeId })
       .skip(limit * (page - 1))
       .take(limit);
 
     const [items, total] = await queryBuilder.getManyAndCount();
-
     return { items, total };
   }
 
