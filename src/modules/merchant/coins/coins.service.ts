@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StoreCoinHistoryEntity } from 'src/database/entities/store-coin-history.entity';
 import { DataSource, Repository } from 'typeorm';
@@ -25,9 +25,13 @@ export class CoinsService {
     @InjectRepository(StoreTransactionHistoryEntity)
     private readonly transactionHistoryRepository: Repository<StoreTransactionHistoryEntity>,
 
-    private readonly eventGatewayService: EventGatewayService,
+    @Inject(forwardRef(() => PaymentCommonService))
     private readonly paymentCommonService: PaymentCommonService,
+
+    @Inject(forwardRef(() => PaymentService))
     private readonly paymentService: PaymentService,
+
+    private readonly eventGatewayService: EventGatewayService,
     private readonly merchantService: MerchantsService,
     private dataSource: DataSource,
   ) {}

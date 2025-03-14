@@ -4,7 +4,7 @@ import {
   PAY_MERCHANT_KEY,
   PAY_SECRET_KEY,
 } from './../../common/constants/environment.constant';
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { createHash, createHmac } from 'crypto';
 import {
   IDisbursementParams,
@@ -18,12 +18,16 @@ import axios from 'axios';
 import { CheckAccountDto } from './dto/check-account.dto';
 import { CoinsService as MerchantCoinService } from '../merchant/coins/coins.service';
 import { PaymentService as MerchantPaymentService } from '../merchant/payment/payment.service';
+import { ETransactionStatus } from 'src/common/enums';
 
 @Injectable()
 export class PaymentService {
   constructor(
+    @Inject(forwardRef(() => MerchantPaymentService))
     private readonly merchantPaymentService: MerchantPaymentService,
-    // private readonly merchantCoinService: MerchantCoinService,
+
+    @Inject(forwardRef(() => MerchantCoinService))
+    private readonly merchantCoinService: MerchantCoinService,
   ) {}
 
   private createParameters(data: IPaymentParams) {
@@ -173,16 +177,16 @@ export class PaymentService {
       case '10':
       case '11':
         if (status === 5 || status === 16) {
-          // this.merchantPaymentService.updateTransactionStatus(invoiceNo, ETransactionStatus.Success, data);
+          this.merchantPaymentService.updateTransactionStatus(invoiceNo, ETransactionStatus.Success, data);
         } else if (status !== 2 && status !== 3) {
-          // this.merchantPaymentService.updateTransactionStatus(invoiceNo, ETransactionStatus.Failed, data);
+          this.merchantPaymentService.updateTransactionStatus(invoiceNo, ETransactionStatus.Failed, data);
         }
         break;
       case '13':
         if (status === 5 || status === 16) {
-          // this.merchantCoinService.updateTransactionStatus(invoiceNo, ETransactionStatus.Success, data);
+          this.merchantCoinService.updateTransactionStatus(invoiceNo, ETransactionStatus.Success, data);
         } else if (status !== 2 && status !== 3) {
-          // this.merchantCoinService.updateTransactionStatus(invoiceNo, ETransactionStatus.Failed, data);
+          this.merchantCoinService.updateTransactionStatus(invoiceNo, ETransactionStatus.Failed, data);
         }
         break;
       // Kết quả giao dịch nạp, rút tiền của driver

@@ -108,6 +108,14 @@ export class TasksService {
     }
   }
 
+  // @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, {
+  //   timeZone: 'Asia/Ho_Chi_Minh',
+  //   disabled: !CRONJOB,
+  // })
+  // async handlePendingTransactions() {
+    // await this.merchantPaymentService.handlePendingTransactions();
+  // }
+
   @Cron(CronExpression.EVERY_5_MINUTES, {
     timeZone: 'Asia/Ho_Chi_Minh',
     disabled: !CRONJOB,
