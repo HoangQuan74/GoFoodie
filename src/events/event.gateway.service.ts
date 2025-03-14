@@ -34,4 +34,8 @@ export class EventGatewayService {
   sendEventToUser(userId: number, userType: ERoleType, event: ESocketEvent, data: any) {
     this.eventsGateway.sendEventToUser(userId, userType, event, data);
   }
+
+  handleUpdateStatusTransactionCoin(merchantIds: number[] = [], storeTransactionCoinId: number) {
+    this.eventsGateway.handleUpdateStatusTransactionCoin(merchantIds, storeTransactionCoinId);
+  }
 }
