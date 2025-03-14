@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ClientCoinHistoryEntity } from 'src/database/entities/client-coin-history.entity';
-import { MoreThan, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ClientService } from '../clients/client.service';
 import { OrderService } from '../order/order.service';

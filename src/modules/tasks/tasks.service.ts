@@ -113,7 +113,7 @@ export class TasksService {
   //   disabled: !CRONJOB,
   // })
   // async handlePendingTransactions() {
-    // await this.merchantPaymentService.handlePendingTransactions();
+  // await this.merchantPaymentService.handlePendingTransactions();
   // }
 
   @Cron(CronExpression.EVERY_5_MINUTES, {

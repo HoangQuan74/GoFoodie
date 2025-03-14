@@ -26,7 +26,6 @@ import { TIMEZONE } from 'src/common/constants';
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentStore } from 'src/common/decorators/current-store.decorator';
 import { Public } from 'src/common/decorators';
-import * as _ from 'lodash';
 import { ProductCategoriesService } from '../product-categories/product-categories.service';
 
 @Controller('flash-sales')

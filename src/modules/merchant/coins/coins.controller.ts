@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { CoinsService } from './coins.service';
 import { CurrentStore } from 'src/common/decorators/current-store.decorator';
 import { CreateCoinDto, QueryCoinDto } from './dto';

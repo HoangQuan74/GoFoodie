@@ -27,7 +27,7 @@ export class OrderGroupService {
     private readonly orderCriteriaService: OrderCriteriaService,
   ) {}
 
-  async getCurrentOrderGroup(driverId: number, isConfirmByDriver: Boolean) {
+  async getCurrentOrderGroup(driverId: number, isConfirmByDriver: boolean) {
     const queryBuilder = this.orderGroupItemRepository
       .createQueryBuilder('orderGroupItem')
       .innerJoin('orderGroupItem.orderGroup', 'orderGroup')
@@ -255,7 +255,7 @@ export class OrderGroupService {
     }
   }
 
-  async getCardStoreAndClient(driverId: number, isConfirmByDriver: Boolean) {
+  async getCardStoreAndClient(driverId: number, isConfirmByDriver: boolean) {
     const queryBuilder = this.orderGroupItemRepository
       .createQueryBuilder('orderGroupItem')
       .leftJoin('orderGroupItem.orderGroup', 'orderGroup')
