@@ -9,7 +9,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { ERoleType } from 'src/common/enums';
+import { ERoleType, ETransactionStatus } from 'src/common/enums';
 import { ESocketEvent } from 'src/common/enums/socket.enum';
 import { JwtPayload } from 'src/common/interfaces';
 import { SocketUser } from 'src/common/interfaces/socket.interface';
@@ -174,10 +174,16 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
   }
 
-  async handleUpdateStatusTransactionCoin(merchantIds: number[] = [], storeTransactionId: number) {
+  async handleUpdateStatusTransactionCoin(
+    merchantIds: number[] = [],
+    storeTransactionId: number,
+    status: ETransactionStatus,
+  ) {
     merchantIds.forEach((merchantId) => {
       const socketId = this.connected.get(`${ERoleType.Merchant}-${merchantId}`);
-      socketId && this.server.to(socketId).emit(ESocketEvent.UpdateStatusTransactionCoin, { storeTransactionId });
+      console.log('socketId', socketId);
+      socketId &&
+        this.server.to(socketId).emit(ESocketEvent.UpdateStatusTransactionCoin, { storeTransactionId, status });
     });
   }
 
