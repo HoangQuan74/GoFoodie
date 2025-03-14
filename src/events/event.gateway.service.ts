@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { EventsGateway } from './events.gateway';
 import { OrderEntity } from '../database/entities/order.entity';
-import { ERoleType } from 'src/common/enums';
+import { ERoleType, ETransactionStatus } from 'src/common/enums';
 import { ESocketEvent } from 'src/common/enums/socket.enum';
 
 @Injectable()
@@ -35,7 +35,11 @@ export class EventGatewayService {
     this.eventsGateway.sendEventToUser(userId, userType, event, data);
   }
 
-  handleUpdateStatusTransactionCoin(merchantIds: number[] = [], storeTransactionCoinId: number) {
-    this.eventsGateway.handleUpdateStatusTransactionCoin(merchantIds, storeTransactionCoinId);
+  handleUpdateStatusTransactionCoin(
+    merchantIds: number[] = [],
+    storeTransactionCoinId: number,
+    status: ETransactionStatus,
+  ) {
+    this.eventsGateway.handleUpdateStatusTransactionCoin(merchantIds, storeTransactionCoinId, status);
   }
 }

@@ -164,6 +164,7 @@ export class CoinsService {
       this.eventGatewayService.handleUpdateStatusTransactionCoin(
         merchants.map((m) => m.id),
         transaction.id,
+        status,
       );
     });
   }
