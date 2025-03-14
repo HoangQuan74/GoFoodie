@@ -229,6 +229,26 @@ export class FlashSalesController {
     return this.flashSalesService.save({ ...flashSale, ...body });
   }
 
+  @Patch(':id/end')
+  async end(@Param('id') id: number, @CurrentStore() storeId: number) {
+    const currentDay = moment().tz(TIMEZONE).format('YYYY-MM-DD');
+    const yesterday = moment().tz(TIMEZONE).subtract(1, 'days').format('YYYY-MM-DD');
+    const currentTime = moment().tz(TIMEZONE).format('HH:mm:ss');
+
+    const flashSale = await this.flashSalesService
+      .createQueryBuilder('flashSale')
+      .innerJoinAndSelect('flashSale.timeFrame', 'timeFrame')
+      .where('flashSale.id = :id', { id })
+      .andWhere('flashSale.createdByStoreId = :storeId', { storeId })
+      .getOne();
+    if (!flashSale) throw new NotFoundException();
+
+    const isPassedTimeFrame = flashSale.timeFrame.endTime < currentTime;
+    const endDate = isPassedTimeFrame ? currentDay : yesterday;
+
+    return this.flashSalesService.save({ ...flashSale, endDate });
+  }
+
   @Get(':id/products')
   async getProducts(
     @Param('id') id: number,
