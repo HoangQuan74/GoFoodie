@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { EventsGateway } from './events.gateway';
 import { OrderEntity } from '../database/entities/order.entity';
 import { ERoleType } from 'src/common/enums';
+import { ESocketEvent } from 'src/common/enums/socket.enum';
 
 @Injectable()
 export class EventGatewayService {
@@ -28,5 +29,9 @@ export class EventGatewayService {
 
   handleNewOrderSearchingForDriver(order: OrderEntity) {
     this.eventsGateway.newOrderSearchingForDriver(order);
+  }
+
+  sendEventToUser(userId: number, userType: ERoleType, event: ESocketEvent, data: any) {
+    this.eventsGateway.sendEventToUser(userId, userType, event, data);
   }
 }

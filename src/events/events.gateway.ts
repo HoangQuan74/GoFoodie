@@ -202,6 +202,11 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  sendEventToUser(userId: number, userType: ERoleType, event: ESocketEvent, data: any) {
+    const socketId = this.connected.get(`${userType}-${userId}`);
+    socketId && this.server.to(socketId).emit(event, data);
+  }
+
   @SubscribeMessage('subscribeToOrder')
   handleSubscribeToOrder(client: Socket, orderId: number) {
     client.join(`order-${orderId}`);

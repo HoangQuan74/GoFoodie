@@ -18,10 +18,10 @@ export class PaymentController {
     private readonly storeService: StoresService,
   ) {}
 
-  @Post('deposit')
-  deposit(@Body() body: CreateDepositDto, @CurrentStore() storeId: number) {
-    return this.paymentService.deposit(body, storeId);
-  }
+  // @Post('deposit')
+  // deposit(@Body() body: CreateDepositDto, @CurrentStore() storeId: number) {
+  //   return this.paymentService.deposit(body, storeId);
+  // }
 
   @Post('withdraw')
   withdraw(@Body() body: CreateWithdrawDto, @CurrentStore() storeId: number) {
@@ -31,6 +31,11 @@ export class PaymentController {
   @Get('balance')
   getBalance(@CurrentStore() storeId: number) {
     return this.storeService.getBalance(storeId);
+  }
+
+  @Get('balance/pending')
+  getPendingBalance(@CurrentStore() storeId: number) {
+    return this.paymentService.getPendingBalance(storeId);
   }
 
   @Get('transactions')

@@ -5,7 +5,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { StoreTransactionHistoryEntity } from 'src/database/entities/store-transaction-history.entity';
 import { DataSource, LessThan, Repository } from 'typeorm';
 import { compareText, generateRandomString } from 'src/utils/bcrypt';
-import { EAccountType, EPaymentMethod, ETransactionStatus, ETransactionType, EUserType } from 'src/common/enums';
+import {
+  EAccountType,
+  EPaymentMethod,
+  ERoleType,
+  ETransactionStatus,
+  ETransactionType,
+  EUserType,
+} from 'src/common/enums';
 import { StoresService } from '../stores/stores.service';
 import { CreateWithdrawDto } from './dto/create-withdraw.dto';
 import { IPaymentResult } from 'src/common/interfaces/payment.interface';
@@ -13,6 +20,8 @@ import { StoreEntity } from 'src/database/entities/store.entity';
 import { EXCEPTIONS } from 'src/common/constants';
 import * as moment from 'moment-timezone';
 import { FeeService } from '../fee/fee.service';
+import { EventGatewayService } from 'src/events/event.gateway.service';
+import { ESocketEvent } from 'src/common/enums/socket.enum';
 
 @Injectable()
 export class PaymentService {
@@ -24,6 +33,7 @@ export class PaymentService {
     private readonly storeService: StoresService,
     private readonly feeService: FeeService,
     private dataSource: DataSource,
+    private eventGatewayService: EventGatewayService,
   ) {}
 
   async deposit(data: CreateDepositDto, storeId: number) {
@@ -52,13 +62,15 @@ export class PaymentService {
       });
       if (!transaction) return;
 
+      const store = await manager.findOne(StoreEntity, { where: { id: transaction.storeId } });
+      const { merchantId, balance } = store;
+
       if (status === ETransactionStatus.Success) {
         transaction.status = status;
         transaction.transactionId = result.payment_no;
 
         if (transaction.type === ETransactionType.Deposit) {
-          const store = await manager.findOne(StoreEntity, { where: { id: transaction.storeId } });
-          store.balance = Number(store.balance) + transaction.amount;
+          store.balance = Number(balance) + transaction.amount;
           await manager.save(store);
         }
       } else if (status === ETransactionStatus.Failed) {
@@ -67,12 +79,14 @@ export class PaymentService {
         transaction.transactionId = result.payment_no;
 
         if (transaction.type === ETransactionType.Withdraw) {
-          const store = await manager.findOne(StoreEntity, { where: { id: transaction.storeId } });
-          store.balance = Number(store.balance) + transaction.amount + transaction.fee;
+          store.balance = Number(balance) + transaction.amount + transaction.fee;
           await manager.save(store);
         }
       }
 
+      this.eventGatewayService.sendEventToUser(merchantId, ERoleType.Merchant, ESocketEvent.TransactionResult, {
+        transaction,
+      });
       await manager.save(transaction);
     });
   }
@@ -142,6 +156,17 @@ export class PaymentService {
   //     where: { status: ETransactionStatus.Pending, createdAt: LessThan(time) },
   //   });
   // }
+
+  async getPendingBalance(storeId: number) {
+    const transactions = await this.transactionHistoryRepository
+      .createQueryBuilder('transaction')
+      .select('SUM(transaction.amount + transaction.fee)', 'total')
+      .where('transaction.storeId = :storeId', { storeId })
+      .andWhere('transaction.status = :status', { status: ETransactionStatus.Pending })
+      .getRawOne();
+
+    return transactions.total || 0;
+  }
 
   // xử lí các giao dịch chưa được xác nhận sau 30 phút
   async handlePendingTransactions() {

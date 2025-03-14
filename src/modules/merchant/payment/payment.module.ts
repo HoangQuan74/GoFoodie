@@ -7,6 +7,7 @@ import { PaymentModule as PaymentComponentModule } from 'src/modules/payment/pay
 import { MerchantModule } from '../merchants/merchant.module';
 import { StoresModule } from '../stores/stores.module';
 import { FeeModule } from '../fee/fee.module';
+import { EventsModule } from 'src/events/events.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { FeeModule } from '../fee/fee.module';
     MerchantModule,
     StoresModule,
     FeeModule,
+    EventsModule,
   ],
   controllers: [PaymentController],
   providers: [PaymentService],
