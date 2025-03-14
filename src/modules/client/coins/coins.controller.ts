@@ -60,6 +60,7 @@ export class CoinsController {
       ])
       .where('history.clientId = :clientId', { clientId: user.id })
       .andWhere('history.expiredAt <= :expireDate', { expireDate })
+      .andWhere('history.expiredAt >= NOW()')
       .andWhere('history.amount > history.used')
       .andWhere('history.isRecovered = false')
       .andWhere('history.type = :type', { type: EClientCoinType.Review })
