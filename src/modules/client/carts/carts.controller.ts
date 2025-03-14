@@ -176,6 +176,43 @@ export class CartsController {
     return cartProducts;
   }
 
+  @Get('store/:storeId/validate')
+  async validateCart(@Param('storeId') storeId: string, @CurrentUser() user: JwtPayload) {
+    const cart = await this.cartsService
+      .createQueryBuilder('cart')
+      .addSelect(['product.id', 'product.name', 'product.price', 'product.imageId'])
+      .leftJoinAndSelect('cart.cartProducts', 'cartProducts')
+      .leftJoin('cartProducts.product', 'product')
+      .leftJoinAndSelect('cartProducts.cartProductOptions', 'cartProductOptions')
+      .leftJoinAndSelect('cartProductOptions.option', 'option', 'option.status = :optionStatus')
+      .leftJoinAndSelect('option.optionGroup', 'optionGroup', 'optionGroup.status = :optionGroupStatus')
+      .setParameter('optionStatus', EOptionStatus.Active)
+      .setParameter('optionGroupStatus', EOptionGroupStatus.Active)
+      .where('cart.clientId = :clientId', { clientId: user.id })
+      .andWhere('cart.storeId = :storeId', { storeId: +storeId })
+      .orderBy('cartProducts.id', 'ASC')
+      .getOne();
+
+    if (!cart) return null;
+
+    let { cartProducts = [] } = cart;
+
+    cartProducts.forEach((cp: any) => {
+      const options = cp.cartProductOptions.map((cpo) => cpo.option).filter((option) => option?.optionGroup);
+      const groupedOptions = _.groupBy(options, 'optionGroupId');
+
+      cp.cartProductOptions = Object.keys(groupedOptions).map((key) => ({
+        optionGroup: groupedOptions[key][0].optionGroup,
+        options: groupedOptions[key].map((option) => _.omit(option, ['optionGroup'])),
+      }));
+    });
+
+    const changedProducts = await this.cartsService.validateCart(cart.id);
+    cartProducts = cartProducts.filter((cp) => !changedProducts.find((product) => product.id === cp.id));
+
+    return { cartProducts, changedProducts };
+  }
+
   @Patch('cart-products/:id')
   async update(@Param('id') id: string, @Body() updateCartDto: UpdateCartDto, @CurrentUser() user: JwtPayload) {
     const cart = await this.cartsService.findOne({

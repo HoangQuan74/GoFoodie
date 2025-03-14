@@ -21,6 +21,9 @@ export class StoreTransactionHistoryEntity extends BaseEntity {
   @Column({ name: 'type', type: 'enum', enum: ETransactionType })
   type: ETransactionType;
 
+  @Column({ name: 'fee', type: 'int8', default: 0 })
+  fee: number;
+
   @Column({ name: 'invoice_no' })
   invoiceNo: string;
 
