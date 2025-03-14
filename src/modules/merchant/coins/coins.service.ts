@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StoreCoinHistoryEntity } from 'src/database/entities/store-coin-history.entity';
 import { DataSource, Repository } from 'typeorm';
@@ -11,6 +11,7 @@ import { EXCEPTIONS } from 'src/common/constants';
 import { IPaymentResult } from 'src/common/interfaces/payment.interface';
 import { EventGatewayService } from 'src/events/event.gateway.service';
 import { MerchantsService } from '../merchants/merchants.service';
+import { PaymentService } from '../payment/payment.service';
 
 @Injectable()
 export class CoinsService {
@@ -24,8 +25,13 @@ export class CoinsService {
     @InjectRepository(StoreTransactionHistoryEntity)
     private readonly transactionHistoryRepository: Repository<StoreTransactionHistoryEntity>,
 
-    private readonly eventGatewayService: EventGatewayService,
+    @Inject(forwardRef(() => PaymentCommonService))
     private readonly paymentCommonService: PaymentCommonService,
+
+    @Inject(forwardRef(() => PaymentService))
+    private readonly paymentService: PaymentService,
+
+    private readonly eventGatewayService: EventGatewayService,
     private readonly merchantService: MerchantsService,
     private dataSource: DataSource,
   ) {}
@@ -59,7 +65,7 @@ export class CoinsService {
     });
     if (!store) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
 
-    const invoiceNo = await this.paymentCommonService.createInvoiceNo(ETransactionType.RechargeCoin);
+    const invoiceNo = await this.paymentService.createInvoiceNoCoin(ETransactionType.RechargeCoin);
 
     if (method === EPaymentMethod.Wallet) {
       await this.handleWalletTopUp(storeId, amount, invoiceNo, store);
@@ -160,7 +166,6 @@ export class CoinsService {
 
       await manager.save(transaction);
       const merchants = await this.merchantService.getMerchantsByStore(store);
-      console.log('merchants', merchants);
       this.eventGatewayService.handleUpdateStatusTransactionCoin(
         merchants.map((m) => m.id),
         transaction.id,

@@ -3,7 +3,7 @@ import { PaymentService as PaymentCommonService } from 'src/modules/payment/paym
 import { CreateDepositDto } from './dto/create-deposit.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StoreTransactionHistoryEntity } from 'src/database/entities/store-transaction-history.entity';
-import { DataSource, LessThan, Repository } from 'typeorm';
+import { DataSource, In, LessThan, Repository } from 'typeorm';
 import { compareText, generateRandomString } from 'src/utils/bcrypt';
 import {
   EAccountType,
@@ -22,12 +22,16 @@ import * as moment from 'moment-timezone';
 import { FeeService } from '../fee/fee.service';
 import { EventGatewayService } from 'src/events/event.gateway.service';
 import { ESocketEvent } from 'src/common/enums/socket.enum';
+import { StoreCoinHistoryEntity } from 'src/database/entities/store-coin-history.entity';
 
 @Injectable()
 export class PaymentService {
   constructor(
     @InjectRepository(StoreTransactionHistoryEntity)
     private readonly transactionHistoryRepository: Repository<StoreTransactionHistoryEntity>,
+
+    @InjectRepository(StoreCoinHistoryEntity)
+    private readonly storeCoinHistoryRepository: Repository<StoreCoinHistoryEntity>,
 
     private readonly paymentCommonService: PaymentCommonService,
     private readonly storeService: StoresService,
@@ -146,6 +150,18 @@ export class PaymentService {
     return this.createInvoiceNo(transactionType);
   }
 
+  async createInvoiceNoCoin(transactionType: ETransactionType, randomString?: string) {
+    if (!randomString) randomString = generateRandomString(10, true);
+    const prefixUserType = Object.values(EUserType).indexOf(EUserType.Merchant);
+    const prefixTransactionType = Object.values(ETransactionType).indexOf(transactionType);
+    const invoiceNo = `${prefixUserType}${prefixTransactionType}${randomString}`;
+
+    const checkInvoiceNo = await this.storeCoinHistoryRepository.existsBy({ invoiceNo });
+    if (!checkInvoiceNo) return invoiceNo;
+
+    return this.createInvoiceNoCoin(transactionType);
+  }
+
   createQueryBuilder(alias: string) {
     return this.transactionHistoryRepository.createQueryBuilder(alias);
   }
@@ -171,36 +187,62 @@ export class PaymentService {
   // xử lí các giao dịch chưa được xác nhận sau 30 phút
   async handlePendingTransactions() {
     const time = moment().subtract(30, 'minutes').toDate();
-    const count = await this.transactionHistoryRepository.countBy({
+
+    const countStoreTransaction = await this.transactionHistoryRepository.countBy({
       status: ETransactionStatus.Pending,
       createdAt: LessThan(time),
     });
-    if (count === 0) return;
 
-    // chia batch 100 giao dịch
-    const batch = 100;
-    const pages = Math.ceil(count / batch);
+    if (countStoreTransaction > 0) {
+      // chia batch 100 giao dịch
+      const batch = 100;
+      const pages = Math.ceil(countStoreTransaction / batch);
 
-    this.dataSource.transaction(async (manager) => {
-      for (let i = 0; i < pages; i++) {
-        const transactions = await manager.find(StoreTransactionHistoryEntity, {
-          where: { status: ETransactionStatus.Pending, createdAt: LessThan(time) },
-          take: batch,
-          skip: i * batch,
-        });
+      this.dataSource.transaction(async (manager) => {
+        for (let i = 0; i < pages; i++) {
+          const transactions = await manager.find(StoreTransactionHistoryEntity, {
+            where: { status: ETransactionStatus.Pending, createdAt: LessThan(time) },
+            take: batch,
+            skip: i * batch,
+          });
 
-        for (const transaction of transactions) {
-          // const result = await this.paymentCommonService.getManualResult(transaction.invoiceNo);
-          // transaction.status = ETransactionStatus.Failed;
-          // transaction.errorMessage = 'Timeout';
-          // await manager.save(transaction);
-          // if (transaction.type === ETransactionType.Deposit) {
-          //   const store = await manager.findOne(StoreEntity, { where: { id: transaction.storeId } });
-          //   store.balance = Number(store.balance) - transaction.amount;
-          //   await manager.save(store);
-          // }
+          for (const transaction of transactions) {
+            const result = await this.paymentCommonService.getManualResult(transaction.invoiceNo);
+            await this.paymentCommonService.handleIPN9Pay(result);
+          }
         }
-      }
+      });
+    }
+
+    const countStoreCoinTransaction = await this.storeCoinHistoryRepository.countBy({
+      status: ETransactionStatus.Pending,
+      createdAt: LessThan(time),
+      method: In([EPaymentMethod.AtmCard, EPaymentMethod.Collection, EPaymentMethod.CreditCard]),
     });
+
+    if (countStoreCoinTransaction > 0) {
+      // chia batch 100 giao dịch
+      const batch = 100;
+      const pages = Math.ceil(countStoreCoinTransaction / batch);
+
+      this.dataSource.transaction(async (manager) => {
+        for (let i = 0; i < pages; i++) {
+          const transactions = await manager.find(StoreCoinHistoryEntity, {
+            where: {
+              status: ETransactionStatus.Pending,
+              createdAt: LessThan(time),
+              method: In([EPaymentMethod.AtmCard, EPaymentMethod.Collection, EPaymentMethod.CreditCard]),
+            },
+            take: batch,
+            skip: i * batch,
+          });
+
+          for (const transaction of transactions) {
+            const result = await this.paymentCommonService.getManualResult(transaction.invoiceNo);
+            await this.paymentCommonService.handleIPN9Pay(result);
+          }
+        }
+      });
+    }
   }
 }

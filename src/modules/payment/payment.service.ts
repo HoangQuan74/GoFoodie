@@ -4,7 +4,7 @@ import {
   PAY_MERCHANT_KEY,
   PAY_SECRET_KEY,
 } from './../../common/constants/environment.constant';
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { createHash, createHmac } from 'crypto';
 import {
   IDisbursementParams,
@@ -16,17 +16,18 @@ import * as moment from 'moment';
 import { IPN9PayDto } from './dto/ipn-9pay.dto';
 import axios from 'axios';
 import { CheckAccountDto } from './dto/check-account.dto';
-import { generateRandomString } from 'src/utils/bcrypt';
-import { ETransactionType, EUserType } from 'src/common/enums';
-import { StoreTransactionHistoryEntity } from 'src/database/entities/store-transaction-history.entity';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+import { CoinsService as MerchantCoinService } from '../merchant/coins/coins.service';
+import { PaymentService as MerchantPaymentService } from '../merchant/payment/payment.service';
+import { ETransactionStatus } from 'src/common/enums';
 
 @Injectable()
 export class PaymentService {
   constructor(
-    @InjectRepository(StoreTransactionHistoryEntity)
-    private readonly transactionHistoryRepository: Repository<StoreTransactionHistoryEntity>,
+    @Inject(forwardRef(() => MerchantPaymentService))
+    private readonly merchantPaymentService: MerchantPaymentService,
+
+    @Inject(forwardRef(() => MerchantCoinService))
+    private readonly merchantCoinService: MerchantCoinService,
   ) {}
 
   private createParameters(data: IPaymentParams) {
@@ -162,19 +163,37 @@ export class PaymentService {
     return result;
   }
 
-  async createInvoiceNo(
-    transactionType: ETransactionType,
-    userType: EUserType = EUserType.Merchant,
-    randomString?: string,
-  ) {
-    if (!randomString) randomString = generateRandomString(10, true);
-    const prefixUserType = Object.values(EUserType).indexOf(userType);
-    const prefixTransactionType = Object.values(ETransactionType).indexOf(transactionType);
-    const invoiceNo = `${prefixUserType}${prefixTransactionType}${randomString}`;
+  async handleIPN9Pay(data: IPaymentResult) {
+    const { invoice_no: invoiceNo, status } = data;
+    console.log('IPN 9Pay', data);
+    const key = invoiceNo.slice(0, 2);
 
-    const checkInvoiceNo = await this.transactionHistoryRepository.existsBy({ invoiceNo });
-    if (!checkInvoiceNo) return invoiceNo;
+    switch (key) {
+      case 'deposit':
+        // code here
+        break;
 
-    return this.createInvoiceNo(transactionType);
+      // Kết quả giao dịch nạp, rút tiền của merchant
+      case '10':
+      case '11':
+        if (status === 5 || status === 16) {
+          this.merchantPaymentService.updateTransactionStatus(invoiceNo, ETransactionStatus.Success, data);
+        } else if (status !== 2 && status !== 3) {
+          this.merchantPaymentService.updateTransactionStatus(invoiceNo, ETransactionStatus.Failed, data);
+        }
+        break;
+      case '13':
+        if (status === 5 || status === 16) {
+          this.merchantCoinService.updateTransactionStatus(invoiceNo, ETransactionStatus.Success, data);
+        } else if (status !== 2 && status !== 3) {
+          this.merchantCoinService.updateTransactionStatus(invoiceNo, ETransactionStatus.Failed, data);
+        }
+        break;
+      // Kết quả giao dịch nạp, rút tiền của driver
+      case '20':
+      case '21':
+        // code here
+        break;
+    }
   }
 }

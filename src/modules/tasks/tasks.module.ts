@@ -16,7 +16,7 @@ import { CoinsModule } from '../client/coins/coins.module';
     TypeOrmModule.forFeature([FileEntity, NoticeEntity, MerchantEntity, DriverEntity, OrderEntity, TitleConfigEntity]),
     MailHistoriesModule,
     MerchantPaymentModule,
-    CoinsModule,
+    CoinsModule,    
   ],
   controllers: [],
   providers: [TasksService],

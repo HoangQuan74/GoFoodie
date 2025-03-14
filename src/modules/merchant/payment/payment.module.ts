@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { PaymentController } from './payment.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -8,11 +8,12 @@ import { MerchantModule } from '../merchants/merchant.module';
 import { StoresModule } from '../stores/stores.module';
 import { FeeModule } from '../fee/fee.module';
 import { EventsModule } from 'src/events/events.module';
+import { StoreCoinHistoryEntity } from 'src/database/entities/store-coin-history.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([StoreTransactionHistoryEntity]),
-    PaymentComponentModule,
+    TypeOrmModule.forFeature([StoreTransactionHistoryEntity, StoreCoinHistoryEntity]),
+    forwardRef(() => PaymentComponentModule),
     MerchantModule,
     StoresModule,
     FeeModule,
