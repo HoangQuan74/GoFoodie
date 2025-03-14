@@ -10,6 +10,7 @@ import { ProductOptionGroupEntity } from './product-option-group.entity';
 import { EProductApprovalStatus } from 'src/common/enums/product.enum';
 import { OrderItemEntity } from './order-item.entity';
 import { VoucherEntity } from './voucher.entity';
+import { FlashSaleProductEntity } from './flash-sale-product.entity';
 
 @Entity('products')
 export class ProductEntity extends BaseEntity {
@@ -77,6 +78,9 @@ export class ProductEntity extends BaseEntity {
 
   @ManyToMany(() => VoucherEntity, (voucher) => voucher.products)
   vouchers: VoucherEntity[];
+
+  @OneToMany(() => FlashSaleProductEntity, (flashSaleProduct) => flashSaleProduct.product)
+  flashSaleProducts: FlashSaleProductEntity[];
 
   sold: number = 0;
   liked: number = 0;
