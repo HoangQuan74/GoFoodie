@@ -43,17 +43,15 @@ export class FlashSalesController {
   }
 
   @Get('time-frames')
-  @Public()
   @ApiOperation({ summary: 'Lấy danh sách khung giờ flash sale theo ngày' })
-  getTimeFrames(@Query('date') date: Date) {
-    const storeId = 10009;
-
+  getTimeFrames(@Query('date') date: Date, @CurrentStore() storeId: number) {
     const queryBuilder = this.flashSalesService
       .createQueryBuilderTimeFrames('timeFrame')
       .orderBy('timeFrame.startTime', 'ASC');
-
+    console.log({ date });
     if (date) {
       const dateFormatted = moment(date).tz(TIMEZONE).format('YYYY-MM-DD');
+      console.log(dateFormatted);
       queryBuilder
         .leftJoin(
           'timeFrame.flashSales',
