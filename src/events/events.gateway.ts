@@ -181,7 +181,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     merchantIds.forEach((merchantId) => {
       const socketId = this.connected.get(`${ERoleType.Merchant}-${merchantId}`);
-      console.log('socketId', socketId);
       socketId &&
         this.server.to(socketId).emit(ESocketEvent.UpdateStatusTransactionCoin, { storeTransactionId, status });
     });
