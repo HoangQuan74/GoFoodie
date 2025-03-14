@@ -74,7 +74,7 @@ export class PaymentService {
         transaction.transactionId = result.payment_no;
 
         if (transaction.type === ETransactionType.Deposit) {
-          store.balance = Number(balance) + transaction.amount;
+          store.balance = Number(balance) + Number(transaction.amount);
           await manager.save(store);
         }
       } else if (status === ETransactionStatus.Failed) {
@@ -83,7 +83,7 @@ export class PaymentService {
         transaction.transactionId = result.payment_no;
 
         if (transaction.type === ETransactionType.Withdraw) {
-          store.balance = Number(balance) + transaction.amount + transaction.fee;
+          store.balance = Number(balance) + Number(transaction.amount) + Number(transaction.fee);
           await manager.save(store);
         }
       }
@@ -139,7 +139,7 @@ export class PaymentService {
         this.paymentCommonService.getManualResult(invoiceNo).then((result) => {
           this.paymentCommonService.handleIPN9Pay(result);
         });
-      }, 30000);
+      }, 5000);
 
       return manager.save(newTransaction);
     });
