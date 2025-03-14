@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { MerchantOtpEntity } from 'src/database/entities/merchant-otp.entity';
 import { EAdminOtpType } from 'src/common/enums';
 import { OTP_EXPIRATION } from 'src/common/constants';
+import { StoreEntity } from 'src/database/entities/store.entity';
 
 @Injectable()
 export class MerchantsService {
@@ -50,5 +51,22 @@ export class MerchantsService {
       where: { merchantId, otp, expiredAt: MoreThan(new Date()), isUsed: false },
     });
     return !!otpEntity;
+  }
+
+  async getMerchantsByStore(store: StoreEntity): Promise<MerchantEntity[]> {
+    const merchants = await this.merchantsRepository.find({
+      where: [
+        {
+          storeId: store.id,
+        },
+        {
+          id: store.merchantId,
+        },
+      ],
+      select: {
+        id: true,
+      },
+    });
+    return merchants;
   }
 }

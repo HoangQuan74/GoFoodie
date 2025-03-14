@@ -174,6 +174,13 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
   }
 
+  async handleUpdateStatusTransactionCoin(merchantIds: number[] = [], storeTransactionId: number) {
+    merchantIds.forEach((merchantId) => {
+      const socketId = this.connected.get(`${ERoleType.Merchant}-${merchantId}`);
+      socketId && this.server.to(socketId).emit(ESocketEvent.UpdateStatusTransactionCoin, { storeTransactionId });
+    });
+  }
+
   @SubscribeMessage('driverLocationUpdate')
   async handleDriverLocationUpdate(client: Socket, location: string) {
     if (!location) return;

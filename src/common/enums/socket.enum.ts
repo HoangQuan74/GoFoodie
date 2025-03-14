@@ -7,4 +7,5 @@ export enum ESocketEvent {
   RoleUpdated = 'roleUpdated',
   NewNotification = 'newNotification',
   OrderSearchingForDriver = 'orderSearchingForDriver',
+  UpdateStatusTransactionCoin = 'updateStatusTransactionCoin',
 }

@@ -29,4 +29,8 @@ export class EventGatewayService {
   handleNewOrderSearchingForDriver(order: OrderEntity) {
     this.eventsGateway.newOrderSearchingForDriver(order);
   }
+
+  handleUpdateStatusTransactionCoin(merchantIds: number[] = [], storeTransactionCoinId: number) {
+    this.eventsGateway.handleUpdateStatusTransactionCoin(merchantIds, storeTransactionCoinId);
+  }
 }

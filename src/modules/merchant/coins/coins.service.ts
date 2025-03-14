@@ -9,6 +9,8 @@ import { PaymentService as PaymentCommonService } from 'src/modules/payment/paym
 import { StoreTransactionHistoryEntity } from 'src/database/entities/store-transaction-history.entity';
 import { EXCEPTIONS } from 'src/common/constants';
 import { IPaymentResult } from 'src/common/interfaces/payment.interface';
+import { EventGatewayService } from 'src/events/event.gateway.service';
+import { MerchantsService } from '../merchants/merchants.service';
 
 @Injectable()
 export class CoinsService {
@@ -22,7 +24,9 @@ export class CoinsService {
     @InjectRepository(StoreTransactionHistoryEntity)
     private readonly transactionHistoryRepository: Repository<StoreTransactionHistoryEntity>,
 
+    private readonly eventGatewayService: EventGatewayService,
     private readonly paymentCommonService: PaymentCommonService,
+    private readonly merchantService: MerchantsService,
     private dataSource: DataSource,
   ) {}
 
@@ -138,6 +142,10 @@ export class CoinsService {
         where: { invoiceNo, status: ETransactionStatus.Pending },
       });
       if (!transaction) return;
+      const store = await this.storeRepository.findOne({
+        where: { id: transaction.storeId },
+        select: { id: true, merchantId: true },
+      });
 
       transaction.status = status;
       transaction.transactionId = result.payment_no;
@@ -151,6 +159,11 @@ export class CoinsService {
       }
 
       await manager.save(transaction);
+      const merchants = await this.merchantService.getMerchantsByStore(store);
+      this.eventGatewayService.handleUpdateStatusTransactionCoin(
+        merchants.map((m) => m.id),
+        transaction.id,
+      );
     });
   }
 
