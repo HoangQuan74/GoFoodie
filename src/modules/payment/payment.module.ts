@@ -8,9 +8,8 @@ import { CoinsModule as MerchantCoinModule } from '../merchant/coins/coins.modul
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([StoreTransactionHistoryEntity]),
     forwardRef(() => MerchantPaymentModule),
-    forwardRef(() => MerchantCoinModule),
+    // forwardRef(() => MerchantCoinModule),
   ],
   controllers: [PaymentController],
   providers: [PaymentService],

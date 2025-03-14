@@ -206,15 +206,8 @@ export class PaymentService {
         });
 
         for (const transaction of transactions) {
-          // const result = await this.paymentCommonService.getManualResult(transaction.invoiceNo);
-          // transaction.status = ETransactionStatus.Failed;
-          // transaction.errorMessage = 'Timeout';
-          // await manager.save(transaction);
-          // if (transaction.type === ETransactionType.Deposit) {
-          //   const store = await manager.findOne(StoreEntity, { where: { id: transaction.storeId } });
-          //   store.balance = Number(store.balance) - transaction.amount;
-          //   await manager.save(store);
-          // }
+          const result = await this.paymentCommonService.getManualResult(transaction.invoiceNo);
+          await this.paymentCommonService.handleIPN9Pay(result);
         }
       }
     });

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { PaymentController } from './payment.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -13,7 +13,7 @@ import { StoreCoinHistoryEntity } from 'src/database/entities/store-coin-history
 @Module({
   imports: [
     TypeOrmModule.forFeature([StoreTransactionHistoryEntity, StoreCoinHistoryEntity]),
-    PaymentComponentModule,
+    forwardRef(() => PaymentComponentModule),
     MerchantModule,
     StoresModule,
     FeeModule,
