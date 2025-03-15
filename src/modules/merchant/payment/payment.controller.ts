@@ -54,6 +54,11 @@ export class PaymentController {
     endDate && queryBuilder.andWhere('transaction.createdAt <= :endDate', { endDate });
 
     const [items, total] = await queryBuilder.getManyAndCount();
+
+    items.forEach((item) => {
+      item.bankId = null;
+    });
+
     return { items, total };
   }
 
