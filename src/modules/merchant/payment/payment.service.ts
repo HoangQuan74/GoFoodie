@@ -3,7 +3,7 @@ import { PaymentService as PaymentCommonService } from 'src/modules/payment/paym
 import { CreateDepositDto } from './dto/create-deposit.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StoreTransactionHistoryEntity } from 'src/database/entities/store-transaction-history.entity';
-import { DataSource, In, LessThan, Repository } from 'typeorm';
+import { DataSource, ILike, In, LessThan, Repository } from 'typeorm';
 import { compareText, generateRandomString } from 'src/utils/bcrypt';
 import {
   EAccountType,
@@ -23,6 +23,7 @@ import { FeeService } from '../fee/fee.service';
 import { EventGatewayService } from 'src/events/event.gateway.service';
 import { ESocketEvent } from 'src/common/enums/socket.enum';
 import { StoreCoinHistoryEntity } from 'src/database/entities/store-coin-history.entity';
+import { BankEntity } from 'src/database/entities/bank.entity';
 
 @Injectable()
 export class PaymentService {
@@ -110,6 +111,10 @@ export class PaymentService {
       if (!store) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
       if (store.pin && store.pin !== pin) throw new BadRequestException(EXCEPTIONS.PIN_INCORRECT);
       if (store.balance < amount) throw new BadRequestException(EXCEPTIONS.NOT_ENOUGH_BALANCE);
+
+      const bank = await manager.findOne(BankEntity, { where: { code: ILike(data.bankCode) } });
+      if (!bank) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
+
       const fee = await this.feeService.getTransactionFee();
       const feeAmount = Math.floor((amount * fee) / 100);
 
@@ -124,6 +129,7 @@ export class PaymentService {
       newTransaction.type = ETransactionType.Withdraw;
       newTransaction.balance = store.balance;
       newTransaction.fee = feeAmount;
+      newTransaction.bankId = bank.id;
       newTransaction.bankAccount = data.accountNo;
       newTransaction.bankAccountName = data.accountName;
 

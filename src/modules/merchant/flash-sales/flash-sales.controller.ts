@@ -25,7 +25,6 @@ import * as moment from 'moment-timezone';
 import { TIMEZONE } from 'src/common/constants';
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentStore } from 'src/common/decorators/current-store.decorator';
-import { Public } from 'src/common/decorators';
 import { ProductCategoriesService } from '../product-categories/product-categories.service';
 
 @Controller('flash-sales')
@@ -48,10 +47,10 @@ export class FlashSalesController {
     const queryBuilder = this.flashSalesService
       .createQueryBuilderTimeFrames('timeFrame')
       .orderBy('timeFrame.startTime', 'ASC');
-    console.log({ date });
+
     if (date) {
       const dateFormatted = moment(date).tz(TIMEZONE).format('YYYY-MM-DD');
-      console.log(dateFormatted);
+
       queryBuilder
         .leftJoin(
           'timeFrame.flashSales',
