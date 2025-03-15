@@ -61,6 +61,7 @@ export class PaymentController {
   getTransaction(@CurrentStore() storeId: number, @Param('id') id: number) {
     return this.paymentService
       .createQueryBuilder('transaction')
+      .innerJoinAndSelect('transaction.bank', 'bank')
       .where('transaction.storeId = :storeId', { storeId })
       .andWhere('transaction.id = :id', { id })
       .getOne();
