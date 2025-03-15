@@ -76,6 +76,7 @@ export class FlashSalesController {
         'flashSale.name',
         'flashSale.startDate',
         'flashSale.endDate',
+        'flashSale.status',
         'timeFrame.startTime',
         'timeFrame.endTime',
       ])
