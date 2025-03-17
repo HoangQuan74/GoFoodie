@@ -65,6 +65,8 @@ export class CoinsService {
     });
     if (!store) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
 
+    if (store.pin && store.pin !== pin) throw new BadRequestException(EXCEPTIONS.PIN_INCORRECT);
+
     const invoiceNo = await this.paymentService.createInvoiceNoCoin(ETransactionType.RechargeCoin);
 
     if (method === EPaymentMethod.Wallet) {
@@ -73,8 +75,6 @@ export class CoinsService {
       await this.saveCoinHistory(storeId, data, invoiceNo, store, ETransactionStatus.Success);
       return true;
     }
-
-    if (store.pin && store.pin !== pin) throw new BadRequestException(EXCEPTIONS.PIN_INCORRECT);
 
     await this.saveCoinHistory(storeId, data, invoiceNo, store);
     return this.createPaymentUrl(amount, returnUrl, method, invoiceNo);
