@@ -49,6 +49,8 @@ export class FlashSalesController {
       .orderBy('timeFrame.startTime', 'ASC');
 
     if (date) {
+      const currentDay = moment().tz(TIMEZONE).format('YYYY-MM-DD');
+      const currentTime = moment().tz(TIMEZONE).format('HH:mm:ss');
       const dateFormatted = moment(date).tz(TIMEZONE).format('YYYY-MM-DD');
 
       queryBuilder
@@ -59,6 +61,10 @@ export class FlashSalesController {
         )
         .where('flashSale.id IS NULL')
         .setParameters({ storeId, startDate: dateFormatted });
+
+      if (dateFormatted === currentDay) {
+        queryBuilder.andWhere('timeFrame.startTime > :currentTime', { currentTime });
+      }
     }
 
     return queryBuilder.getMany();
