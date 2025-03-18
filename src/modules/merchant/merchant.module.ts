@@ -23,6 +23,7 @@ import { BanksModule } from './banks/banks.module';
 import { CoinsModule } from './coins/coins.module';
 import { FeeModule } from './fee/fee.module';
 import { CardsModule } from './cards/cards.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { CardsModule } from './cards/cards.module';
     CoinsModule,
     FeeModule,
     CardsModule,
+    NotificationsModule,
   ],
   providers: [],
   exports: [],

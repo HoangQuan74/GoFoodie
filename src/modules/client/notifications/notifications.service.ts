@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ClientNotificationEntity } from 'src/database/entities/client-notification.entity';
-import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { FindManyOptions, FindOneOptions, FindOptionsWhere, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FcmService } from 'src/modules/fcm/fcm.service';
 import { ClientService } from '../clients/client.service';
@@ -31,6 +31,10 @@ export class NotificationsService {
     }
 
     return this.notificationRepository.save(entity);
+  }
+
+  async update(criteria: FindOptionsWhere<ClientNotificationEntity>, data: Partial<ClientNotificationEntity>) {
+    return this.notificationRepository.update(criteria, data);
   }
 
   async find(options?: FindManyOptions<ClientNotificationEntity>) {

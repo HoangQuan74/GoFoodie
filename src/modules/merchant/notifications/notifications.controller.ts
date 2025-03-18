@@ -1,11 +1,8 @@
-import { Controller, Get, Patch, Param, UseGuards, Query, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, NotFoundException } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
-import { AuthGuard } from '../auth/auth.guard';
-import { CurrentUser } from 'src/common/decorators';
-import { JwtPayload } from 'src/common/interfaces';
 import { QueryNotificationDto } from './dto/query-notification.dto';
-import * as _ from 'lodash';
-import * as moment from 'moment-timezone';
+import { CurrentStore } from 'src/common/decorators/current-store.decorator';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('notifications')
 @UseGuards(AuthGuard)
@@ -13,12 +10,12 @@ export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
   @Get()
-  async find(@Query() query: QueryNotificationDto, @CurrentUser() user: JwtPayload) {
+  async find(@Query() query: QueryNotificationDto, @CurrentStore() storeId: number) {
     const { limit, page, type, isRead } = query;
 
     const queryBuilder = this.notificationsService
       .createQueryBuilder('notification')
-      .where('notification.clientId = :clientId', { clientId: user.id })
+      .where('notification.storeId = :storeId', { storeId })
       .limit(limit)
       .offset((page - 1) * limit)
       .orderBy('notification.id', 'DESC');
@@ -32,27 +29,24 @@ export class NotificationsController {
 
     const [items, total] = await queryBuilder.getManyAndCount();
 
-    const grouped = _.groupBy(items, (item) => moment(item.createdAt).format('YYYY-MM-DD'));
-    const itemsGrouped = Object.keys(grouped).map((key) => ({ date: key, items: grouped[key] }));
-
-    return { items: itemsGrouped, total, unread };
+    return { items, total, unread };
   }
 
   @Patch(':id/read')
-  async markAsRead(@Param('id') id: number, @CurrentUser() user: JwtPayload) {
-    const notification = await this.notificationsService.findOne({ where: { id, clientId: user.id } });
+  async markAsRead(@Param('id') id: number, @CurrentStore() storeId: number) {
+    const notification = await this.notificationsService.findOne({ where: { id, storeId } });
     if (!notification) throw new NotFoundException();
 
-    return this.notificationsService.update({ id, clientId: user.id }, { readAt: new Date() });
+    return this.notificationsService.update({ id, storeId }, { readAt: new Date() });
   }
 
   @Patch('read-all')
-  async markAllAsRead(@CurrentUser() user: JwtPayload, @Query('type') type?: string) {
+  async markAllAsRead(@CurrentStore() storeId: number, @Query('type') type?: string) {
     const queryBuilder = this.notificationsService
       .createQueryBuilder()
       .update()
       .set({ readAt: new Date() })
-      .where('clientId = :clientId', { clientId: user.id })
+      .where('storeId = :storeId', { storeId })
       .andWhere('readAt IS NULL');
 
     type && queryBuilder.andWhere('type = :type', { type });
