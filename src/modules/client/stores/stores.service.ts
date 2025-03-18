@@ -1,4 +1,3 @@
-import { StoreAvailableView } from './../../../database/views/store-available.view';
 import { Injectable } from '@nestjs/common';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { Repository } from 'typeorm';
@@ -7,6 +6,7 @@ import { StoreLikeEntity } from 'src/database/entities/store-like.entity';
 import { ClientReviewStoreEntity } from 'src/database/entities/client-review-store.entity';
 import { IAddress } from 'src/common/interfaces/map.interface';
 import { EStoreAddressType } from 'src/common/enums';
+import { StoreView } from 'src/database/views/store.view';
 
 @Injectable()
 export class StoresService {
@@ -20,8 +20,8 @@ export class StoresService {
     @InjectRepository(ClientReviewStoreEntity)
     private reviewStoreRepository: Repository<ClientReviewStoreEntity>,
 
-    @InjectRepository(StoreAvailableView)
-    private storeAvailableViewRepository: Repository<StoreAvailableView>,
+    @InjectRepository(StoreView)
+    private storeViewRepository: Repository<StoreView>,
   ) {}
 
   createQueryBuilder(alias: string) {
@@ -40,8 +40,8 @@ export class StoresService {
     return this.reviewStoreRepository.createQueryBuilder(alias);
   }
 
-  createAvailableStoreQueryBuilder(alias: string) {
-    return this.storeAvailableViewRepository.createQueryBuilder(alias);
+  createStoreViewQueryBuilder(alias: string) {
+    return this.storeViewRepository.createQueryBuilder(alias);
   }
 
   async checkStoreAvailable(storeId: number) {

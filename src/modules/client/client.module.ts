@@ -13,6 +13,7 @@ import { ProductsModule } from './products/products.module';
 import { ProductCategoriesModule } from './product-categories/product-categories.module';
 import { CartsModule } from './carts/carts.module';
 import { CoinsModule } from './coins/coins.module';
+import { VouchersModule } from './vouchers/vouchers.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { CoinsModule } from './coins/coins.module';
     ReviewsModule,
     NotificationsModule,
     CoinsModule,
+    VouchersModule,
   ],
   exports: [],
 })

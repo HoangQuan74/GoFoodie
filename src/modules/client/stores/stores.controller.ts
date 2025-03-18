@@ -15,6 +15,7 @@ import { JwtPayload } from 'src/common/interfaces';
 import { AuthGuard } from '../auth/auth.guard';
 import { StoreLikeEntity } from 'src/database/entities/store-like.entity';
 import { ProductView } from 'src/database/views/product.view';
+import { VouchersService } from '../vouchers/vouchers.service';
 
 @Controller('stores')
 @ApiTags('Client Stores')
@@ -22,6 +23,7 @@ export class StoresController {
   constructor(
     private readonly storesService: StoresService,
     private readonly productCategoriesService: ProductCategoriesService,
+    private readonly vouchersService: VouchersService,
   ) {}
 
   @Get('nearby')
@@ -134,7 +136,7 @@ export class StoresController {
 
   @Get()
   async findAll(@Query() query: QueryStoresDto) {
-    const { limit, page, productCategoryCode } = query;
+    const { limit, page, productCategoryCode, isOpening, isDiscount, isFlashSale } = query;
 
     const now = moment().tz(TIMEZONE);
     const dayOfWeek = now.day();
@@ -181,8 +183,39 @@ export class StoresController {
       .andWhere('store.approvalStatus = :storeApprovalStatus')
       .setParameters({ storeStatus: EStoreStatus.Active, storeApprovalStatus: EStoreApprovalStatus.Approved })
       .setParameters({ productStatus: EProductStatus.Active, productApprovalStatus: EStoreApprovalStatus.Approved })
-      .limit(limit)
-      .offset((page - 1) * limit);
+      .skip(limit)
+      .take((page - 1) * limit);
+
+    if (isOpening) {
+      queryBuilder.innerJoin(
+        'store.workingTimes',
+        'workingTime',
+        'workingTime.dayOfWeek = :dayOfWeek AND workingTime.openTime <= :currentTime AND workingTime.closeTime >= :currentTime',
+      );
+      queryBuilder.setParameters({ dayOfWeek, currentTime });
+    }
+
+    if (isDiscount) {
+      queryBuilder.whereExists(
+        this.vouchersService
+          .createQueryBuilder('voucher')
+          .leftJoin('voucher.stores', 'voucherStore')
+          .leftJoin('voucher.products', 'voucherProduct')
+          .where('voucher.startTime <= CURRENT_TIMESTAMP')
+          .andWhere('voucher.endTime >= CURRENT_TIMESTAMP')
+          .andWhere('voucher.isActive = true')
+          .andWhere(
+            new Brackets((qb) => {
+              qb.where('voucher.createdByStoreId = store.id');
+              qb.orWhere('voucherStore.id = store.id');
+              qb.orWhere('voucherProduct.id = product.id');
+            }),
+          ),
+      );
+    }
+
+    if (isFlashSale) {
+    }
 
     const rawItems = await queryBuilder.getRawMany();
     const total = await queryBuilder.getCount();

@@ -1,5 +1,7 @@
 import { EStoreApprovalStatus, EStoreStatus, EStoreAddressType } from 'src/common/enums';
-import { ViewEntity, ViewColumn } from 'typeorm';
+import { ViewEntity, ViewColumn, Index, OneToMany } from 'typeorm';
+import { ProductView } from './product.view';
+import { ProductEntity } from '../entities/product.entity';
 
 @ViewEntity({
   expression: `
@@ -13,6 +15,7 @@ import { ViewEntity, ViewColumn } from 'typeorm';
       s.store_cover_id,
       s.status,
       s.approval_status,
+      s.is_pause,
       s.created_at,
       s.updated_at,
       sa.lat AS receive_lat,
@@ -29,6 +32,7 @@ import { ViewEntity, ViewColumn } from 'typeorm';
   `,
 })
 export class StoreView {
+  @Index({ unique: true })
   @ViewColumn()
   id: number;
 
@@ -59,6 +63,9 @@ export class StoreView {
   @ViewColumn()
   status: EStoreStatus;
 
+  @ViewColumn({ name: 'is_pause' })
+  isPause: boolean;
+
   @ViewColumn({ name: 'approval_status' })
   approvalStatus: EStoreApprovalStatus;
 
@@ -76,4 +83,7 @@ export class StoreView {
 
   @ViewColumn({ name: 'avg_rating' })
   avgRating: number;
+
+  @OneToMany(() => ProductEntity, (product) => product.store)
+  products: ProductEntity[];
 }
