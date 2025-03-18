@@ -48,6 +48,7 @@ import { NotificationsModule } from './notifications/notifications.module';
       { path: 'merchant', module: CoinsModule },
       { path: 'merchant', module: FeeModule },
       { path: 'merchant', module: CardsModule },
+      { path: 'merchant', module: NotificationsModule },
     ]),
     ProductsModule,
     StoresModule,
