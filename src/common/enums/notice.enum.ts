@@ -21,6 +21,12 @@ export enum EClientNotificationType {
   Promotion = 'promotion',
 }
 
+export enum EStoreNotificationType {
+  Order = 'order',
+  Promotion = 'promotion',
+  News = 'news',
+}
+
 export enum EClientNotificationStatus {
   Error = 'error',
   Info = 'info',
