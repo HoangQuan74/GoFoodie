@@ -11,6 +11,7 @@ import { OrderGroupItemEntity } from 'src/database/entities/order-group-item.ent
 import { OrderGroupEntity } from 'src/database/entities/order-group.entity';
 import { NotificationsModule } from '../client/notifications/notifications.module';
 import { QueuesModule } from '../queues/queues.module';
+import { FcmModule } from '../fcm/fcm.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { QueuesModule } from '../queues/queues.module';
     EventsModule,
     forwardRef(() => QueuesModule),
     NotificationsModule,
+    FcmModule,
   ],
 
   providers: [DriverSearchService],
