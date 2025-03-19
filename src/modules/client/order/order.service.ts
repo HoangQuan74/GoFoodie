@@ -41,6 +41,7 @@ import { ClientNotificationEntity } from 'src/database/entities/client-notificat
 import { CLIENT_NOTIFICATION_CONTENT, CLIENT_NOTIFICATION_TITLE } from 'src/common/constants/notification.constant';
 import { AppFeeEntity } from 'src/database/entities/app-fee.entity';
 import { EAppType } from 'src/common/enums/config.enum';
+import { calculateClientTotalPaid, calculateDriverIncome } from 'src/utils/income';
 
 @Injectable()
 export class OrderService {
@@ -143,50 +144,24 @@ export class OrderService {
       const deliveryFee = await this.feeService.getShippingFee(distance);
       const parkingFee = cart.store?.parkingFee ?? 0;
 
-      const appTransactionFee = await this.appFeeRepository.findOne({
-        where: {
-          appTypeId: EAppType.AppDriver,
-          fee: {
-            serviceType: {
-              code: 'FD',
-            },
-            feeType: {
-              value: EFeeType.Transaction,
-            },
-          },
-        },
-      });
-      const storeAppTransactionFee = await this.appFeeRepository.findOne({
-        where: {
-          appTypeId: EAppType.AppMerchant,
-          fee: {
-            serviceType: {
-              code: 'FD',
-            },
-            feeType: {
-              value: EFeeType.Transaction,
-            },
-          },
-        },
-      });
-      const clientFeeApp = await this.appFeeRepository.findOne({
-        where: {
-          appTypeId: EAppType.AppClient,
-          fee: {
-            serviceType: {
-              code: 'FD',
-            },
-            feeType: {
-              value: EFeeType.Service,
-            },
-          },
-        },
-      });
-      const transactionFee = ((Number(appTransactionFee?.value) || 0) / 100) * deliveryFee;
-      const storeTransactionFee = ((Number(storeAppTransactionFee?.value) || 0) / 100) * totalAmount;
-      const clientAppFee = Number(clientFeeApp?.value) || 0;
-      const storeRevenue = totalAmount - storeTransactionFee;
-      const clientTotalPaid = totalAmount + deliveryFee + clientAppFee + parkingFee;
+      const appTransactionFee = await this.feeService.getFeeFoodDeliveryByType(
+        EAppType.AppDriver,
+        EFeeType.Transaction,
+      );
+      const storeAppTransactionFee = await this.feeService.getFeeFoodDeliveryByType(
+        EAppType.AppMerchant,
+        EFeeType.Transaction,
+      );
+      const tipPercent = await this.feeService.getFeeFoodDeliveryByType(EAppType.AppDriver, EFeeType.FeeTip);
+      const parkingPercent = await this.feeService.getFeeFoodDeliveryByType(EAppType.AppDriver, EFeeType.FeeParking);
+      const clientAppFee = await this.feeService.getFeeFoodDeliveryByType(EAppType.AppClient, EFeeType.Service);
+
+      const transactionFee = (appTransactionFee / 100) * deliveryFee;
+      const storeTransactionFee = (storeAppTransactionFee / 100) * totalAmount;
+
+      const driverDeliveryFee = deliveryFee - transactionFee;
+      const driverParkingFee = parkingFee * (1 - parkingPercent / 100);
+      const driverTip = tip * (1 - tipPercent / 100);
 
       const formattedDate = formatDate(new Date());
       const shortUuid = generateShortUuid();
@@ -214,16 +189,27 @@ export class OrderService {
         parkingFee,
         transactionFee,
         storeTransactionFee,
-        storeRevenue,
         clientAppFee,
-        clientTotalPaid,
         promoPrice,
         status: EOrderStatus.OrderCreated,
         orderCode: `${EOrderCode.DeliveryNow}${formattedDate}${shortUuid.toLocaleUpperCase()}`,
         estimatedPickupTime,
         estimatedDeliveryTime,
         cartId,
+        orderFeeDiscount: {
+          driverDeliveryFee: driverDeliveryFee,
+          driverParkingFee: driverParkingFee,
+          driverTip: driverTip,
+          driverPeakHourFee: 0,
+        },
       });
+
+      const storeRevenue = totalAmount - storeTransactionFee;
+      const driverIncome = calculateDriverIncome(newOrder);
+      const clientTotalPaid = calculateClientTotalPaid(newOrder);
+      newOrder.driverIncome = driverIncome;
+      newOrder.clientTotalPaid = clientTotalPaid;
+      newOrder.storeRevenue = storeRevenue;
 
       const savedOrder = await queryRunner.manager.save(newOrder);
 

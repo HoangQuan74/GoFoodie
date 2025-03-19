@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EFeeType } from 'src/common/enums';
+import { EFeeType, EServiceType } from 'src/common/enums';
 import { EAppType } from 'src/common/enums/config.enum';
+import { AppFeeEntity } from 'src/database/entities/app-fee.entity';
 import { FeeEntity } from 'src/database/entities/fee.entity';
 import { Repository } from 'typeorm';
 
@@ -10,6 +11,9 @@ export class FeeService {
   constructor(
     @InjectRepository(FeeEntity)
     private readonly feeRepository: Repository<FeeEntity>,
+
+    @InjectRepository(AppFeeEntity)
+    private appFeeRepository: Repository<AppFeeEntity>,
   ) {}
 
   /**
@@ -40,5 +44,21 @@ export class FeeService {
     }
 
     return shippingFee;
+  }
+
+  async getFeeFoodDeliveryByType(appType: EAppType, feeType: EFeeType): Promise<number> {
+    const fee = await this.appFeeRepository.findOne({
+      where: {
+        appTypeId: appType,
+        fee: {
+          isActive: true,
+          serviceTypeId: EServiceType.Food,
+          feeType: {
+            value: feeType,
+          },
+        },
+      },
+    });
+    return Number(fee?.value) || 0;
   }
 }

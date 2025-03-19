@@ -1,5 +1,5 @@
 import { EOrderCode, EOrderStatus, EPaymentStatus } from 'src/common/enums/order.enum';
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { ClientEntity } from './client.entity';
 import { DriverEntity } from './driver.entity';
@@ -8,6 +8,7 @@ import { StoreEntity } from './store.entity';
 import { OrderActivityEntity } from './order-activities.entity';
 import { ClientReviewDriverEntity } from './client-review-driver.entity';
 import { ClientReviewStoreEntity } from './client-review-store.entity';
+import { OrderFeeDiscountEntity } from './order_fee_discount.entity';
 
 @Entity('orders')
 export class OrderEntity extends BaseEntity {
@@ -109,6 +110,9 @@ export class OrderEntity extends BaseEntity {
   @Column({ type: 'decimal', precision: 10, scale: 0, name: 'store_delivery_fee', default: 0 })
   storeDeliveryFee: number;
 
+  @Column({ type: 'decimal', precision: 10, scale: 0, name: 'driver_income', default: 0 })
+  driverIncome: number;
+
   @Column({ type: 'decimal', precision: 10, scale: 0, name: 'store_revenue', default: 0 })
   storeRevenue: number;
 
@@ -151,9 +155,15 @@ export class OrderEntity extends BaseEntity {
   @OneToMany(() => ClientReviewStoreEntity, (review) => review.order)
   storeReviews: ClientReviewStoreEntity[];
 
+  @OneToOne(() => OrderFeeDiscountEntity, (orderFeeDiscount) => orderFeeDiscount.order, {
+    cascade: true,
+    onDelete: 'CASCADE',
+    createForeignKeyConstraints: false,
+  })
+  orderFeeDiscount: OrderFeeDiscountEntity;
+
   // don't use
   estimatedOrderTime: Date;
-  driverIncome: number;
   orderSystemAssignToDriver: OrderActivityEntity;
   remaining: number;
   otherFee: number;
