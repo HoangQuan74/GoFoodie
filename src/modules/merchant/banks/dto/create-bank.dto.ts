@@ -7,18 +7,9 @@ export class CreateBankDto {
   bankId: number;
 
   @ApiProperty()
-  @IsInt()
-  bankBranchId: number;
-
-  @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  accountNumber: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  accountName: string;
+  bankAccountNumber: string;
 
   @ApiProperty()
   @IsBoolean()
