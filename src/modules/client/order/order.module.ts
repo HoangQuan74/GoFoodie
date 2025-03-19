@@ -20,6 +20,7 @@ import { OrderCriteriaModule } from 'src/modules/order-criteria/order-criteria.m
 import { MapboxModule } from 'src/modules/mapbox/mapbox.module';
 import { OrdersModule as MerchantOrdersModule } from 'src/modules/merchant/order/order.module';
 import { AppFeeEntity } from 'src/database/entities/app-fee.entity';
+import { FeeModule } from 'src/modules/fee/fee.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { AppFeeEntity } from 'src/database/entities/app-fee.entity';
     MapboxModule,
     forwardRef(() => MerchantOrdersModule),
     NotificationsModule,
+    FeeModule,
   ],
   providers: [OrderService, FeeService],
   controllers: [OrderController],

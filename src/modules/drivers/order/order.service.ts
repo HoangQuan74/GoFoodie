@@ -475,6 +475,7 @@ export class OrderService {
         'order.createdAt',
         'order.totalAmount',
         'order.estimatedDeliveryTime',
+        'order.driverIncome',
         'store.id',
         'store.name',
         'store.address',
@@ -484,10 +485,6 @@ export class OrderService {
         'orderInDelivery.createdAt',
         'orderDelivered.createdAt',
       ])
-      .addSelect(
-        'COALESCE(order.deliveryFee, 0) + COALESCE(order.tip, 0) + COALESCE(order.parkingFee, 0) + COALESCE(order.peakHourFee, 0)',
-        'driverIncome',
-      )
       .addSelect('order.totalAmount', 'storeRevenue');
 
     if (search) {
