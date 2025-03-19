@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
@@ -59,10 +59,15 @@ export class CreateVoucherDto {
   @IsEnum(ERefundType)
   refundType: ERefundType;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsBoolean()
   @IsOptional()
   isCanSave: boolean;
+
+  @ApiPropertyOptional()
+  @IsBoolean()
+  @IsOptional()
+  isCombine: boolean;
 
   @ApiProperty({ enum: EDiscountType })
   @IsEnum(EDiscountType)

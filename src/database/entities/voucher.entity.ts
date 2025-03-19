@@ -73,6 +73,9 @@ export class VoucherEntity extends BaseEntity {
   @Column({ name: 'created_by_id', nullable: true })
   createdById: number;
 
+  @Column({ name: 'is_combine', default: true })
+  isCombine: boolean;
+
   @Column({ name: 'created_by_store_id', nullable: true })
   createdByStoreId: number;
 
