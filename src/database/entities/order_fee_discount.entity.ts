@@ -1,10 +1,10 @@
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { OrderEntity } from './order.entity';
 import { BaseEntity } from './base.entity';
 
 @Entity('order_fees_discounts')
-export class OrderFeeDiscountEntity extends BaseEntity {
-  @Column({ name: 'order_id' })
+export class OrderFeeDiscountEntity {
+  @PrimaryColumn({ name: 'order_id' })
   orderId: number;
 
   @Column({ name: 'driver_tip', type: 'int8', default: 0, comment: 'Tiền tip tài xế thực nhận' })
@@ -40,7 +40,7 @@ export class OrderFeeDiscountEntity extends BaseEntity {
     default: 0,
     comment: 'Số tiền giảm giá đơn hàng của client',
   })
-  OrderDiscountAmount: number;
+  orderDiscountAmount: number;
 
   @Column({ name: 'is_store_order_voucher', default: false })
   isStoreOrderVoucher: boolean;
