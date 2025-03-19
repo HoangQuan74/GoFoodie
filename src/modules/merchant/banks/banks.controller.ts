@@ -15,14 +15,29 @@ import { CurrentStore } from 'src/common/decorators/current-store.decorator';
 import { AuthGuard } from '../auth/auth.guard';
 import { CreateBankDto } from './dto/create-bank.dto';
 import { UpdateBankDto } from './dto/update-bank.dto';
+import { PaymentService } from 'src/modules/payment/payment.service';
+import { EAccountType } from 'src/common/enums';
+import { EXCEPTIONS } from 'src/common/constants';
+import { CheckAccountDto } from 'src/modules/payment/dto/check-account.dto';
 
 @Controller('banks')
 @UseGuards(AuthGuard)
 export class BanksController {
-  constructor(private readonly banksService: BanksService) {}
+  constructor(
+    private readonly banksService: BanksService,
+    private readonly paymentService: PaymentService,
+  ) {}
+
   @Post()
-  create(@Body() createBankDto: CreateBankDto, @CurrentStore() storeId: number) {
-    return this.banksService.save({ ...createBankDto, storeId });
+  async create(@Body() createBankDto: CreateBankDto, @CurrentStore() storeId: number) {
+    const { bankId, bankAccountNumber: accountNo } = createBankDto;
+
+    const bankCode = await this.banksService.getBankCodeFromBankId(bankId);
+    const checkAccountDto: CheckAccountDto = { accountNo, bankCode, accountType: EAccountType.BankCard };
+    const account = await this.paymentService.checkAccount(checkAccountDto);
+    if (!account || account.status !== 5) throw new BadRequestException(EXCEPTIONS.INVALID_CREDENTIALS);
+
+    return this.banksService.save({ ...createBankDto, storeId, bankAccountName: account.account_name });
   }
 
   @Get()
@@ -34,6 +49,7 @@ export class BanksController {
   async findOne(@Param('id') id: string, @CurrentStore() storeId: number) {
     const bankAccount = await this.banksService
       .createQueryBuilder()
+      .leftJoinAndSelect('bankAccount.bank', 'bank')
       .where('storeId = :storeId', { storeId })
       .andWhere('id = :id', { id })
       .getOne();

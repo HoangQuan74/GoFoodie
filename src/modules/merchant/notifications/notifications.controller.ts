@@ -3,6 +3,7 @@ import { NotificationsService } from './notifications.service';
 import { QueryNotificationDto } from './dto/query-notification.dto';
 import { CurrentStore } from 'src/common/decorators/current-store.decorator';
 import { AuthGuard } from '../auth/auth.guard';
+import { EStoreNotificationType } from 'src/common/enums';
 
 @Controller('notifications')
 @UseGuards(AuthGuard)
@@ -41,7 +42,7 @@ export class NotificationsController {
   }
 
   @Patch('read-all')
-  async markAllAsRead(@CurrentStore() storeId: number, @Query('type') type?: string) {
+  async markAllAsRead(@CurrentStore() storeId: number, @Query('type') type?: EStoreNotificationType) {
     const queryBuilder = this.notificationsService
       .createQueryBuilder()
       .update()

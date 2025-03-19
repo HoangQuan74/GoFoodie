@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EXCEPTIONS } from 'src/common/constants';
+import { BankEntity } from 'src/database/entities/bank.entity';
 import { StoreBankEntity } from 'src/database/entities/store-bank.entity';
 import { FindManyOptions, Repository } from 'typeorm';
 
@@ -9,6 +10,9 @@ export class BanksService {
   constructor(
     @InjectRepository(StoreBankEntity)
     private readonly bankRepository: Repository<StoreBankEntity>,
+
+    @InjectRepository(BankEntity)
+    private readonly bankEntityRepository: Repository<BankEntity>,
   ) {}
 
   async save(entity: Partial<StoreBankEntity>) {
@@ -38,5 +42,10 @@ export class BanksService {
 
   async find(options?: FindManyOptions<StoreBankEntity>) {
     return this.bankRepository.find(options);
+  }
+
+  async getBankCodeFromBankId(bankId: number) {
+    const bank = await this.bankEntityRepository.findOneBy({ id: bankId });
+    return bank?.code;
   }
 }
