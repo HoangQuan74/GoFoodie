@@ -85,4 +85,14 @@ export class NotificationsService {
 
     await this.save(newNotification);
   }
+
+  async sendWithdrawalSuccess(storeId: number, amount: number) {
+    const newNotification = new StoreNotificationEntity();
+    newNotification.storeId = storeId;
+    newNotification.title = STORE_NOTIFICATION_TITLE.WITHDRAWAL_SUCCESS;
+    newNotification.content = STORE_NOTIFICATION_CONTENT.WITHDRAWAL_SUCCESS(amount);
+    newNotification.type = EStoreNotificationType.Wallet;
+
+    await this.save(newNotification);
+  }
 }

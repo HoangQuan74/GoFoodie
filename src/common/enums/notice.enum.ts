@@ -26,6 +26,7 @@ export enum EStoreNotificationType {
   Promotion = 'promotion',
   News = 'news',
   StoreUpdate = 'store_update',
+  Wallet = 'wallet',
 }
 
 export enum EClientNotificationStatus {

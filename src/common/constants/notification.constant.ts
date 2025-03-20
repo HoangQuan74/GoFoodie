@@ -23,6 +23,8 @@ export const STORE_NOTIFICATION_TITLE = {
   ORDER_CANCELLED: 'Đơn hàng có sự thay đổi',
   ORDER_COMPLETED: 'Đơn hàng có sự thay đổi',
   ORDER_CONFIRMED: 'Đơn hàng có sự thay đổi',
+
+  WITHDRAWAL_SUCCESS: 'Rút tiền thành công',
 };
 
 export const STORE_NOTIFICATION_CONTENT = {
@@ -31,4 +33,6 @@ export const STORE_NOTIFICATION_CONTENT = {
   ORDER_CANCELLED: (from: string, reason: string) => `Đơn hàng đã bị huỷ bởi ${from} với lý do: ${reason}.`,
   ORDER_COMPLETED: (orderCode: string) => `Đơn hàng đã được giao thành công, mã đơn hàng: ${orderCode}.`,
   ORDER_CONFIRMED: (orderCode: string) => `Đơn hàng đã được xác nhận, mã đơn hàng: ${orderCode}.`,
+
+  WITHDRAWAL_SUCCESS: (amount: number) => `Rút tiền thành công, số tiền: ${amount}đ`,
 };
