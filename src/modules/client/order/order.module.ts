@@ -21,6 +21,8 @@ import { MapboxModule } from 'src/modules/mapbox/mapbox.module';
 import { OrdersModule as MerchantOrdersModule } from 'src/modules/merchant/order/order.module';
 import { AppFeeEntity } from 'src/database/entities/app-fee.entity';
 import { NotificationsModule as MerchantNotificationsModule } from 'src/modules/merchant/notifications/notifications.module';
+import { FeeModule } from 'src/modules/fee/fee.module';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -43,6 +45,7 @@ import { NotificationsModule as MerchantNotificationsModule } from 'src/modules/
     forwardRef(() => MerchantOrdersModule),
     NotificationsModule,
     MerchantNotificationsModule,
+    FeeModule,
   ],
   providers: [OrderService, FeeService],
   controllers: [OrderController],

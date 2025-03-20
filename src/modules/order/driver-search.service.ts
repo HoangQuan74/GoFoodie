@@ -18,6 +18,7 @@ import { OrderGroupItemEntity } from 'src/database/entities/order-group-item.ent
 import { DURATION_CONFIRM_ORDER, ORDER_GROUP_FULL } from 'src/common/constants/common.constant';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
+import { FcmService } from '../fcm/fcm.service';
 
 @Injectable()
 export class DriverSearchService {
@@ -46,6 +47,7 @@ export class DriverSearchService {
     @InjectQueue('orderQueue') private orderQueue: Queue,
 
     private eventGatewayService: EventGatewayService,
+    private fcmService: FcmService,
     // private clientNotificationService: NotificationsService,
   ) {}
 
@@ -87,6 +89,8 @@ export class DriverSearchService {
     await this.orderActivityRepository.save(orderActivity);
     await this.upsertOrderGroup(order.id, driver.id);
     const orderCriteria = await this.orderCriteriaRepository.findOne({ where: { type: EOrderCriteriaType.Time } });
+    await this.fcmService.notifyDriverNewOrder(order.id);
+
     const timeCount = (orderCriteria?.value || DURATION_CONFIRM_ORDER) + 5;
     this.orderQueue.add(
       EOrderProcessor.DRIVER_NOT_ACCEPTED_ORDER,

@@ -283,7 +283,6 @@ export class OrderService {
       await new Promise((resolve) => setTimeout(resolve, 3000));
 
       await this.driverSearchService.assignOrderToDriver(orderId);
-      await this.fcmService.notifyDriverNewOrder(orderId);
 
       await this.orderRepository.update({ id: orderId }, { status: EOrderStatus.OfferSentToDriver });
 

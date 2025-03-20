@@ -29,26 +29,28 @@ export class IncomeController {
     const calculateIncomeForPeriod = async (start: Date, end: Date) => {
       return await this.incomeService
         .createQueryBuilder('order')
+        .leftJoin('order.orderFeeDiscount', 'order_fee_discount')
         .where('order.driverId = :driverId', { driverId })
         .andWhere('order.status = :orderStatus', { orderStatus: EOrderStatus.Delivered })
         .andWhere('order.createdAt BETWEEN :startDate AND :endDate', { startDate: start, endDate: end })
-        .select('COALESCE(SUM(order.deliveryFee), 0)', 'deliveryFee')
-        .addSelect('COALESCE(SUM(order.tip), 0)', 'tip')
-        .addSelect('COALESCE(SUM(order.peakHourFee), 0)', 'peakHourFee')
-        .addSelect('COALESCE(SUM(order.parkingFee), 0) ', 'parkingFee')
+        .select('COALESCE(SUM(order_fee_discount.driverDeliveryFee), 0)', 'deliveryFee')
+        .addSelect('COALESCE(SUM(order_fee_discount.driverTip), 0)', 'tip')
+        .addSelect('COALESCE(SUM(order_fee_discount.driverPeakHourFee), 0)', 'peakHourFee')
+        .addSelect('COALESCE(SUM(order_fee_discount.driverParkingFee), 0) ', 'parkingFee')
+        .addSelect('COALESCE(SUM(order.driverIncome), 0)', 'driverIncome')
         .addSelect('COUNT(order.id) ', 'totalOrder')
         .getRawOne();
     };
 
     const currentMonthIncomeData = await calculateIncomeForPeriod(currentMonthStart, currentMonthEnd);
-    const incomeCurrentMonth = this.sumIncomeFields(currentMonthIncomeData);
+    const incomeCurrentMonth = Number(currentMonthIncomeData.driverIncome) || 0;
 
     const incomeData = await calculateIncomeForPeriod(startDate, endDate);
-    const incomeByFilter = this.sumIncomeFields(incomeData);
+    const incomeByFilter = Number(incomeData.driverIncome) || 0;
 
     const { startDate: previousStart, endDate: previousEnd } = this.getPreviousTimeRange(type, startDate);
     const previousIncomeData = await calculateIncomeForPeriod(previousStart, previousEnd);
-    const incomeBefore = this.sumIncomeFields(previousIncomeData);
+    const incomeBefore = Number(previousIncomeData.driverIncome) || 0;
 
     return {
       incomeCurrentMonth,
@@ -56,15 +58,6 @@ export class IncomeController {
       incomeChangePercentage: incomeBefore !== 0 ? ((incomeByFilter - incomeBefore) / incomeBefore) * 100 : null,
       ...this.normalizeIncomeResult(incomeData),
     };
-  }
-
-  private sumIncomeFields(incomeData: any): number {
-    return (
-      Number(incomeData.deliveryFee) +
-      Number(incomeData.tip) +
-      Number(incomeData.peakHourFee) +
-      Number(incomeData.parkingFee)
-    );
   }
 
   private normalizeIncomeResult(incomeData: any) {
@@ -112,10 +105,7 @@ export class IncomeController {
       .andWhere('order.createdAt BETWEEN :startDate AND :endDate', { startDate, endDate })
       .select('order.id', 'id')
       .addSelect('order.orderCode', 'orderCode')
-      .addSelect(
-        'COALESCE(order.deliveryFee, 0) + COALESCE(order.tip, 0) + COALESCE(order.parkingFee, 0) + COALESCE(order.peakHourFee, 0)',
-        'incomeOfOrder',
-      )
+      .addSelect('order.driverIncome', 'incomeOfOrder')
       .addSelect('store.id', 'storeId')
       .addSelect('serviceType.name', 'serviceType');
 
@@ -142,6 +132,7 @@ export class IncomeController {
         'order.parkingFee',
         'order.transactionFee',
         'order.appFee',
+        'order.driverIncome',
       ]);
     const result = await queryBuilder.getOne();
 
@@ -155,7 +146,7 @@ export class IncomeController {
       parkingFee: Number(result.parkingFee),
       transactionFee: Number(result.transactionFee),
       appFee: Number(result.appFee),
-      incomeOfOrder: this.sumIncomeFields(result),
+      incomeOfOrder: Number(result.driverIncome),
     };
   }
 }
