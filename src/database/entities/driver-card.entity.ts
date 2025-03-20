@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { DriverEntity } from './driver.entity';
 import { BaseEntity } from './base.entity';
 import { decrypt, encrypt } from 'src/utils/bcrypt';
-import { EPaymentMethod } from 'src/common/enums';
+import { ECardType, EPaymentMethod } from 'src/common/enums';
 
 @Entity('driver_cards')
 export class DriverCardEntity extends BaseEntity {
@@ -10,7 +10,7 @@ export class DriverCardEntity extends BaseEntity {
   driverId: number;
 
   @Column({ name: 'type' })
-  type: EPaymentMethod.AtmCard | EPaymentMethod.CreditCard;
+  type: ECardType;
 
   @Column({ name: 'bank_code' })
   bankCode: string;

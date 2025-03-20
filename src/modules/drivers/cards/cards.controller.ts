@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, NotFoundException, Query } from '@nestjs/common';
 import { CardsService } from './cards.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
@@ -6,6 +6,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
+import { ECardType, EPaymentMethod } from 'src/common/enums';
 
 @Controller('cards')
 @ApiTags('Cards')
@@ -19,11 +20,9 @@ export class CardsController {
   }
 
   @Get()
-  find(@CurrentUser() user: JwtPayload) {
-    return this.cardsService.find({
-      select: ['id', 'cardNumber', 'cardHolder', 'expiryDate'],
-      where: { driverId: user.id },
-    });
+  find(@CurrentUser() user: JwtPayload, @Query('type') type: ECardType) {
+    const options = type ? { where: { driverId: user.id, type } } : { where: { driverId: user.id } };
+    return this.cardsService.find(options);
   }
 
   @Get(':id')
