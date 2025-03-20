@@ -48,7 +48,7 @@ export class BanksController {
   @Get(':id')
   async findOne(@Param('id') id: string, @CurrentStore() storeId: number) {
     const bankAccount = await this.banksService
-      .createQueryBuilder()
+      .createQueryBuilder('')
       .leftJoinAndSelect('bankAccount.bank', 'bank')
       .where('storeId = :storeId', { storeId })
       .andWhere('id = :id', { id })
