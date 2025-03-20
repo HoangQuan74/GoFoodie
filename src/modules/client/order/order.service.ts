@@ -38,6 +38,7 @@ import { OrderCriteriaService } from 'src/modules/order-criteria/order-criteria.
 import { OrderService as MerchantOrderService } from 'src/modules/merchant/order/order.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ClientNotificationEntity } from 'src/database/entities/client-notification.entity';
+import { NotificationsService as MerchantNotificationsService } from 'src/modules/merchant/notifications/notifications.service';
 import { CLIENT_NOTIFICATION_CONTENT, CLIENT_NOTIFICATION_TITLE } from 'src/common/constants/notification.constant';
 import { AppFeeEntity } from 'src/database/entities/app-fee.entity';
 import { EAppType } from 'src/common/enums/config.enum';
@@ -74,6 +75,7 @@ export class OrderService {
     private readonly mapboxService: MapboxService,
     private readonly merchantOrderService: MerchantOrderService,
     private readonly clientNotificationsService: NotificationsService,
+    private readonly merchantNotificationService: MerchantNotificationsService,
   ) {}
 
   async create(createOrderDto: CreateOrderDto, clientId: number): Promise<OrderEntity> {
@@ -304,6 +306,7 @@ export class OrderService {
       notification.type = EClientNotificationType.Order;
       notification.relatedId = savedOrder.id;
       await this.clientNotificationsService.save(notification);
+      await this.merchantNotificationService.sendNewOrder(cart.storeId, savedOrder.id, savedOrder.orderCode);
 
       if (cart.store.autoAcceptOrder && savedOrder.id) {
         setTimeout(() => {
@@ -312,7 +315,6 @@ export class OrderService {
       }
 
       this.eventGatewayService.notifyMerchantNewOrder(savedOrder.storeId, savedOrder);
-      this.fcmService.notifyMerchantNewOrder(savedOrder.id);
       this.eventGatewayService.handleOrderUpdated(savedOrder.id);
       this.orderQueue.add(
         EOrderProcessor.REMIND_MERCHANT_CONFIRM_ORDER,
@@ -478,10 +480,12 @@ export class OrderService {
         cancellationReason: updateOrderDto.reasons || '',
         cancellationType: EUserType.Client,
       });
+
       await queryRunner.manager.save(OrderActivityEntity, orderActivity);
 
       await queryRunner.commitTransaction();
 
+      await this.merchantNotificationService.sendOrderCancelled(order.storeId, 'khách hàng', updateOrderDto.reasons);
       this.eventGatewayService.handleOrderUpdated(order.id);
 
       return this.findOne(clientId, orderId);
@@ -836,9 +840,9 @@ export class OrderService {
       notification.type = EClientNotificationType.Order;
       notification.relatedId = order.id;
       await this.clientNotificationsService.save(notification);
+      await this.merchantNotificationService.sendNewPreOrder(cart.store.id, order.id, order.orderCode);
 
       this.eventGatewayService.notifyMerchantNewOrder(order.storeId, order);
-      this.fcmService.notifyMerchantNewOrder(order.id);
       this.eventGatewayService.handleOrderUpdated(order.id);
 
       setTimeout(() => {

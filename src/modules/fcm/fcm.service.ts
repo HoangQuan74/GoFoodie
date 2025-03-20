@@ -48,32 +48,6 @@ export class FcmService {
     }
   }
 
-  async notifyMerchantNewOrder(orderId: number) {
-    const order = await this.orderRepository.findOne({
-      select: {
-        id: true,
-        store: { id: true, merchant: { id: true, deviceToken: true }, staffs: { id: true, deviceToken: true } },
-      },
-      where: { id: orderId },
-      relations: ['store', 'store.merchant', 'store.staffs'],
-    });
-    if (!order) return;
-
-    const title = 'New order';
-    const body = 'You have a new order';
-
-    const deviceTokens = new Set<string>();
-
-    order.store.merchant?.deviceToken && deviceTokens.add(order.store.merchant.deviceToken);
-    order.store.staffs?.forEach((staff) => {
-      staff.deviceToken && deviceTokens.add(staff.deviceToken);
-    });
-
-    deviceTokens.forEach((deviceToken) => {
-      this.sendToDevice(deviceToken, title, body, { orderId: orderId.toString() });
-    });
-  }
-
   async notifyDriverNewOrder(orderId: number) {
     const order = await this.orderRepository.findOne({
       select: {
