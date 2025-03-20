@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { decrypt, encrypt } from 'src/utils/bcrypt';
 import { StoreEntity } from './store.entity';
-import { EPaymentMethod } from 'src/common/enums';
+import { ECardType } from 'src/common/enums';
 
 @Entity('store_cards')
 export class StoreCardEntity extends BaseEntity {
@@ -13,7 +13,7 @@ export class StoreCardEntity extends BaseEntity {
   bankCode: string;
 
   @Column({ name: 'type' })
-  type: EPaymentMethod.AtmCard | EPaymentMethod.CreditCard;
+  type: ECardType;
 
   @Column({ name: 'card_number', transformer: { to: (value) => encrypt(value), from: (value) => decrypt(value) } })
   cardNumber: string;

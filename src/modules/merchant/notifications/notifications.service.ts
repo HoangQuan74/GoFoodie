@@ -82,16 +82,18 @@ export class NotificationsService {
     newNotification.title = STORE_NOTIFICATION_TITLE.ORDER_CONFIRMED;
     newNotification.content = STORE_NOTIFICATION_CONTENT.ORDER_CONFIRMED(orderCode);
     newNotification.type = EStoreNotificationType.Order;
+    // newNotification.relatedId = orderCode;
 
     await this.save(newNotification);
   }
 
-  async sendWithdrawalSuccess(storeId: number, amount: number) {
+  async sendWithdrawalSuccess(storeId: number, amount: number, relatedId: number) {
     const newNotification = new StoreNotificationEntity();
     newNotification.storeId = storeId;
     newNotification.title = STORE_NOTIFICATION_TITLE.WITHDRAWAL_SUCCESS;
     newNotification.content = STORE_NOTIFICATION_CONTENT.WITHDRAWAL_SUCCESS(amount);
     newNotification.type = EStoreNotificationType.Wallet;
+    newNotification.relatedId = relatedId;
 
     await this.save(newNotification);
   }

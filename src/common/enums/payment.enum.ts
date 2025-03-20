@@ -5,6 +5,11 @@ export enum EPaymentMethod {
   Wallet = 'WALLET',
 }
 
+export enum ECardType {
+  Domestic = 'domestic',
+  International = 'international',
+}
+
 export enum EAccountType {
   BankAccount = '0',
   BankCard = '1',
