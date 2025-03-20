@@ -32,9 +32,7 @@ export class CartsController {
     private readonly orderService: OrderService,
     private readonly storeService: StoresService,
     private readonly voucherService: VouchersService,
-  ) {
-    this.getVouchers(10599, null);
-  }
+  ) {}
 
   @Post()
   async create(@Body() body: CreateCartDto, @CurrentUser() user: JwtPayload) {
