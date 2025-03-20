@@ -138,4 +138,38 @@ export class CartsService {
 
     return changedProducts;
   }
+
+  async getCartValue(cartId: number) {
+    const cart = await this.cartRepository.findOne({
+      select: {
+        id: true,
+        storeId: true,
+        cartProducts: {
+          id: true,
+          quantity: true,
+          product: { id: true, price: true },
+          cartProductOptions: { cartProductId: true, optionId: true, option: { price: true, status: true } },
+        },
+      },
+      where: { id: cartId },
+      relations: { cartProducts: { product: true, cartProductOptions: { option: true } } },
+    });
+
+    if (!cart) return { total: 0, storeId: null, productIds: [] };
+
+    let total = 0;
+    const productIds = new Set();
+    for (const cartProduct of cart.cartProducts) {
+      let productPrice = cartProduct.product.price;
+      productIds.add(cartProduct.productId);
+      for (const cartProductOption of cartProduct.cartProductOptions) {
+        if (cartProductOption.option.status === EOptionStatus.Active) {
+          productPrice += cartProductOption.option.price;
+        }
+      }
+      total += productPrice * cartProduct.quantity;
+    }
+
+    return { total, storeId: cart.storeId, productIds: Array.from(productIds) };
+  }
 }

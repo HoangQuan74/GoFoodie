@@ -9,6 +9,7 @@ import { CartProductEntity } from 'src/database/entities/cart-product.entity';
 import { OrdersModule } from '../order/order.module';
 import { StoresModule } from '../stores/stores.module';
 import { AppFeeEntity } from 'src/database/entities/app-fee.entity';
+import { VouchersModule } from '../vouchers/vouchers.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { AppFeeEntity } from 'src/database/entities/app-fee.entity';
     forwardRef(() => ClientModule),
     OrdersModule,
     StoresModule,
+    VouchersModule,
   ],
   controllers: [CartsController],
   providers: [CartsService],
