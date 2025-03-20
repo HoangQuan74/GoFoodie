@@ -27,6 +27,7 @@ import { CLIENT_NOTIFICATION_CONTENT, CLIENT_NOTIFICATION_TITLE } from 'src/comm
 import { EClientNotificationType } from 'src/common/enums';
 import { NotificationsService } from 'src/modules/client/notifications/notifications.service';
 import { StoreEntity } from 'src/database/entities/store.entity';
+import { NotificationsService as MerchantNotificationService } from 'src/modules/merchant/notifications/notifications.service';
 
 @Injectable()
 export class OrderService {
@@ -53,6 +54,7 @@ export class OrderService {
     private orderGroupService: OrderGroupService,
     private driverSearchService: DriverSearchService,
     private clientNotificationService: NotificationsService,
+    private merchantNotificationService: MerchantNotificationService,
   ) {}
 
   async assignOrderToSpecificDriver(orderId: number, driverId: number): Promise<void> {
@@ -374,6 +376,7 @@ export class OrderService {
       notification.type = EClientNotificationType.Order;
       notification.relatedId = order.id;
       await this.clientNotificationService.save(notification);
+      await this.merchantNotificationService.sendOrderCompleted(order.storeId, order.orderCode);
 
       this.eventGatewayService.handleOrderUpdated(order.id);
     } else {

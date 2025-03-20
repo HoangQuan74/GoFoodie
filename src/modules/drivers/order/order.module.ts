@@ -15,6 +15,7 @@ import { DriverSearchModule } from 'src/modules/order/driver-search.module';
 import { OrderGroupItemEntity } from 'src/database/entities/order-group-item.entity';
 import { NotificationsModule } from 'src/modules/client/notifications/notifications.module';
 import { StoreEntity } from 'src/database/entities/store.entity';
+import { NotificationsModule as MerchantNotificationsModule } from 'src/modules/merchant/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { StoreEntity } from 'src/database/entities/store.entity';
     OrderGroupModule,
     forwardRef(() => DriverSearchModule),
     NotificationsModule,
+    MerchantNotificationsModule,
   ],
   providers: [OrderService],
   controllers: [OrderController],
