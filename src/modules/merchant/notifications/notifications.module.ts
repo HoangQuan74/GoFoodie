@@ -10,5 +10,6 @@ import { FcmModule } from 'src/modules/fcm/fcm.module';
   imports: [TypeOrmModule.forFeature([StoreNotificationEntity]), MerchantModule, FcmModule],
   controllers: [NotificationsController],
   providers: [NotificationsService],
+  exports: [NotificationsService],
 })
 export class NotificationsModule {}

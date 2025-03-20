@@ -152,6 +152,8 @@ export class OrderService {
       notification.relatedId = savedOrder.id;
       await this.clientNotificationService.save(notification);
 
+      
+
       this.eventGatewayService.handleOrderUpdated(order.id);
 
       setTimeout(() => this.searchForDriver(orderId), 3000);
