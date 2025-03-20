@@ -3,12 +3,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DriverBankEntity } from 'src/database/entities/driver-bank.entity';
 import { Repository } from 'typeorm';
 import { EXCEPTIONS } from 'src/common/constants';
+import { BankEntity } from 'src/database/entities/bank.entity';
 
 @Injectable()
 export class BanksService {
   constructor(
     @InjectRepository(DriverBankEntity)
     private driverBankRepository: Repository<DriverBankEntity>,
+
+    @InjectRepository(BankEntity)
+    private bankEntityRepository: Repository<BankEntity>,
   ) {}
 
   async save(entity: Partial<DriverBankEntity>) {
@@ -34,5 +38,10 @@ export class BanksService {
 
   createQueryBuilder(alias?: string) {
     return this.driverBankRepository.createQueryBuilder(alias);
+  }
+
+  async getBankCodeFromBankId(bankId: number) {
+    const bank = await this.bankEntityRepository.findOneBy({ id: bankId });
+    return bank?.code;
   }
 }

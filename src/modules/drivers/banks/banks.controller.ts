@@ -17,16 +17,30 @@ import { AuthGuard } from '../auth/auth.guard';
 import { ApiTags } from '@nestjs/swagger';
 import { JwtPayload } from 'src/common/interfaces';
 import { CurrentUser } from 'src/common/decorators';
+import { CheckAccountDto } from 'src/modules/payment/dto/check-account.dto';
+import { EAccountType } from 'src/common/enums';
+import { PaymentService } from 'src/modules/payment/payment.service';
+import { EXCEPTIONS } from 'src/common/constants';
 
 @Controller('banks')
 @UseGuards(AuthGuard)
 @ApiTags('Quản lý tài khoản ngân hàng')
 export class BanksController {
-  constructor(private readonly banksService: BanksService) {}
+  constructor(
+    private readonly banksService: BanksService,
+    private readonly paymentService: PaymentService,
+  ) {}
 
   @Post()
-  create(@Body() createBankDto: CreateBankDto, @CurrentUser() user: JwtPayload) {
-    return this.banksService.save({ ...createBankDto, driverId: user.id });
+  async create(@Body() createBankDto: CreateBankDto, @CurrentUser() user: JwtPayload) {
+    const { bankId, accountNumber: accountNo } = createBankDto;
+
+    const bankCode = await this.banksService.getBankCodeFromBankId(bankId);
+    const checkAccountDto: CheckAccountDto = { accountNo, bankCode, accountType: EAccountType.BankCard };
+    const account = await this.paymentService.checkAccount(checkAccountDto);
+    if (!account || account.status !== 5) throw new BadRequestException(EXCEPTIONS.INVALID_CREDENTIALS);
+
+    return this.banksService.save({ ...createBankDto, driverId: user.id, accountName: account.account_name });
   }
 
   @Get()
