@@ -16,7 +16,9 @@ import { StoresService } from '../stores/stores.service';
 import { EAppType } from 'src/common/enums/config.enum';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AppFeeEntity } from 'src/database/entities/app-fee.entity';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
+import { VouchersService } from '../vouchers/vouchers.service';
+import { EVoucherType } from 'src/common/enums/voucher.enum';
 
 @Controller('carts')
 @ApiTags('Client Carts')
@@ -29,7 +31,10 @@ export class CartsController {
     private readonly productsService: ProductsService,
     private readonly orderService: OrderService,
     private readonly storeService: StoresService,
-  ) {}
+    private readonly voucherService: VouchersService,
+  ) {
+    this.getVouchers(10599, null);
+  }
 
   @Post()
   async create(@Body() body: CreateCartDto, @CurrentUser() user: JwtPayload) {
@@ -364,5 +369,81 @@ export class CartsController {
 
     const changedProducts = await this.cartsService.validateCart(cart.id);
     return { cart, changedProducts };
+  }
+
+  @Get(':cartId/vouchers')
+  async getVouchers(@Param('cartId') cartId: number, @CurrentUser() user: JwtPayload) {
+    const { total: productPrice, storeId, productIds } = await this.cartsService.getCartValue(cartId);
+    if (!productIds.length) return [];
+    const now = new Date();
+
+    const vouchers = await this.voucherService
+      .createQueryBuilder('voucher')
+      .leftJoin('voucher.stores', 'store')
+      .addSelect(['product.id'])
+      .leftJoin('voucher.products', 'product')
+      .where('voucher.startTime <= :now')
+      .andWhere('voucher.endTime >= :now')
+      .andWhere('voucher.isActive = true')
+      .andWhere('voucher.isPrivate = false')
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('voucher.createdByStoreId = :storeId', { storeId });
+          qb.orWhere(`voucher.typeId = ${EVoucherType.AllStore}`);
+          qb.orWhere(
+            new Brackets((qb) => {
+              qb.where(`voucher.typeId = ${EVoucherType.Store}`);
+              qb.andWhere(
+                new Brackets((qb) => {
+                  qb.where('voucher.isAllItems = true');
+                  qb.orWhere('store.id = :storeId', { storeId });
+                }),
+              );
+            }),
+          );
+          qb.orWhere(
+            new Brackets((qb) => {
+              qb.where(`voucher.typeId = ${EVoucherType.Product}`);
+              qb.andWhere('product.id IN (:...productIds)', { productIds });
+            }),
+          );
+        }),
+      )
+      .setParameter('now', now)
+      .getMany();
+
+    const storeVouchers = [];
+    const gooVouchers = [];
+    const vouchersNotAvailable = [];
+
+    for (const voucher of vouchers) {
+      if (!voucher.createdByStoreId && voucher.isCombine) {
+        if (voucher.minOrderValue > productPrice) {
+          vouchersNotAvailable.push(voucher);
+          continue;
+        } else if (voucher.typeId === EVoucherType.Product && !voucher.isAllItems) {
+          const applyProductIds = voucher.products.map((product) => product.id);
+          if (!productIds.some((id: number) => applyProductIds.includes(id))) {
+            vouchersNotAvailable.push(voucher);
+            continue;
+          }
+        }
+        gooVouchers.push(voucher);
+      } else {
+        if (voucher.minOrderValue > productPrice) {
+          vouchersNotAvailable.push(voucher);
+          continue;
+        } else if (voucher.typeId === EVoucherType.Product && !voucher.isAllItems) {
+          const applyProductIds = voucher.products.map((product) => product.id);
+          if (!productIds.some((id: number) => applyProductIds.includes(id))) {
+            vouchersNotAvailable.push(voucher);
+            continue;
+          }
+        }
+        storeVouchers.push(voucher);
+      }
+    }
+
+    return { storeVouchers, gooVouchers, vouchersNotAvailable };
   }
 }
