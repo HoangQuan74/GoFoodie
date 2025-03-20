@@ -476,6 +476,8 @@ export class OrderService {
         'order.totalAmount',
         'order.estimatedDeliveryTime',
         'order.driverIncome',
+        'order.storeRevenue',
+        'order.clientTotalPaid',
         'store.id',
         'store.name',
         'store.address',

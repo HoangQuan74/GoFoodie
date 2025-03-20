@@ -48,10 +48,10 @@ export class BanksController {
   @Get(':id')
   async findOne(@Param('id') id: string, @CurrentStore() storeId: number) {
     const bankAccount = await this.banksService
-      .createQueryBuilder()
+      .createQueryBuilder('bankAccount')
       .leftJoinAndSelect('bankAccount.bank', 'bank')
-      .where('storeId = :storeId', { storeId })
-      .andWhere('id = :id', { id })
+      .where('bankAccount.storeId = :storeId', { storeId })
+      .andWhere('bankAccount.id = :id', { id })
       .getOne();
 
     if (!bankAccount) throw new NotFoundException();
