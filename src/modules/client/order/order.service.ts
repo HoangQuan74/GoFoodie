@@ -91,7 +91,7 @@ export class OrderService {
       notes,
       tip,
       eatingTools,
-      promoPrice,
+      voucherCode,
     } = createOrderDto;
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -192,7 +192,6 @@ export class OrderService {
         transactionFee,
         storeTransactionFee,
         clientAppFee,
-        promoPrice,
         status: EOrderStatus.OrderCreated,
         orderCode: `${EOrderCode.DeliveryNow}${formattedDate}${shortUuid.toLocaleUpperCase()}`,
         estimatedPickupTime,

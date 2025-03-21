@@ -1,12 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { STORE_NOTIFICATION_CONTENT, STORE_NOTIFICATION_TITLE } from 'src/common/constants/notification.constant';
-import {
-  EProductApprovalStatus,
-  ERequestStatus,
-  EStoreNotificationStatus,
-  EStoreNotificationType,
-} from 'src/common/enums';
+import { ERequestStatus, EStoreNotificationStatus, EStoreNotificationType } from 'src/common/enums';
 import { StoreNotificationEntity } from 'src/database/entities/store-notification.entity';
 import { FcmService } from 'src/modules/fcm/fcm.service';
 import { FindOneOptions, FindOptionsWhere, Repository } from 'typeorm';

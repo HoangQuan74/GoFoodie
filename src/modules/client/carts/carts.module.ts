@@ -16,11 +16,12 @@ import { VouchersModule } from '../vouchers/vouchers.module';
     TypeOrmModule.forFeature([CartEntity, CartProductEntity, AppFeeEntity]),
     ProductsModule,
     forwardRef(() => ClientModule),
-    OrdersModule,
-    StoresModule,
-    VouchersModule,
+    forwardRef(() => OrdersModule),
+    forwardRef(() => StoresModule),
+    forwardRef(() => VouchersModule),
   ],
   controllers: [CartsController],
   providers: [CartsService],
+  exports: [CartsService],
 })
 export class CartsModule {}
