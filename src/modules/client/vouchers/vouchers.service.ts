@@ -20,6 +20,7 @@ export class VouchersService {
 
   async checkVoucher(voucherCode: string, cartId: number) {
     const { total: productPrice, storeId, productIds } = await this.cartsService.getCartValue(cartId);
+    if (productIds.length === 0) return null;
 
     const voucher = await this.voucherRepository
       .createQueryBuilder('voucher')
