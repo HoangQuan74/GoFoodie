@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { EStoreNotificationType } from 'src/common/enums';
+import { EStoreNotificationStatus, EStoreNotificationType } from 'src/common/enums';
 import { FileEntity } from './file.entity';
 import { StoreEntity } from './store.entity';
 
@@ -20,6 +20,9 @@ export class StoreNotificationEntity extends BaseEntity {
 
   @Column({ type: 'enum', enum: EStoreNotificationType })
   type: EStoreNotificationType;
+
+  @Column({ name: 'status', type: 'enum', enum: EStoreNotificationStatus, default: EStoreNotificationStatus.Info })
+  status: EStoreNotificationStatus;
 
   @Column({ name: 'related_id', nullable: true })
   relatedId: number;
