@@ -22,6 +22,7 @@ import { OrdersModule as MerchantOrdersModule } from 'src/modules/merchant/order
 import { AppFeeEntity } from 'src/database/entities/app-fee.entity';
 import { NotificationsModule as MerchantNotificationsModule } from 'src/modules/merchant/notifications/notifications.module';
 import { FeeModule } from 'src/modules/fee/fee.module';
+import { VouchersModule } from '../vouchers/vouchers.module';
 
 @Module({
   imports: [
@@ -37,7 +38,6 @@ import { FeeModule } from 'src/modules/fee/fee.module';
     ]),
     forwardRef(() => ClientModule),
     EventsModule,
-    FcmModule,
     QueuesModule,
     StoresModule,
     OrderCriteriaModule,
@@ -46,6 +46,7 @@ import { FeeModule } from 'src/modules/fee/fee.module';
     NotificationsModule,
     MerchantNotificationsModule,
     FeeModule,
+    VouchersModule,
   ],
   providers: [OrderService, FeeService],
   controllers: [OrderController],
