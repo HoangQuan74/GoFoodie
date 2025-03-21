@@ -379,6 +379,10 @@ export class CartsController {
       .createQueryBuilder('voucher')
       .leftJoin('voucher.stores', 'store')
       .addSelect(['product.id'])
+      // .addSelect(
+      //   `CASE WHEN voucher.discountType = 'percent' THEN :productPrice * voucher.discountValue / 100 ELSE voucher.discountValue END`,
+      //   'discountValue',
+      // )
       .leftJoin('voucher.products', 'product')
       .where('voucher.startTime <= :now')
       .andWhere('voucher.endTime >= :now')
