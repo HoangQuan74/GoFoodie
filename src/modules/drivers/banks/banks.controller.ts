@@ -47,9 +47,9 @@ export class BanksController {
   find(@CurrentUser() user: JwtPayload) {
     const { id: driverId } = user;
     return this.banksService
-      .createQueryBuilder('bank')
-      .where('driverId = :driverId', { driverId })
-      .leftJoinAndSelect('bank.bank', 'bank')
+      .createQueryBuilder('driverBank')
+      .where('driverBank.driverId = :driverId', { driverId })
+      .leftJoinAndSelect('driverBank.bank', 'bank')
       .getMany();
   }
 
