@@ -24,6 +24,7 @@ import { EventGatewayService } from 'src/events/event.gateway.service';
 import { ESocketEvent } from 'src/common/enums/socket.enum';
 import { StoreCoinHistoryEntity } from 'src/database/entities/store-coin-history.entity';
 import { BankEntity } from 'src/database/entities/bank.entity';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class PaymentService {
@@ -39,6 +40,7 @@ export class PaymentService {
     private readonly feeService: FeeService,
     private dataSource: DataSource,
     private eventGatewayService: EventGatewayService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async deposit(data: CreateDepositDto, storeId: number) {
@@ -77,6 +79,8 @@ export class PaymentService {
         if (transaction.type === ETransactionType.Deposit) {
           store.balance = Number(balance) + Number(transaction.amount);
           await manager.save(store);
+        } else if (transaction.type === ETransactionType.Withdraw) {
+          this.notificationsService.sendWithdrawalSuccess(transaction.storeId, transaction.amount, transaction.id);
         }
       } else if (status === ETransactionStatus.Failed) {
         transaction.status = status;
@@ -86,6 +90,7 @@ export class PaymentService {
         if (transaction.type === ETransactionType.Withdraw) {
           store.balance = Number(balance) + Number(transaction.amount) + Number(transaction.fee);
           await manager.save(store);
+          this.notificationsService.sendWithdrawalFailed(transaction.storeId, transaction.amount, transaction.id);
         }
       }
 
