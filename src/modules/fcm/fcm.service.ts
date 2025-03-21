@@ -17,13 +17,19 @@ export class FcmService {
     private merchantRepository: Repository<MerchantEntity>,
   ) {}
 
-  async sendToDevice(deviceToken: string, title: string, body: string, data?: { [key: string]: string }) {
+  async sendToDevice(
+    deviceToken: string,
+    title: string,
+    body: string,
+    data?: { [key: string]: string },
+    imageUrl?: string,
+  ) {
     const message: Message = {
       token: deviceToken,
       data: data,
     };
 
-    if (title) message.notification = { title: title, body: body };
+    if (title) message.notification = { title: title, body: body, imageUrl: imageUrl };
 
     try {
       await firebase.messaging().send(message);
@@ -72,7 +78,13 @@ export class FcmService {
     });
   }
 
-  async sendNotificationToStaffs(storeId: number, title: string, body: string, data?: { [key: string]: string }) {
+  async sendNotificationToStaffs(
+    storeId: number,
+    title: string,
+    body: string,
+    data?: { [key: string]: string },
+    imageUrl?: string,
+  ) {
     const staffs = await this.merchantRepository
       .createQueryBuilder('merchant')
       .leftJoin('merchant.stores', 'store')
@@ -87,7 +99,7 @@ export class FcmService {
       .getMany();
 
     staffs.forEach((staff) => {
-      this.sendToDevice(staff.deviceToken, title, body, data);
+      this.sendToDevice(staff.deviceToken, title, body, data, imageUrl);
     });
   }
 }
