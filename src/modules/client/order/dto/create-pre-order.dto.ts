@@ -1,6 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  IsArray,
   IsBoolean,
   IsDate,
   IsInt,
@@ -76,4 +78,10 @@ export class CreatePreOrderDto {
   @IsDate()
   @Type(() => Date)
   orderTime: Date;
+
+  @ApiPropertyOptional()
+  @IsArray()
+  @ArrayMaxSize(2)
+  @IsOptional()
+  voucherCode?: string[];
 }

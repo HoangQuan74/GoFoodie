@@ -710,10 +710,36 @@ export class OrderService {
   }
 
   async createPreOrder(data: CreatePreOrderDto, clientId: number): Promise<OrderEntity> {
-    const { cartId, deliveryLatitude, deliveryLongitude, deliveryPhone, deliveryName, deliveryAddressNote, orderTime } =
-      data;
+    const {
+      cartId,
+      deliveryLatitude,
+      deliveryLongitude,
+      deliveryPhone,
+      deliveryName,
+      deliveryAddressNote,
+      orderTime,
+      voucherCode,
+    } = data;
 
     return this.dataSource.transaction(async (manager) => {
+      if (voucherCode && voucherCode.length === 1) {
+        const voucher = await this.voucherService.checkVoucher(voucherCode[0], cartId);
+        if (!voucher) throw new BadRequestException(EXCEPTIONS.INVALID_VOUCHER);
+      } else if (voucherCode && voucherCode.length === 1) {
+        const [storeVoucher, gooVoucher] = await Promise.all([
+          this.voucherService.checkVoucher(voucherCode[0], cartId),
+          this.voucherService.checkVoucher(voucherCode[1], cartId),
+        ]);
+
+        if (!storeVoucher || !gooVoucher) throw new BadRequestException(EXCEPTIONS.INVALID_VOUCHER);
+        if (
+          !(storeVoucher.createdByStoreId && !gooVoucher.createdByStoreId && gooVoucher.isCombine) &&
+          !(gooVoucher.createdByStoreId && !storeVoucher.createdByStoreId && storeVoucher.isCombine)
+        ) {
+          throw new BadRequestException(EXCEPTIONS.INVALID_VOUCHER);
+        }
+      }
+
       const client = await manager.findOne(ClientEntity, { select: ['id', 'name', 'phone'], where: { id: clientId } });
 
       const cart = await manager
