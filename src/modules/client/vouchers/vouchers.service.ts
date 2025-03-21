@@ -20,13 +20,14 @@ export class VouchersService {
 
   async checkVoucher(voucherCode: string, cartId: number) {
     const { total: productPrice, storeId, productIds } = await this.cartsService.getCartValue(cartId);
+    if (productIds.length === 0) return null;
 
     const voucher = await this.voucherRepository
       .createQueryBuilder('voucher')
       .addSelect(['product.id', 'store.id'])
       .leftJoin('voucher.products', 'product', 'product.id IN (:...productIds)', { productIds })
       .leftJoin('voucher.stores', 'store', 'store.id = :storeId', { storeId })
-      .where('code = :code', { code: voucherCode })
+      .where('voucher.code = :code', { code: voucherCode })
       .andWhere('voucher.startTime <= NOW()')
       .andWhere('voucher.endTime >= NOW()')
       .andWhere('voucher.isActive = true')
