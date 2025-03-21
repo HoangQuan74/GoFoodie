@@ -67,7 +67,7 @@ export class RequestsService {
         await this.productsService.save(product);
       }
 
-      this.merchantNotificationsService.sendProductApproved(storeId, id, productName, productApproval.status);
+      this.merchantNotificationsService.sendProductApproved(storeId, id, productName, partialEntity.status);
     }
 
     return this.productApprovalRepository.update(criteria, partialEntity);
