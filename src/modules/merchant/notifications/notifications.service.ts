@@ -32,7 +32,7 @@ export class NotificationsService {
     imageUrl = BASE_URL + '/public/noti-wallet.png';
     // }
 
-    this.fcmService.sendNotificationToStaffs(storeId, title, content, null, imageUrl);
+    this.fcmService.sendNotificationToStaffs(storeId, title, content, {}, imageUrl);
 
     return this.notificationRepository.save(entity);
   }
