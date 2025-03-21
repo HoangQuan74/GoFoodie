@@ -46,7 +46,11 @@ export class BanksController {
   @Get()
   find(@CurrentUser() user: JwtPayload) {
     const { id: driverId } = user;
-    return this.banksService.createQueryBuilder().where('driverId = :driverId', { driverId }).getMany();
+    return this.banksService
+      .createQueryBuilder('bank')
+      .where('driverId = :driverId', { driverId })
+      .leftJoinAndSelect('bank.bank', 'bank')
+      .getMany();
   }
 
   @Get(':id')
