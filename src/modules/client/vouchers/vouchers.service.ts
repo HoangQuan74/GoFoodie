@@ -27,7 +27,7 @@ export class VouchersService {
       .addSelect(['product.id', 'store.id'])
       .leftJoin('voucher.products', 'product', 'product.id IN (:...productIds)', { productIds })
       .leftJoin('voucher.stores', 'store', 'store.id = :storeId', { storeId })
-      .where('code = :code', { code: voucherCode })
+      .where('voucher.code = :code', { code: voucherCode })
       .andWhere('voucher.startTime <= NOW()')
       .andWhere('voucher.endTime >= NOW()')
       .andWhere('voucher.isActive = true')
