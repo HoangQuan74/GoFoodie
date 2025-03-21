@@ -86,11 +86,6 @@ export class CreateOrderDto {
   eatingTools?: boolean;
 
   @ApiPropertyOptional()
-  @IsInt()
-  @IsOptional()
-  promoPrice?: number;
-
-  @ApiPropertyOptional()
   @IsArray()
   @ArrayMaxSize(2)
   @IsOptional()
