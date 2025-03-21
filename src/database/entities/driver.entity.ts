@@ -11,7 +11,7 @@ import { FileEntity } from './file.entity';
 import { DriverSignatureEntity } from './driver-signature.entity';
 import { DriverUniformEntity } from './driver-uniform.entity';
 import { DriverAvailabilityEntity } from './driver-availability.entity';
-import { encrypt,decrypt } from 'src/utils/bcrypt';
+import { encrypt, decrypt } from 'src/utils/bcrypt';
 
 @Entity('drivers')
 export class DriverEntity extends BaseEntity {

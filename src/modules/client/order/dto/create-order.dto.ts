@@ -1,5 +1,17 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsInt, IsNumber, IsOptional, IsPhoneNumber, IsString, Max, Min, ValidateIf } from 'class-validator';
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsBoolean,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsPhoneNumber,
+  IsString,
+  Max,
+  Min,
+  ValidateIf,
+} from 'class-validator';
 
 export class CreateOrderDto {
   @ApiProperty({
@@ -77,4 +89,10 @@ export class CreateOrderDto {
   @IsInt()
   @IsOptional()
   promoPrice?: number;
+
+  @ApiPropertyOptional()
+  @IsArray()
+  @ArrayMaxSize(2)
+  @IsOptional()
+  voucherCode?: string[];
 }

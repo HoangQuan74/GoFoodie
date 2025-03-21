@@ -1,16 +1,42 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { VoucherEntity } from 'src/database/entities/voucher.entity';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
+import { CartsService } from '../carts/carts.service';
+import { EVoucherType } from 'src/common/enums/voucher.enum';
 
 @Injectable()
 export class VouchersService {
   constructor(
     @InjectRepository(VoucherEntity)
     private voucherRepository: Repository<VoucherEntity>,
+
+    private readonly cartsService: CartsService,
   ) {}
 
   createQueryBuilder(alias: string) {
     return this.voucherRepository.createQueryBuilder(alias);
+  }
+
+  async checkVoucher(voucherCode: string, cartId: number) {
+    const { total: productPrice, storeId, productIds } = await this.cartsService.getCartValue(cartId);
+
+    const voucher = await this.voucherRepository
+      .createQueryBuilder('voucher')
+      .addSelect(['product.id', 'store.id'])
+      .leftJoin('voucher.products', 'product', 'product.id IN (:...productIds)', { productIds })
+      .leftJoin('voucher.stores', 'store', 'store.id = :storeId', { storeId })
+      .where('code = :code', { code: voucherCode })
+      .andWhere('voucher.startTime <= NOW()')
+      .andWhere('voucher.endTime >= NOW()')
+      .andWhere('voucher.isActive = true')
+      .getOne();
+
+    if (!voucher) return null;
+    if (voucher.minOrderValue > productPrice) return null;
+    if (voucher.typeId === EVoucherType.Store && voucher.stores.length === 0) return null;
+    if (voucher.typeId === EVoucherType.Product && voucher.products.length === 0) return null;
+
+    return voucher;
   }
 }
