@@ -57,9 +57,10 @@ export class BanksController {
   async findOne(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     const { id: driverId } = user;
     const bankAccount = await this.banksService
-      .createQueryBuilder('bank')
-      .where('bank.driverId = :driverId', { driverId })
-      .andWhere('bank.id = :id', { id })
+      .createQueryBuilder('driverBank')
+      .leftJoinAndSelect('driverBank.bank', 'bank')
+      .where('driverBank.driverId = :driverId', { driverId })
+      .andWhere('driverBank.id = :id', { id })
       .getOne();
 
     if (!bankAccount) throw new NotFoundException();

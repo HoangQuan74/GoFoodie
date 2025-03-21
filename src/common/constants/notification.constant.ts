@@ -25,6 +25,7 @@ export const STORE_NOTIFICATION_TITLE = {
   ORDER_CONFIRMED: 'Đơn hàng có sự thay đổi',
 
   WITHDRAWAL_SUCCESS: 'Rút tiền thành công',
+  WITHDRAWAL_FAILED: 'Rút tiền thất bại',
 };
 
 export const STORE_NOTIFICATION_CONTENT = {
@@ -34,5 +35,6 @@ export const STORE_NOTIFICATION_CONTENT = {
   ORDER_COMPLETED: (orderCode: string) => `Đơn hàng đã được giao thành công, mã đơn hàng: ${orderCode}.`,
   ORDER_CONFIRMED: (orderCode: string) => `Đơn hàng đã được xác nhận, mã đơn hàng: ${orderCode}.`,
 
-  WITHDRAWAL_SUCCESS: (amount: number) => `Rút tiền thành công, số tiền: ${amount}đ`,
+  WITHDRAWAL_SUCCESS: (amount: number) => `Yêu cầu rút ${amount}đ đã được xử lý thành công.`,
+  WITHDRAWAL_FAILED: (amount: number) => `Yêu cầu rút ${amount}đ không thành công. Vui lòng thử lại sau.`,
 };

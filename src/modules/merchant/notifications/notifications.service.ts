@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { BASE_URL } from 'src/common/constants';
 import { STORE_NOTIFICATION_CONTENT, STORE_NOTIFICATION_TITLE } from 'src/common/constants/notification.constant';
 import { EStoreNotificationStatus, EStoreNotificationType } from 'src/common/enums';
 import { StoreNotificationEntity } from 'src/database/entities/store-notification.entity';
@@ -24,8 +25,14 @@ export class NotificationsService {
   }
 
   save(entity: StoreNotificationEntity) {
-    const { storeId, title, content } = entity;
-    this.fcmService.sendNotificationToStaffs(storeId, title, content);
+    const { storeId, title, content, type } = entity;
+    let imageUrl = null;
+
+    // if (type === EStoreNotificationType.Order) {
+    imageUrl = BASE_URL + '/public/noti-wallet.png';
+    // }
+
+    this.fcmService.sendNotificationToStaffs(storeId, title, content, null, imageUrl);
 
     return this.notificationRepository.save(entity);
   }
@@ -93,6 +100,17 @@ export class NotificationsService {
     newNotification.storeId = storeId;
     newNotification.title = STORE_NOTIFICATION_TITLE.WITHDRAWAL_SUCCESS;
     newNotification.content = STORE_NOTIFICATION_CONTENT.WITHDRAWAL_SUCCESS(amount);
+    newNotification.type = EStoreNotificationType.Wallet;
+    newNotification.relatedId = relatedId;
+
+    await this.save(newNotification);
+  }
+
+  async sendWithdrawalFailed(storeId: number, amount: number, relatedId: number) {
+    const newNotification = new StoreNotificationEntity();
+    newNotification.storeId = storeId;
+    newNotification.title = STORE_NOTIFICATION_TITLE.WITHDRAWAL_FAILED;
+    newNotification.content = STORE_NOTIFICATION_CONTENT.WITHDRAWAL_FAILED(amount);
     newNotification.type = EStoreNotificationType.Wallet;
     newNotification.relatedId = relatedId;
 
