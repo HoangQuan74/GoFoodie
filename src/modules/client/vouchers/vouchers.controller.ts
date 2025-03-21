@@ -10,9 +10,9 @@ export class VouchersController {
     return this.vouchersService
       .createQueryBuilder('voucher')
       .where('code = :code', { code })
-      .andWhere('startTime <= NOW()')
-      .andWhere('endTime >= NOW()')
-      .andWhere('isActive = true')
+      .andWhere('voucher.startTime <= NOW()')
+      .andWhere('voucher.endTime >= NOW()')
+      .andWhere('voucher.isActive = true')
       .getOne();
   }
 }
