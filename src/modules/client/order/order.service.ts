@@ -40,9 +40,9 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { ClientNotificationEntity } from 'src/database/entities/client-notification.entity';
 import { NotificationsService as MerchantNotificationsService } from 'src/modules/merchant/notifications/notifications.service';
 import { CLIENT_NOTIFICATION_CONTENT, CLIENT_NOTIFICATION_TITLE } from 'src/common/constants/notification.constant';
-import { AppFeeEntity } from 'src/database/entities/app-fee.entity';
 import { EAppType } from 'src/common/enums/config.enum';
 import { calculateClientTotalPaid, calculateDriverIncome } from 'src/utils/income';
+import { VouchersService } from '../vouchers/vouchers.service';
 
 @Injectable()
 export class OrderService {
@@ -62,21 +62,18 @@ export class OrderService {
     @InjectRepository(CartProductOptionEntity)
     private cartProductOptionRepository: Repository<CartProductOptionEntity>,
 
-    @InjectRepository(AppFeeEntity)
-    private appFeeRepository: Repository<AppFeeEntity>,
-
     @InjectQueue('orderQueue') private orderQueue: Queue,
 
     private eventGatewayService: EventGatewayService,
     private dataSource: DataSource,
     private readonly feeService: FeeService,
-    private readonly fcmService: FcmService,
     private readonly storesService: StoresService,
     private readonly orderCriteriaService: OrderCriteriaService,
     private readonly mapboxService: MapboxService,
     private readonly merchantOrderService: MerchantOrderService,
     private readonly clientNotificationsService: NotificationsService,
     private readonly merchantNotificationService: MerchantNotificationsService,
+    private readonly voucherService: VouchersService,
   ) {}
 
   async create(createOrderDto: CreateOrderDto, clientId: number): Promise<OrderEntity> {
@@ -99,6 +96,24 @@ export class OrderService {
     await queryRunner.startTransaction();
 
     try {
+      if (voucherCode && voucherCode.length === 1) {
+        const voucher = await this.voucherService.checkVoucher(voucherCode[0], cartId);
+        if (!voucher) throw new BadRequestException(EXCEPTIONS.INVALID_VOUCHER);
+      } else if (voucherCode && voucherCode.length === 1) {
+        const [storeVoucher, gooVoucher] = await Promise.all([
+          this.voucherService.checkVoucher(voucherCode[0], cartId),
+          this.voucherService.checkVoucher(voucherCode[1], cartId),
+        ]);
+
+        if (!storeVoucher || !gooVoucher) throw new BadRequestException(EXCEPTIONS.INVALID_VOUCHER);
+        if (
+          !(storeVoucher.createdByStoreId && !gooVoucher.createdByStoreId && gooVoucher.isCombine) &&
+          !(gooVoucher.createdByStoreId && !storeVoucher.createdByStoreId && storeVoucher.isCombine)
+        ) {
+          throw new BadRequestException(EXCEPTIONS.INVALID_VOUCHER);
+        }
+      }
+
       const client = await queryRunner.manager.findOneBy(ClientEntity, { id: clientId });
       const cart = await this.cartRepository.findOne({
         where: { id: cartId, clientId },
@@ -470,7 +485,7 @@ export class OrderService {
 
       await queryRunner.commitTransaction();
 
-      await this.merchantNotificationService.sendOrderCancelled(order.storeId, 'khách hàng', updateOrderDto.reasons);
+      await this.merchantNotificationService.sendOrderCancelled(order.storeId, 'Khách hàng', order.orderCode);
       this.eventGatewayService.handleOrderUpdated(order.id);
 
       return this.findOne(clientId, orderId);
@@ -695,10 +710,36 @@ export class OrderService {
   }
 
   async createPreOrder(data: CreatePreOrderDto, clientId: number): Promise<OrderEntity> {
-    const { cartId, deliveryLatitude, deliveryLongitude, deliveryPhone, deliveryName, deliveryAddressNote, orderTime } =
-      data;
+    const {
+      cartId,
+      deliveryLatitude,
+      deliveryLongitude,
+      deliveryPhone,
+      deliveryName,
+      deliveryAddressNote,
+      orderTime,
+      voucherCode,
+    } = data;
 
     return this.dataSource.transaction(async (manager) => {
+      if (voucherCode && voucherCode.length === 1) {
+        const voucher = await this.voucherService.checkVoucher(voucherCode[0], cartId);
+        if (!voucher) throw new BadRequestException(EXCEPTIONS.INVALID_VOUCHER);
+      } else if (voucherCode && voucherCode.length === 1) {
+        const [storeVoucher, gooVoucher] = await Promise.all([
+          this.voucherService.checkVoucher(voucherCode[0], cartId),
+          this.voucherService.checkVoucher(voucherCode[1], cartId),
+        ]);
+
+        if (!storeVoucher || !gooVoucher) throw new BadRequestException(EXCEPTIONS.INVALID_VOUCHER);
+        if (
+          !(storeVoucher.createdByStoreId && !gooVoucher.createdByStoreId && gooVoucher.isCombine) &&
+          !(gooVoucher.createdByStoreId && !storeVoucher.createdByStoreId && storeVoucher.isCombine)
+        ) {
+          throw new BadRequestException(EXCEPTIONS.INVALID_VOUCHER);
+        }
+      }
+
       const client = await manager.findOne(ClientEntity, { select: ['id', 'name', 'phone'], where: { id: clientId } });
 
       const cart = await manager

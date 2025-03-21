@@ -55,14 +55,12 @@ export class RequestsService {
       if (!product) continue;
 
       const { storeId, id, name: productName } = product;
+
       if (productApproval.type === ERequestType.Create) {
         product.approvalStatus = partialEntity.status as unknown as EProductApprovalStatus;
         product.reason = partialEntity.reason;
         await this.productsService.save(product);
-        continue;
-      }
-
-      if (partialEntity.status === ERequestStatus.Approved) {
+      } else if (partialEntity.status === ERequestStatus.Approved) {
         product.name = productApproval.name || productName;
         product.description = productApproval.description || product.description;
         product.imageId = productApproval.imageId || product.imageId;

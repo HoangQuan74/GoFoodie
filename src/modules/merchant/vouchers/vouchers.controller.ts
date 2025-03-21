@@ -55,6 +55,7 @@ export class VouchersController {
       voucher.createdByStoreId = storeId;
       voucher.maxDiscountType = voucher.maxDiscountValue ? EMaxDiscountType.Limited : EMaxDiscountType.Unlimited;
       voucher.code = code;
+      voucher.isAllItems = false;
 
       if (typeId === EVoucherType.Store) {
         Object.assign(voucher, { stores: [{ id: storeId }] });

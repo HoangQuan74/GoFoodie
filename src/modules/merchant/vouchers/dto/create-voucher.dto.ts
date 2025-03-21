@@ -128,10 +128,6 @@ export class CreateVoucherDto {
   @Min(1)
   maxUseTimePerUser: number;
 
-  @ApiProperty()
-  @IsBoolean()
-  isAllItems: boolean;
-
   @ApiProperty({ type: [IdDto] })
   @ValidateNested({ each: true })
   @IsArray()
