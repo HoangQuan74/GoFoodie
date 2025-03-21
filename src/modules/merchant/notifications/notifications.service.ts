@@ -117,7 +117,7 @@ export class NotificationsService {
     newNotification.storeId = storeId;
     newNotification.title = STORE_NOTIFICATION_TITLE.PRODUCT_APPROVED;
     newNotification.content =
-      status === ERequestStatus.Approved
+      status == ERequestStatus.Approved
         ? STORE_NOTIFICATION_CONTENT.PRODUCT_APPROVED(productName)
         : STORE_NOTIFICATION_CONTENT.PRODUCT_REJECTED(productName);
     newNotification.type = EStoreNotificationType.StoreUpdate;
