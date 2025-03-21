@@ -3,14 +3,15 @@ import { BaseEntity } from './base.entity';
 import { decrypt, encrypt } from 'src/utils/bcrypt';
 import { StoreEntity } from './store.entity';
 import { ECardType } from 'src/common/enums';
+import { BankEntity } from './bank.entity';
 
 @Entity('store_cards')
 export class StoreCardEntity extends BaseEntity {
   @Column({ name: 'store_id' })
   storeId: number;
 
-  @Column({ name: 'bank_code' })
-  bankCode: string;
+  @Column({ name: 'bank_id' })
+  bankId: number;
 
   @Column({ name: 'type' })
   type: ECardType;
@@ -45,6 +46,10 @@ export class StoreCardEntity extends BaseEntity {
 
   @Column({ name: 'phone_number', nullable: true })
   phoneNumber: string;
+
+  @ManyToOne(() => BankEntity, (bank) => bank.id)
+  @JoinColumn({ name: 'bank_id' })
+  bank: BankEntity;
 
   @ManyToOne(() => StoreEntity, (store) => store.id)
   @JoinColumn({ name: 'store_id' })
