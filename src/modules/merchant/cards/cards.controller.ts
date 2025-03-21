@@ -22,6 +22,7 @@ export class CardsController {
     return this.cardsService.find({
       select: ['id', 'cardNumber', 'cardHolder', 'expiryDate'],
       where: { storeId },
+      relations: ['bank'],
     });
   }
 

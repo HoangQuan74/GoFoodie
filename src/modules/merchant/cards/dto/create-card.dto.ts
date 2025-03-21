@@ -1,8 +1,21 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsNumberString, IsOptional, IsPhoneNumber, IsString, Matches } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsNumberString,
+  IsOptional,
+  IsPhoneNumber,
+  IsString,
+  Matches,
+} from 'class-validator';
 import { ECardType } from 'src/common/enums';
 
 export class CreateCardDto {
+  @ApiProperty()
+  @IsInt()
+  bankId: number;
+
   @ApiProperty({ enum: ECardType })
   @IsEnum(ECardType)
   @IsNotEmpty()

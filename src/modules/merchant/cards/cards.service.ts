@@ -6,6 +6,7 @@ import { CheckAccountDto } from 'src/modules/payment/dto/check-account.dto';
 import { PaymentService } from 'src/modules/payment/payment.service';
 import { EAccountType } from 'src/common/enums';
 import { EXCEPTIONS } from 'src/common/constants';
+import { BanksService } from '../banks/banks.service';
 
 @Injectable()
 export class CardsService {
@@ -14,10 +15,13 @@ export class CardsService {
     private cardRepository: Repository<StoreCardEntity>,
 
     private readonly paymentService: PaymentService,
+    private readonly banksService: BanksService,
   ) {}
 
   async save(entity: Partial<StoreCardEntity>) {
-    const { cardNumber: accountNo, bankCode } = entity;
+    const { cardNumber: accountNo, bankId } = entity;
+
+    const bankCode = await this.banksService.getBankCodeFromBankId(bankId);
     const checkAccountDto: CheckAccountDto = { accountNo, bankCode, accountType: EAccountType.BankCard };
     const account = await this.paymentService.checkAccount(checkAccountDto);
     if (!account || account.status !== 5) throw new BadRequestException(EXCEPTIONS.INVALID_CREDENTIALS);

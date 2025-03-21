@@ -11,5 +11,6 @@ import { BankEntity } from 'src/database/entities/bank.entity';
   imports: [TypeOrmModule.forFeature([StoreBankEntity, BankEntity]), MerchantModule, PaymentModule],
   controllers: [BanksController],
   providers: [BanksService],
+  exports: [BanksService],
 })
 export class BanksModule {}
