@@ -485,7 +485,7 @@ export class OrderService {
 
       await queryRunner.commitTransaction();
 
-      await this.merchantNotificationService.sendOrderCancelled(order.storeId, 'khách hàng', updateOrderDto.reasons);
+      await this.merchantNotificationService.sendOrderCancelled(order.storeId, 'Khách hàng', order.orderCode);
       this.eventGatewayService.handleOrderUpdated(order.id);
 
       return this.findOne(clientId, orderId);
