@@ -1,6 +1,5 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { OrderEntity } from './order.entity';
-import { BaseEntity } from './base.entity';
 
 @Entity('order_fees_discounts')
 export class OrderFeeDiscountEntity {

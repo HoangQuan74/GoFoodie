@@ -376,7 +376,7 @@ export class OrderService {
       notification.type = EClientNotificationType.Order;
       notification.relatedId = order.id;
       await this.clientNotificationService.save(notification);
-      await this.merchantNotificationService.sendOrderCompleted(order.storeId, order.orderCode);
+      await this.merchantNotificationService.sendOrderCompleted(order.storeId, order.id, order.orderCode);
 
       this.eventGatewayService.handleOrderUpdated(order.id);
     } else {

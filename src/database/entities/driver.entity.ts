@@ -11,6 +11,7 @@ import { FileEntity } from './file.entity';
 import { DriverSignatureEntity } from './driver-signature.entity';
 import { DriverUniformEntity } from './driver-uniform.entity';
 import { DriverAvailabilityEntity } from './driver-availability.entity';
+import { encrypt,decrypt } from 'src/utils/bcrypt';
 
 @Entity('drivers')
 export class DriverEntity extends BaseEntity {
@@ -73,6 +74,14 @@ export class DriverEntity extends BaseEntity {
 
   @Column({ name: 'balance', default: 0 })
   balance: number;
+
+  @Column({
+    name: 'pin',
+    nullable: true,
+    select: false,
+    transformer: { to: (value) => encrypt(value), from: (value) => decrypt(value) },
+  })
+  pin: string;
 
   @OneToMany(() => DriverBankEntity, (driverBank) => driverBank.driver, { cascade: true })
   banks: DriverBankEntity[];

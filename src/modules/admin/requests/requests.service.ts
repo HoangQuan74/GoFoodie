@@ -7,6 +7,7 @@ import { RequestTypeEntity } from 'src/database/entities/request-type.entity';
 import { ProductsService } from '../products/products.service';
 import { EProductApprovalStatus, ERequestStatus, ERequestType } from 'src/common/enums';
 import { MerchantRequestEntity } from 'src/database/entities/merchant-request.entity';
+import { NotificationsService as MerchantNotificationsService } from 'src/modules/merchant/notifications/notifications.service';
 
 @Injectable()
 export class RequestsService {
@@ -24,6 +25,7 @@ export class RequestsService {
     private readonly merchantRequestRepository: Repository<MerchantRequestEntity>,
 
     private readonly productsService: ProductsService,
+    private readonly merchantNotificationsService: MerchantNotificationsService,
   ) {}
 
   createProductApprovalQueryBuilder(alias?: string) {
@@ -52,6 +54,7 @@ export class RequestsService {
       const product = await this.productsService.findOne({ where: { id: productApproval.productId } });
       if (!product) continue;
 
+      const { storeId, id, name: productName } = product;
       if (productApproval.type === ERequestType.Create) {
         product.approvalStatus = partialEntity.status as unknown as EProductApprovalStatus;
         product.reason = partialEntity.reason;
@@ -60,11 +63,13 @@ export class RequestsService {
       }
 
       if (partialEntity.status === ERequestStatus.Approved) {
-        product.name = productApproval.name || product.name;
+        product.name = productApproval.name || productName;
         product.description = productApproval.description || product.description;
         product.imageId = productApproval.imageId || product.imageId;
         await this.productsService.save(product);
       }
+
+      this.merchantNotificationsService.sendProductApproved(storeId, id, productName, productApproval.status);
     }
 
     return this.productApprovalRepository.update(criteria, partialEntity);

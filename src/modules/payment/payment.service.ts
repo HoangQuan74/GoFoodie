@@ -19,12 +19,16 @@ import { CheckAccountDto } from './dto/check-account.dto';
 import { CoinsService as MerchantCoinService } from '../merchant/coins/coins.service';
 import { PaymentService as MerchantPaymentService } from '../merchant/payment/payment.service';
 import { ETransactionStatus } from 'src/common/enums';
+import { PaymentService as DriverPaymentService } from '../drivers/payment/payment.service';
 
 @Injectable()
 export class PaymentService {
   constructor(
     @Inject(forwardRef(() => MerchantPaymentService))
     private readonly merchantPaymentService: MerchantPaymentService,
+
+    @Inject(forwardRef(() => DriverPaymentService))
+    private readonly driverPaymentService: DriverPaymentService,
 
     @Inject(forwardRef(() => MerchantCoinService))
     private readonly merchantCoinService: MerchantCoinService,
@@ -193,6 +197,11 @@ export class PaymentService {
       case '20':
       case '21':
         // code here
+        if (status === 5 || status === 16) {
+          this.driverPaymentService.updateTransactionStatus(invoiceNo, ETransactionStatus.Success, data);
+        } else if (status !== 2 && status !== 3) {
+          this.driverPaymentService.updateTransactionStatus(invoiceNo, ETransactionStatus.Failed, data);
+        }
         break;
     }
   }
