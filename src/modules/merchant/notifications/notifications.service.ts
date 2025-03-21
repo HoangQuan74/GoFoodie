@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { STORE_NOTIFICATION_CONTENT, STORE_NOTIFICATION_TITLE } from 'src/common/constants/notification.constant';
-import { EStoreNotificationType } from 'src/common/enums';
+import { EStoreNotificationStatus, EStoreNotificationType } from 'src/common/enums';
 import { StoreNotificationEntity } from 'src/database/entities/store-notification.entity';
 import { FcmService } from 'src/modules/fcm/fcm.service';
 import { FindOneOptions, FindOptionsWhere, Repository } from 'typeorm';
@@ -62,6 +62,7 @@ export class NotificationsService {
     newNotification.title = STORE_NOTIFICATION_TITLE.ORDER_CANCELLED;
     newNotification.content = STORE_NOTIFICATION_CONTENT.ORDER_CANCELLED(from, reason);
     newNotification.type = EStoreNotificationType.Order;
+    newNotification.status = EStoreNotificationStatus.Error;
 
     await this.save(newNotification);
   }
