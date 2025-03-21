@@ -25,4 +25,9 @@ export class DriversService {
   merge(entity: DriverEntity, update: DeepPartial<DriverEntity>): DriverEntity {
     return this.driversRepository.merge(entity, update);
   }
+
+  async getBalance(driverId: number): Promise<number> {
+    const driver = await this.findOne({ where: { id: driverId } });
+    return Number(driver?.balance || 0);
+  }
 }

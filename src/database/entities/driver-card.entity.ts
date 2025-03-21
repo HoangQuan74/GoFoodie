@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { DriverEntity } from './driver.entity';
 import { BaseEntity } from './base.entity';
 import { decrypt, encrypt } from 'src/utils/bcrypt';
-import { ECardType, EPaymentMethod } from 'src/common/enums';
+import { ECardType } from 'src/common/enums';
 
 @Entity('driver_cards')
 export class DriverCardEntity extends BaseEntity {

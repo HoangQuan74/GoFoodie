@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Patch, Param, Query, UseGuards, NotFoundException } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { QueryNotificationDto } from './dto/query-notification.dto';
 import { CurrentStore } from 'src/common/decorators/current-store.decorator';

@@ -1,8 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BASE_URL } from 'src/common/constants';
 import { STORE_NOTIFICATION_CONTENT, STORE_NOTIFICATION_TITLE } from 'src/common/constants/notification.constant';
-import { EStoreNotificationStatus, EStoreNotificationType } from 'src/common/enums';
+import {
+  EProductApprovalStatus,
+  ERequestStatus,
+  EStoreNotificationStatus,
+  EStoreNotificationType,
+} from 'src/common/enums';
 import { StoreNotificationEntity } from 'src/database/entities/store-notification.entity';
 import { FcmService } from 'src/modules/fcm/fcm.service';
 import { FindOneOptions, FindOptionsWhere, Repository } from 'typeorm';
@@ -26,13 +30,7 @@ export class NotificationsService {
 
   save(entity: StoreNotificationEntity) {
     const { storeId, title, content, type } = entity;
-    let imageUrl = null;
-
-    // if (type === EStoreNotificationType.Order) {
-    imageUrl = BASE_URL + '/public/noti-wallet.png';
-    // }
-
-    this.fcmService.sendNotificationToStaffs(storeId, title, content, {}, imageUrl);
+    this.fcmService.sendNotificationToStaffs(storeId, title, content);
 
     return this.notificationRepository.save(entity);
   }
@@ -74,23 +72,24 @@ export class NotificationsService {
     await this.save(newNotification);
   }
 
-  async sendOrderCompleted(storeId: number, orderCode: string) {
+  async sendOrderCompleted(storeId: number, orderId: number, orderCode: string) {
     const newNotification = new StoreNotificationEntity();
     newNotification.storeId = storeId;
     newNotification.title = STORE_NOTIFICATION_TITLE.ORDER_COMPLETED;
     newNotification.content = STORE_NOTIFICATION_CONTENT.ORDER_COMPLETED(orderCode);
     newNotification.type = EStoreNotificationType.Order;
+    newNotification.relatedId = orderId;
 
     await this.save(newNotification);
   }
 
-  async sendOrderConfirmed(storeId: number, orderCode: string) {
+  async sendOrderConfirmed(storeId: number, orderId: number, orderCode: string) {
     const newNotification = new StoreNotificationEntity();
     newNotification.storeId = storeId;
     newNotification.title = STORE_NOTIFICATION_TITLE.ORDER_CONFIRMED;
     newNotification.content = STORE_NOTIFICATION_CONTENT.ORDER_CONFIRMED(orderCode);
     newNotification.type = EStoreNotificationType.Order;
-    // newNotification.relatedId = orderCode;
+    newNotification.relatedId = orderId;
 
     await this.save(newNotification);
   }
@@ -113,6 +112,20 @@ export class NotificationsService {
     newNotification.content = STORE_NOTIFICATION_CONTENT.WITHDRAWAL_FAILED(amount);
     newNotification.type = EStoreNotificationType.Wallet;
     newNotification.relatedId = relatedId;
+
+    await this.save(newNotification);
+  }
+
+  async sendProductApproved(storeId: number, productId: number, productName: string, status: ERequestStatus) {
+    const newNotification = new StoreNotificationEntity();
+    newNotification.storeId = storeId;
+    newNotification.title = STORE_NOTIFICATION_TITLE.PRODUCT_APPROVED;
+    newNotification.content =
+      status === ERequestStatus.Approved
+        ? STORE_NOTIFICATION_CONTENT.PRODUCT_APPROVED(productName)
+        : STORE_NOTIFICATION_CONTENT.PRODUCT_REJECTED(productName);
+    newNotification.type = EStoreNotificationType.StoreUpdate;
+    newNotification.relatedId = productId;
 
     await this.save(newNotification);
   }

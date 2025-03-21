@@ -1,6 +1,5 @@
 import { EStoreApprovalStatus, EStoreStatus, EStoreAddressType } from 'src/common/enums';
 import { ViewEntity, ViewColumn, Index, OneToMany } from 'typeorm';
-import { ProductView } from './product.view';
 import { ProductEntity } from '../entities/product.entity';
 
 @ViewEntity({
