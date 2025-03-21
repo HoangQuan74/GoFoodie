@@ -340,6 +340,13 @@ export class OrderGroupService {
 
     const clientQuery = queryBuilder
       .clone()
+      .leftJoinAndMapOne(
+        'order.orderDelivered',
+        'order.activities',
+        'orderDelivered',
+        'orderDelivered.orderId = order.id AND orderDelivered.status = :statusDelivered',
+        { statusDelivered: EOrderStatus.Delivered },
+      )
       .leftJoin('order.client', 'client')
       .addSelect(['client.id', 'client.name', 'client.phone']);
 

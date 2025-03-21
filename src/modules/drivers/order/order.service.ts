@@ -490,7 +490,6 @@ export class OrderService {
         'orderInDelivery.createdAt',
         'orderDelivered.createdAt',
       ])
-      .addSelect('order.totalAmount', 'storeRevenue');
 
     if (search) {
       queryBuilder
@@ -527,14 +526,14 @@ export class OrderService {
 
     const count = await queryBuilder.clone().getCount();
 
-    const { entities, raw } = await queryBuilder
+    const entities = await queryBuilder
       .skip((page - 1) * limit)
       .take(limit)
-      .getRawAndEntities();
+      .getMany();
 
     entities.forEach((order) => {
-      order.driverIncome = Number(raw.find((ord) => ord.order_id === order.id).driverIncome) || 0;
-      order.storeRevenue = Number(raw.find((ord) => ord.order_id === order.id).storeRevenue) || 0;
+      order.driverIncome = Number(order.driverIncome) || 0;
+      order.storeRevenue = Number(order.storeRevenue) || 0;
       order.totalAmount = Number(order.totalAmount) || 0;
     });
 
