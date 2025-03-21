@@ -1,12 +1,42 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { QueryTransactionDto } from './dto/query-transaction.dto';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
+import { AuthGuard } from '../auth/auth.guard';
+import { ApiTags } from '@nestjs/swagger';
+import { DriversService } from '../drivers/drivers.service';
+import { CreateWithdrawDto } from './dto/create-withdraw.dto';
+import { CreateDepositDto } from './dto/create-deposit.dto';
 
 @Controller('payment')
+@UseGuards(AuthGuard)
+@ApiTags('Payment')
 export class PaymentController {
-  constructor(private readonly paymentService: PaymentService) {}
+  constructor(
+    private readonly paymentService: PaymentService,
+    private readonly driverService: DriversService,
+  ) {}
+
+  @Post('deposit')
+  deposit(@Body() body: CreateDepositDto, @CurrentUser() driver: JwtPayload) {
+    return this.paymentService.deposit(body, driver.id);
+  }
+
+  @Post('withdraw')
+  withdraw(@Body() body: CreateWithdrawDto, @CurrentUser() driver: JwtPayload) {
+    return this.paymentService.withdraw(body, driver.id);
+  }
+
+  @Get('balance')
+  getBalance(@CurrentUser() driver: JwtPayload) {
+    return this.driverService.getBalance(driver.id);
+  }
+
+  @Get('balance/pending')
+  getPendingBalance(@CurrentUser() driver: JwtPayload) {
+    return this.paymentService.getPendingBalance(driver.id);
+  }
 
   @Get('transactions')
   async getTransactions(@CurrentUser() driver: JwtPayload, @Query() query: QueryTransactionDto) {
