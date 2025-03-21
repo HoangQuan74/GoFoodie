@@ -57,9 +57,9 @@ export class BanksController {
   async findOne(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     const { id: driverId } = user;
     const bankAccount = await this.banksService
-      .createQueryBuilder()
-      .where('driverId = :driverId', { driverId })
-      .andWhere('id = :id', { id })
+      .createQueryBuilder('bank')
+      .where('bank.driverId = :driverId', { driverId })
+      .andWhere('bank.id = :id', { id })
       .getOne();
 
     if (!bankAccount) throw new NotFoundException();
@@ -70,9 +70,9 @@ export class BanksController {
   async update(@Param('id') id: string, @Body() updateBankDto: UpdateBankDto, @CurrentUser() user: JwtPayload) {
     const { id: driverId } = user;
     const bankAccount = await this.banksService
-      .createQueryBuilder()
-      .where('driverId = :driverId', { driverId })
-      .andWhere('id = :id', { id })
+      .createQueryBuilder('bank')
+      .where('bank.driverId = :driverId', { driverId })
+      .andWhere('bank.id = :id', { id })
       .getOne();
 
     if (!bankAccount) throw new NotFoundException();
@@ -85,9 +85,9 @@ export class BanksController {
   async remove(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     const { id: driverId } = user;
     const bankAccount = await this.banksService
-      .createQueryBuilder()
-      .where('driverId = :driverId', { driverId })
-      .andWhere('id = :id', { id })
+      .createQueryBuilder('bank')
+      .where('bank.driverId = :driverId', { driverId })
+      .andWhere('bank.id = :id', { id })
       .getOne();
 
     if (!bankAccount) throw new NotFoundException();
