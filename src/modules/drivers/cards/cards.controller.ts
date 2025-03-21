@@ -6,7 +6,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
-import { ECardType, EPaymentMethod } from 'src/common/enums';
+import { ECardType } from 'src/common/enums';
 
 @Controller('cards')
 @ApiTags('Cards')

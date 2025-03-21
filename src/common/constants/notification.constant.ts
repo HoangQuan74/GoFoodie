@@ -26,6 +26,8 @@ export const STORE_NOTIFICATION_TITLE = {
 
   WITHDRAWAL_SUCCESS: 'Rút tiền thành công',
   WITHDRAWAL_FAILED: 'Rút tiền thất bại',
+  PRODUCT_APPROVED: 'Kết quả xét duyệt món',
+  PRODUCT_REJECTED: 'Kết quả xét duyệt món',
 };
 
 export const STORE_NOTIFICATION_CONTENT = {
@@ -37,4 +39,7 @@ export const STORE_NOTIFICATION_CONTENT = {
 
   WITHDRAWAL_SUCCESS: (amount: number) => `Yêu cầu rút ${amount}đ đã được xử lý thành công.`,
   WITHDRAWAL_FAILED: (amount: number) => `Yêu cầu rút ${amount}đ không thành công. Vui lòng thử lại sau.`,
+
+  PRODUCT_APPROVED: (name: string) => `Món ${name} đã được phê duyệt và hiển thị trên cửa hàng!`,
+  PRODUCT_REJECTED: (name: string) => `Món ${name} không được phê duyệt. Vui lòng kiểm tra và cập nhật lại.`,
 };
