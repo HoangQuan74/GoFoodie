@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, UseGuards, Query } from '@nestjs/common';
 import { CardsService } from './cards.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
@@ -6,6 +6,7 @@ import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { CurrentStore } from 'src/common/decorators/current-store.decorator';
 import { AuthGuard } from '../auth/auth.guard';
+import { ECardType } from 'src/common/enums';
 
 @Controller('cards')
 @UseGuards(AuthGuard)
@@ -18,10 +19,12 @@ export class CardsController {
   }
 
   @Get()
-  find(@CurrentUser() user: JwtPayload, @CurrentStore() storeId: number) {
+  find(@CurrentUser() user: JwtPayload, @CurrentStore() storeId: number, @Query('type') type: ECardType) {
+    const where = type ? { storeId, type } : { storeId };
+
     return this.cardsService.find({
       select: ['id', 'cardNumber', 'cardHolder', 'expiryDate'],
-      where: { storeId },
+      where,
       relations: ['bank'],
     });
   }
