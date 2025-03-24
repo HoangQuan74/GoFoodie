@@ -275,6 +275,7 @@ export class OrderGroupService {
         'order.deliveryLongitude',
         'order.status',
         'order.totalAmount',
+        'order.clientTotalPaid',
       ])
       .orderBy('orderGroupItem.isConfirmByDriver', 'DESC')
       .addOrderBy('order.createdAt', 'ASC');
