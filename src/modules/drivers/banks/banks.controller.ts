@@ -21,6 +21,7 @@ import { CheckAccountDto } from 'src/modules/payment/dto/check-account.dto';
 import { EAccountType } from 'src/common/enums';
 import { PaymentService } from 'src/modules/payment/payment.service';
 import { EXCEPTIONS } from 'src/common/constants';
+import { Not } from 'typeorm';
 
 @Controller('banks')
 @UseGuards(AuthGuard)
@@ -34,6 +35,10 @@ export class BanksController {
   @Post()
   async create(@Body() createBankDto: CreateBankDto, @CurrentUser() user: JwtPayload) {
     const { bankId, accountNumber: accountNo } = createBankDto;
+    const { id: driverId } = user;
+
+    const isExist = await this.banksService.findOne({ where: { driverId, accountNumber: accountNo } });
+    if (isExist) throw new BadRequestException(EXCEPTIONS.ACCOUNT_EXISTED);
 
     const bankCode = await this.banksService.getBankCodeFromBankId(bankId);
     const checkAccountDto: CheckAccountDto = { accountNo, bankCode, accountType: EAccountType.BankCard };
@@ -68,7 +73,7 @@ export class BanksController {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateBankDto: UpdateBankDto, @CurrentUser() user: JwtPayload) {
+  async update(@Param('id') id: number, @Body() updateBankDto: UpdateBankDto, @CurrentUser() user: JwtPayload) {
     const { id: driverId } = user;
     const bankAccount = await this.banksService
       .createQueryBuilder('bank')
@@ -79,6 +84,16 @@ export class BanksController {
     if (!bankAccount) throw new NotFoundException();
 
     Object.assign(bankAccount, updateBankDto);
+    const { accountNumber, bankId } = bankAccount;
+
+    const isExist = await this.banksService.findOne({ where: { driverId, accountNumber, id: Not(id) } });
+    if (isExist) throw new BadRequestException(EXCEPTIONS.ACCOUNT_EXISTED);
+
+    const bankCode = await this.banksService.getBankCodeFromBankId(bankId);
+    const checkAccountDto: CheckAccountDto = { accountNo: accountNumber, bankCode, accountType: EAccountType.BankCard };
+    const account = await this.paymentService.checkAccount(checkAccountDto);
+    if (!account || account.status !== 5) throw new BadRequestException(EXCEPTIONS.INVALID_CREDENTIALS);
+
     return this.banksService.save(bankAccount);
   }
 

@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { VoucherEntity } from 'src/database/entities/voucher.entity';
 import { Brackets, Repository } from 'typeorm';
 import { CartsService } from '../carts/carts.service';
 import { EVoucherType } from 'src/common/enums/voucher.enum';
+import { EXCEPTIONS } from 'src/common/constants';
 
 @Injectable()
 export class VouchersService {
@@ -28,15 +29,22 @@ export class VouchersService {
       .leftJoin('voucher.products', 'product', 'product.id IN (:...productIds)', { productIds })
       .leftJoin('voucher.stores', 'store', 'store.id = :storeId', { storeId })
       .where('voucher.code = :code', { code: voucherCode })
-      .andWhere('voucher.startTime <= NOW()')
-      .andWhere('voucher.endTime >= NOW()')
+      // .andWhere('voucher.startTime <= NOW()')
+      // .andWhere('voucher.endTime >= NOW()')
       .andWhere('voucher.isActive = true')
       .getOne();
 
-    if (!voucher) return null;
-    if (voucher.minOrderValue > productPrice) return null;
-    if (voucher.typeId === EVoucherType.Store && voucher.stores.length === 0) return null;
-    if (voucher.typeId === EVoucherType.Product && voucher.products.length === 0) return null;
+    if (!voucher) throw new NotFoundException();
+    if (voucher.startTime > new Date()) throw new BadRequestException(EXCEPTIONS.VOUCHER_NOT_STARTED);
+    if (voucher.endTime < new Date()) throw new BadRequestException(EXCEPTIONS.VOUCHER_EXPIRED);
+    if (voucher.minOrderValue > productPrice) throw new BadRequestException(EXCEPTIONS.VOUCHER_MIN_ORDER_VALUE);
+
+    if (voucher.typeId === EVoucherType.Store && voucher.stores.length === 0 && !voucher.isAllItems) {
+      throw new BadRequestException(EXCEPTIONS.VOUCHER_NOT_APPLY);
+    }
+    if (voucher.typeId === EVoucherType.Product && voucher.products.length === 0 && !voucher.isAllItems) {
+      throw new BadRequestException(EXCEPTIONS.VOUCHER_NOT_APPLY);
+    }
 
     return voucher;
   }
