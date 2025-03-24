@@ -35,15 +35,19 @@ export class VouchersService {
       .getOne();
 
     if (!voucher) throw new NotFoundException();
-    if (voucher.startTime > new Date()) throw new BadRequestException(EXCEPTIONS.VOUCHER_NOT_STARTED);
-    if (voucher.endTime < new Date()) throw new BadRequestException(EXCEPTIONS.VOUCHER_EXPIRED);
-    if (voucher.minOrderValue > productPrice) throw new BadRequestException(EXCEPTIONS.VOUCHER_MIN_ORDER_VALUE, { cause: voucher.id });
+    const cause = voucher.id;
+    if (voucher.startTime > new Date()) throw new BadRequestException(EXCEPTIONS.VOUCHER_NOT_STARTED, { cause });
+    if (voucher.endTime < new Date()) throw new BadRequestException(EXCEPTIONS.VOUCHER_EXPIRED, { cause });
+
+    if (voucher.minOrderValue > productPrice) {
+      throw new BadRequestException(EXCEPTIONS.VOUCHER_MIN_ORDER_VALUE, { cause });
+    }
 
     if (voucher.typeId === EVoucherType.Store && voucher.stores.length === 0 && !voucher.isAllItems) {
-      throw new BadRequestException(EXCEPTIONS.VOUCHER_NOT_APPLY);
+      throw new BadRequestException(EXCEPTIONS.VOUCHER_NOT_APPLY, { cause });
     }
     if (voucher.typeId === EVoucherType.Product && voucher.products.length === 0 && !voucher.isAllItems) {
-      throw new BadRequestException(EXCEPTIONS.VOUCHER_NOT_APPLY);
+      throw new BadRequestException(EXCEPTIONS.VOUCHER_NOT_APPLY, { cause });
     }
 
     return voucher;
