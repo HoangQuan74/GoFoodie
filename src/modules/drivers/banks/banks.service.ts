@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DriverBankEntity } from 'src/database/entities/driver-bank.entity';
-import { Repository } from 'typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
 import { EXCEPTIONS } from 'src/common/constants';
 import { BankEntity } from 'src/database/entities/bank.entity';
 
@@ -43,5 +43,9 @@ export class BanksService {
   async getBankCodeFromBankId(bankId: number) {
     const bank = await this.bankEntityRepository.findOneBy({ id: bankId });
     return bank?.code;
+  }
+
+  async findOne(options: FindOneOptions<DriverBankEntity>) {
+    return this.driverBankRepository.findOne(options);
   }
 }

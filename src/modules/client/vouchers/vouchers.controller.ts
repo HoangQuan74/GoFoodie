@@ -7,6 +7,10 @@ export class VouchersController {
 
   @Get(':code')
   async findOne(@Param('code') code: string, @Query('cartId') cartId: number) {
-    return this.vouchersService.checkVoucher(code, cartId);
+    try {
+      return await this.vouchersService.checkVoucher(code, cartId);
+    } catch (error) {
+      return null;
+    }
   }
 }

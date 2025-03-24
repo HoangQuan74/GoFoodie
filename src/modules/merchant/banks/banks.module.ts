@@ -6,9 +6,10 @@ import { StoreBankEntity } from 'src/database/entities/store-bank.entity';
 import { MerchantModule } from '../merchants/merchant.module';
 import { PaymentModule } from 'src/modules/payment/payment.module';
 import { BankEntity } from 'src/database/entities/bank.entity';
+import { StoresModule } from '../stores/stores.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([StoreBankEntity, BankEntity]), MerchantModule, PaymentModule],
+  imports: [TypeOrmModule.forFeature([StoreBankEntity, BankEntity]), MerchantModule, PaymentModule, StoresModule],
   controllers: [BanksController],
   providers: [BanksService],
   exports: [BanksService],

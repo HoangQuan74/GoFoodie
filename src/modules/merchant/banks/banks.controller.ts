@@ -1,3 +1,4 @@
+import { compareText } from './../../../utils/bcrypt';
 import {
   BadRequestException,
   Body,
@@ -20,6 +21,7 @@ import { EAccountType } from 'src/common/enums';
 import { EXCEPTIONS } from 'src/common/constants';
 import { CheckAccountDto } from 'src/modules/payment/dto/check-account.dto';
 import { Not } from 'typeorm';
+import { StoresService } from '../stores/stores.service';
 
 @Controller('banks')
 @UseGuards(AuthGuard)
@@ -27,6 +29,7 @@ export class BanksController {
   constructor(
     private readonly banksService: BanksService,
     private readonly paymentService: PaymentService,
+    private readonly storeService: StoresService,
   ) {}
 
   @Post()
@@ -40,6 +43,10 @@ export class BanksController {
     const checkAccountDto: CheckAccountDto = { accountNo, bankCode, accountType: EAccountType.BankCard };
     const account = await this.paymentService.checkAccount(checkAccountDto);
     if (!account || account.status !== 5) throw new BadRequestException(EXCEPTIONS.INVALID_CREDENTIALS);
+    const store = await this.storeService.findOne({ where: { id: storeId }, relations: ['representative'] });
+
+    const checkName = compareText(account.account_name, store.representative.name);
+    if (!checkName) throw new BadRequestException(EXCEPTIONS.INVALID_CREDENTIALS);
 
     return this.banksService.save({ ...createBankDto, storeId, bankAccountName: account.account_name });
   }
@@ -82,6 +89,10 @@ export class BanksController {
     const checkAccountDto = { accountNo: bankAccountNumber, bankCode, accountType: EAccountType.BankCard };
     const account = await this.paymentService.checkAccount(checkAccountDto);
     if (!account || account.status !== 5) throw new BadRequestException(EXCEPTIONS.INVALID_CREDENTIALS);
+
+    const store = await this.storeService.findOne({ where: { id: storeId }, relations: ['representative'] });
+    const checkName = compareText(account.account_name, store.representative.name);
+    if (!checkName) throw new BadRequestException(EXCEPTIONS.INVALID_CREDENTIALS);
 
     return this.banksService.save(bankAccount);
   }
