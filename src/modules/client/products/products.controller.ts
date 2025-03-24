@@ -1,12 +1,16 @@
 import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { EOptionGroupStatus, EOptionStatus } from 'src/common/enums';
+import { VouchersService } from '../vouchers/vouchers.service';
 
 @Controller('products')
 @ApiTags('Products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly vouchersService: VouchersService,
+  ) {}
 
   @Get(':id')
   async getProduct(@Param('id') id: number) {
@@ -40,5 +44,11 @@ export class ProductsController {
       (item) => item.options.length && item.optionGroup.status === EOptionGroupStatus.Active,
     );
     return product;
+  }
+
+  @Get(':productId/vouchers')
+  @ApiOperation({ summary: 'Get vouchers of product' })
+  async getVouchers(@Param('productId') productId: number) {
+    return this.vouchersService.createQueryBuilder('voucher').getMany();
   }
 }
