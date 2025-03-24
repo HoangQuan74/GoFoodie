@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { VoucherEntity } from 'src/database/entities/voucher.entity';
-import { Brackets, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CartsService } from '../carts/carts.service';
 import { EVoucherType } from 'src/common/enums/voucher.enum';
 import { EXCEPTIONS } from 'src/common/constants';

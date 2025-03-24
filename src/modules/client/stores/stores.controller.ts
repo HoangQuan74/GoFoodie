@@ -468,4 +468,10 @@ export class StoresController {
 
     return result;
   }
+
+  @Get(':storeId/vouchers')
+  @ApiOperation({ summary: 'Get store vouchers' })
+  async findVouchers(@Param('storeId') storeId: number) {
+    return this.vouchersService.createQueryBuilder('voucher').getMany();
+  }
 }
