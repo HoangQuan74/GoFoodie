@@ -1,5 +1,11 @@
 import { MapboxService } from './../../mapbox/mapbox.service';
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EOrderCode, EOrderProcessor, EOrderStatus } from 'src/common/enums/order.enum';
 import { Group } from 'src/common/interfaces/order-item.interface';
@@ -332,7 +338,7 @@ export class OrderService {
       return this.findOne(clientId, savedOrder.id);
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      throw new BadRequestException(error);
+      throw new BadRequestException(error, { cause: error.cause });
     } finally {
       await queryRunner.release();
     }
