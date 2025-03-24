@@ -37,7 +37,7 @@ export class VouchersService {
     if (!voucher) throw new NotFoundException();
     if (voucher.startTime > new Date()) throw new BadRequestException(EXCEPTIONS.VOUCHER_NOT_STARTED);
     if (voucher.endTime < new Date()) throw new BadRequestException(EXCEPTIONS.VOUCHER_EXPIRED);
-    if (voucher.minOrderValue > productPrice) throw new BadRequestException(EXCEPTIONS.VOUCHER_MIN_ORDER_VALUE);
+    if (voucher.minOrderValue > productPrice) throw new BadRequestException(EXCEPTIONS.VOUCHER_MIN_ORDER_VALUE, { cause: voucher.id });
 
     if (voucher.typeId === EVoucherType.Store && voucher.stores.length === 0 && !voucher.isAllItems) {
       throw new BadRequestException(EXCEPTIONS.VOUCHER_NOT_APPLY);

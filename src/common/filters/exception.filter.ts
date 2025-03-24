@@ -10,12 +10,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const statusCode = exception.getStatus();
-
     const exceptionResponse: any = exception.getResponse();
+    const cause = exception?.cause ?? null;
+
     const { message: exceptionMessage } = exceptionResponse;
 
     const message = typeof exceptionMessage === 'string' ? exceptionMessage : exceptionMessage[0] ?? null;
     console.log({ statusCode, message });
-    response.status(statusCode).json({ statusCode, message, data: null });
+    response.status(statusCode).json({ statusCode, message, data: cause });
   }
 }

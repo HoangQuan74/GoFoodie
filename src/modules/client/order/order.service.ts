@@ -96,9 +96,10 @@ export class OrderService {
     await queryRunner.startTransaction();
 
     try {
+      const voucherData = [];
       if (voucherCode && voucherCode.length === 1) {
         const voucher = await this.voucherService.checkVoucher(voucherCode[0], cartId);
-        if (!voucher) throw new BadRequestException(EXCEPTIONS.INVALID_VOUCHER);
+        voucherData.push(voucher);
       } else if (voucherCode && voucherCode.length === 1) {
         const [storeVoucher, gooVoucher] = await Promise.all([
           this.voucherService.checkVoucher(voucherCode[0], cartId),
@@ -112,6 +113,7 @@ export class OrderService {
         ) {
           throw new BadRequestException(EXCEPTIONS.INVALID_VOUCHER);
         }
+        voucherData.push(storeVoucher, gooVoucher);
       }
 
       const client = await queryRunner.manager.findOneBy(ClientEntity, { id: clientId });
