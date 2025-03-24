@@ -259,24 +259,10 @@ export class OrderGroupService {
     const queryBuilder = this.orderGroupItemRepository
       .createQueryBuilder('orderGroupItem')
       .leftJoin('orderGroupItem.orderGroup', 'orderGroup')
-      .leftJoin('orderGroupItem.order', 'order')
+      .leftJoinAndSelect('orderGroupItem.order', 'order')
       .leftJoinAndSelect('order.orderItems', 'orderItem')
       .where('orderGroup.driverId = :driverId', { driverId })
       .andWhere('orderGroup.status = :status', { status: EOrderGroupStatus.InDelivery })
-      .addSelect([
-        'order.id',
-        'order.orderCode',
-        'order.orderTime',
-        'order.estimatedPickupTime',
-        'order.estimatedDeliveryTime',
-        'order.deliveryAddress',
-        'order.deliveryName',
-        'order.deliveryLatitude',
-        'order.deliveryLongitude',
-        'order.status',
-        'order.totalAmount',
-        'order.clientTotalPaid',
-      ])
       .orderBy('orderGroupItem.isConfirmByDriver', 'DESC')
       .addOrderBy('order.createdAt', 'ASC');
 
