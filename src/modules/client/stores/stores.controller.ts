@@ -16,6 +16,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { StoreLikeEntity } from 'src/database/entities/store-like.entity';
 import { ProductView } from 'src/database/views/product.view';
 import { VouchersService } from '../vouchers/vouchers.service';
+import { EVoucherType } from 'src/common/enums/voucher.enum';
 
 @Controller('stores')
 @ApiTags('Client Stores')
@@ -472,6 +473,29 @@ export class StoresController {
   @Get(':storeId/vouchers')
   @ApiOperation({ summary: 'Get store vouchers' })
   async findVouchers(@Param('storeId') storeId: number) {
-    return this.vouchersService.createQueryBuilder('voucher').getMany();
+    return this.vouchersService
+      .createQueryBuilder('voucher')
+      .leftJoin('voucher.stores', 'store')
+      .where('voucher.startTime <= :now')
+      .andWhere('voucher.endTime >= :now')
+      .andWhere('voucher.isActive = true')
+      .andWhere('voucher.isPrivate = false')
+      .andWhere(
+        new Brackets((qb) => {
+          qb.orWhere(`voucher.typeId = ${EVoucherType.AllStore}`);
+          qb.orWhere(
+            new Brackets((qb) => {
+              qb.where(`voucher.typeId = ${EVoucherType.Store}`);
+              qb.andWhere(
+                new Brackets((qb) => {
+                  qb.where('voucher.isAllItems = true');
+                  qb.orWhere('store.id = :storeId', { storeId });
+                }),
+              );
+            }),
+          );
+        }),
+      )
+      .getMany();
   }
 }
