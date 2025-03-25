@@ -9,5 +9,6 @@ import { AppFeeEntity } from 'src/database/entities/app-fee.entity';
   imports: [TypeOrmModule.forFeature([FeeEntity, AppFeeEntity])],
   controllers: [FeeController],
   providers: [FeeService],
+  exports: [FeeService],
 })
 export class FeeModule {}

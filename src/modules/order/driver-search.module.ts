@@ -12,6 +12,7 @@ import { OrderGroupEntity } from 'src/database/entities/order-group.entity';
 import { NotificationsModule } from '../client/notifications/notifications.module';
 import { QueuesModule } from '../queues/queues.module';
 import { FcmModule } from '../fcm/fcm.module';
+import { FeeModule } from '../fee/fee.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { FcmModule } from '../fcm/fcm.module';
     forwardRef(() => QueuesModule),
     NotificationsModule,
     FcmModule,
+    FeeModule,
   ],
 
   providers: [DriverSearchService],

@@ -61,4 +61,28 @@ export class FeeService {
     });
     return Number(fee?.value) || 0;
   }
+
+  async getTransactionFeeOfDriver(provinceId: number): Promise<number> {
+    const fee = await this.appFeeRepository
+      .createQueryBuilder('appFee')
+      .innerJoin('appFee.fee', 'fee')
+      .innerJoin('fee.feeType', 'feeType')
+      .innerJoin('fee.criteria', 'criteria')
+      .where('appFee.appTypeId = :appTypeId', { appTypeId: EAppType.AppDriver })
+      .andWhere('fee.isActive = :isActive', { isActive: true })
+      .andWhere('fee.serviceTypeId = :serviceTypeId', { serviceTypeId: EServiceType.Food })
+      .andWhere('feeType.value = :feeTypeValue', { feeTypeValue: EFeeType.Transaction })
+      .andWhere(
+        `
+          EXISTS (
+          SELECT 1 FROM unnest(string_to_array(criteria.value, ',')) AS value 
+          WHERE value = :provinceId
+        )
+        `,
+        { provinceId: provinceId || -1 },
+      )
+      .getOne();
+
+    return Number(fee?.value) || 0;
+  }
 }
