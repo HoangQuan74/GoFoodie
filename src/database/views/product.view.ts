@@ -7,6 +7,7 @@ import { ProductOptionGroupEntity } from '../entities/product-option-group.entit
     SELECT 
       p.id,
       p.name,
+      LOWER(unaccent(p.name)) AS name_unaccent,
       p.code,
       p.price,
       p.status,
@@ -32,6 +33,9 @@ export class ProductView {
 
   @ViewColumn()
   name: string;
+
+  @ViewColumn({ name: 'name_unaccent' })
+  nameUnaccent: string;
 
   @ViewColumn()
   code: string;

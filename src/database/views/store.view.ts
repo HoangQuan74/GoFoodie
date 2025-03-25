@@ -8,6 +8,7 @@ import { ProductEntity } from '../entities/product.entity';
       s.id,
       s.store_code,
       s.name,
+      LOWER(UNACCENT(CONCAT_WS(' - ', s.name, NULLIF(s.special_dish, ''), NULLIF(s.street_name, '')))) AS name_unaccent,
       s.special_dish,
       s.street_name,
       s.store_avatar_id,
@@ -40,6 +41,9 @@ export class StoreView {
 
   @ViewColumn()
   name: string;
+
+  @ViewColumn({ name: 'name_unaccent' })
+  nameUnaccent: string;
 
   @ViewColumn({ name: 'special_dish' })
   specialDish: string;

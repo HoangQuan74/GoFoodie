@@ -50,7 +50,7 @@ export const decrypt = (text: string): string => {
   return decrypted;
 };
 
-const normalizeText = (text: string): string => {
+export const normalizeText = (text: string): string => {
   return text
     .toLowerCase()
     .normalize('NFD')

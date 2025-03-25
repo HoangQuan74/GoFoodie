@@ -14,6 +14,7 @@ import { ProductCategoriesModule } from './product-categories/product-categories
 import { CartsModule } from './carts/carts.module';
 import { CoinsModule } from './coins/coins.module';
 import { VouchersModule } from './vouchers/vouchers.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { VouchersModule } from './vouchers/vouchers.module';
       { path: 'client', module: ReviewsModule },
       { path: 'client', module: NotificationsModule },
       { path: 'client', module: CoinsModule },
+      { path: 'client', module: SearchModule },
     ]),
     AuthModule,
     StoresModule,
@@ -43,6 +45,7 @@ import { VouchersModule } from './vouchers/vouchers.module';
     NotificationsModule,
     CoinsModule,
     VouchersModule,
+    SearchModule,
   ],
   exports: [],
 })
