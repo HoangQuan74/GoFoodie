@@ -24,6 +24,7 @@ import { CoinsModule } from './coins/coins.module';
 import { FeeModule } from './fee/fee.module';
 import { CardsModule } from './cards/cards.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { StaffsModule } from './staffs/staffs.module';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     FeeModule,
     CardsModule,
     NotificationsModule,
+    StaffsModule,
   ],
   providers: [],
   exports: [],
