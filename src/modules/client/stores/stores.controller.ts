@@ -473,6 +473,8 @@ export class StoresController {
   @Get(':storeId/vouchers')
   @ApiOperation({ summary: 'Get store vouchers' })
   async findVouchers(@Param('storeId') storeId: number) {
+    const now = new Date();
+
     return this.vouchersService
       .createQueryBuilder('voucher')
       .leftJoin('voucher.stores', 'store')
@@ -496,6 +498,7 @@ export class StoresController {
           );
         }),
       )
+      .setParameter('now', now)
       .getMany();
   }
 }
