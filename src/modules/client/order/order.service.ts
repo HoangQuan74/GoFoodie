@@ -169,10 +169,10 @@ export class OrderService {
       const deliveryFee = await this.feeService.getShippingFee(distance);
       const parkingFee = cart.store?.parkingFee ?? 0;
 
-      const appTransactionFee = await this.feeService.getFeeFoodDeliveryByType(
-        EAppType.AppDriver,
-        EFeeType.Transaction,
-      );
+      // const appTransactionFee = await this.feeService.getFeeFoodDeliveryByType(
+      //   EAppType.AppDriver,
+      //   EFeeType.Transaction,
+      // );
       const storeAppTransactionFee = await this.feeService.getFeeFoodDeliveryByType(
         EAppType.AppMerchant,
         EFeeType.Transaction,
@@ -181,10 +181,10 @@ export class OrderService {
       const parkingPercent = await this.feeService.getFeeFoodDeliveryByType(EAppType.AppDriver, EFeeType.FeeParking);
       const clientAppFee = await this.feeService.getFeeFoodDeliveryByType(EAppType.AppClient, EFeeType.Service);
 
-      const transactionFee = (appTransactionFee / 100) * deliveryFee;
+      // const transactionFee = (appTransactionFee / 100) * deliveryFee;
       const storeTransactionFee = (storeAppTransactionFee / 100) * totalAmount;
 
-      const driverDeliveryFee = deliveryFee - transactionFee;
+      // const driverDeliveryFee = deliveryFee - transactionFee;
       const driverParkingFee = parkingFee * (1 - parkingPercent / 100);
       const driverTip = tip * (1 - tipPercent / 100);
 
@@ -212,7 +212,7 @@ export class OrderService {
         eatingTools,
         deliveryFee,
         parkingFee,
-        transactionFee,
+        // transactionFee,
         storeTransactionFee,
         clientAppFee,
         status: EOrderStatus.OrderCreated,
@@ -221,7 +221,7 @@ export class OrderService {
         estimatedDeliveryTime,
         cartId,
         orderFeeDiscount: {
-          driverDeliveryFee: driverDeliveryFee,
+          // driverDeliveryFee: driverDeliveryFee,
           driverParkingFee: driverParkingFee,
           driverTip: driverTip,
           driverPeakHourFee: 0,

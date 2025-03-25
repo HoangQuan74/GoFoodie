@@ -19,6 +19,8 @@ import { DURATION_CONFIRM_ORDER, ORDER_GROUP_FULL } from 'src/common/constants/c
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { FcmService } from '../fcm/fcm.service';
+import { FeeService } from '../fee/fee.service';
+import { calculateDriverIncome } from 'src/utils/income';
 
 @Injectable()
 export class DriverSearchService {
@@ -46,6 +48,7 @@ export class DriverSearchService {
 
     @InjectQueue('orderQueue') private orderQueue: Queue,
 
+    private readonly feeService: FeeService,
     private eventGatewayService: EventGatewayService,
     private fcmService: FcmService,
     // private clientNotificationService: NotificationsService,
@@ -54,7 +57,7 @@ export class DriverSearchService {
   async assignOrderToDriver(orderId: number): Promise<void> {
     const order = await this.orderRepository.findOne({
       where: { id: orderId },
-      relations: ['store', 'store.serviceType'],
+      relations: ['store', 'store.serviceType', 'orderFeeDiscount'],
     });
 
     if (!order) {
@@ -76,7 +79,10 @@ export class DriverSearchService {
   async offerOrderToDriver(order: OrderEntity, driver: DriverEntity): Promise<void> {
     order.driverId = driver.id;
     order.status = EOrderStatus.OfferSentToDriver;
-    await this.orderRepository.save(order);
+    const appTransactionFee = await this.feeService.getTransactionFeeOfDriver(driver.activeAreaId);
+    order.transactionFee = (appTransactionFee / 100) * order.deliveryFee;
+    order.orderFeeDiscount.driverDeliveryFee = order.deliveryFee - order.transactionFee;
+    order.driverIncome = calculateDriverIncome(order);
 
     const orderActivity = this.orderActivityRepository.create({
       orderId: order.id,
