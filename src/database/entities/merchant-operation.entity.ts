@@ -1,6 +1,6 @@
 import { Column, Entity, JoinTable, ManyToMany, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 import { MerchantRoleEntity } from './merchant-role.entity';
-import { MerchantEntity } from './merchant.entity';
+import { StoreStaffEntity } from './store-staff.entity';
 
 @Entity('merchant_operations')
 export class MerchantOperationEntity {
@@ -26,4 +26,7 @@ export class MerchantOperationEntity {
     inverseJoinColumn: { name: 'role_code' },
   })
   roles: MerchantRoleEntity[];
+
+  @ManyToMany(() => StoreStaffEntity, (staff) => staff.operations)
+  staffs: StoreStaffEntity[];
 }

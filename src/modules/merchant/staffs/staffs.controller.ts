@@ -7,6 +7,7 @@ import { CurrentUser } from 'src/common/decorators';
 import { EStaffRole } from 'src/common/enums';
 import { CurrentStore } from 'src/common/decorators/current-store.decorator';
 import { InviteStaffDto } from './dto/invite-staff.dto';
+import { QueryStaffDto } from './dto/query-staff.dto';
 
 @Controller('staffs')
 @UseGuards(AuthGuard)
@@ -22,8 +23,8 @@ export class StaffsController {
 
   @Get()
   @ApiOperation({ summary: 'Danh sách nhân viên' })
-  async getStaffs(@CurrentUser() staff: JwtPayload, @CurrentStore() storeId: number) {
-    return this.staffsService.getStaffs(storeId);
+  async getStaffs(@CurrentStore() storeId: number, @Query() query: QueryStaffDto) {
+    return this.staffsService.getStaffs(storeId, query);
   }
 
   @Get('permissions')
@@ -52,25 +53,25 @@ export class StaffsController {
 
   @Post('accept-invitation')
   @ApiOperation({ summary: 'Chấp nhận lời mời' })
-  async acceptInvitation(@CurrentUser() staff: JwtPayload, @Body('storeId') storeId: number) {
-    // return this.staffsService.acceptInvitation(staff.id, storeId);
+  async acceptInvitation(@CurrentUser() merchant: JwtPayload, @Body('storeId') storeId: number) {
+    return this.staffsService.acceptInvitation(merchant.id, storeId);
   }
 
   @Post('reject-invitation')
   @ApiOperation({ summary: 'Từ chối lời mời' })
-  async rejectInvitation(@CurrentUser() staff: JwtPayload, @Body('storeId') storeId: number) {
-    // return this.staffsService.rejectInvitation(staff.id, storeId);
+  async rejectInvitation(@CurrentUser() merchant: JwtPayload, @Body('storeId') storeId: number) {
+    return this.staffsService.rejectInvitation(merchant.id, storeId);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Chi tiết nhân viên' })
-  async getStaffDetail(@CurrentUser() staff: JwtPayload, @CurrentStore() storeId: number) {
-    return this.staffsService.getStaffDetail(staff.id, storeId);
+  async getStaffDetail(@CurrentUser() merchant: JwtPayload, @CurrentStore() storeId: number) {
+    return this.staffsService.getStaffDetail(merchant.id, storeId);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Xóa nhân viên' })
-  async deleteStaff(@CurrentUser() staff: JwtPayload, @CurrentStore() storeId: number) {
-    return this.staffsService.deleteStaff(staff.id, storeId);
+  async deleteStaff(@CurrentUser() merchant: JwtPayload, @CurrentStore() storeId: number) {
+    return this.staffsService.deleteStaff(merchant.id, storeId);
   }
 }
