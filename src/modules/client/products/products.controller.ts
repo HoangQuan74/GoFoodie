@@ -54,6 +54,7 @@ export class ProductsController {
     const product = await this.productsService.findOne({ where: { id: productId } });
     if (!product) throw new NotFoundException();
 
+    const now = new Date();
     return this.vouchersService
       .createQueryBuilder('voucher')
       .leftJoin('voucher.stores', 'store')
@@ -84,6 +85,7 @@ export class ProductsController {
           );
         }),
       )
+      .setParameter('now', now)
       .getMany();
   }
 }
