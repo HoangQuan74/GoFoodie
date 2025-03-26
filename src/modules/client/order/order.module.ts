@@ -11,7 +11,6 @@ import { OrderEntity } from 'src/database/entities/order.entity';
 import { ClientModule } from '../clients/client.module';
 import { EventsModule } from 'src/events/events.module';
 import { OrderActivityEntity } from 'src/database/entities/order-activities.entity';
-import { FcmModule } from 'src/modules/fcm/fcm.module';
 import { FeeEntity } from 'src/database/entities/fee.entity';
 import { FeeService } from 'src/modules/fee/fee.service';
 import { QueuesModule } from 'src/modules/queues/queues.module';

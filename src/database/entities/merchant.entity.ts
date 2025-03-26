@@ -1,10 +1,9 @@
 import { EMerchantRole } from './../../common/enums/merchant.enum';
-import { Entity, Column, OneToMany, ManyToOne, JoinColumn, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, Column, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { EMerchantStatus } from 'src/common/enums';
 import { StoreEntity } from './store.entity';
 import { FileEntity } from './file.entity';
-import { MerchantOperationEntity } from './merchant-operation.entity';
 
 @Entity('merchants')
 export class MerchantEntity extends BaseEntity {

@@ -1,11 +1,5 @@
 import { MapboxService } from './../../mapbox/mapbox.service';
-import {
-  BadRequestException,
-  HttpException,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EOrderCode, EOrderProcessor, EOrderStatus } from 'src/common/enums/order.enum';
 import { Group } from 'src/common/interfaces/order-item.interface';
@@ -16,7 +10,6 @@ import { OrderItemEntity } from 'src/database/entities/order-item.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { EventGatewayService } from 'src/events/event.gateway.service';
-import { FcmService } from 'src/modules/fcm/fcm.service';
 import { FeeService } from 'src/modules/fee/fee.service';
 import { formatDate, generateShortUuid } from 'src/utils/common';
 import { calculateDistance } from 'src/utils/distance';
