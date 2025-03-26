@@ -426,6 +426,7 @@ export class OrderService {
   async findOne(clientId: number, orderId: number): Promise<OrderEntity> {
     const queryBuilder = this.orderRepository
       .createQueryBuilder('order')
+      .leftJoinAndSelect('order.orderFeeDiscount', 'orderFeeDiscount')
       .leftJoinAndSelect('order.orderItems', 'orderItems')
       .leftJoinAndSelect('order.activities', 'activities')
       .leftJoinAndSelect('order.store', 'store')
