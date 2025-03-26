@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MerchantOperationEntity } from 'src/database/entities/merchant-operation.entity';
-import { Brackets, Repository } from 'typeorm';
+import { Brackets, In, Repository } from 'typeorm';
 import * as _ from 'lodash';
 import { EStaffRole, EStaffStatus } from 'src/common/enums';
 import { StoreStaffEntity } from 'src/database/entities/store-staff.entity';
@@ -11,6 +11,7 @@ import * as moment from 'moment';
 import { EXCEPTIONS } from 'src/common/constants';
 import { MerchantRoleEntity } from 'src/database/entities/merchant-role.entity';
 import { QueryStaffDto } from './dto/query-staff.dto';
+import { UpdateStaffDto } from './dto/update-staff.dto';
 
 @Injectable()
 export class StaffsService {
@@ -109,7 +110,7 @@ export class StaffsService {
   }
 
   async inviteStaff(storeId: number, data: InviteStaffDto) {
-    const { email, phone, name, roleCode } = data;
+    const { email, phone, name, roleCode, operationCodes } = data;
     const expiredAt = moment().add(7, 'days').toDate();
 
     let merchant = await this.merchantService.findOne({ where: [{ email }, { phone }] });
@@ -120,12 +121,15 @@ export class StaffsService {
     let storeStaff = await this.storeStaffRepository.findOne({ where: { storeId, merchantId }, withDeleted: true });
     !storeStaff && (storeStaff = new StoreStaffEntity());
 
+    const operations = await this.operationRepository.find({ where: { code: In(operationCodes) } });
+
     storeStaff.deletedAt && storeStaff.status === EStaffStatus.Pending;
     storeStaff.expiredAt = expiredAt;
     storeStaff.deletedAt = null;
     storeStaff.storeId = storeId;
     storeStaff.roleCode = roleCode;
     storeStaff.merchantId = merchantId;
+    storeStaff.operations = operations;
 
     return this.storeStaffRepository.save(storeStaff);
   }
@@ -149,6 +153,20 @@ export class StaffsService {
 
   async getRoles() {
     return this.roleRepository.find();
+  }
+
+  async updateStaff(merchantId: number, storeId: number, data: UpdateStaffDto) {
+    const staff = await this.storeStaffRepository.findOne({ where: { merchantId, storeId } });
+    if (!staff) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
+
+    const { roleCode, operationCodes, name } = data;
+    const operations = await this.operationRepository.find({ where: { code: In(operationCodes) } });
+
+    staff.roleCode = roleCode;
+    staff.operations = operations;
+    staff.merchant.name = name;
+
+    return this.storeStaffRepository.save(staff);
   }
 
   async rejectInvitation(merchantId: number, storeId: number) {

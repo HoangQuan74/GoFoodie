@@ -61,7 +61,7 @@ export class MerchantsController {
   async find(@Query() query: QueryMerchantDto) {
     const { limit, page, search, status, sort, createdAtFrom, createdAtTo } = query;
 
-    const queryBuilder = this.merchantsService.createViewBuilder('merchant').where('merchant.storeId IS NULL');
+    const queryBuilder = this.merchantsService.createViewBuilder('merchant');
 
     if (search) {
       queryBuilder.where(
