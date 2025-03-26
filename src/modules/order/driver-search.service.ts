@@ -80,9 +80,11 @@ export class DriverSearchService {
     order.driverId = driver.id;
     order.status = EOrderStatus.OfferSentToDriver;
     const appTransactionFee = await this.feeService.getTransactionFeeOfDriver(driver.activeAreaId);
-    order.transactionFee = (appTransactionFee / 100) * order.deliveryFee;
-    order.orderFeeDiscount.driverDeliveryFee = order.deliveryFee - order.transactionFee;
+    order.transactionFee = (appTransactionFee / 100) * Number(order.deliveryFee);
+    order.orderFeeDiscount.driverDeliveryFee = Number(order.deliveryFee) - Number(order.transactionFee);
     order.driverIncome = calculateDriverIncome(order);
+
+    await this.orderRepository.save(order);
 
     const orderActivity = this.orderActivityRepository.create({
       orderId: order.id,
