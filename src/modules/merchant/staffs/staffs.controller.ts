@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { StaffsService } from './staffs.service';
 import { JwtPayload } from 'src/common/interfaces';
 import { AuthGuard } from '../auth/auth.guard';
@@ -8,6 +8,7 @@ import { EStaffRole } from 'src/common/enums';
 import { CurrentStore } from 'src/common/decorators/current-store.decorator';
 import { InviteStaffDto } from './dto/invite-staff.dto';
 import { QueryStaffDto } from './dto/query-staff.dto';
+import { UpdateStaffDto } from './dto/update-staff.dto';
 
 @Controller('staffs')
 @UseGuards(AuthGuard)
@@ -47,7 +48,7 @@ export class StaffsController {
 
   @Post('invitations')
   @ApiOperation({ summary: 'Mời nhân viên' })
-  async inviteStaff(@CurrentUser() staff: JwtPayload, @CurrentStore() storeId: number, @Body() body: InviteStaffDto) {
+  async inviteStaff(@CurrentStore() storeId: number, @Body() body: InviteStaffDto) {
     return this.staffsService.inviteStaff(storeId, body);
   }
 
@@ -63,15 +64,25 @@ export class StaffsController {
     return this.staffsService.rejectInvitation(merchant.id, storeId);
   }
 
-  @Get(':id')
+  @Get(':merchantId')
   @ApiOperation({ summary: 'Chi tiết nhân viên' })
-  async getStaffDetail(@CurrentUser() merchant: JwtPayload, @CurrentStore() storeId: number) {
-    return this.staffsService.getStaffDetail(merchant.id, storeId);
+  async getStaffDetail(@CurrentStore() storeId: number, @Param('merchantId') merchantId: number) {
+    return this.staffsService.getStaffDetail(merchantId, storeId);
   }
 
-  @Delete(':id')
+  @Delete(':merchantId')
   @ApiOperation({ summary: 'Xóa nhân viên' })
-  async deleteStaff(@CurrentUser() merchant: JwtPayload, @CurrentStore() storeId: number) {
-    return this.staffsService.deleteStaff(merchant.id, storeId);
+  async deleteStaff(@CurrentStore() storeId: number, @Param('merchantId') merchantId: number) {
+    return this.staffsService.deleteStaff(merchantId, storeId);
+  }
+
+  @Patch(':merchantId')
+  @ApiOperation({ summary: 'Cập nhật nhân viên' })
+  async updateStaff(
+    @CurrentStore() storeId: number,
+    @Param('merchantId') merchantId: number,
+    @Body() body: UpdateStaffDto,
+  ) {
+    return this.staffsService.updateStaff(merchantId, storeId, body);
   }
 }
