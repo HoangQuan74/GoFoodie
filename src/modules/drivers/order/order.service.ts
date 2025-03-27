@@ -251,7 +251,7 @@ export class OrderService {
       throw new NotFoundException(`Order with ID ${orderId} not found`);
     }
 
-    if ([EOrderStatus.Pending].includes(order.status) || order.driverId !== driverId) {
+    if ([EOrderStatus.Pending].includes(order.status) || (order.driverId && order.driverId !== driverId)) {
       throw new BadRequestException('You cannot accept this order');
     }
 
@@ -489,7 +489,7 @@ export class OrderService {
         'client.address',
         'orderInDelivery.createdAt',
         'orderDelivered.createdAt',
-      ])
+      ]);
 
     if (search) {
       queryBuilder
