@@ -51,6 +51,7 @@ export const decrypt = (text: string): string => {
 };
 
 export const normalizeText = (text: string): string => {
+  if (!text) return '';
   return text
     .toLowerCase()
     .normalize('NFD')

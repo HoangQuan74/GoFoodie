@@ -15,6 +15,7 @@ import { CartsModule } from './carts/carts.module';
 import { CoinsModule } from './coins/coins.module';
 import { VouchersModule } from './vouchers/vouchers.module';
 import { SearchModule } from './search/search.module';
+import { FlashSalesModule } from './flash-sales/flash-sales.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { SearchModule } from './search/search.module';
       { path: 'client', module: NotificationsModule },
       { path: 'client', module: CoinsModule },
       { path: 'client', module: SearchModule },
+      { path: 'client', module: FlashSalesModule },
     ]),
     AuthModule,
     StoresModule,
@@ -46,6 +48,7 @@ import { SearchModule } from './search/search.module';
     CoinsModule,
     VouchersModule,
     SearchModule,
+    FlashSalesModule,
   ],
   exports: [],
 })
