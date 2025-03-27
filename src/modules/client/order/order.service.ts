@@ -100,10 +100,8 @@ export class OrderService {
         const voucher = await this.voucherService.checkVoucher(voucherCode[0], cartId);
         voucherData.push(voucher);
       } else if (voucherCode && voucherCode.length === 1) {
-        const [storeVoucher, gooVoucher] = await Promise.all([
-          this.voucherService.checkVoucher(voucherCode[0], cartId),
-          this.voucherService.checkVoucher(voucherCode[1], cartId),
-        ]);
+        const storeVoucher = await this.voucherService.checkVoucher(voucherCode[0], cartId);
+        const gooVoucher = await this.voucherService.checkVoucher(voucherCode[1], cartId);
 
         if (!storeVoucher || !gooVoucher) throw new BadRequestException(EXCEPTIONS.INVALID_VOUCHER);
         if (
