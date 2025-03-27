@@ -258,6 +258,7 @@ export class OrderService {
     if (!order.driverId) {
       await this.orderGroupService.upsertOrderGroup(orderId, driverId);
       order.driverId = driverId;
+      this.eventGatewayService.handleDeleteOrderSearchingForDriver(orderId);
     }
     await this.orderGroupService.updateOrderGroupItem({
       orderId,

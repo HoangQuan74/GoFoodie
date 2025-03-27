@@ -174,6 +174,18 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
   }
 
+  async deleteOrderSearchingForDriver(orderId: number) {
+    const drivers = Array.from(this.connected.entries())
+      .filter(([key]) => key.startsWith('driver-'))
+      .map(([key, clientId]) => ({ userId: key.split('-')[1], clientId }));
+
+    drivers.forEach(({ clientId }) => {
+      this.server.to(clientId).emit(ESocketEvent.DeleteOrderSearchingForDriver, {
+        orderId,
+      });
+    });
+  }
+
   async handleUpdateStatusTransactionCoin(
     merchantIds: number[] = [],
     storeTransactionId: number,

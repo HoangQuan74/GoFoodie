@@ -31,6 +31,10 @@ export class EventGatewayService {
     this.eventsGateway.newOrderSearchingForDriver(order);
   }
 
+  handleDeleteOrderSearchingForDriver(orderId: number) {
+    this.eventsGateway.deleteOrderSearchingForDriver(orderId);
+  }
+  
   sendEventToUser(userId: number, userType: ERoleType, event: ESocketEvent, data: any) {
     this.eventsGateway.sendEventToUser(userId, userType, event, data);
   }
