@@ -212,7 +212,15 @@ export class StoresController {
             .where('product.status = :productStatus')
             .andWhere('product.approvalStatus = :productApprovalStatus');
 
-          productCategoryCode && subQueryBuilder.andWhere('product.productCategoryId = :productCategoryCode');
+          if (productCategoryCode) {
+            subQueryBuilder.innerJoin('product.productCategory', 'productCategory');
+            subQueryBuilder.andWhere(
+              new Brackets((qb) => {
+                qb.where('productCategory.id = :productCategoryCode');
+                qb.orWhere('productCategory.parentId = :productCategoryCode');
+              }),
+            );
+          }
 
           return subQueryBuilder;
         },
@@ -234,7 +242,7 @@ export class StoresController {
       .andWhere('store.approvalStatus = :storeApprovalStatus')
       .setParameters({ storeStatus: EStoreStatus.Active, storeApprovalStatus: EStoreApprovalStatus.Approved })
       .setParameters({ productStatus: EProductStatus.Active, productApprovalStatus: EStoreApprovalStatus.Approved })
-      .setParameters({ productCategoryCode });
+      .setParameters({ productCategoryCode: +productCategoryCode });
 
     if (isOpening) {
       queryBuilder.andWhereExists(
@@ -286,7 +294,15 @@ export class StoresController {
           .andWhere('product.approvalStatus = :productApprovalStatus')
           .limit(1);
 
-        productCategoryCode && subQueryProduct.andWhere('product.productCategoryId = :productCategoryCode');
+        if (productCategoryCode) {
+          subQueryProduct.innerJoin('product.productCategory', 'productCategory');
+          subQueryProduct.andWhere(
+            new Brackets((qb) => {
+              qb.where('productCategory.id = :productCategoryCode');
+              qb.orWhere('productCategory.parentId = :productCategoryCode');
+            }),
+          );
+        }
 
         const subQueryBuilder = subQuery
           .select('storePagination.id', 'id')
@@ -302,19 +318,6 @@ export class StoresController {
 
         isDiscount && subQueryBuilder.andWhereExists(queryExistVoucher('storePagination'));
         isFlashSale && subQueryBuilder.andWhereExists(subQueryFlashSale('storePagination'));
-
-        if (productCategoryCode) {
-          subQueryBuilder.andWhereExists(
-            this.productsService
-              .createQueryBuilder('product')
-              .select('1')
-              .where('product.storeId = storePagination.id')
-              .andWhere('product.status = :productStatus')
-              .andWhere('product.approvalStatus = :productApprovalStatus')
-              .andWhere('product.productCategoryId = :productCategoryCode')
-              .limit(1),
-          );
-        }
 
         if (isOpening) {
           queryBuilder.andWhereExists(
