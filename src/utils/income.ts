@@ -1,4 +1,6 @@
+import { EDiscountType, EMaxDiscountType } from 'src/common/enums/voucher.enum';
 import { OrderEntity } from 'src/database/entities/order.entity';
+import { VoucherEntity } from 'src/database/entities/voucher.entity';
 
 export function calculateStoreIncome(order: OrderEntity): number {
   // B1: Total amount after dish discounts
@@ -38,7 +40,7 @@ export function calculateDriverIncome(order: OrderEntity): number {
   return B1 + B2 + B3 + B4;
 }
 
-export function calculateClientTotalPaid(order: OrderEntity): number {
+export function calculateClientTotalPaid(order: OrderEntity, vouchers?: VoucherEntity[]): number {
   // B1: Total amount after dish discounts
   const B1 = Number(order.totalAmount) || 0;
 
@@ -59,4 +61,24 @@ export function calculateClientTotalPaid(order: OrderEntity): number {
 
   // Final client total paid
   return B1 + B2 + B3 + B4 + B5 + B6;
+}
+
+export function calculateVoucherDiscount(voucher: VoucherEntity, totalAmount?: number): number {
+  if (!voucher) return 0;
+
+  const { discountValue, discountType, maxDiscountValue, maxDiscountType } = voucher;
+
+  if (discountType === EDiscountType.Fixed) {
+    return +discountValue;
+  } else if (discountType === EDiscountType.Percentage) {
+    const value = (+discountValue * totalAmount) / 100;
+
+    if (maxDiscountType === EMaxDiscountType.Limited) {
+      return Math.min(value, maxDiscountValue);
+    }
+
+    return +value;
+  }
+
+  return 0;
 }

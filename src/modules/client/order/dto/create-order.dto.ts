@@ -90,4 +90,10 @@ export class CreateOrderDto {
   @ArrayMaxSize(2)
   @IsOptional()
   voucherCode?: string[];
+
+  @ApiPropertyOptional()
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  usedCoin?: number;
 }
