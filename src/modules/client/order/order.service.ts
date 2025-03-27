@@ -40,8 +40,10 @@ import { ClientNotificationEntity } from 'src/database/entities/client-notificat
 import { NotificationsService as MerchantNotificationsService } from 'src/modules/merchant/notifications/notifications.service';
 import { CLIENT_NOTIFICATION_CONTENT, CLIENT_NOTIFICATION_TITLE } from 'src/common/constants/notification.constant';
 import { EAppType } from 'src/common/enums/config.enum';
-import { calculateClientTotalPaid, calculateDriverIncome } from 'src/utils/income';
+import { calculateClientTotalPaid, calculateDriverIncome, calculateVoucherDiscount } from 'src/utils/income';
 import { VouchersService } from '../vouchers/vouchers.service';
+import { VoucherEntity } from 'src/database/entities/voucher.entity';
+import { EDiscountType, ERefundType } from 'src/common/enums/voucher.enum';
 
 @Injectable()
 export class OrderService {
@@ -95,10 +97,10 @@ export class OrderService {
     await queryRunner.startTransaction();
 
     try {
-      const voucherData = [];
+      const vouchers: VoucherEntity[] = [];
       if (voucherCode && voucherCode.length === 1) {
         const voucher = await this.voucherService.checkVoucher(voucherCode[0], cartId);
-        voucherData.push(voucher);
+        vouchers.push(voucher);
       } else if (voucherCode && voucherCode.length === 1) {
         const storeVoucher = await this.voucherService.checkVoucher(voucherCode[0], cartId);
         const gooVoucher = await this.voucherService.checkVoucher(voucherCode[1], cartId);
@@ -110,7 +112,7 @@ export class OrderService {
         ) {
           throw new BadRequestException(EXCEPTIONS.INVALID_VOUCHER);
         }
-        voucherData.push(storeVoucher, gooVoucher);
+        vouchers.push(storeVoucher, gooVoucher);
       }
 
       const client = await queryRunner.manager.findOneBy(ClientEntity, { id: clientId });
@@ -222,9 +224,25 @@ export class OrderService {
       const storeRevenue = totalAmount - storeTransactionFee;
       const driverIncome = calculateDriverIncome(newOrder);
       const clientTotalPaid = calculateClientTotalPaid(newOrder);
+
+      const voucherDiscount = vouchers.reduce((sum, voucher) => {
+        if (voucher.refundType === ERefundType.Promotion) {
+          return sum + calculateVoucherDiscount(voucher, totalAmount);
+        }
+        return sum;
+      }, 0);
+
+      const coinReturned = vouchers.reduce((sum, voucher) => {
+        if (voucher.refundType === ERefundType.Refund) {
+          return sum + calculateVoucherDiscount(voucher, totalAmount);
+        }
+        return sum;
+      }, 0);
+
       newOrder.driverIncome = driverIncome;
-      newOrder.clientTotalPaid = clientTotalPaid;
+      newOrder.clientTotalPaid = clientTotalPaid - voucherDiscount;
       newOrder.storeRevenue = storeRevenue;
+      newOrder.coinReturned = coinReturned;
 
       const savedOrder = await queryRunner.manager.save(newOrder);
 
