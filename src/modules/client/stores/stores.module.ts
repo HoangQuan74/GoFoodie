@@ -9,6 +9,8 @@ import { ClientReviewStoreEntity } from 'src/database/entities/client-review-sto
 import { ClientModule } from '../clients/client.module';
 import { StoreView } from 'src/database/views/store.view';
 import { VouchersModule } from '../vouchers/vouchers.module';
+import { ProductsModule } from '../products/products.module';
+import { FlashSalesModule } from '../flash-sales/flash-sales.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { VouchersModule } from '../vouchers/vouchers.module';
     ProductCategoriesModule,
     forwardRef(() => ClientModule),
     VouchersModule,
+    ProductsModule,
+    FlashSalesModule,
   ],
   controllers: [StoresController],
   providers: [StoresService],
