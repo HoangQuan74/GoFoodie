@@ -71,7 +71,7 @@ export function calculateVoucherDiscount(voucher: VoucherEntity, totalAmount?: n
   if (discountType === EDiscountType.Fixed) {
     return +discountValue;
   } else if (discountType === EDiscountType.Percentage) {
-    const value = (+discountValue * totalAmount) / 100;
+    const value = Math.floor((+discountValue * totalAmount) / 100);
 
     if (maxDiscountType === EMaxDiscountType.Limited) {
       return Math.min(value, maxDiscountValue);
