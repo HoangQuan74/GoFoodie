@@ -199,7 +199,7 @@ export class StoresController {
       ])
       .innerJoinAndSelect(
         (subQuery) => {
-          return subQuery
+          const subQueryBuilder = subQuery
             .from(ProductEntity, 'product')
             .select([
               'product.id as id',
@@ -211,6 +211,10 @@ export class StoresController {
             ])
             .where('product.status = :productStatus')
             .andWhere('product.approvalStatus = :productApprovalStatus');
+
+          productCategoryCode && subQueryBuilder.andWhere('product.productCategoryId = :productCategoryCode');
+
+          return subQueryBuilder;
         },
         'products',
         'products."storeId" = store.id AND products.rownum <= 10',
@@ -229,7 +233,8 @@ export class StoresController {
       .andWhere('store.status = :storeStatus')
       .andWhere('store.approvalStatus = :storeApprovalStatus')
       .setParameters({ storeStatus: EStoreStatus.Active, storeApprovalStatus: EStoreApprovalStatus.Approved })
-      .setParameters({ productStatus: EProductStatus.Active, productApprovalStatus: EStoreApprovalStatus.Approved });
+      .setParameters({ productStatus: EProductStatus.Active, productApprovalStatus: EStoreApprovalStatus.Approved })
+      .setParameters({ productCategoryCode });
 
     if (isOpening) {
       queryBuilder.andWhereExists(
@@ -273,21 +278,23 @@ export class StoresController {
 
     queryBuilder.innerJoin(
       (subQuery) => {
+        const subQueryProduct = this.productsService
+          .createQueryBuilder('product')
+          .select('1')
+          .where('product.storeId = storePagination.id')
+          .andWhere('product.status = :productStatus')
+          .andWhere('product.approvalStatus = :productApprovalStatus')
+          .limit(1);
+
+        productCategoryCode && subQueryProduct.andWhere('product.productCategoryId = :productCategoryCode');
+
         const subQueryBuilder = subQuery
           .select('storePagination.id', 'id')
           .from(StoreEntity, 'storePagination')
           .andWhere('storePagination.isPause = false')
           .andWhere('storePagination.status = :storeStatus')
           .andWhere('storePagination.approvalStatus = :storeApprovalStatus')
-          .andWhereExists(
-            this.productsService
-              .createQueryBuilder('product')
-              .select('1')
-              .where('product.storeId = storePagination.id')
-              .andWhere('product.status = :productStatus')
-              .andWhere('product.approvalStatus = :productApprovalStatus')
-              .limit(1),
-          )
+          .andWhereExists(subQueryProduct)
           .setParameter('storeStatus', EStoreStatus.Active)
           .setParameter('storeApprovalStatus', EStoreApprovalStatus.Approved)
           .limit(limit)
@@ -295,6 +302,19 @@ export class StoresController {
 
         isDiscount && subQueryBuilder.andWhereExists(queryExistVoucher('storePagination'));
         isFlashSale && subQueryBuilder.andWhereExists(subQueryFlashSale('storePagination'));
+
+        if (productCategoryCode) {
+          subQueryBuilder.andWhereExists(
+            this.productsService
+              .createQueryBuilder('product')
+              .select('1')
+              .where('product.storeId = storePagination.id')
+              .andWhere('product.status = :productStatus')
+              .andWhere('product.approvalStatus = :productApprovalStatus')
+              .andWhere('product.productCategoryId = :productCategoryCode')
+              .limit(1),
+          );
+        }
 
         if (isOpening) {
           queryBuilder.andWhereExists(
