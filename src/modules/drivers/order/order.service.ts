@@ -255,7 +255,9 @@ export class OrderService {
       throw new BadRequestException('You cannot accept this order');
     }
 
-    // await this.orderGroupService.upsertOrderGroup(orderId, driverId);
+    if (!order.driverId) {
+      await this.orderGroupService.upsertOrderGroup(orderId, driverId);
+    }
     await this.orderGroupService.updateOrderGroupItem({
       orderId,
       driverId,
