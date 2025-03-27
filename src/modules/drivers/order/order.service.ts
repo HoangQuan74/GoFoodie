@@ -257,6 +257,7 @@ export class OrderService {
 
     if (!order.driverId) {
       await this.orderGroupService.upsertOrderGroup(orderId, driverId);
+      order.driverId = driverId;
     }
     await this.orderGroupService.updateOrderGroupItem({
       orderId,
