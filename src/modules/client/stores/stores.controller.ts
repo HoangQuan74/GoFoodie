@@ -5,7 +5,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import * as moment from 'moment-timezone';
 import { EProductStatus, EStoreApprovalStatus, EStoreStatus } from 'src/common/enums';
 import { PaginationQuery } from 'src/common/query';
-import { TIMEZONE } from 'src/common/constants';
+import { DRIVER_SPEED, TIMEZONE } from 'src/common/constants';
 import { Brackets } from 'typeorm';
 import { QueryStoresDto } from './dto/query-stores.dto';
 import * as lodash from 'lodash';
@@ -22,6 +22,8 @@ import { ProductsService } from '../products/products.service';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { FlashSalesService } from '../flash-sales/flash-sales.service';
 import { FlashSaleEntity } from 'src/database/entities/flash-sale.entity';
+import { getDistanceQuery } from 'src/utils/distance';
+import { StoreView } from 'src/database/views/store.view';
 
 @Controller('stores')
 @ApiTags('Client Stores')
@@ -145,6 +147,9 @@ export class StoresController {
   @Get()
   async findAll(@Query() query: QueryStoresDto) {
     const { limit, page, productCategoryCode, isOpening, isDiscount, isFlashSale, search } = query;
+    // tọa độ sample
+    const latitude = 21.028511;
+    const longitude = 105.804817;
 
     const normalizedSearch = normalizeText(search);
     const now = moment().tz(TIMEZONE);
@@ -196,6 +201,7 @@ export class StoresController {
         'store.streetName as "storeStreetName"',
         'store.storeAvatarId as "storeStoreAvatarId"',
         'store.avgRating as "storeAvgRating"',
+        'store_pagination.distance as "distance"',
       ])
       .innerJoinAndSelect(
         (subQuery) => {
@@ -289,7 +295,7 @@ export class StoresController {
         const subQueryProduct = this.productsService
           .createQueryBuilder('product')
           .select('1')
-          .where('product.storeId = storePagination.id')
+          .where('product.storeId = store_pagination.id')
           .andWhere('product.status = :productStatus')
           .andWhere('product.approvalStatus = :productApprovalStatus')
           .limit(1);
@@ -305,22 +311,26 @@ export class StoresController {
         }
 
         const subQueryBuilder = subQuery
-          .select('storePagination.id', 'id')
-          .from(StoreEntity, 'storePagination')
-          .andWhere('storePagination.isPause = false')
-          .andWhere('storePagination.status = :storeStatus')
-          .andWhere('storePagination.approvalStatus = :storeApprovalStatus')
+          .select('store_pagination.id', 'id')
+          .addSelect(
+            `${getDistanceQuery('store_pagination.receive_lat', 'store_pagination.receive_lng', latitude, longitude)} as "distance"`,
+          )
+          .from(StoreView, 'store_pagination')
+          .andWhere('store_pagination.isPause = false')
+          .andWhere('store_pagination.status = :storeStatus')
+          .andWhere('store_pagination.approvalStatus = :storeApprovalStatus')
           .andWhereExists(subQueryProduct)
           .setParameter('storeStatus', EStoreStatus.Active)
           .setParameter('storeApprovalStatus', EStoreApprovalStatus.Approved)
+
           .limit(limit)
           .offset((page - 1) * limit);
 
-        isDiscount && subQueryBuilder.andWhereExists(queryExistVoucher('storePagination'));
-        isFlashSale && subQueryBuilder.andWhereExists(subQueryFlashSale('storePagination'));
+        isDiscount && subQueryBuilder.andWhereExists(queryExistVoucher('store_pagination'));
+        isFlashSale && subQueryBuilder.andWhereExists(subQueryFlashSale('store_pagination'));
 
         if (isOpening) {
-          queryBuilder.andWhereExists(
+          subQueryBuilder.andWhereExists(
             this.storesService
               .createQueryBuilder('store')
               .select('1')
@@ -332,39 +342,80 @@ export class StoresController {
           );
         }
 
+        subQueryBuilder.addOrderBy('distance', 'ASC');
         return subQueryBuilder;
       },
-      'storePagination',
-      '"storePagination".id = store.id',
+      'store_pagination',
+      '"store_pagination".id = store.id',
     );
 
+    queryBuilder.addOrderBy('distance', 'ASC');
     const rawItems = await queryBuilder.getRawMany();
-    const stores = lodash.groupBy(rawItems, 'storeId') as Record<string, any[]>;
 
-    const items = Object.values(stores).map((store) => {
-      const [first] = store;
-      console.log(first);
-      return {
-        id: first.storeId,
-        name: first.storeName,
-        specialDish: first.storeSpecialDish,
-        streetName: first.storeStreetName,
-        storeAvatarId: first.storeStoreAvatarId,
-        isFlashSale: parseInt(first.flashSaleCount) > 0,
-        rating: 0,
-        avgRating: Number(first.storeAvgRating),
-        products: store.map((item) => ({
+    const storeMap = new Map<string, any>();
+    rawItems.forEach((item) => {
+      const store = storeMap.get(item.storeId);
+      if (!store) {
+        storeMap.set(item.storeId, {
+          id: item.storeId,
+          name: item.storeName,
+          specialDish: item.storeSpecialDish,
+          streetName: item.storeStreetName,
+          storeAvatarId: item.storeStoreAvatarId,
+          distance: item.distance,
+          duration: (item.distance / DRIVER_SPEED) * 60,
+          avgRating: item.storeAvgRating,
+          flashSaleCount: parseInt(item.flashSaleCount),
+          products: [],
+          vouchers: [],
+        });
+      }
+
+      if (item.id) {
+        storeMap.get(item.storeId).products.push({
           id: item.id,
           name: item.name,
           price: item.price,
           imageId: item.imageId,
-          storeId: item.storeId,
-        })),
-        vouchers: first.vouchers ? first.vouchers.slice(0, 3) : [],
-      };
+        });
+      }
+
+      if (item.vouchers) {
+        storeMap.get(item.storeId).vouchers = item.vouchers;
+      }
     });
 
+    const items = Array.from(storeMap.values());
     return { items, total };
+
+    // const stores = lodash.groupBy(rawItems, 'storeId') as Record<string, any[]>;
+
+    // console.log(rawItems);
+    // const items = Object.values(stores).map((store) => {
+    //   const [first] = store;
+    //   // console.log(first);
+    //   return {
+    //     id: first.storeId,
+    //     name: first.storeName,
+    //     specialDish: first.storeSpecialDish,
+    //     streetName: first.storeStreetName,
+    //     storeAvatarId: first.storeStoreAvatarId,
+    //     isFlashSale: parseInt(first.flashSaleCount) > 0,
+    //     rating: 0,
+    //     distance: first.distance,
+    //     avgRating: Number(first.storeAvgRating),
+    //     products: store.map((item) => ({
+    //       id: item.id,
+    //       name: item.name,
+    //       price: item.price,
+    //       imageId: item.imageId,
+    //       storeId: item.storeId,
+    //     })),
+    //     vouchers: first.vouchers ? first.vouchers.slice(0, 3) : [],
+    //   };
+    // });
+
+    // return { items, total };
   }
 
   @Get(':id')
@@ -542,11 +593,25 @@ export class StoresController {
 
     while (count < 3) {
       const formattedDate = nowTemp.format('YYYY-MM-DD');
+      // nếu là now thì check xem hôm nay có khung giờ nào không
+      const isToday = formattedDate === currentDate;
+      if (isToday) {
+        const openSlot = workingTimes.find(
+          (item) => item.dayOfWeek === dayOfWeek && item.openTime <= currentTime && item.closeTime >= currentTime,
+        );
+        if (openSlot) {
+          result.push({ date: formattedDate, openSlots: [{ openTime: currentTime, closeTime: openSlot.closeTime }] });
+          count++;
+        }
+      }
+
       let openSlots = workingTimes
         .filter((item) => item.dayOfWeek === nowTemp.day())
         .map((item) => {
           return { openTime: item.openTime, closeTime: item.closeTime };
         });
+
+      // nếu hôm nay
 
       if (openSlots.length > 0) {
         const offDay = closeTimes.find((item) => item.date === formattedDate);

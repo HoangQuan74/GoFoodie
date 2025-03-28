@@ -17,3 +17,10 @@ export function calculateDistance(lat1: number, lon1: number, lat2: number, lon2
 export function deg2rad(deg: number): number {
   return deg * (Math.PI / 180);
 }
+
+export function getDistanceQuery(latAlias: string, lngAlias: string, lat: number, lng: number): string {
+  return `ST_Distance(
+    ST_SetSRID(ST_MakePoint(${lngAlias}, ${latAlias}), 4326),
+    ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)
+  )`;
+}
