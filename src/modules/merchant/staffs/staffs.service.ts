@@ -146,6 +146,7 @@ export class StaffsService {
     });
 
     if (!staff) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
+    return staff;
   }
 
   async deleteStaff(staffId: number, storeId: number) {
