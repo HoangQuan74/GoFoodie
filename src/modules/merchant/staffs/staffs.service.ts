@@ -58,7 +58,10 @@ export class StaffsService {
   async getOperations(roleCode?: EStaffRole) {
     const operations = await this.operationRepository
       .createQueryBuilder('operation')
-      .leftJoinAndSelect('operation.roles', 'role', 'role.code = :roleCode', { roleCode })
+      .addSelect(['role.code'])
+      .leftJoin('operation.roles', 'role', 'role.code = :roleCode', { roleCode })
+      .addSelect(['dependency.code'])
+      .leftJoin('operation.dependencies', 'dependency')
       .getMany();
 
     const groupedOperations = _.groupBy(operations, 'groupId');
@@ -72,6 +75,7 @@ export class StaffsService {
           name: operation.name,
           description: operation.description,
           selected: operation.roles.length > 0,
+          dependencies: operation.dependencies.map((dependency) => ({ code: dependency.code })),
         })),
       };
     });
