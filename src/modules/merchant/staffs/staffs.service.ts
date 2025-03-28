@@ -35,6 +35,8 @@ export class StaffsService {
       .createQueryBuilder('staff')
       .addSelect(['merchant.id', 'merchant.name', 'merchant.email', 'merchant.phone', 'merchant.avatarId'])
       .leftJoin('staff.merchant', 'merchant')
+      .addSelect(['role.code', 'role.name'])
+      .leftJoin('staff.operations', 'operation')
       .where('staff.storeId = :storeId', { storeId });
 
     if (search) {
