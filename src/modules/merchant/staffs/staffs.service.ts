@@ -12,6 +12,7 @@ import { EXCEPTIONS } from 'src/common/constants';
 import { MerchantRoleEntity } from 'src/database/entities/merchant-role.entity';
 import { QueryStaffDto } from './dto/query-staff.dto';
 import { UpdateStaffDto } from './dto/update-staff.dto';
+import { MailService } from 'src/modules/mail/mail.service';
 
 @Injectable()
 export class StaffsService {
@@ -26,6 +27,7 @@ export class StaffsService {
     private readonly roleRepository: Repository<MerchantRoleEntity>,
 
     private readonly merchantService: MerchantsService,
+    private readonly mailService: MailService,
   ) {}
 
   async getStaffs(storeId: number, query: QueryStaffDto) {
@@ -135,7 +137,12 @@ export class StaffsService {
     storeStaff.merchantId = merchantId;
     storeStaff.operations = operations;
 
-    return this.storeStaffRepository.save(storeStaff);
+    storeStaff = await this.storeStaffRepository.save(storeStaff);
+
+    if (email) {
+      this.mailService.sendStaffInvitation(email, name, '', '');
+    }
+    return storeStaff;
   }
 
   async getStaffDetail(merchantId: number, storeId: number) {

@@ -10,3 +10,11 @@ export function formatDate(date: Date): string {
 export function generateShortUuid(): string {
   return uuidv4().replace(/-/g, '').substr(0, 8).toUpperCase();
 }
+
+export function formatMoney(value: number): string {
+  const formattedValue = value.toLocaleString('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+  });
+  return formattedValue.replace('₫', '').trim();
+}
