@@ -29,4 +29,12 @@ export class MerchantOperationEntity {
 
   @ManyToMany(() => StoreStaffEntity, (staff) => staff.operations)
   staffs: StoreStaffEntity[];
+
+  @ManyToMany(() => MerchantOperationEntity, (operation) => operation.dependencies)
+  @JoinTable({
+    name: 'merchant_operation_dependencies',
+    joinColumn: { name: 'operation_code' },
+    inverseJoinColumn: { name: 'dependent_operation_code' },
+  })
+  dependencies: MerchantOperationEntity[];
 }
