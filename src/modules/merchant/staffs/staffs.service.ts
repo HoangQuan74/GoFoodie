@@ -171,12 +171,13 @@ export class StaffsService {
     const staff = await this.storeStaffRepository.findOne({ where: { merchantId, storeId } });
     if (!staff) throw new BadRequestException(EXCEPTIONS.NOT_FOUND);
 
-    const { roleCode, operationCodes, name } = data;
-    const operations = await this.operationRepository.find({ where: { code: In(operationCodes) } });
+    const { operationCodes } = data;
+    Object.assign(staff, data);
 
-    staff.roleCode = roleCode;
-    staff.operations = operations;
-    staff.merchant.name = name;
+    if (operationCodes) {
+      const operations = await this.operationRepository.find({ where: { code: In(operationCodes) } });
+      staff.operations = operations;
+    }
 
     return this.storeStaffRepository.save(staff);
   }
