@@ -151,7 +151,7 @@ export class StoresController {
     const latitude = 21.028511;
     const longitude = 105.804817;
 
-    const normalizedSearch = normalizeText(search);
+    const normalizedSearch = normalizeText(search).replace(/ /g, ' | ');
     const now = moment().tz(TIMEZONE);
     const dayOfWeek = now.day();
     const totalMinutes = now.hours() * 60 + now.minutes();
@@ -202,6 +202,7 @@ export class StoresController {
         'store.storeAvatarId as "storeStoreAvatarId"',
         'store.avgRating as "storeAvgRating"',
         'store_pagination.distance as "distance"',
+        `ts_rank_cd(to_tsvector('simple', store.nameUnaccent), to_tsquery('simple', :search)) as "store_rank"`,
       ])
       .innerJoinAndSelect(
         (subQuery) => {
@@ -213,10 +214,18 @@ export class StoresController {
               'product.price as price',
               'product.imageId as "imageId"',
               'product.storeId as "storeId"',
-              'ROW_NUMBER() OVER (PARTITION BY product."store_id" ORDER BY product."id" DESC) as rownum',
+              'ROW_NUMBER() OVER (PARTITION BY product.storeId ORDER BY product.id DESC) as rownum',
             ])
             .where('product.status = :productStatus')
             .andWhere('product.approvalStatus = :productApprovalStatus');
+
+          if (normalizedSearch) {
+            subQueryBuilder.addSelect(
+              `ts_rank_cd(to_tsvector('simple', unaccent(product.name)), to_tsquery('simple', :search))`,
+              'product_rank',
+            );
+            subQueryBuilder.orderBy('product_rank', 'ASC');
+          }
 
           if (productCategoryCode) {
             subQueryBuilder.innerJoin('product.productCategory', 'productCategory');
@@ -248,7 +257,27 @@ export class StoresController {
       .andWhere('store.approvalStatus = :storeApprovalStatus')
       .setParameters({ storeStatus: EStoreStatus.Active, storeApprovalStatus: EStoreApprovalStatus.Approved })
       .setParameters({ productStatus: EProductStatus.Active, productApprovalStatus: EStoreApprovalStatus.Approved })
-      .setParameters({ productCategoryCode: +productCategoryCode });
+      .setParameters({ productCategoryCode: +productCategoryCode })
+      .setParameters({ search: normalizedSearch });
+
+    if (normalizedSearch) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.where(`to_tsvector('simple', store.nameUnaccent) @@ to_tsquery('simple', :search)`);
+          qb.orWhere(
+            `EXISTS (${queryBuilder
+              .subQuery()
+              .select('1')
+              .from(ProductEntity, 'product')
+              .where('product.storeId = store.id')
+              .andWhere('product.status = :productStatus')
+              .andWhere('product.approvalStatus = :productApprovalStatus')
+              .andWhere(`to_tsvector('simple', unaccent(product.name)) @@ to_tsquery('simple', :search)`)
+              .getQuery()})`,
+          );
+        }),
+      );
+    }
 
     if (isOpening) {
       queryBuilder.andWhereExists(
@@ -322,12 +351,22 @@ export class StoresController {
           .andWhereExists(subQueryProduct)
           .setParameter('storeStatus', EStoreStatus.Active)
           .setParameter('storeApprovalStatus', EStoreApprovalStatus.Approved)
-
           .limit(limit)
           .offset((page - 1) * limit);
 
         isDiscount && subQueryBuilder.andWhereExists(queryExistVoucher('store_pagination'));
         isFlashSale && subQueryBuilder.andWhereExists(subQueryFlashSale('store_pagination'));
+
+        if (normalizedSearch) {
+          subQueryBuilder.andWhere(
+            new Brackets((qb) => {
+              qb.where(`to_tsvector('simple', store_pagination.nameUnaccent) @@ to_tsquery('simple', :search)`);
+              qb.orWhere(
+                `EXISTS (${subQueryProduct.andWhere(`to_tsvector('simple', unaccent(product.name)) @@ to_tsquery('simple', :search)`).getQuery()})`,
+              );
+            }),
+          );
+        }
 
         if (isOpening) {
           subQueryBuilder.andWhereExists(
@@ -349,12 +388,18 @@ export class StoresController {
       '"store_pagination".id = store.id',
     );
 
+    if (normalizedSearch) {
+      queryBuilder.orderBy('store_rank', 'DESC');
+      queryBuilder.addOrderBy('products.product_rank', 'DESC');
+    }
     queryBuilder.addOrderBy('distance', 'ASC');
+
     const rawItems = await queryBuilder.getRawMany();
 
     const storeMap = new Map<string, any>();
     rawItems.forEach((item) => {
       const store = storeMap.get(item.storeId);
+
       if (!store) {
         storeMap.set(item.storeId, {
           id: item.storeId,
@@ -365,7 +410,7 @@ export class StoresController {
           distance: item.distance,
           duration: (item.distance / DRIVER_SPEED) * 60,
           avgRating: item.storeAvgRating,
-          flashSaleCount: parseInt(item.flashSaleCount),
+          isFlashSale: parseInt(item.flashSaleCount) > 0,
           products: [],
           vouchers: [],
         });
@@ -381,7 +426,7 @@ export class StoresController {
       }
 
       if (item.vouchers) {
-        storeMap.get(item.storeId).vouchers = item.vouchers;
+        storeMap.get(item.storeId).vouchers = item.vouchers.slice(0, 3);
       }
     });
 
