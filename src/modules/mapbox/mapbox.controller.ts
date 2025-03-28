@@ -28,6 +28,7 @@ export class MapboxController {
 
       return data;
     } catch (error) {
+      console.log(error.response.data);
       throw new ServiceUnavailableException(error.response.data.error);
     }
   }
@@ -62,6 +63,7 @@ export class MapboxController {
 
       return data;
     } catch (error) {
+      console.log(error.response.data);
       throw new ServiceUnavailableException(error.response.data.error);
     }
   }
@@ -78,6 +80,7 @@ export class MapboxController {
 
       return data;
     } catch (error) {
+      console.log(error.response.data);
       throw new ServiceUnavailableException(error.response.data.error);
     }
   }
