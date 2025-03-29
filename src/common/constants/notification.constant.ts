@@ -1,3 +1,5 @@
+import { formatMoney } from 'src/utils/common';
+
 export const CLIENT_NOTIFICATION_TITLE = {
   ORDER_PENDING: 'Đang chờ quán xác nhận',
   ORDER_FINDING_DRIVER: 'Đang tìm tài xế',
@@ -21,8 +23,8 @@ export const STORE_NOTIFICATION_TITLE = {
   ORDER_NEW: 'Đơn hàng mới',
   PRE_ORDER_NEW: 'Đơn đặt trước',
   ORDER_CANCELLED: 'Đơn hàng bị hủy',
-  ORDER_COMPLETED: 'Đơn hàng có sự thay đổi',
-  ORDER_CONFIRMED: 'Đơn hàng có sự thay đổi',
+  ORDER_COMPLETED: 'Đơn hàng thành công',
+  ORDER_CONFIRMED: 'Đơn hàng được xác nhận',
 
   WITHDRAWAL_SUCCESS: 'Rút tiền thành công',
   WITHDRAWAL_FAILED: 'Rút tiền thất bại',
@@ -37,8 +39,8 @@ export const STORE_NOTIFICATION_CONTENT = {
   ORDER_COMPLETED: (orderCode: string) => `Đơn hàng đã được giao thành công, mã đơn hàng: ${orderCode}.`,
   ORDER_CONFIRMED: (orderCode: string) => `Đơn hàng đã được xác nhận, mã đơn hàng: ${orderCode}.`,
 
-  WITHDRAWAL_SUCCESS: (amount: number) => `Yêu cầu rút ${amount}đ đã được xử lý thành công.`,
-  WITHDRAWAL_FAILED: (amount: number) => `Yêu cầu rút ${amount}đ không thành công. Vui lòng thử lại sau.`,
+  WITHDRAWAL_SUCCESS: (amount: number) => `Yêu cầu rút ${formatMoney(amount)}đ đã được xử lý thành công.`,
+  WITHDRAWAL_FAILED: (amount: number) => `Yêu cầu rút ${formatMoney(amount)}đ không thành công. Vui lòng thử lại sau.`,
 
   PRODUCT_APPROVED: (name: string) => `Món ${name} đã được phê duyệt và hiển thị trên cửa hàng!`,
   PRODUCT_REJECTED: (name: string) => `Món ${name} không được phê duyệt. Vui lòng kiểm tra và cập nhật lại.`,

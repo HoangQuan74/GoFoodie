@@ -24,7 +24,7 @@ export class StoresService {
     private storeViewRepository: Repository<StoreView>,
   ) {}
 
-  createQueryBuilder(alias: string) {
+  createQueryBuilder(alias?: string) {
     return this.storeRepository.createQueryBuilder(alias);
   }
 

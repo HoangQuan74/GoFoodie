@@ -1,14 +1,14 @@
+import { normalizeText } from './../../../utils/bcrypt';
 import { Controller, Get, NotFoundException, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { StoresService } from './stores.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import * as moment from 'moment-timezone';
 import { EProductStatus, EStoreApprovalStatus, EStoreStatus } from 'src/common/enums';
 import { PaginationQuery } from 'src/common/query';
-import { TIMEZONE } from 'src/common/constants';
+import { DRIVER_SPEED, TIMEZONE } from 'src/common/constants';
 import { Brackets } from 'typeorm';
 import { QueryStoresDto } from './dto/query-stores.dto';
 import * as lodash from 'lodash';
-import { ProductEntity } from 'src/database/entities/product.entity';
 import { ProductCategoriesService } from '../product-categories/product-categories.service';
 import { CurrentUser } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
@@ -16,6 +16,14 @@ import { AuthGuard } from '../auth/auth.guard';
 import { StoreLikeEntity } from 'src/database/entities/store-like.entity';
 import { ProductView } from 'src/database/views/product.view';
 import { VouchersService } from '../vouchers/vouchers.service';
+import { EVoucherType } from 'src/common/enums/voucher.enum';
+import { ProductEntity } from 'src/database/entities/product.entity';
+import { ProductsService } from '../products/products.service';
+import { StoreEntity } from 'src/database/entities/store.entity';
+import { FlashSalesService } from '../flash-sales/flash-sales.service';
+import { FlashSaleEntity } from 'src/database/entities/flash-sale.entity';
+import { getDistanceQuery } from 'src/utils/distance';
+import { StoreView } from 'src/database/views/store.view';
 
 @Controller('stores')
 @ApiTags('Client Stores')
@@ -23,7 +31,9 @@ export class StoresController {
   constructor(
     private readonly storesService: StoresService,
     private readonly productCategoriesService: ProductCategoriesService,
+    private readonly productsService: ProductsService,
     private readonly vouchersService: VouchersService,
+    private readonly flashSalesService: FlashSalesService,
   ) {}
 
   @Get('nearby')
@@ -136,20 +146,63 @@ export class StoresController {
 
   @Get()
   async findAll(@Query() query: QueryStoresDto) {
-    const { limit, page, productCategoryCode, isOpening, isDiscount, isFlashSale } = query;
+    const { limit, page, productCategoryCode, isOpening, isDiscount, isFlashSale, search } = query;
+    // tọa độ sample
+    const latitude = 21.028511;
+    const longitude = 105.804817;
 
+    const normalizedSearch = normalizeText(search).replace(/ /g, ' | ');
     const now = moment().tz(TIMEZONE);
     const dayOfWeek = now.day();
-    const currentTime = now.hours() * 60 + now.minutes();
+    const totalMinutes = now.hours() * 60 + now.minutes();
+    const currentTime = moment().tz(TIMEZONE).format('HH:mm:ss');
+
+    const queryExistVoucher = (storeAlias: string) => {
+      return this.vouchersService
+        .createQueryBuilder('voucher')
+        .select('1')
+        .leftJoin('voucher.stores', 'voucherStore')
+        .leftJoin('voucher.products', 'voucherProduct')
+        .where('voucher.startTime <= CURRENT_TIMESTAMP')
+        .andWhere('voucher.endTime >= CURRENT_TIMESTAMP')
+        .andWhere('voucher.isActive = true')
+        .andWhere(
+          new Brackets((qb) => {
+            qb.where(`voucher.createdByStoreId = ${storeAlias}.id`);
+            qb.orWhere(`voucherStore.id = ${storeAlias}.id`);
+          }),
+        )
+        .limit(1);
+    };
+
+    const queryBuilderVoucher = this.vouchersService
+      .createQueryBuilder('voucher')
+      .select(
+        `json_agg(json_build_object('id', voucher.id, 'code', voucher.code, 'refundType', voucher.refundType, 'discountType', voucher.discountType, 'discountValue', voucher.discountValue, 'minOrderValue', voucher.minOrderValue, 'maxDiscountValue', voucher.maxDiscountValue, 'maxDiscountType', voucher.maxDiscountType))`,
+        'vouchers',
+      )
+      .leftJoin('voucher.stores', 'voucherStore')
+      .where('voucher.startTime <= CURRENT_TIMESTAMP')
+      .andWhere('voucher.endTime >= CURRENT_TIMESTAMP')
+      .andWhere('voucher.isActive = true')
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('voucher.createdByStoreId = store.id');
+          qb.orWhere('voucherStore.id = store.id');
+        }),
+      );
 
     const queryBuilder = this.storesService
-      .createQueryBuilder('store')
+      .createStoreViewQueryBuilder('store')
       .select([
         'store.id as "storeId"',
         'store.name as "storeName"',
         'store.specialDish as "storeSpecialDish"',
         'store.streetName as "storeStreetName"',
         'store.storeAvatarId as "storeStoreAvatarId"',
+        'store.avgRating as "storeAvgRating"',
+        'store_pagination.distance as "distance"',
+        `ts_rank_cd(to_tsvector('simple', store.nameUnaccent), to_tsquery('simple', :search)) as "store_rank"`,
       ])
       .innerJoinAndSelect(
         (subQuery) => {
@@ -161,86 +214,253 @@ export class StoresController {
               'product.price as price',
               'product.imageId as "imageId"',
               'product.storeId as "storeId"',
-              'product.status as "status"',
-              'product.approvalStatus as "approvalStatus"',
+              'ROW_NUMBER() OVER (PARTITION BY product.storeId ORDER BY product.id DESC) as rownum',
             ])
             .where('product.status = :productStatus')
             .andWhere('product.approvalStatus = :productApprovalStatus');
-          // .limit(10);
+
+          if (normalizedSearch) {
+            subQueryBuilder.addSelect(
+              `ts_rank_cd(to_tsvector('simple', unaccent(product.name)), to_tsquery('simple', :search))`,
+              'product_rank',
+            );
+            subQueryBuilder.orderBy('product_rank', 'ASC');
+          }
 
           if (productCategoryCode) {
-            subQueryBuilder.innerJoin('product.productCategory', 'category', 'category.code = :productCategoryCode');
-            subQueryBuilder.setParameters({ productCategoryCode });
+            subQueryBuilder.innerJoin('product.productCategory', 'productCategory');
+            subQueryBuilder.andWhere(
+              new Brackets((qb) => {
+                qb.where('productCategory.id = :productCategoryCode');
+                qb.orWhere('productCategory.parentId = :productCategoryCode');
+              }),
+            );
           }
 
           return subQueryBuilder;
         },
-        'product',
-        'product."storeId" = store.id',
+        'products',
+        'products."storeId" = store.id AND products.rownum <= 10',
       )
+      .leftJoinAndSelect(
+        (subQuery) => {
+          subQuery.getQuery = () => `LATERAL (${queryBuilderVoucher.getQuery()})`;
+          subQuery.getParameters = () => queryBuilderVoucher.getParameters();
+          return subQuery;
+        },
+        'vouchers',
+        'true',
+      )
+
       .andWhere('store.isPause = false')
       .andWhere('store.status = :storeStatus')
       .andWhere('store.approvalStatus = :storeApprovalStatus')
       .setParameters({ storeStatus: EStoreStatus.Active, storeApprovalStatus: EStoreApprovalStatus.Approved })
       .setParameters({ productStatus: EProductStatus.Active, productApprovalStatus: EStoreApprovalStatus.Approved })
-      .skip(limit)
-      .take((page - 1) * limit);
+      .setParameters({ productCategoryCode: +productCategoryCode })
+      .setParameters({ search: normalizedSearch });
+
+    if (normalizedSearch) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.where(`to_tsvector('simple', store.nameUnaccent) @@ to_tsquery('simple', :search)`);
+          qb.orWhere(
+            `EXISTS (${queryBuilder
+              .subQuery()
+              .select('1')
+              .from(ProductEntity, 'product')
+              .where('product.storeId = store.id')
+              .andWhere('product.status = :productStatus')
+              .andWhere('product.approvalStatus = :productApprovalStatus')
+              .andWhere(`to_tsvector('simple', unaccent(product.name)) @@ to_tsquery('simple', :search)`)
+              .getQuery()})`,
+          );
+        }),
+      );
+    }
 
     if (isOpening) {
-      queryBuilder.innerJoin(
-        'store.workingTimes',
-        'workingTime',
-        'workingTime.dayOfWeek = :dayOfWeek AND workingTime.openTime <= :currentTime AND workingTime.closeTime >= :currentTime',
+      queryBuilder.andWhereExists(
+        this.storesService
+          .createQueryBuilder('store')
+          .select('1')
+          .innerJoin('store.workingTimes', 'workingTime')
+          .where('workingTime.dayOfWeek = :dayOfWeek')
+          .andWhere('workingTime.openTime <= :totalMinutes')
+          .andWhere('workingTime.closeTime >= :totalMinutes')
+          .setParameters({ dayOfWeek, totalMinutes }),
       );
-      queryBuilder.setParameters({ dayOfWeek, currentTime });
     }
 
-    if (isDiscount) {
-      queryBuilder.whereExists(
-        this.vouchersService
-          .createQueryBuilder('voucher')
-          .leftJoin('voucher.stores', 'voucherStore')
-          .leftJoin('voucher.products', 'voucherProduct')
-          .where('voucher.startTime <= CURRENT_TIMESTAMP')
-          .andWhere('voucher.endTime >= CURRENT_TIMESTAMP')
-          .andWhere('voucher.isActive = true')
-          .andWhere(
+    const subQueryFlashSale = (storeAlias = 'store', subQuery?) => {
+      if (!subQuery) {
+        subQuery = this.flashSalesService.createQueryBuilder('flashSale');
+      } else {
+        subQuery = subQuery.from(FlashSaleEntity, 'flashSale');
+      }
+
+      return subQuery
+        .select('COUNT(1)', 'flashSaleCount')
+        .leftJoin('flashSale.timeFrame', 'timeFrame')
+        .leftJoin('flashSale.products', 'flashSaleProduct')
+        .leftJoin('flashSaleProduct.product', 'product')
+        .where('flashSale.startDate <= CURRENT_TIMESTAMP')
+        .andWhere('flashSale.endDate >= CURRENT_TIMESTAMP')
+        .andWhere('flashSale.status = true')
+        .andWhere('timeFrame.startTime <= :currentTime')
+        .andWhere('timeFrame.endTime >= :currentTime')
+        .andWhere(`product.storeId = ${storeAlias}.id`)
+        .setParameters({ currentTime });
+    };
+
+    queryBuilder.addSelect((subQuery) => subQueryFlashSale('store', subQuery), 'flashSaleCount');
+    isFlashSale && queryBuilder.andWhereExists(subQueryFlashSale());
+    isDiscount && queryBuilder.andWhereExists(queryExistVoucher('store'));
+
+    const total = await queryBuilder.getCount();
+
+    queryBuilder.innerJoin(
+      (subQuery) => {
+        const subQueryProduct = this.productsService
+          .createQueryBuilder('product')
+          .select('1')
+          .where('product.storeId = store_pagination.id')
+          .andWhere('product.status = :productStatus')
+          .andWhere('product.approvalStatus = :productApprovalStatus')
+          .limit(1);
+
+        if (productCategoryCode) {
+          subQueryProduct.innerJoin('product.productCategory', 'productCategory');
+          subQueryProduct.andWhere(
             new Brackets((qb) => {
-              qb.where('voucher.createdByStoreId = store.id');
-              qb.orWhere('voucherStore.id = store.id');
-              qb.orWhere('voucherProduct.id = product.id');
+              qb.where('productCategory.id = :productCategoryCode');
+              qb.orWhere('productCategory.parentId = :productCategoryCode');
             }),
-          ),
-      );
-    }
+          );
+        }
 
-    if (isFlashSale) {
+        const subQueryBuilder = subQuery
+          .select('store_pagination.id', 'id')
+          .addSelect(
+            `${getDistanceQuery('store_pagination.receive_lat', 'store_pagination.receive_lng', latitude, longitude)} as "distance"`,
+          )
+          .from(StoreView, 'store_pagination')
+          .andWhere('store_pagination.isPause = false')
+          .andWhere('store_pagination.status = :storeStatus')
+          .andWhere('store_pagination.approvalStatus = :storeApprovalStatus')
+          .andWhereExists(subQueryProduct)
+          .setParameter('storeStatus', EStoreStatus.Active)
+          .setParameter('storeApprovalStatus', EStoreApprovalStatus.Approved)
+          .limit(limit)
+          .offset((page - 1) * limit);
+
+        isDiscount && subQueryBuilder.andWhereExists(queryExistVoucher('store_pagination'));
+        isFlashSale && subQueryBuilder.andWhereExists(subQueryFlashSale('store_pagination'));
+
+        if (normalizedSearch) {
+          subQueryBuilder.andWhere(
+            new Brackets((qb) => {
+              qb.where(`to_tsvector('simple', store_pagination.nameUnaccent) @@ to_tsquery('simple', :search)`);
+              qb.orWhere(
+                `EXISTS (${subQueryProduct.andWhere(`to_tsvector('simple', unaccent(product.name)) @@ to_tsquery('simple', :search)`).getQuery()})`,
+              );
+            }),
+          );
+        }
+
+        if (isOpening) {
+          subQueryBuilder.andWhereExists(
+            this.storesService
+              .createQueryBuilder('store')
+              .select('1')
+              .innerJoin('store.workingTimes', 'workingTime')
+              .where('workingTime.dayOfWeek = :dayOfWeek')
+              .andWhere('workingTime.openTime <= :totalMinutes')
+              .andWhere('workingTime.closeTime >= :totalMinutes')
+              .setParameters({ dayOfWeek, totalMinutes }),
+          );
+        }
+
+        subQueryBuilder.addOrderBy('distance', 'ASC');
+        return subQueryBuilder;
+      },
+      'store_pagination',
+      '"store_pagination".id = store.id',
+    );
+
+    if (normalizedSearch) {
+      queryBuilder.orderBy('store_rank', 'DESC');
+      queryBuilder.addOrderBy('products.product_rank', 'DESC');
     }
+    queryBuilder.addOrderBy('distance', 'ASC');
 
     const rawItems = await queryBuilder.getRawMany();
-    const total = await queryBuilder.getCount();
-    const stores = lodash.groupBy(rawItems, 'storeId') as Record<string, any[]>;
 
-    const items = Object.values(stores).map((store) => {
-      const [first] = store;
-      return {
-        id: first.storeId,
-        name: first.storeName,
-        specialDish: first.storeSpecialDish,
-        streetName: first.storeStreetName,
-        storeAvatarId: first.storeStoreAvatarId,
-        rating: 4.5,
-        products: store.map((item) => ({
+    const storeMap = new Map<string, any>();
+    rawItems.forEach((item) => {
+      const store = storeMap.get(item.storeId);
+
+      if (!store) {
+        storeMap.set(item.storeId, {
+          id: item.storeId,
+          name: item.storeName,
+          specialDish: item.storeSpecialDish,
+          streetName: item.storeStreetName,
+          storeAvatarId: item.storeStoreAvatarId,
+          distance: item.distance,
+          duration: (item.distance / DRIVER_SPEED) * 60,
+          avgRating: item.storeAvgRating,
+          isFlashSale: parseInt(item.flashSaleCount) > 0,
+          products: [],
+          vouchers: [],
+        });
+      }
+
+      if (item.id) {
+        storeMap.get(item.storeId).products.push({
           id: item.id,
           name: item.name,
           price: item.price,
           imageId: item.imageId,
-          storeId: item.storeId,
-        })),
-      };
+        });
+      }
+
+      if (item.vouchers) {
+        storeMap.get(item.storeId).vouchers = item.vouchers.slice(0, 3);
+      }
     });
 
+    const items = Array.from(storeMap.values());
     return { items, total };
+
+    // const stores = lodash.groupBy(rawItems, 'storeId') as Record<string, any[]>;
+
+    // console.log(rawItems);
+    // const items = Object.values(stores).map((store) => {
+    //   const [first] = store;
+    //   // console.log(first);
+    //   return {
+    //     id: first.storeId,
+    //     name: first.storeName,
+    //     specialDish: first.storeSpecialDish,
+    //     streetName: first.storeStreetName,
+    //     storeAvatarId: first.storeStoreAvatarId,
+    //     isFlashSale: parseInt(first.flashSaleCount) > 0,
+    //     rating: 0,
+    //     distance: first.distance,
+    //     avgRating: Number(first.storeAvgRating),
+    //     products: store.map((item) => ({
+    //       id: item.id,
+    //       name: item.name,
+    //       price: item.price,
+    //       imageId: item.imageId,
+    //       storeId: item.storeId,
+    //     })),
+    //     vouchers: first.vouchers ? first.vouchers.slice(0, 3) : [],
+    //   };
+    // });
+
+    // return { items, total };
   }
 
   @Get(':id')
@@ -418,11 +638,25 @@ export class StoresController {
 
     while (count < 3) {
       const formattedDate = nowTemp.format('YYYY-MM-DD');
+      // nếu là now thì check xem hôm nay có khung giờ nào không
+      const isToday = formattedDate === currentDate;
+      if (isToday) {
+        const openSlot = workingTimes.find(
+          (item) => item.dayOfWeek === dayOfWeek && item.openTime <= currentTime && item.closeTime >= currentTime,
+        );
+        if (openSlot) {
+          result.push({ date: formattedDate, openSlots: [{ openTime: currentTime, closeTime: openSlot.closeTime }] });
+          count++;
+        }
+      }
+
       let openSlots = workingTimes
         .filter((item) => item.dayOfWeek === nowTemp.day())
         .map((item) => {
           return { openTime: item.openTime, closeTime: item.closeTime };
         });
+
+      // nếu hôm nay
 
       if (openSlots.length > 0) {
         const offDay = closeTimes.find((item) => item.date === formattedDate);
@@ -472,6 +706,32 @@ export class StoresController {
   @Get(':storeId/vouchers')
   @ApiOperation({ summary: 'Get store vouchers' })
   async findVouchers(@Param('storeId') storeId: number) {
-    return this.vouchersService.createQueryBuilder('voucher').getMany();
+    const now = new Date();
+
+    return this.vouchersService
+      .createQueryBuilder('voucher')
+      .leftJoin('voucher.stores', 'store')
+      .where('voucher.startTime <= :now')
+      .andWhere('voucher.endTime >= :now')
+      .andWhere('voucher.isActive = true')
+      .andWhere('voucher.isPrivate = false')
+      .andWhere(
+        new Brackets((qb) => {
+          qb.orWhere(`voucher.typeId = ${EVoucherType.AllStore}`);
+          qb.orWhere(
+            new Brackets((qb) => {
+              qb.where(`voucher.typeId = ${EVoucherType.Store}`);
+              qb.andWhere(
+                new Brackets((qb) => {
+                  qb.where('voucher.isAllItems = true');
+                  qb.orWhere('store.id = :storeId', { storeId });
+                }),
+              );
+            }),
+          );
+        }),
+      )
+      .setParameter('now', now)
+      .getMany();
   }
 }

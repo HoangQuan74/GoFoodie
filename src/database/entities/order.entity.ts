@@ -122,6 +122,12 @@ export class OrderEntity extends BaseEntity {
   @Column({ type: 'decimal', precision: 10, scale: 0, name: 'client_total_paid', default: 0 })
   clientTotalPaid: number;
 
+  @Column({ type: 'int8', name: 'coin_used', default: 0 })
+  coinUsed: number;
+
+  @Column({ type: 'int8', name: 'coin_returned', default: 0 })
+  coinReturned: number;
+
   @Column({ nullable: true })
   notes: string;
 

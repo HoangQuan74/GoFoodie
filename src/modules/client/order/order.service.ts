@@ -1,11 +1,5 @@
 import { MapboxService } from './../../mapbox/mapbox.service';
-import {
-  BadRequestException,
-  HttpException,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EOrderCode, EOrderProcessor, EOrderStatus } from 'src/common/enums/order.enum';
 import { Group } from 'src/common/interfaces/order-item.interface';
@@ -16,7 +10,6 @@ import { OrderItemEntity } from 'src/database/entities/order-item.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { StoreEntity } from 'src/database/entities/store.entity';
 import { EventGatewayService } from 'src/events/event.gateway.service';
-import { FcmService } from 'src/modules/fcm/fcm.service';
 import { FeeService } from 'src/modules/fee/fee.service';
 import { formatDate, generateShortUuid } from 'src/utils/common';
 import { calculateDistance } from 'src/utils/distance';
@@ -47,8 +40,10 @@ import { ClientNotificationEntity } from 'src/database/entities/client-notificat
 import { NotificationsService as MerchantNotificationsService } from 'src/modules/merchant/notifications/notifications.service';
 import { CLIENT_NOTIFICATION_CONTENT, CLIENT_NOTIFICATION_TITLE } from 'src/common/constants/notification.constant';
 import { EAppType } from 'src/common/enums/config.enum';
-import { calculateClientTotalPaid, calculateDriverIncome } from 'src/utils/income';
+import { calculateClientTotalPaid, calculateDriverIncome, calculateVoucherDiscount } from 'src/utils/income';
 import { VouchersService } from '../vouchers/vouchers.service';
+import { VoucherEntity } from 'src/database/entities/voucher.entity';
+import { EDiscountType, ERefundType } from 'src/common/enums/voucher.enum';
 
 @Injectable()
 export class OrderService {
@@ -102,15 +97,13 @@ export class OrderService {
     await queryRunner.startTransaction();
 
     try {
-      const voucherData = [];
+      const vouchers: VoucherEntity[] = [];
       if (voucherCode && voucherCode.length === 1) {
         const voucher = await this.voucherService.checkVoucher(voucherCode[0], cartId);
-        voucherData.push(voucher);
+        vouchers.push(voucher);
       } else if (voucherCode && voucherCode.length === 1) {
-        const [storeVoucher, gooVoucher] = await Promise.all([
-          this.voucherService.checkVoucher(voucherCode[0], cartId),
-          this.voucherService.checkVoucher(voucherCode[1], cartId),
-        ]);
+        const storeVoucher = await this.voucherService.checkVoucher(voucherCode[0], cartId);
+        const gooVoucher = await this.voucherService.checkVoucher(voucherCode[1], cartId);
 
         if (!storeVoucher || !gooVoucher) throw new BadRequestException(EXCEPTIONS.INVALID_VOUCHER);
         if (
@@ -119,7 +112,7 @@ export class OrderService {
         ) {
           throw new BadRequestException(EXCEPTIONS.INVALID_VOUCHER);
         }
-        voucherData.push(storeVoucher, gooVoucher);
+        vouchers.push(storeVoucher, gooVoucher);
       }
 
       const client = await queryRunner.manager.findOneBy(ClientEntity, { id: clientId });
@@ -231,9 +224,25 @@ export class OrderService {
       const storeRevenue = totalAmount - storeTransactionFee;
       const driverIncome = calculateDriverIncome(newOrder);
       const clientTotalPaid = calculateClientTotalPaid(newOrder);
+
+      const voucherDiscount = vouchers.reduce((sum, voucher) => {
+        if (voucher.refundType === ERefundType.Promotion) {
+          return sum + calculateVoucherDiscount(voucher, totalAmount);
+        }
+        return sum;
+      }, 0);
+
+      const coinReturned = vouchers.reduce((sum, voucher) => {
+        if (voucher.refundType === ERefundType.Refund) {
+          return sum + calculateVoucherDiscount(voucher, totalAmount);
+        }
+        return sum;
+      }, 0);
+
       newOrder.driverIncome = driverIncome;
-      newOrder.clientTotalPaid = clientTotalPaid;
+      newOrder.clientTotalPaid = clientTotalPaid - voucherDiscount;
       newOrder.storeRevenue = storeRevenue;
+      newOrder.coinReturned = coinReturned;
 
       const savedOrder = await queryRunner.manager.save(newOrder);
 
@@ -433,6 +442,7 @@ export class OrderService {
   async findOne(clientId: number, orderId: number): Promise<OrderEntity> {
     const queryBuilder = this.orderRepository
       .createQueryBuilder('order')
+      .leftJoinAndSelect('order.orderFeeDiscount', 'orderFeeDiscount')
       .leftJoinAndSelect('order.orderItems', 'orderItems')
       .leftJoinAndSelect('order.activities', 'activities')
       .leftJoinAndSelect('order.store', 'store')

@@ -32,3 +32,9 @@ export enum EStaffRole {
   Manager = 'manager',
   Staff = 'staff',
 }
+
+export enum EStaffStatus {
+  Active = 'active',
+  Inactive = 'inactive',
+  Pending = 'pending',
+}

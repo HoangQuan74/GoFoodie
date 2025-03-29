@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsEnum, IsOptional } from 'class-validator';
+import { IsArray, IsEnum, IsOptional } from 'class-validator';
 import { EStoreNotificationType } from 'src/common/enums';
 import { PaginationQuery } from 'src/common/query';
 
@@ -10,8 +10,10 @@ export class QueryNotificationDto extends PaginationQuery {
   @Transform(({ value }) => (typeof value === 'string' && value ? value === 'true' : value))
   isRead: boolean;
 
-  @ApiPropertyOptional({ enum: EStoreNotificationType })
+  @ApiPropertyOptional({ enum: EStoreNotificationType, isArray: true })
   @IsOptional()
-  @IsEnum(EStoreNotificationType)
-  type: EStoreNotificationType;
+  @IsArray()
+  @IsEnum(EStoreNotificationType, { each: true })
+  @Transform(({ value }) => (typeof value === 'string' && value ? [value] : value))
+  type: EStoreNotificationType[];
 }

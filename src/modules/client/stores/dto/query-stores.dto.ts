@@ -22,4 +22,9 @@ export class QueryStoresDto extends PaginationQuery {
   @IsOptional()
   @Transform(({ value }) => (typeof value === 'string' && value ? value === 'true' : value))
   isDiscount: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(({ value }) => (typeof value === 'string' && value ? value === 'true' : value))
+  isNearBy: boolean;
 }

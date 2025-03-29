@@ -1,5 +1,5 @@
 import { EStoreApprovalStatus, EStoreStatus, EStoreAddressType } from 'src/common/enums';
-import { ViewEntity, ViewColumn, Index, OneToMany } from 'typeorm';
+import { ViewEntity, ViewColumn, Index, OneToMany, PrimaryColumn } from 'typeorm';
 import { ProductEntity } from '../entities/product.entity';
 
 @ViewEntity({
@@ -32,8 +32,7 @@ import { ProductEntity } from '../entities/product.entity';
   `,
 })
 export class StoreView {
-  @Index({ unique: true })
-  @ViewColumn()
+  @PrimaryColumn()
   id: number;
 
   @ViewColumn()

@@ -3,6 +3,8 @@ import { ProductsService } from './products.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { EOptionGroupStatus, EOptionStatus } from 'src/common/enums';
 import { VouchersService } from '../vouchers/vouchers.service';
+import { Brackets } from 'typeorm';
+import { EVoucherType } from 'src/common/enums/voucher.enum';
 
 @Controller('products')
 @ApiTags('Products')
@@ -49,6 +51,41 @@ export class ProductsController {
   @Get(':productId/vouchers')
   @ApiOperation({ summary: 'Get vouchers of product' })
   async getVouchers(@Param('productId') productId: number) {
-    return this.vouchersService.createQueryBuilder('voucher').getMany();
+    const product = await this.productsService.findOne({ where: { id: productId } });
+    if (!product) throw new NotFoundException();
+
+    const now = new Date();
+    return this.vouchersService
+      .createQueryBuilder('voucher')
+      .leftJoin('voucher.stores', 'store')
+      .leftJoin('voucher.products', 'product')
+      .where('voucher.startTime <= :now')
+      .andWhere('voucher.endTime >= :now')
+      .andWhere('voucher.isActive = true')
+      .andWhere('voucher.isPrivate = false')
+      .andWhere(
+        new Brackets((qb) => {
+          qb.orWhere(`voucher.typeId = ${EVoucherType.AllStore}`);
+          qb.orWhere(
+            new Brackets((qb) => {
+              qb.where(`voucher.typeId = ${EVoucherType.Store}`);
+              qb.andWhere(
+                new Brackets((qb) => {
+                  qb.where('voucher.isAllItems = true');
+                  qb.orWhere('store.id = :storeId', { storeId: product.storeId });
+                }),
+              );
+            }),
+          );
+          qb.orWhere(
+            new Brackets((qb) => {
+              qb.where(`voucher.typeId = ${EVoucherType.Product}`);
+              qb.andWhere('product.id = :productId', { productId });
+            }),
+          );
+        }),
+      )
+      .setParameter('now', now)
+      .getMany();
   }
 }

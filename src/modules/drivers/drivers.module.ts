@@ -15,6 +15,7 @@ import { IncomeModule } from './income/income.module';
 import { RequestsModule } from './requests/requests.module';
 import { OrderGroupModule } from './order-group/order-group.module';
 import { PaymentModule } from './payment/payment.module';
+import { FeeModule } from './fee/fee.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { PaymentModule } from './payment/payment.module';
       { path: 'driver', module: RequestsModule },
       { path: 'driver', module: OrderGroupModule },
       { path: 'driver', module: PaymentModule },
+      { path: 'driver', module: FeeModule },
     ]),
     OnlineTrainingsModule,
     BannersModule,
@@ -46,6 +48,7 @@ import { PaymentModule } from './payment/payment.module';
     RequestsModule,
     OrderGroupModule,
     PaymentModule,
+    FeeModule,
   ],
 })
 export class DriversModule {}

@@ -21,7 +21,7 @@ export class NotificationsController {
       .offset((page - 1) * limit)
       .orderBy('notification.id', 'DESC');
 
-    type && queryBuilder.andWhere('notification.type = :type', { type });
+    type && type.length && queryBuilder.andWhere('notification.type IN (:...type)', { type });
     const unread = await queryBuilder.clone().andWhere('notification.readAt IS NULL').getCount();
 
     if (typeof isRead === 'boolean') {
