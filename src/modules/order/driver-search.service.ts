@@ -51,7 +51,6 @@ export class DriverSearchService {
     private readonly feeService: FeeService,
     private eventGatewayService: EventGatewayService,
     private fcmService: FcmService,
-    // private clientNotificationService: NotificationsService,
   ) {}
 
   async assignOrderToDriver(orderId: number): Promise<void> {
