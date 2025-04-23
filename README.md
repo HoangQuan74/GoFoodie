@@ -1,11 +1,4 @@
-# Oneship
-
-## Clone the project
-
-```sh
-  git clone https://github.com/quachoanhngoan/BE_Oneship
-  cd BE_Oneship
-```
+# GoFoodie - Food Delivery Service
 
 ## Configuration
 
